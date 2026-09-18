@@ -124,6 +124,9 @@
           font:inherit;font-size:15px;cursor:pointer;touch-action:manipulation}
   #uiBtn{right:calc(10px + env(safe-area-inset-right))}
   #perfBtn{right:calc(58px + env(safe-area-inset-right))}
+  #restartBtn{right:calc(120px + env(safe-area-inset-right))}
+  #pauseBtn{right:calc(168px + env(safe-area-inset-right))}
+  #pauseBtn.on{background:rgba(255,176,58,.3);border-color:var(--hot);color:#ffd79a}
   #fpsTag{position:absolute;top:calc(10px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));
           z-index:8;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--dim);
           background:rgba(18,22,26,.8);border:1px solid var(--line);border-radius:6px;padding:5px 9px}
@@ -145,7 +148,8 @@
                    border:1px solid var(--line);background:rgba(95,211,196,.12);color:#b6f0e7}
   #perf .note{font-size:11px;color:var(--dim);margin:10px 0 0;line-height:1.5}
   body:not(.uiHidden) #stick,body:not(.uiHidden) #pad,body:not(.uiHidden) #perf,
-  body:not(.uiHidden) #perfBtn,body:not(.uiHidden) #fpsTag{display:none}
+  body:not(.uiHidden) #perfBtn,body:not(.uiHidden) #fpsTag,
+  body:not(.uiHidden) #restartBtn,body:not(.uiHidden) #pauseBtn{display:none}
 </style>
 </head>
 <body class="uiHidden">
@@ -186,7 +190,7 @@
   </div>
   <div class="group">
     <h2>화질</h2>
-    <div class="row"><label for="rScale">렌더 배율</label><input id="rScale" type="range" min="0.5" max="2" step="0.25" value="0.75"><output id="rScalev">1.50</output></div>
+    <div class="row"><label for="rScale">렌더 배율</label><input id="rScale" type="range" min="0.5" max="2" step="0.25" value="0.5"><output id="rScalev">1.50</output></div>
     <label class="check"><input type="checkbox" id="msaaChk"> 안티에일리어싱 (MSAA)</label>
     <p class="sub" id="qualNote" style="margin:6px 0 0"></p>
   </div>
@@ -213,16 +217,18 @@
 </div>
 
 <div id="fpsTag">—</div>
+<button id="pauseBtn" class="topbtn" title="정지">❚❚</button>
+<button id="restartBtn" class="topbtn" title="재시작">↻</button>
 <button id="perfBtn" class="topbtn" title="성능">FPS</button>
 <button id="uiBtn" class="topbtn" title="설정">⚙</button>
 <div id="perf">
   <h3>성능</h3>
-  <div class="pr"><label for="pQ">화질 단계</label><input id="pQ" type="range" min="0" max="3" step="1" value="1"><output id="pQv">보통</output></div>
-  <div class="pr"><label for="pScale">렌더 배율</label><input id="pScale" type="range" min="0.5" max="2" step="0.25" value="0.75"><output id="pScalev">0.75</output></div>
-  <div class="pr"><label for="pCap">배율 상한</label><input id="pCap" type="range" min="1" max="3" step="0.5" value="1.5"><output id="pCapv">1.5</output></div>
-  <label class="pc"><input type="checkbox" id="pShadow" checked> 그림자</label>
+  <div class="pr"><label for="pQ">화질 단계</label><input id="pQ" type="range" min="0" max="3" step="1" value="0"><output id="pQv">최소</output></div>
+  <div class="pr"><label for="pScale">렌더 배율</label><input id="pScale" type="range" min="0.5" max="2" step="0.25" value="0.5"><output id="pScalev">0.50</output></div>
+  <div class="pr"><label for="pCap">배율 상한</label><input id="pCap" type="range" min="1" max="3" step="0.5" value="1"><output id="pCapv">1.0</output></div>
+  <label class="pc"><input type="checkbox" id="pShadow"> 그림자</label>
   <label class="pc"><input type="checkbox" id="pMsaa"> 안티에일리어싱</label>
-  <label class="pc"><input type="checkbox" id="pFx" checked> 화면 필터</label>
+  <label class="pc"><input type="checkbox" id="pFx"> 화면 필터</label>
   <label class="pc"><input type="checkbox" id="pSplat" checked> 바닥 핏자국</label>
   <label class="pc"><input type="checkbox" id="pPiece" checked> 잘린 조각 남기기</label>
   <div class="pr"><label for="pBlood">피의 양</label><input id="pBlood" type="range" min="10" max="1200" step="10" value="260"><output id="pBloodv">260</output></div>
@@ -296,7 +302,7 @@
     <div class="group">
       <h2>표시</h2>
       <label class="check"><input type="checkbox" id="gridChk"> 바닥 그리드</label>
-      <label class="check"><input type="checkbox" id="shadowChk" checked> 그림자</label>
+      <label class="check"><input type="checkbox" id="shadowChk"> 그림자</label>
       <label class="check"><input type="checkbox" id="skelChk"> 뼈대 표시</label>
       <label class="check"><input type="checkbox" id="swordChk" checked> 검 표시</label>
       <label class="check"><input type="checkbox" id="axisChk"> 검 축 표시</label>
@@ -1225,10 +1231,11 @@ const setStatus = (m, err=false) => { statusEl.innerHTML = m; statusEl.classList
 const renderer = new THREE.WebGLRenderer({ antialias:true });
 /* 화질 — 후처리 체인을 쓰면 캔버스의 antialias 옵션이 무력화된다(장면을 오프스크린 타깃에 그리므로).
    그래서 ① 표시 해상도보다 크게 렌더해 축소하고(RENDER_SCALE), ② 컴포저 타깃에 MSAA 를 직접 켠다(아래 화면 필터 섹션). */
-const RENDER_SCALE = 0.75;   // 모바일 기본 — 성능 패널에서 조절                       // 프레임이 부족해지면 1.0 으로 내리면 된다
+const RENDER_SCALE = 0.5;   // 모바일 기본(최소 단계) — 성능 패널에서 올릴 수 있다                       // 프레임이 부족해지면 1.0 으로 내리면 된다
 renderer.setPixelRatio(Math.min(devicePixelRatio * RENDER_SCALE, 2));
 const MAX_ANISO = renderer.capabilities.getMaxAnisotropy();
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.autoUpdate = false;   // 모바일 — 아래 루프에서 간격을 두고 갱신한다
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
@@ -1357,7 +1364,9 @@ composer.addPass(new OutputPass());
 const gradePass = new ShaderPass(GradeShader);
 composer.addPass(gradePass);
 
-let prCap = 1.5;                                   // 실효 픽셀 배율 상한 (성능 패널)
+let paused = false, shadowTick = 0, shadowEvery = 3;   // 정지 · 그림자 갱신 간격
+let fxOn = false;   // false 면 컴포저를 건너뛰고 바로 그린다 (모바일 기본)
+let prCap = 1;                                     // 실효 픽셀 배율 상한 (성능 패널)
 let renderScale = RENDER_SCALE, msaaOn = false;    // 모바일 기본: MSAA 끔
 function applyQuality(){
   renderer.setPixelRatio(Math.min(devicePixelRatio * renderScale, prCap));
@@ -1823,7 +1832,7 @@ function attachCap(capGeo, refMesh){
 const bodyCaps = [];
 
 /* 혈흔 입자 */
-const MAXP = 6000;   // 실측 최대 동시 1,518개 · 죽은 칸도 정점 셰이더가 돌아서 무작정 키우면 손해
+const MAXP = 1500;   // 모바일   // 실측 최대 동시 1,518개 · 죽은 칸도 정점 셰이더가 돌아서 무작정 키우면 손해
 const pGeo = new THREE.BufferGeometry();
 const pPos = new Float32Array(MAXP*3), pAlpha = new Float32Array(MAXP), pSize = new Float32Array(MAXP);
 const pSeed = new Float32Array(MAXP);
@@ -5429,6 +5438,20 @@ addEventListener('keyup', e => { keys[e.code] = false; });
   });
   addEventListener('orientationchange', () => setTimeout(resize, 350));
 
+  /* 재시작 · 정지 — 폰에는 키보드가 없다 */
+  const restartBtn = document.getElementById('restartBtn');
+  restartBtn.addEventListener('pointerdown', e => { e.preventDefault(); paused = false; pauseBtn.classList.remove('on'); pauseBtn.textContent = '❚❚'; respawnPlayer(); });
+  const pauseBtn = document.getElementById('pauseBtn');
+  pauseBtn.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    paused = !paused;
+    pauseBtn.classList.toggle('on', paused);
+    pauseBtn.textContent = paused ? '▶' : '❚❚';
+    for (const k in keys) keys[k] = false;      // 정지 중 눌린 채로 남은 키를 턴다
+    clock.getDelta();                           // 재개할 때 멈춰 있던 시간이 한 프레임에 쏟아지지 않게
+  });
+  addEventListener('visibilitychange', () => { if (document.hidden && !paused) pauseBtn.dispatchEvent(new PointerEvent('pointerdown')); });
+
   /* ===== 성능 패널 =====
      본편 컨트롤을 그대로 움직여 준다 — 로직을 두 벌 두지 않으려고 값만 넣고 이벤트를 쏜다. */
   const perf = document.getElementById('perf'), perfBtn = document.getElementById('perfBtn');
@@ -5456,14 +5479,15 @@ addEventListener('keyup', e => { keys[e.code] = false; });
   C('pMsaa',   v => drive('msaaChk', v));
   C('pSplat',  v => drive('splatChk', v));
   C('pPiece',  v => drive('pieceChk', v));
-  C('pFx',     v => { gradePass.enabled = v; });
+  C('pFx',     v => { fxOn = v; gradePass.enabled = v; });
 
-  /* 한 번에 바꾸는 단계 — 값을 하나씩 만지지 않아도 되게 */
+  /* 한 번에 바꾸는 단계 — 값을 하나씩 만지지 않아도 되게.
+     그림자는 켜는 순간 장면을 한 번 더 그리므로, 낮은 단계에서는 갱신 간격을 벌린다. */
   const LEVELS = [
-    { name:'최소', scale:0.5,  cap:1,   shadow:false, msaa:false, fx:false, splat:false, piece:false, blood:80 },
-    { name:'보통', scale:0.75, cap:1.5, shadow:true,  msaa:false, fx:true,  splat:true,  piece:true,  blood:260 },
-    { name:'높음', scale:1,    cap:2,   shadow:true,  msaa:false, fx:true,  splat:true,  piece:true,  blood:400 },
-    { name:'최고', scale:1.5,  cap:3,   shadow:true,  msaa:true,  fx:true,  splat:true,  piece:true,  blood:600 },
+    { name:'최소', scale:0.5,  cap:1,   shadow:false, msaa:false, fx:false, splat:true, piece:true, blood:150, every:3 },
+    { name:'보통', scale:0.75, cap:1.5, shadow:true,  msaa:false, fx:false, splat:true, piece:true, blood:260, every:3 },
+    { name:'높음', scale:1,    cap:2,   shadow:true,  msaa:false, fx:true,  splat:true, piece:true, blood:400, every:2 },
+    { name:'최고', scale:1.5,  cap:3,   shadow:true,  msaa:true,  fx:true,  splat:true, piece:true, blood:600, every:1 },
   ];
   const setLevel = i => {
     const L = LEVELS[Math.max(0, Math.min(LEVELS.length-1, i))];
@@ -5476,6 +5500,7 @@ addEventListener('keyup', e => { keys[e.code] = false; });
     put('pScale', L.scale); put('pCap', L.cap); put('pBlood', L.blood);
     put('pShadow', L.shadow); put('pMsaa', L.msaa); put('pFx', L.fx);
     put('pSplat', L.splat); put('pPiece', L.piece);
+    shadowEvery = L.every;
     const q = document.getElementById('pQ'); q.value = i; document.getElementById('pQv').textContent = L.name;
     showNote();
   };
@@ -5543,6 +5568,9 @@ function pf(name, fn){
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const rdt = clock.getDelta();
+  if (paused){ renderer.shadowMap.needsUpdate = true; if (fxOn) composer.render(); else renderer.render(scene, camera); return; }
+  shadowTick = (shadowTick + 1) % Math.max(1, shadowEvery);
+  renderer.shadowMap.needsUpdate = renderer.shadowMap.enabled && shadowTick === 0;
   const cineScale = cine.active ? updateCinematic(rdt) : 1;
   let ks = 1;
   /* 베는 프레임은 분할·강체 생성으로 300ms 씩 걸린다. rdt 를 그대로 빼면 슬로모·히트스톱이 그 렉 한 프레임에 통째로 사라진다 → 감산은 50ms 로 자른다 */
@@ -5605,7 +5633,7 @@ renderer.setAnimationLoop(() => {
     gradePass.uniforms.chroma.value = feel.chroma; gradePass.uniforms.hitVig.value = feel.vig;
     gradePass.uniforms.hitFlash.value = feel.flash*hitFlashMul; }
   gradePass.uniforms.time.value = clock.elapsedTime;
-  pf("render", () => composer.render());
+  pf("render", () => { if (fxOn) composer.render(); else renderer.render(scene, camera); });
   if (prof.on) prof.n++;
 });
 
