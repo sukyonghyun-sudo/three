@@ -108,23 +108,44 @@
   /* ===== 모바일 ===== */
   html,body{overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;
             -webkit-tap-highlight-color:transparent}
-  #padHelp{display:none}                       /* 키보드 안내는 필요 없다 */
+  #padHelp{display:none}
   #pad{right:calc(16px + env(safe-area-inset-right));bottom:calc(20px + env(safe-area-inset-bottom));gap:12px}
   #atkBtn{padding:24px 34px;font-size:18px}
   #critBtn,#rollBtn{padding:14px 18px;font-size:14px}
   #pad button{touch-action:none}
-  /* 조이스틱 */
   #stick{position:absolute;left:calc(22px + env(safe-area-inset-left));bottom:calc(22px + env(safe-area-inset-bottom));
          width:138px;height:138px;border-radius:50%;border:1px solid var(--line);
          background:rgba(18,22,26,.42);backdrop-filter:blur(4px);touch-action:none;z-index:6}
   #stickNub{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;
             background:rgba(95,211,196,.30);border:1px solid var(--cool);pointer-events:none;
             transition:transform .06s linear}
-  /* 패널 열기 */
-  #uiBtn{position:absolute;top:calc(10px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));
-         z-index:8;width:40px;height:40px;border-radius:9px;border:1px solid var(--line);
-         background:rgba(18,22,26,.8);color:var(--ink);font-size:17px;cursor:pointer;touch-action:manipulation}
-  body:not(.uiHidden) #stick,body:not(.uiHidden) #pad{display:none}   /* 패널 볼 땐 조작부를 치운다 */
+  .topbtn{position:absolute;top:calc(10px + env(safe-area-inset-top));z-index:8;height:40px;min-width:40px;padding:0 11px;
+          border-radius:9px;border:1px solid var(--line);background:rgba(18,22,26,.8);color:var(--ink);
+          font:inherit;font-size:15px;cursor:pointer;touch-action:manipulation}
+  #uiBtn{right:calc(10px + env(safe-area-inset-right))}
+  #perfBtn{right:calc(58px + env(safe-area-inset-right))}
+  #fpsTag{position:absolute;top:calc(10px + env(safe-area-inset-top));left:calc(10px + env(safe-area-inset-left));
+          z-index:8;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--dim);
+          background:rgba(18,22,26,.8);border:1px solid var(--line);border-radius:6px;padding:5px 9px}
+  /* 성능 패널 — 데스크톱 좌우 패널과 별개의 가벼운 오버레이 */
+  #perf{position:absolute;top:calc(58px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));
+        z-index:9;width:min(320px,calc(100vw - 20px));max-height:72vh;overflow:auto;display:none;
+        background:rgba(18,22,26,.95);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+        backdrop-filter:blur(8px);touch-action:pan-y}
+  #perf.on{display:block}
+  #perf h3{margin:0 0 10px;font-size:13px;color:var(--hot);font-weight:600}
+  #perf .pr{display:flex;align-items:center;gap:10px;margin:11px 0}
+  #perf .pr label{flex:0 0 96px;font-size:12px;color:var(--dim)}
+  #perf .pr input[type=range]{flex:1;accent-color:var(--cool);height:26px}
+  #perf .pr output{flex:0 0 46px;text-align:right;font-family:"IBM Plex Mono",monospace;font-size:12px}
+  #perf .pc{display:flex;align-items:center;gap:9px;margin:11px 0;font-size:12.5px}
+  #perf .pc input{width:20px;height:20px;accent-color:var(--cool)}
+  #perf .pb{display:flex;gap:8px;margin-top:12px}
+  #perf .pb button{flex:1;padding:10px 0;font:inherit;font-size:12px;border-radius:7px;cursor:pointer;
+                   border:1px solid var(--line);background:rgba(95,211,196,.12);color:#b6f0e7}
+  #perf .note{font-size:11px;color:var(--dim);margin:10px 0 0;line-height:1.5}
+  body:not(.uiHidden) #stick,body:not(.uiHidden) #pad,body:not(.uiHidden) #perf,
+  body:not(.uiHidden) #perfBtn,body:not(.uiHidden) #fpsTag{display:none}
 </style>
 </head>
 <body class="uiHidden">
@@ -165,8 +186,8 @@
   </div>
   <div class="group">
     <h2>화질</h2>
-    <div class="row"><label for="rScale">렌더 배율</label><input id="rScale" type="range" min="0.75" max="2" step="0.25" value="1.5"><output id="rScalev">1.50</output></div>
-    <label class="check"><input type="checkbox" id="msaaChk" checked> 안티에일리어싱 (MSAA)</label>
+    <div class="row"><label for="rScale">렌더 배율</label><input id="rScale" type="range" min="0.5" max="2" step="0.25" value="0.75"><output id="rScalev">1.50</output></div>
+    <label class="check"><input type="checkbox" id="msaaChk"> 안티에일리어싱 (MSAA)</label>
     <p class="sub" id="qualNote" style="margin:6px 0 0"></p>
   </div>
 </section>
@@ -191,7 +212,23 @@
   </div>
 </div>
 
-<button id="uiBtn" title="설정">⚙</button>
+<div id="fpsTag">—</div>
+<button id="perfBtn" class="topbtn" title="성능">FPS</button>
+<button id="uiBtn" class="topbtn" title="설정">⚙</button>
+<div id="perf">
+  <h3>성능</h3>
+  <div class="pr"><label for="pQ">화질 단계</label><input id="pQ" type="range" min="0" max="3" step="1" value="1"><output id="pQv">보통</output></div>
+  <div class="pr"><label for="pScale">렌더 배율</label><input id="pScale" type="range" min="0.5" max="2" step="0.25" value="0.75"><output id="pScalev">0.75</output></div>
+  <div class="pr"><label for="pCap">배율 상한</label><input id="pCap" type="range" min="1" max="3" step="0.5" value="1.5"><output id="pCapv">1.5</output></div>
+  <label class="pc"><input type="checkbox" id="pShadow" checked> 그림자</label>
+  <label class="pc"><input type="checkbox" id="pMsaa"> 안티에일리어싱</label>
+  <label class="pc"><input type="checkbox" id="pFx" checked> 화면 필터</label>
+  <label class="pc"><input type="checkbox" id="pSplat" checked> 바닥 핏자국</label>
+  <label class="pc"><input type="checkbox" id="pPiece" checked> 잘린 조각 남기기</label>
+  <div class="pr"><label for="pBlood">피의 양</label><input id="pBlood" type="range" min="10" max="1200" step="10" value="260"><output id="pBloodv">260</output></div>
+  <div class="pb"><button id="pLow">최소</button><button id="pMid">보통</button><button id="pHigh">최고</button></div>
+  <p class="note" id="pNote">—</p>
+</div>
 <aside>
   <div id="tabs">
     <button id="tab-motion" aria-selected="true">모션</button>
@@ -1188,8 +1225,8 @@ const setStatus = (m, err=false) => { statusEl.innerHTML = m; statusEl.classList
 const renderer = new THREE.WebGLRenderer({ antialias:true });
 /* 화질 — 후처리 체인을 쓰면 캔버스의 antialias 옵션이 무력화된다(장면을 오프스크린 타깃에 그리므로).
    그래서 ① 표시 해상도보다 크게 렌더해 축소하고(RENDER_SCALE), ② 컴포저 타깃에 MSAA 를 직접 켠다(아래 화면 필터 섹션). */
-const RENDER_SCALE = 1.5;                       // 프레임이 부족해지면 1.0 으로 내리면 된다
-renderer.setPixelRatio(devicePixelRatio * RENDER_SCALE);   // 모바일: 상한 없음
+const RENDER_SCALE = 0.75;   // 모바일 기본 — 성능 패널에서 조절                       // 프레임이 부족해지면 1.0 으로 내리면 된다
+renderer.setPixelRatio(Math.min(devicePixelRatio * RENDER_SCALE, 2));
 const MAX_ANISO = renderer.capabilities.getMaxAnisotropy();
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1228,7 +1265,7 @@ controls.maxPolarAngle = Math.PI*0.49;
 const hemi = new THREE.HemisphereLight(0xffffff, 0x8899aa, 1.6); scene.add(hemi);
 const key = new THREE.DirectionalLight(0xffffff, 2.0);
 key.position.set(3, 6, 4); key.castShadow = true;
-key.shadow.mapSize.set(2048, 2048);
+key.shadow.mapSize.set(1024, 1024);   // 모바일 — 2048 은 과하다
 key.shadow.camera.top = 5; key.shadow.camera.bottom = -5;
 key.shadow.camera.left = -5; key.shadow.camera.right = 5;
 key.shadow.bias = -0.0008;
@@ -1320,9 +1357,10 @@ composer.addPass(new OutputPass());
 const gradePass = new ShaderPass(GradeShader);
 composer.addPass(gradePass);
 
-let renderScale = RENDER_SCALE, msaaOn = MSAA > 0;
+let prCap = 1.5;                                   // 실효 픽셀 배율 상한 (성능 패널)
+let renderScale = RENDER_SCALE, msaaOn = false;    // 모바일 기본: MSAA 끔
 function applyQuality(){
-  renderer.setPixelRatio(devicePixelRatio * renderScale);    // 모바일: 상한 없음
+  renderer.setPixelRatio(Math.min(devicePixelRatio * renderScale, prCap));
   const n = msaaOn ? MSAA : 0;
   for (const rt of [composer.renderTarget1, composer.renderTarget2]){ rt.samples = n; rt.dispose(); }   // 다음 렌더에서 새 샘플 수로 다시 만들어진다
   resize();
@@ -5249,7 +5287,7 @@ gradePass.uniforms.amt.value = parseFloat(document.getElementById('fxAmt').value
    배치 관련 값(맵 위치, 적 위치)은 맵 로딩이 다시 계산하므로 제외한다. */
 /* v3 — 체력·끝없이 몰려오기에 더해 전투 밸런스 기본값(피해 9→5, 산포 4→7)이 바뀌어 또 올린다.
    v1 을 그대로 두면 예전에 저장된 체력 100·무적 켜짐이 새 기본값을 덮어쓴다. */
-const SAVE_KEY = 'motionViewer.settings.v13';
+const SAVE_KEY = 'motionViewer.mobile.v1';
 // godChk(무적)는 디버그 토글이라 저장하지 않는다 — 저장되면 다음 실행에 켜진 채로 시작한다
 const SAVE_SKIP = new Set(['mScale','mY','mX','mZ','mRot','dumX','dumR','godChk','aiChk','autoFireChk','fxAmt','fxMode','bgPick','bgAmt','comboChk']);   // 콤보는 기본 기능 — 예전 저장값(꺼짐)이 덮지 않게 제외   // 화면 필터·배경색은 고정 기본 — 저장값이 덮지 않는다
 let autoSave = true, saveTimer = null;
@@ -5374,7 +5412,6 @@ addEventListener('keyup', e => { keys[e.code] = false; });
   stick.addEventListener('pointerup', stickUp);
   stick.addEventListener('pointercancel', stickUp);
 
-  /* 버튼 — 눌리는 순간 바로 반응 */
   const hold = (id, fn) => {
     const el = document.getElementById(id); if (!el) return;
     el.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); bgmTry(); fn(); });
@@ -5390,8 +5427,90 @@ addEventListener('keyup', e => { keys[e.code] = false; });
     uiBtn.textContent = document.body.classList.contains('uiHidden') ? '⚙' : '✕';
     resize();
   });
-  /* 화면을 돌리면 크기가 바로 안 잡히는 기기가 있다 — 한 박자 뒤 다시 맞춘다 */
   addEventListener('orientationchange', () => setTimeout(resize, 350));
+
+  /* ===== 성능 패널 =====
+     본편 컨트롤을 그대로 움직여 준다 — 로직을 두 벌 두지 않으려고 값만 넣고 이벤트를 쏜다. */
+  const perf = document.getElementById('perf'), perfBtn = document.getElementById('perfBtn');
+  perfBtn.addEventListener('pointerdown', e => { e.preventDefault(); perf.classList.toggle('on'); });
+  const drive = (id, v) => {
+    const el = document.getElementById(id); if (!el) return;
+    if (el.type === 'checkbox'){ if (el.checked === v) return; el.checked = v; el.dispatchEvent(new Event('change')); }
+    else { el.value = v; el.dispatchEvent(new Event('input')); }
+  };
+  const note = document.getElementById('pNote');
+  const showNote = () => {
+    const c = renderer.domElement;
+    note.textContent = '그리는 화소 ' + c.width + '×' + c.height +
+      ' · 기기 배율 ' + (+devicePixelRatio.toFixed(2)) + ' · 실효 ' + (+renderer.getPixelRatio().toFixed(2));
+  };
+  const P = (id, fmt, fn) => {
+    const el = document.getElementById(id), out = document.getElementById(id + 'v');
+    el.addEventListener('input', () => { const v = parseFloat(el.value); if (out) out.textContent = fmt(v); fn(v); showNote(); });
+  };
+  P('pScale', v => v.toFixed(2), v => drive('rScale', v));
+  P('pCap',   v => v.toFixed(1), v => { prCap = v; applyQuality(); });
+  P('pBlood', v => String(Math.round(v)), v => drive('bAmt', v));
+  const C = (id, fn) => { const el = document.getElementById(id); el.addEventListener('change', () => { fn(el.checked); showNote(); }); };
+  C('pShadow', v => drive('shadowChk', v));
+  C('pMsaa',   v => drive('msaaChk', v));
+  C('pSplat',  v => drive('splatChk', v));
+  C('pPiece',  v => drive('pieceChk', v));
+  C('pFx',     v => { gradePass.enabled = v; });
+
+  /* 한 번에 바꾸는 단계 — 값을 하나씩 만지지 않아도 되게 */
+  const LEVELS = [
+    { name:'최소', scale:0.5,  cap:1,   shadow:false, msaa:false, fx:false, splat:false, piece:false, blood:80 },
+    { name:'보통', scale:0.75, cap:1.5, shadow:true,  msaa:false, fx:true,  splat:true,  piece:true,  blood:260 },
+    { name:'높음', scale:1,    cap:2,   shadow:true,  msaa:false, fx:true,  splat:true,  piece:true,  blood:400 },
+    { name:'최고', scale:1.5,  cap:3,   shadow:true,  msaa:true,  fx:true,  splat:true,  piece:true,  blood:600 },
+  ];
+  const setLevel = i => {
+    const L = LEVELS[Math.max(0, Math.min(LEVELS.length-1, i))];
+    const put = (id, v) => {
+      const el = document.getElementById(id), out = document.getElementById(id+'v');
+      if (el.type === 'checkbox'){ el.checked = v; el.dispatchEvent(new Event('change')); }
+      else { el.value = v; if (out) out.textContent = (id === 'pBlood') ? String(v) : v.toFixed(id === 'pCap' ? 1 : 2);
+             el.dispatchEvent(new Event('input')); }
+    };
+    put('pScale', L.scale); put('pCap', L.cap); put('pBlood', L.blood);
+    put('pShadow', L.shadow); put('pMsaa', L.msaa); put('pFx', L.fx);
+    put('pSplat', L.splat); put('pPiece', L.piece);
+    const q = document.getElementById('pQ'); q.value = i; document.getElementById('pQv').textContent = L.name;
+    showNote();
+  };
+  document.getElementById('pQ').addEventListener('input', e => setLevel(parseInt(e.target.value, 10)));
+  document.getElementById('pLow').addEventListener('pointerdown', e => { e.preventDefault(); setLevel(0); });
+  document.getElementById('pMid').addEventListener('pointerdown', e => { e.preventDefault(); setLevel(1); });
+  document.getElementById('pHigh').addEventListener('pointerdown', e => { e.preventDefault(); setLevel(3); });
+
+  /* FPS — 어떤 설정이 실제로 듣는지 눈으로 보려면 숫자가 있어야 한다 */
+  const fpsTag = document.getElementById('fpsTag');
+  let fN = 0, fT = performance.now();
+  const tick = () => {
+    fN++;
+    const now = performance.now();
+    if (now - fT >= 500){ fpsTag.textContent = (fN*1000/(now - fT)).toFixed(0) + ' fps'; fN = 0; fT = now; }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+
+  /* 패널 눈금을 실제 상태에 맞춘다 — 저장된 설정이 복원돼 있으면 그쪽이 진짜다 */
+  const syncPanel = () => {
+    const get = id => document.getElementById(id);
+    const pairs = [['pScale','rScale'],['pBlood','bAmt']];
+    for (const [p, mgl] of pairs){
+      const a = get(p), b = get(mgl); if (!a || !b) continue;
+      a.value = b.value; const o = get(p + 'v');
+      if (o) o.textContent = (p === 'pBlood') ? String(Math.round(+b.value)) : (+b.value).toFixed(2);
+    }
+    for (const [p, mgl] of [['pShadow','shadowChk'],['pMsaa','msaaChk'],['pSplat','splatChk'],['pPiece','pieceChk']]){
+      const a = get(p), b = get(mgl); if (a && b) a.checked = b.checked;
+    }
+    showNote();
+  };
+  setTimeout(syncPanel, 800);   // 설정 복원과 첫 레이아웃이 끝난 뒤
+  showNote();
 }
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
