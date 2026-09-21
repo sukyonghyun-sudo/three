@@ -22,7 +22,19 @@
   #fxToggle{position:absolute;left:16px;top:124px;z-index:5;background:rgba(18,22,26,.8);border:1px solid var(--line);color:var(--dim);
     font:inherit;font-size:11.5px;border-radius:6px;padding:5px 9px;cursor:pointer}
   #fxToggle:hover{color:var(--ink);border-color:#46535f}
-  @media (max-width:1180px){ #fxSide{display:none} #fxToggle{display:none} }
+  /* 크리티컬 전용 패널 — 왼쪽, 박진감 패널 위 */
+  #critSide{width:300px;flex:none;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:16px 16px 28px}
+  #critSide::-webkit-scrollbar{width:8px} #critSide::-webkit-scrollbar-thumb{background:#2f3942;border-radius:8px}
+  body.uiHidden #critSide{display:none}
+  /* 발동 가능 안내 — 화면 아래쪽 가운데 */
+  #critReady{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);z-index:6;pointer-events:none;
+    display:none;align-items:center;gap:10px;background:rgba(18,22,26,.72);border:1px solid #ff5a6e;border-radius:9px;
+    padding:9px 16px;box-shadow:0 0 22px rgba(255,60,90,.35)}
+  #critReady.on{display:flex;animation:critPulse .7s ease-in-out infinite alternate}
+  @keyframes critPulse{from{box-shadow:0 0 14px rgba(255,60,90,.25)}to{box-shadow:0 0 30px rgba(255,60,90,.6)}}
+  #critReady b{font-family:"IBM Plex Mono",monospace;font-size:15px;color:#fff;border:1px solid #ff5a6e;border-radius:5px;padding:2px 9px}
+  #critReady span{font-size:13px;color:#ffc2cb;letter-spacing:.06em}
+  @media (max-width:1180px){ #fxSide{display:none} #critSide{display:none} #fxToggle{display:none} }
   canvas{display:block}
   aside{width:362px;flex:none;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column}
   #tabs{display:flex;border-bottom:1px solid var(--line);flex:none}
@@ -105,6 +117,24 @@
   body.dead #dead{display:flex}
   @media (max-width:820px){ body{flex-direction:column} aside{width:100%;border-left:none;border-top:1px solid var(--line);max-height:48vh} #stage{height:52vh} }
 
+
+  /* ===== 시작 로딩 ===== */
+  #boot{position:fixed;inset:0;z-index:120;background:#0d1114;display:flex;flex-direction:column;
+        align-items:center;justify-content:center;gap:18px;transition:opacity .45s}
+  #boot.gone{opacity:0;pointer-events:none}
+  #bootTitle{font-size:19px;font-weight:600;letter-spacing:.18em;color:var(--hot)}
+  #bootBar{position:relative;width:min(420px,62vw);height:7px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
+  /* 진행률은 transform 으로 — width 와 달리 컴포지터에서 도는 값이라 파싱이 스레드를 잡고 있어도 멈추지 않는다 */
+  #bootFill{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:left center;
+            background:linear-gradient(90deg,var(--hot),#ff6a3a);transition:transform .45s ease-out;will-change:transform}
+  /* 살아 있다는 표시 — 진행률과 무관하게 계속 흐른다. 이것도 transform 이라 블록 중에도 움직인다 */
+  #bootBar::after{content:"";position:absolute;inset:0;border-radius:4px;will-change:transform;
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.20) 45%,rgba(255,255,255,.28) 50%,rgba(255,255,255,.20) 55%,transparent 100%);
+    animation:bootSweep 1.15s linear infinite}
+  #boot.gone #bootBar::after{animation:none}
+  @keyframes bootSweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+  #bootTxt{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--dim);min-height:1.2em}
+
   /* ===== 모바일 ===== */
   html,body{overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;
             -webkit-tap-highlight-color:transparent}
@@ -153,7 +183,34 @@
 </style>
 </head>
 <body class="uiHidden">
+<div id="boot">
+  <div id="bootTitle">JEFF</div>
+  <div id="bootBar"><i id="bootFill"></i></div>
+  <div id="bootTxt">준비 중…</div>
+</div>
 
+<section id="critSide">
+  <div class="group">
+    <h2>크리티컬</h2>
+    <p class="sub" style="margin:0 0 10px">적을 바라보고 가까이 있을 때만 발동합니다. 가능해지면 화면에 표시됩니다.</p>
+    <div class="row"><label for="critRange">사거리</label><input id="critRange" type="range" min="1" max="8" data-fine="0.2" step="any" value="3.4"><output id="critRangev">3.4</output></div>
+    <div class="row"><label for="critAngle">시야각</label><input id="critAngle" type="range" min="10" max="180" data-fine="5" step="any" value="55"><output id="critAnglev">55</output></div>
+    <div class="row"><label for="cineS">재생 속도</label><input id="cineS" type="range" min="0.3" max="2" data-fine="0.05" step="any" value="1.15"><output id="cineSv">1.15</output></div>
+    <div class="row"><label for="critAuto">자동 발동 확률</label><input id="critAuto" type="range" min="0" max="0.5" data-fine="0.02" step="any" value="0.10"><output id="critAutov">0.10</output></div>
+    <div class="row"><label for="critCool">쿨타임(초)</label><input id="critCool" type="range" min="0" max="20" data-fine="0.5" step="any" value="8"><output id="critCoolv">8.0</output></div>
+    <div class="row"><label for="cineZ">화각</label><input id="cineZ" type="range" min="12" max="90" data-fine="0.5" step="any" value="38"><output id="cineZv">38</output></div>
+    <label class="check"><input type="checkbox" id="letterChk" checked> 레터박스</label>
+    <label class="check"><input type="checkbox" id="critHudChk" checked> 발동 가능 표시</label>
+  </div>
+  <div class="group">
+    <h2>카메라 연출</h2>
+    <div class="chips" id="critCamList"></div>
+    <p class="sub" style="margin:8px 0 0" id="critCamNote">—</p>
+    <div class="row" style="margin-top:10px"><label for="critShake">흔들림</label><input id="critShake" type="range" min="0" max="3" data-fine="0.1" step="any" value="1"><output id="critShakev">1.0</output></div>
+    <div class="row"><label for="critCutT">컷 전환</label><input id="critCutT" type="range" min="0.02" max="0.8" data-fine="0.02" step="any" value="0.07"><output id="critCutTv">0.07</output></div>
+    <div class="btnline" style="margin-top:10px"><button class="mini" id="critTestBtn">지금 발동 (C)</button></div>
+  </div>
+</section>
 <section id="fxSide">
   <div class="group" id="feelGroup">
     <h2>박진감</h2>
@@ -202,6 +259,7 @@
   <div class="bar" id="barTop"></div>
   <div class="bar" id="barBot"></div>
   <div id="cineLabel">CRITICAL</div>
+  <div id="critReady"><b>C</b><span>크리티컬 가능</span></div>
   <div id="hp"><div id="hpFill"></div><span id="hpText">100</span></div>
   <div id="kills">처치 <b id="killN">0</b></div>
   <div id="hurt"></div>
@@ -271,8 +329,6 @@
       <div class="row"><label for="bgmVol">음량</label><input id="bgmVol" type="range" min="0" max="3" data-fine="0.02" step="any" value="0.4"><output id="bgmVolv">0.40</output></div>
       <div class="row"><label for="sfxVol">총소리</label><input id="sfxVol" type="range" min="0" max="3" data-fine="0.02" step="any" value="0.5"><output id="sfxVolv">0.50</output></div>
       <div class="row"><label for="goreVol">절단음</label><input id="goreVol" type="range" min="0" max="3" data-fine="0.02" step="any" value="0.65"><output id="goreVolv">0.65</output></div>
-      <div class="row"><label for="tauntVol">등장 대사</label><input id="tauntVol" type="range" min="0" max="3" data-fine="0.02" step="any" value="0.8"><output id="tauntVolv">0.80</output></div>
-      <div class="row"><label for="tauntChance">└ 재생 빈도</label><input id="tauntChance" type="range" min="0" max="1" data-fine="0.05" step="any" value="0.25"><output id="tauntChancev">0.25</output></div>
       <div class="row"><label for="screamVol">죽는 소리</label><input id="screamVol" type="range" min="0" max="3" data-fine="0.02" step="any" value="0.8"><output id="screamVolv">0.80</output></div>
       <label class="check"><input type="checkbox" id="flipChk"> 캐릭터 정면 반전</label>
       <div class="row"><label for="mspd">달리기</label><input id="mspd" type="range" min="0.2" max="14" data-fine="0.05" step="any" value="4.8"><output id="mspdv">4.80</output></div>
@@ -295,6 +351,7 @@
       <div class="row"><label for="jumpAtk">점프 공격 확률</label><input id="jumpAtk" type="range" min="0" max="1" data-fine="0.05" step="any" value="0.35"><output id="jumpAtkv">0.35</output></div>
       <div class="row"><label for="jumpSplit">└ 세로 절단 확률</label><input id="jumpSplit" type="range" min="0" max="1" data-fine="0.05" step="any" value="0.7"><output id="jumpSplitv">0.70</output></div>
       <div class="row"><label for="upperAtk">올려베기 확률</label><input id="upperAtk" type="range" min="0" max="1" data-fine="0.05" step="any" value="0.30"><output id="upperAtkv">0.30</output></div>
+      <div class="row"><label for="specialCool">특수 공격 대기(초)</label><input id="specialCool" type="range" min="0" max="20" data-fine="0.5" step="any" value="5"><output id="specialCoolv">5.0</output></div>
       <div class="row"><label for="comboOpen">연결 시점</label><input id="comboOpen" type="range" min="0.15" max="0.95" data-fine="0.05" step="any" value="0.7"><output id="comboOpenv">0.70</output></div>
       <label class="check"><input type="checkbox" id="rollCancelChk" checked> 후딜에 회피로 캔슬</label>
     </div>
@@ -423,8 +480,8 @@
       <div class="row"><label for="sOffY">탄피 상하</label><input id="sOffY" type="range" min="-0.3" max="0.3" data-fine="0.005" step="any" value="0"><output id="sOffYv">0.000</output></div>
       <div class="row"><label for="sOffZ">탄피 앞뒤</label><input id="sOffZ" type="range" min="-0.3" max="0.3" data-fine="0.005" step="any" value="0"><output id="sOffZv">0.000</output></div>
       <label class="check"><input type="checkbox" id="smokeChk" checked> 총구 연기</label>
-      <div class="row"><label for="smkLife">연기 지속</label><input id="smkLife" type="range" min="0.3" max="5" data-fine="0.1" step="any" value="1.4"><output id="smkLifev">1.40</output></div>
-      <div class="row"><label for="smkAmt">연기 농도</label><input id="smkAmt" type="range" min="0" max="1" data-fine="0.02" step="any" value="0.5"><output id="smkAmtv">0.50</output></div>
+      <div class="row"><label for="smkLife">연기 지속</label><input id="smkLife" type="range" min="0.3" max="5" data-fine="0.1" step="any" value="0.8"><output id="smkLifev">0.80</output></div>
+      <div class="row"><label for="smkAmt">연기 농도</label><input id="smkAmt" type="range" min="0" max="1" data-fine="0.02" step="any" value="0.26"><output id="smkAmtv">0.26</output></div>
       <div class="row"><label for="smkLen">분출 길이</label><input id="smkLen" type="range" min="0" max="0.4" data-fine="0.01" step="any" value="0.06"><output id="smkLenv">0.06</output></div>
       <div class="btnline"><button class="mini" id="fireBtn">한 발 쏘기 (G)</button></div>
     </div>
@@ -486,8 +543,25 @@
       <label class="check"><input type="checkbox" id="mShadowChk" checked> 맵에 그림자 받기</label>
       <label class="check"><input type="checkbox" id="mWalkChk" checked> 지형 굴곡 따라가기</label>
       <label class="check"><input type="checkbox" id="mWireChk"> 와이어프레임</label>
+      <label class="check"><input type="checkbox" id="sky1Chk"> 배경 원본 크기 (1:1 · 늘리지 않음)</label>
+      <p class="sub" style="margin:6px 0 0">텍스처 1픽셀 = 화면 1픽셀. 선명한 대신 화면이 텍스처보다 크면 좌우로 반복됩니다.</p>
       <pre id="mOut">—</pre>
       <div class="btnline"><button class="mini" id="mCopyBtn">배치 값 복사</button></div>
+    </div>
+    <div class="group">
+      <h2>배경 색·톤</h2>
+      <p class="sub" style="margin:0 0 8px">마음에 드는 값을 찾으면 [값 복사] 를 눌러 그대로 보내 주세요. 기본값으로 박아 드립니다.</p>
+      <div class="row"><label for="bgTint">색조</label><input id="bgTint" type="color" value="#ffffff"></div>
+      <div class="row"><label for="bgTintA">색조 세기</label><input id="bgTintA" type="range" min="0" max="1" data-fine="0.02" step="any" value="0.42"><output id="bgTintAv">0.42</output></div>
+      <div class="row"><label for="bgBright">밝기</label><input id="bgBright" type="range" min="0.2" max="2.5" data-fine="0.02" step="any" value="0.77"><output id="bgBrightv">0.77</output></div>
+      <div class="row"><label for="bgSat">채도</label><input id="bgSat" type="range" min="0" max="2.5" data-fine="0.02" step="any" value="1.03"><output id="bgSatv">1.03</output></div>
+      <div class="row"><label for="bgCon">대비</label><input id="bgCon" type="range" min="0.3" max="2.2" data-fine="0.02" step="any" value="1.1"><output id="bgConv">1.10</output></div>
+      <div class="btnline">
+        <button class="mini" id="bgCopyBtn">값 복사</button>
+        <button class="mini" id="bgSaveBtn">저장</button>
+        <button class="mini" id="bgResetBtn">기본값</button>
+      </div>
+      <pre id="bgOut" style="margin:8px 0 0">—</pre>
     </div>
   </div>
 
@@ -501,10 +575,6 @@
       <div class="row"><label for="cutGate">판정 시점</label><input id="cutGate" type="range" min="0" max="0.95" data-fine="0.01" step="any" value="0.30"><output id="cutGatev">0.30</output></div>
       <div class="row"><label for="cutSpd">최소 칼속도</label><input id="cutSpd" type="range" min="0.3" max="8" data-fine="0.1" step="any" value="2.2"><output id="cutSpdv">2.2</output></div>
       <div class="row"><label for="hitR">판정 여유</label><input id="hitR" type="range" min="0" max="1.2" data-fine="0.01" step="any" value="0.1"><output id="hitRv">0.10</output></div>
-      <h2 style="margin-top:14px">크리티컬 연출</h2>
-      <div class="row"><label for="cineS">느리게</label><input id="cineS" type="range" min="0.02" max="1" data-fine="0.01" step="any" value="0.16"><output id="cineSv">0.16</output></div>
-      <div class="row"><label for="cineZ">화각</label><input id="cineZ" type="range" min="12" max="90" data-fine="0.5" step="any" value="38"><output id="cineZv">38</output></div>
-      <label class="check"><input type="checkbox" id="letterChk" checked> 레터박스</label>
       <h2 style="margin-top:14px">콤보</h2>
       <p class="sub" style="margin:8px 0 0">공격 중 아무 때나 누르면 다음 타가 예약되고, 클립이 연결 시점을 지나면 바로 이어집니다. 콤보: 베기 → 2타.</p>
     </div>
@@ -680,31 +750,41 @@ async function createDebrisPhysics(THREE){
       o.skeleton.update();
       const g=o.geometry, idx=g.index, si=g.attributes.skinIndex, sw=g.attributes.skinWeight;
       const names=o.skeleton.bones.map(b=>region(b.name));
-      const cache=new Map();
+      /* 부위 이름을 작은 정수로 바꿔 둔다 — 삼각형마다 Map 을 새로 채우면 조각 하나에 17ms 가 든다 */
+      const regName=[], idOf=new Map();
+      const idFor = nm => { let id=idOf.get(nm); if (id===undefined){ id=regName.length; idOf.set(nm,id); regName.push(nm); } return id; };
+      const torsoId = idFor('torso');
+      const boneReg = Int32Array.from(names, nm => idFor(nm || 'torso'));
+      const acc = new Float32Array(regName.length);
+      /* 정점 위치 캐시 — Vector3 를 정점마다 만들지 않고 평면 배열에 둔다 */
+      const nV=g.attributes.position.count, cachePos=new Float32Array(nV*3), cached=new Uint8Array(nV);
+      const _p=new THREE.Vector3();
       const vertex = i => {
-        if (!cache.has(i)){
+        if (!cached[i]){
           o.getVertexPosition(i,v); // 절단 순간 스키닝된 표면. T포즈 박스나 관절점이 아니다.
           v.applyMatrix4(o.matrixWorld).applyMatrix4(inv);
-          cache.set(i,v.clone());
+          cachePos[i*3]=v.x; cachePos[i*3+1]=v.y; cachePos[i*3+2]=v.z; cached[i]=1;
         }
-        return cache.get(i);
+        return _p.set(cachePos[i*3],cachePos[i*3+1],cachePos[i*3+2]);
       };
+      const ids=[0,0,0];
       for (let t=0;t<idx.count;t+=3){
-        const ids=[idx.getX(t),idx.getX(t+1),idx.getX(t+2)];
-        const weights=new Map();
+        ids[0]=idx.getX(t); ids[1]=idx.getX(t+1); ids[2]=idx.getX(t+2);
+        acc.fill(0);
         for (const i of ids) for (let k=0;k<4;k++){
-          const key=names[si.getComponent(i,k)] || 'torso';
-          weights.set(key,(weights.get(key)||0)+sw.getComponent(i,k));
+          const bi=si.getComponent(i,k);
+          acc[bi < boneReg.length ? boneReg[bi] : torsoId] += sw.getComponent(i,k);
         }
-        let best='torso', weight=-1;
-        for (const [key,w] of weights) if (w>weight){ best=key; weight=w; }
+        let bestId=torsoId, weight=-1;
+        for (let r=0;r<acc.length;r++) if (acc[r]>weight){ bestId=r; weight=acc[r]; }
+        const best=regName[bestId];
         if (!groups.has(best)) groups.set(best,new Map());
         const group=groups.get(best);
         for (const i of ids){
           const p=vertex(i);
           // 8mm 셀의 중복만 줄인다. 점을 셀 중심으로 옮기지 않고 실제 표면 좌표를 유지한다.
-          const key=Math.round(p.x/0.008)+','+Math.round(p.y/0.008)+','+Math.round(p.z/0.008);
-          if (!group.has(key)) group.set(key,p);
+          const key=((Math.round(p.x/0.008)+32768)*65536+(Math.round(p.y/0.008)+32768))*65536+(Math.round(p.z/0.008)+32768);
+          if (!group.has(key)) group.set(key,p.clone());   // 재사용 벡터라 여기서만 복제한다
         }
       }
     });
@@ -719,7 +799,7 @@ async function createDebrisPhysics(THREE){
     }
     if (!shapes.length) throw new Error('조각 표면에서 유효한 충돌 형상을 만들지 못했습니다.');
     const size = bounds.getSize(new THREE.Vector3());
-    console.log('[DEBRIS] surface extent(m)=', size.toArray().map(n=>n.toFixed(3)).join(','));
+    if (api.trace) console.log('[DEBRIS] surface extent(m)=', size.toArray().map(n=>n.toFixed(3)).join(','));
     if (![size.x,size.y,size.z].every(Number.isFinite) || size.length()<0.03)
       throw new Error('조각 표면 크기가 비정상입니다. 스킨 변환 행렬을 확인하세요.');
     // 상한도 본다. 부모 스케일이 붙은 노드를 넘기면 로컬 좌표가 FBX 단위(≈100배)로 나와
@@ -749,7 +829,7 @@ async function createDebrisPhysics(THREE){
     if (v.y > 0.35){ body.setLinvel({x:v.x, y:0.35, z:v.z}, true); v = body.linvel(); }   // 위로 뜨는 성분 제한
     entry.vel.set(v.x,v.y,v.z); entry.spin.set(a.x,a.y,a.z);
     const c = body.worldCom();
-    console.log('[DEBRIS] blade impulse', entry.label, JSON.stringify({
+    if (api.trace) console.log('[DEBRIS] blade impulse', entry.label, JSON.stringify({
       part: impact.cut, mass:+mass.toFixed(2), bladeSpeed:+speed.toFixed(2),
       impulse: J.toArray().map(n=>+n.toFixed(2)), point: impact.point.toArray().map(n=>+n.toFixed(3)),
       offsetFromCom: [impact.point.x-c.x, impact.point.y-c.y, impact.point.z-c.z].map(n=>+n.toFixed(3)),
@@ -774,7 +854,7 @@ async function createDebrisPhysics(THREE){
     entries.add(entry);
     if (impact) applyBladeImpact(entry, impact);
     const c=body.localCom();
-    console.log('[DEBRIS] created',label,'hulls=',shapes.map(s=>s.name).join(','),'mass=',body.mass().toFixed(2),
+    if (api.trace) console.log('[DEBRIS] created',label,'hulls=',shapes.map(s=>s.name).join(','),'mass=',body.mass().toFixed(2),
       'localCOM=',[c.x,c.y,c.z].map(n=>n.toFixed(3)).join(','));
     return entry;
   }
@@ -793,7 +873,7 @@ async function createDebrisPhysics(THREE){
     const entry={id:++nextId,mesh,body,label,age:0,rest:false,quiet:0,contacts:0,hitAt:null,
       vel:velocity.clone(),spin:spin.clone(),samples:[],stages:new Set(),shapeCount:1};
     entries.add(entry);
-    console.log('[DEBRIS] box created', label, 'mass=', body.mass().toFixed(2));
+    if (api.trace) console.log('[DEBRIS] box created', label, 'mass=', body.mass().toFixed(2));
     return entry;
   }
 
@@ -819,7 +899,7 @@ async function createDebrisPhysics(THREE){
     const data={stage,t:+p.age.toFixed(3),position:p.mesh.position.toArray(),quaternion:p.mesh.quaternion.toArray(),
       com:[c.x,c.y,c.z],velocity:p.vel.toArray(),angularVelocity:p.spin.toArray(),contacts:p.contacts,sleep:p.body.isSleeping()};
     p.samples.push(data);
-    console.log('[DEBRIS-TRACE]',p.id,p.label,JSON.stringify(data));
+    if (api.trace) console.log('[DEBRIS-TRACE]',p.id,p.label,JSON.stringify(data));
     if (api.onSample) api.onSample(p,data);
   }
 
@@ -898,7 +978,7 @@ async function createDebrisPhysics(THREE){
     }
   }
 
-  const api={add,addBox,remove,syncTerrain,step,setGravity,setDamping,setImpact,topple,rate:1,onSample:null,paused:false};
+  const api={add,addBox,remove,syncTerrain,step,setGravity,setDamping,setImpact,topple,rate:1,onSample:null,paused:false,trace:false};
   console.log('[DEBRIS] Rapier ready · fixedStep=1/120 · surface compound hulls · gravity=-9.81');
   return api;
 }
@@ -909,7 +989,7 @@ return createDebrisPhysics;
 const createBladeCombat = (() => {
 // 기존 THREE/SkeletonUtils만 전달받는다. 렌더러/전투 상태를 별도로 만들지 않는다.
 function createBladeCombat(THREE, cloneSkeleton){
-  const profiles = new Map(), faces = new WeakMap();
+  const profiles = new Map(), faces = new WeakMap(), vertMasks = new WeakMap(), vcaches = new WeakMap(), triRegion = new WeakMap();
   const norm = n => n.toLowerCase().replace(/^.*:/,'').replace(/mixamorig/g,'').replace(/[^a-z0-9]/g,'');
   const read4 = (a,i) => [a.getX(i),a.getY(i),a.getZ(i),a.getW(i)];
 
@@ -1005,28 +1085,68 @@ function createBladeCombat(THREE, cloneSkeleton){
     return -1;
   }
 
-  function regionFaces(mesh,defs){
-    const g=mesh.geometry;
-    if(faces.has(g))return faces.get(g);
-    const si=g.attributes.skinIndex,sw=g.attributes.skinWeight,pos=g.attributes.position;
+  /* 정점이 어느 부위에 실려 있는지(부위당 1비트)는 원본 속성에만 달려 있다.
+     절단하면 지오메트리 객체는 새로 생기지만 속성 버퍼는 그대로 공유하므로, 이 표는 속성에 묶어 한 번만 만든다. */
+  function vertexMask(mesh,defs){
+    const pos=mesh.geometry.attributes.position;
+    let mask=vertMasks.get(pos);
+    if(mask)return mask;
+    const si=mesh.geometry.attributes.skinIndex,sw=mesh.geometry.attributes.skinWeight;
     const roots=defs.map(d=>mesh.skeleton.bones.find(b=>norm(b.name)===d.bone));
     const sets=roots.map(root=>{
       const set=new Set();if(root)root.traverse(b=>{const i=mesh.skeleton.bones.indexOf(b);if(i>=0)set.add(i);});return set;
     });
-    const flags=sets.map(()=>new Uint8Array(pos.count));
+    mask=new Uint8Array(pos.count);
     for(let i=0;i<pos.count;i++){
       const ids=read4(si,i),weights=read4(sw,i);
-      for(let c=0;c<sets.length;c++){let sum=0;for(let k=0;k<4;k++)if(sets[c].has(ids[k]))sum+=weights[k];flags[c][i]=sum>0.5?1:0;}
+      let m=0;
+      for(let c=0;c<sets.length;c++){let sum=0;for(let k=0;k<4;k++)if(sets[c].has(ids[k]))sum+=weights[k];if(sum>0.5)m|=1<<c;}
+      mask[i]=m;
     }
-    const groups=defs.map(()=>[]),idx=g.index,total=idx?idx.count:pos.count;
-    for(let t=0;t<total;t+=3){
-      const a=idx?idx.getX(t):t,b=idx?idx.getX(t+1):t+1,c=idx?idx.getX(t+2):t+2;
-      // 허리 하위에 팔/머리도 있으므로 가장 구체적인 부위를 먼저 선택한다.
-      let put=false;
-      for(const r of [0,2,3,4,5,1])if(flags[r][a]+flags[r][b]+flags[r][c]>=2){groups[r].push(a,b,c);put=true;break;}
+    vertMasks.set(pos,mask);
+    return mask;
+  }
+
+  /* 지오메트리의 삼각형마다 어느 부위인지. 원본 한 벌만 만들어 두고 계속 쓴다. */
+  function regionAssign(g,mesh,defs){
+    const key=g.index||g;               // 잘리지 않은 지오메트리는 인덱스를 함께 보므로 적끼리 표를 나눠 쓴다
+    let assign=triRegion.get(key);
+    if(assign)return assign;
+    const mask=vertexMask(mesh,defs);
+    const idx=g.index,total=idx?idx.count:g.attributes.position.count,arr=idx?idx.array:null,nTri=(total/3)|0;
+    const ORDER=[0,2,3,4,5,1];                 // 허리 하위에 팔/머리도 있으므로 가장 구체적인 부위를 먼저 고른다
+    assign=new Uint8Array(nTri);
+    for(let t=0,ti=0;t<total;t+=3,ti++){
+      const ma=mask[arr?arr[t]:t],mb=mask[arr?arr[t+1]:t+1],mc=mask[arr?arr[t+2]:t+2];
       // 골반·아랫배는 hips/spine 에 실려 어느 절단 루트에도 안 걸린다(전체의 13%).
       // 빼두면 배를 정확히 베어도 통과해 버리므로 허리 판정으로 보낸다.
-      if(!put)groups[1].push(a,b,c);
+      let r=1;
+      for(let o=0;o<6;o++){const q=ORDER[o];if(((ma>>q)&1)+((mb>>q)&1)+((mc>>q)&1)>=2){r=q;break;}}
+      assign[ti]=r;
+    }
+    triRegion.set(key,assign);return assign;
+  }
+
+  function regionFaces(mesh,defs){
+    const g=mesh.geometry;
+    if(faces.has(g))return faces.get(g);
+    const pos=g.attributes.position;
+    const idx=g.index,total=idx?idx.count:pos.count,arr=idx?idx.array:null,nTri=(total/3)|0;
+    /* 삼각형마다의 부위 — 원본 지오메트리에서 한 번만 정한다. 잘려 나온 지오메트리는 이 표를 그대로 본다. */
+    const srcTri=g.userData.srcTri,srcGeo=g.userData.srcGeo;
+    let assign;
+    if(srcTri&&srcGeo){
+      const base=regionAssign(srcGeo,mesh,defs);
+      assign=new Uint8Array(nTri);
+      for(let ti=0;ti<nTri;ti++)assign[ti]=base[srcTri[ti]];
+    } else assign=regionAssign(g,mesh,defs);
+    const counts=new Uint32Array(defs.length);
+    for(let ti=0;ti<nTri;ti++)counts[assign[ti]]+=3;
+    const groups=defs.map((_,r)=>new Uint32Array(counts[r])),fill=new Uint32Array(defs.length);
+    for(let t=0,ti=0;t<total;t+=3,ti++){
+      const r=assign[ti],out=groups[r];let f=fill[r];
+      out[f++]=arr?arr[t]:t;out[f++]=arr?arr[t+1]:t+1;out[f++]=arr?arr[t+2]:t+2;
+      fill[r]=f;
     }
     faces.set(g,groups);return groups;
   }
@@ -1044,13 +1164,45 @@ function createBladeCombat(THREE, cloneSkeleton){
     const a=new THREE.Vector3(),b=new THREE.Vector3(),side=new THREE.Vector3(),nearest=new THREE.Vector3();
     const prepared=meshes.filter(m=>!m.userData.cutCap).map(mesh=>{
       mesh.skeleton.update();
-      return {mesh,groups:regionFaces(mesh,defs),points:new Map()};
+      /* 스킨 좌표 캐시는 메시마다 남겨 두고 다시 쓴다 — 프레임마다 10만 칸짜리 배열을 새로 잡으면 그것만으로 GC 가 돈다.
+         ★ userData 에 두면 안 된다. Object3D.copy 가 userData 를 JSON 으로 통째 복사하므로
+            조각을 복제할 때 이 배열까지 직렬화돼 절단이 몇 배로 느려진다. */
+      const n=mesh.geometry.attributes.position.count;
+      let vc=vcaches.get(mesh);
+      if(!vc||vc.has.length!==n){vc={pos:new Float32Array(n*3),has:new Uint8Array(n)};vcaches.set(mesh,vc);}
+      else vc.has.fill(0);
+      return {mesh,groups:regionFaces(mesh,defs),near:{},vc};
     });
-    const vertex=(item,i)=>{
-      if(!item.points.has(i)){
-        const p=new THREE.Vector3();item.mesh.getVertexPosition(i,p);p.applyMatrix4(item.mesh.matrixWorld);item.points.set(i,p);
+    const vertex=(item,i,out)=>{
+      const vc=item.vc;
+      if(!vc.has[i]){
+        item.mesh.getVertexPosition(i,out);out.applyMatrix4(item.mesh.matrixWorld);
+        vc.pos[i*3]=out.x;vc.pos[i*3+1]=out.y;vc.pos[i*3+2]=out.z;vc.has[i]=1;
+        return out;
       }
-      return item.points.get(i);
+      return out.set(vc.pos[i*3],vc.pos[i*3+1],vc.pos[i*3+2]);
+    };
+    /* 이 스윕이 지나가는 상자. 모든 단계·좌우 오프셋의 칼날 선분이 이 안에 들어간다. */
+    const sideMax=Math.max(previous.side.length(),current.side.length())+1e-3;
+    const bx0=Math.min(previous.base.x,previous.tip.x,current.base.x,current.tip.x)-sideMax;
+    const bx1=Math.max(previous.base.x,previous.tip.x,current.base.x,current.tip.x)+sideMax;
+    const by0=Math.min(previous.base.y,previous.tip.y,current.base.y,current.tip.y)-sideMax;
+    const by1=Math.max(previous.base.y,previous.tip.y,current.base.y,current.tip.y)+sideMax;
+    const bz0=Math.min(previous.base.z,previous.tip.z,current.base.z,current.tip.z)-sideMax;
+    const bz1=Math.max(previous.base.z,previous.tip.z,current.base.z,current.tip.z)+sideMax;
+    const t0=new THREE.Vector3(),t1=new THREE.Vector3(),t2=new THREE.Vector3();
+    const nearFaces=(item,i)=>{
+      let list=item.near[i];
+      if(list)return list;
+      const src=item.groups[i];list=[];
+      for(let k=0;k<src.length;k+=3){
+        const p=vertex(item,src[k],t0),q=vertex(item,src[k+1],t1),r=vertex(item,src[k+2],t2);
+        if(Math.min(p.x,q.x,r.x)>bx1||Math.max(p.x,q.x,r.x)<bx0)continue;
+        if(Math.min(p.y,q.y,r.y)>by1||Math.max(p.y,q.y,r.y)<by0)continue;
+        if(Math.min(p.z,q.z,r.z)>bz1||Math.max(p.z,q.z,r.z)<bz0)continue;
+        list.push(src[k],src[k+1],src[k+2]);
+      }
+      item.near[i]=list;return list;
     };
     // 시간순으로 검사: 깊게 겹친 부위가 아니라 검 궤적이 처음 만난 남아 있는 표면.
     for(let step=0;step<=steps;step++){
@@ -1073,9 +1225,9 @@ function createBladeCombat(THREE, cloneSkeleton){
       for(const lateral of [0,-1,1]){
         const origin=a.clone().addScaledVector(side,lateral);ray.set(origin,direction);
         for(const item of prepared)for(const i of candidates){
-          const indices=item.groups[i];
+          const indices=nearFaces(item,i);
           for(let k=0;k<indices.length;k+=3){
-            const hit=ray.intersectTriangle(vertex(item,indices[k]),vertex(item,indices[k+1]),vertex(item,indices[k+2]),false,point);
+            const hit=ray.intersectTriangle(vertex(item,indices[k],t0),vertex(item,indices[k+1],t1),vertex(item,indices[k+2],t2),false,point);
             if(!hit)continue;
             const d=hit.distanceTo(origin);if(d>length)continue;
             if(best&&d>=best.distance)continue;
@@ -1098,9 +1250,47 @@ const bladeCombat = createBladeCombat(THREE, SkeletonUtils.clone);
 let bladeShape = null;
 
 /* ===== 에셋 ===== */
-const BASE = 'https://raw.githubusercontent.com/sukyonghyun-sudo/three/main/';
+const BASE = 'https://raw.githubusercontent.com/sukyonghyun-sudo/three/HEAD/';   // 브랜치 이름(main)으로 받으면 raw 캐시에 옛 파일이 몇 분 남는다 — HEAD 는 바로 최신이다
 const enc = p => p.split('/').map(encodeURIComponent).join('/');
-const url = p => BASE + enc(p);
+/* 스튜디오에 리소스로 올려 둔 것들 — [게임이 쓰는 경로, 리소스 이름].
+   .fbx 경로가 .glb 리소스를 가리키는 것이 있다(모션은 GLB 로 변환해 올렸다). */
+const HOSTED = [
+  ['jeff/gore.mp3','jeff/gore'], ['jeff/scream.mp3','jeff/scream'], ['jeff/scream2.mp3','jeff/scream2'],
+  ['jeff/shot.mp3','jeff/shot'], ['jeff/Nkosi Ya Damu.mp3','jeff/Nkosi Ya Damu'],
+  ['jeff/house.glb','jeff/house'], ['jeff/model.glb','jeff/model'],
+  ['jeff/muzzle_meshes.glb','jeff/muzzle_meshes'], ['jeff/pistol.glb','jeff/pistol'],
+  ['jeff/stylized_desert_skybox_2.glb','jeff/stylized_desert_skybox_2'],
+  ['jeff/map/04_sculptjanuary18_-_desert.glb','jeff/map/04_sculptjanuary18_-_desert'],
+  ['jeff/map/desert_mountain_pack_01.glb','jeff/map/desert_mountain_pack_01'],
+  ['jeff/map/desert_plat-former.glb','jeff/map/desert_plat-former'],
+  ['jeff/map/desert_portal.glb','jeff/map/desert_portal'],
+  /* 모션 GLB 는 보류 — FBX(GitHub) 를 쓴다 */
+];
+const ASSET_URL = new Map();
+const assetSrc = { mode:'github', 리소스:0, 실패:[], ms:0 };
+/* 최상위 await — 첫 로더가 돌기 전에 주소가 정해져 있어야 한다.
+   스튜디오 밖에서는 import 자체가 실패하므로 조용히 GitHub 로 남는다. */
+try {
+  const _t0 = performance.now();
+  const { MSW } = await import('msw-game-core');
+  const seen = new Map();                  // 같은 리소스를 두 경로가 가리키기도 한다 (body1)
+  await Promise.all(HOSTED.map(async ([p, name]) => {
+    try {
+      let u = seen.get(name);
+      if (u === undefined){
+        const r = await MSW.Resources.load(name);
+        const st = r && r.states && r.states[r.defaultState || 'default'];
+        u = (st && st.url) || null;
+        seen.set(name, u);
+      }
+      if (u) ASSET_URL.set(p, u); else assetSrc.실패.push(p);
+    } catch { assetSrc.실패.push(p); }
+  }));
+  assetSrc.mode = ASSET_URL.size ? 'msw' : 'github';
+  assetSrc.리소스 = ASSET_URL.size;
+  assetSrc.ms = +(performance.now() - _t0).toFixed(0);
+} catch { /* 스튜디오 밖 — GitHub 그대로 */ }
+const url = p => ASSET_URL.get(p) || BASE + enc(p);
 const CHARACTER = ['jeff/Unarmed Idle Looking Ver. 2.fbx', 'Unarmed Idle Looking Ver. 2.fbx'];
 const SWORD = 'jeff/model.glb';
 /* 배경음악 — 브라우저 자동재생 정책 때문에 첫 키 입력/클릭 뒤에 시작한다 */
@@ -1131,9 +1321,8 @@ const SFX_N = 8, SFX_MAX = 24;
 function makeSfx(file, vol){ return { file, vol, pool:[], idx:0 }; }
 const sfxShot  = makeSfx('jeff/shot.mp3', 0.5);
 const sfxGore  = makeSfx('jeff/gore.mp3', 0.65);   // 몸이 잘릴 때
-const sfxTaunt = makeSfx('jeff/motherfuck.mp3', 0.8);   // 적이 등장할 때 — 가끔만
 const sfxScream = [makeSfx('jeff/scream.mp3', 0.8), makeSfx('jeff/scream2.mp3', 0.8)];   // 죽을 때
-for (const g of [sfxShot, sfxGore, sfxTaunt, ...sfxScream])
+for (const g of [sfxShot, sfxGore, ...sfxScream])
   for (let i = 0; i < SFX_N; i++) g.pool.push(newAudio(url(g.file)));
 let shotCalls = 0, shotFails = 0;
 function freeSfx(g){
@@ -1164,9 +1353,6 @@ function playSfx(g, pos, gain){
 }
 const playShot = pos => playSfx(sfxShot, pos, 1);
 const playGore  = pos => playSfx(sfxGore, pos, 1);
-/* 등장할 때마다 울리면 시끄럽고, 겹쳐 울리면 더 시끄럽다.
-   확률로 걸러 내고, 앞 대사가 아직 재생 중이면 건너뛴다. */
-let tauntChance = 0.25;
 /* 번갈아 낸다 — 같은 비명이 연달아 나면 티가 난다.
    파일이 하나 없어도(아직 안 올라왔거나 404) 실제로 읽힌 것만 돌려 쓴다. */
 let screamSeq = 0;
@@ -1174,11 +1360,6 @@ function playScream(pos){
   const ok = sfxScream.filter(g => g.pool.some(a => a.readyState > 0));
   if (!ok.length) return;
   playSfx(ok[screamSeq++ % ok.length], pos, 1);
-}
-function playTaunt(pos){
-  if (Math.random() >= tauntChance) return;
-  if (sfxTaunt.pool.some(a => !a.paused && !a.ended && a.currentTime > 0)) return;
-  playSfx(sfxTaunt, pos, 1);
 }
 const BGM_START = 23;   // 앞 인트로를 건너뛴다 — 반복될 때도 이 지점부터
 const bgm = newAudio(url(BGM_FILE)); bgm.loop = false; let bgmVol = 0.4;
@@ -1393,7 +1574,29 @@ addEventListener('resize', resize);
 /* ===== 로더 ===== */
 const fbxLoader = new FBXLoader();
 const gltfLoader = new GLTFLoader();
-const loadOne = p => new Promise((res, rej) => fbxLoader.load(url(p), res, undefined, rej));
+/* glTF 변환본은 FBX 와 같은 단위(cm)로 내보냈으므로 값은 손대지 않는다.
+   다만 Blender 는 모든 뼈에 위치 트랙을 붙인다(원본 FBX 는 힙 하나뿐) — 뼈의 로컬 위치는
+   애니메이션 중 변하지 않으므로 힙 말고는 버려서 원본과 같은 모양으로 맞춘다. */
+function fixGlbClips(obj){
+  for (const clip of obj.animations){
+    clip.tracks = clip.tracks.filter(t => {
+      const dot = t.name.lastIndexOf('.');
+      if (dot < 0 || !t.name.endsWith('.position')) return true;
+      return norm(t.name.slice(0, dot)) === 'hips';
+    });
+  }
+}
+const loadOne = p => new Promise((res, rej) => {
+  const u = url(p);
+  if (/\.glb(\?|$)/i.test(u)){
+    gltfLoader.load(u, g => {
+      const obj = g.scene;
+      obj.animations = g.animations || [];   // FBX 결과와 같은 모양으로 맞춘다
+      try { fixGlbClips(obj); } catch (e){ console.warn('[GLB] 클립 단위 보정 실패', p, e); }
+      res(obj);
+    }, undefined, rej);
+  } else fbxLoader.load(u, res, undefined, rej);
+});
 async function loadFirst(paths){
   let last;
   for (const p of paths){ try { return { obj: await loadOne(p), path:p }; } catch(e){ last = e; } }
@@ -1506,6 +1709,7 @@ async function initCharacter(){
   COMBO.forEach(i => getClip(MOTIONS[i]).catch(() => {}));   // 콤보 2·3타도 미리 받아 둔다
   getClip(MOTIONS[IDX_JUMP]).catch(() => {});                // 점프 공격
   getClip(MOTIONS[IDX_UPPER]).catch(() => {});               // 올려베기
+  getClip(MOTIONS[IDX_COMBO2]).catch(() => {});              // 크리티컬 연출
   calibrateGround();
   if (placeWanted) placeOnTerrain();
   setStatus('준비 완료 · WASD 이동, Space 공격');
@@ -1593,14 +1797,20 @@ MOTIONS.forEach((m, i) => {
 });
 const buttons = [...listEl.children];
 
+const clipPending = new Map();   // 받는 중인 클립 — 같은 것을 동시에 두 번 받지 않게
 async function getClip(m){
   if (clipCache.has(m.name)) return clipCache.get(m.name);
-  const { obj } = await loadFirst(m.files);
-  const raw = obj.animations && obj.animations[0];
-  if (!raw) throw new Error('no clip');
-  const clip = retarget(raw);
-  clipCache.set(m.name, clip);
-  return clip;
+  if (clipPending.has(m.name)) return clipPending.get(m.name);
+  const job = (async () => {
+    const { obj } = await loadFirst(m.files);
+    const raw = obj.animations && obj.animations[0];
+    if (!raw) throw new Error('no clip');
+    const clip = retarget(raw);
+    clipCache.set(m.name, clip);
+    return clip;
+  })();
+  clipPending.set(m.name, job);
+  try { return await job; } finally { clipPending.delete(m.name); }
 }
 
 // 클립 전환은 동기로 처리한다. 비동기로 한 프레임이라도 비면 그 사이 바인드(T) 포즈가 보인다.
@@ -1701,10 +1911,11 @@ function subtreeBoneIndices(skeleton, rootBone){
 }
 
 // 같은 attribute 를 공유하고 인덱스만 다른 지오메트리 (추가 메모리 거의 없음)
-function sharedGeo(src, indexArray){
+function sharedGeo(src, indexArray, triArray = null){
   const g = new THREE.BufferGeometry();
   for (const k in src.attributes) g.setAttribute(k, src.attributes[k]);
   g.setIndex(new THREE.BufferAttribute(indexArray, 1));
+  if (triArray){ g.userData.srcTri = triArray; g.userData.srcGeo = src; }
   g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e4);
   return g;
 }
@@ -1727,27 +1938,43 @@ function splitGeometry(mesh, severed, plane){
   }
   const idx = geo.index ? geo.index.array : null;
   const total = idx ? idx.length : n;
-  const body = [], part = [];
-  for (let t = 0; t + 2 < total; t += 3){
+  const src = geo.userData.srcTri;             // 이미 한 번 잘린 지오메트리면 원본 삼각형 번호를 달고 있다
+  const body = [], part = [], bodyTri = [], partTri = [];
+  for (let t = 0, ti = 0; t + 2 < total; t += 3, ti++){
     const a = idx ? idx[t] : t, b = idx ? idx[t+1] : t+1, c = idx ? idx[t+2] : t+2;
-    ((flag[a] + flag[b] + flag[c]) >= 2 ? part : body).push(a, b, c);
+    const keep = (flag[a] + flag[b] + flag[c]) >= 2;
+    (keep ? part : body).push(a, b, c);
+    (keep ? partTri : bodyTri).push(src ? src[ti] : ti);
   }
-  return { body: new Uint32Array(body), part: new Uint32Array(part) };
+  return { body: new Uint32Array(body), part: new Uint32Array(part),
+           bodyTri: new Uint32Array(bodyTri), partTri: new Uint32Array(partTri) };
 }
 
 // 절단 경계(남는 쪽/떨어지는 쪽이 공유하는 변)를 찾아 부채꼴로 메운 스킨 메시를 만든다
 const capMat = new THREE.MeshStandardMaterial({ color:0x7d161c, roughness:0.95, side:THREE.DoubleSide });
+/* 비인덱스 지오메트리는 정점이 삼각형마다 복제돼 있어 위치로 용접해야 한다.
+   원본은 절단해도 변하지 않으므로 용접표는 지오메트리마다 한 번만 만들고 복제된 적들끼리 공유한다
+   — 전에는 절단할 때마다 10만 정점을 다시 해싱해 한 번에 7ms 를 썼다. */
+const weldCache = new WeakMap();
+function weldTable(geo){
+  const pos = geo.attributes.position;
+  let w = weldCache.get(pos);
+  if (w) return w;
+  const N = pos.count;
+  const canon = new Map(); w = new Int32Array(N);
+  for (let i = 0; i < N; i++){
+    const k = ((Math.round(pos.getX(i)*1e3) + 32768) * 65536 + (Math.round(pos.getY(i)*1e3) + 32768)) * 65536 + (Math.round(pos.getZ(i)*1e3) + 32768);
+    const r = canon.get(k);
+    if (r === undefined){ canon.set(k, i); w[i] = i; } else w[i] = r;
+  }
+  weldCache.set(pos, w);
+  return w;
+}
 function buildCapGeometry(srcGeo, partIdx, bodyIdx, cutBoneIndex, planar){
   const pos = srcGeo.attributes.position, si = srcGeo.attributes.skinIndex, sw = srcGeo.attributes.skinWeight;
   const N = pos.count;
-  // 비인덱스 지오메트리는 정점이 삼각형마다 복제돼 있어 위치로 용접한다
-  const canon = new Map(); const cidCache = new Int32Array(N).fill(-1);
-  const cid = i => {
-    if (cidCache[i] >= 0) return cidCache[i];
-    const k = (Math.round(pos.getX(i)*1e3)) + ',' + (Math.round(pos.getY(i)*1e3)) + ',' + (Math.round(pos.getZ(i)*1e3));
-    let r = canon.get(k); if (r === undefined){ canon.set(k, i); r = i; }
-    cidCache[i] = r; return r;
-  };
+  const cidCache = weldTable(srcGeo);
+  const cid = i => cidCache[i];
   const ek = (a, b) => a < b ? a*N + b : b*N + a;
   const bodyEdges = new Set();
   for (let t = 0; t < bodyIdx.length; t += 3){
@@ -1952,15 +2179,21 @@ function drawSplat(x, z, r, a){
 function clearSplat(){ sctx.clearRect(0,0,SPLAT_RES,SPLAT_RES); splatTex.needsUpdate = true; }
 
 /* 더미 */
+const enemyClipPending = new Map();
 async function enemyClip(key){
   if (enemyClips.has(key)) return enemyClips.get(key);
-  const { obj } = await loadFirst(ENEMY.clips[key]);
-  const raw = obj.animations && obj.animations[0];
-  if (!raw) throw new Error('클립 없음: ' + key);
-  const clip = retarget(raw);            // 본 이름이 같아 플레이어의 boneMap 이 그대로 맞는다
-  enemyClips.set(key, clip);
-  if (key === 'shoot' && typeof writeFireOut === 'function') writeFireOut();
-  return clip;
+  if (enemyClipPending.has(key)) return enemyClipPending.get(key);
+  const job = (async () => {
+    const { obj } = await loadFirst(ENEMY.clips[key]);
+    const raw = obj.animations && obj.animations[0];
+    if (!raw) throw new Error('클립 없음: ' + key);
+    const clip = retarget(raw);            // 본 이름이 같아 플레이어의 boneMap 이 그대로 맞는다
+    enemyClips.set(key, clip);
+    if (key === 'shoot' && typeof writeFireOut === 'function') writeFireOut();
+    return clip;
+  })();
+  enemyClipPending.set(key, job);
+  try { return await job; } finally { enemyClipPending.delete(key); }
 }
 
 /* 적을 여러 체 두기 위한 최소 구조.
@@ -2072,8 +2305,18 @@ function makeFoeClone(){
   const src = enemyTemplate || (foes[0] && foes[0].root);
   if (!src) return null;
   const root = SkeletonUtils.clone(src);
-  // 지오메트리는 복제해서 분리한다 — 공유하면 한 명을 자를 때 전원이 잘린다
-  root.traverse(o => { if (o.isSkinnedMesh) o.geometry = o.geometry.clone(); });
+  /* 지오메트리 '객체'만 적마다 따로 둔다 — 공유하면 한 명을 자를 때 전원이 잘린다.
+     다만 속성 버퍼(위치·스킨 가중치 등)는 아무도 고쳐 쓰지 않으므로 함께 본다.
+     통째로 복제하면 적 한 명당 6MB 를 새로 잡고, 정점 소속 표 같은 원본 계산도 전부 다시 하게 된다. */
+  root.traverse(o => {
+    if (!o.isSkinnedMesh) return;
+    const src = o.geometry, g = new THREE.BufferGeometry();
+    for (const k in src.attributes) g.setAttribute(k, src.attributes[k]);
+    if (src.index) g.setIndex(src.index);
+    if (src.boundingSphere) g.boundingSphere = src.boundingSphere.clone();
+    if (src.boundingBox) g.boundingBox = src.boundingBox.clone();
+    o.geometry = g;
+  });
   // 원본에 붙어 있던 총 복제물은 제거 (attachGun 이 새로 단다)
   const guns = []; root.traverse(o => { if (o.userData.isGun) guns.push(o); });
   guns.forEach(g => g.parent && g.parent.remove(g));
@@ -2153,8 +2396,27 @@ function relocateFoe(f){
   f.chasing = false; f.repos = false; f.holdT = 0.5;
   console.log('[ENDLESS] 너무 멀어진 적을 플레이어 근처로 재배치');
 }
+/* 미리 복제해 둔 적 몸체. 스폰 순간의 복제 비용(골격 + 35k 삼각형 지오메트리)을 로딩 화면 뒤로 옮긴다.
+   꺼내 쓰면 한 박자 뒤 한 개를 다시 채운다 — 전투 중 스폰 프레임에 몰아 내지 않게. */
+const foePool = [];
+const FOE_POOL = 3;
+let foeRefillT = null;
+function fillFoePool(n){
+  for (let i = 0; i < n && foePool.length < FOE_POOL; i++){
+    const r = makeFoeClone(); if (!r) break;
+    foePool.push(r);
+  }
+}
+function refillFoePoolLater(){
+  clearTimeout(foeRefillT);
+  foeRefillT = setTimeout(() => fillFoePool(1), 1200);
+}
+let spawnProfLast = null;
 function spawnOneFoe(){
-  const root = makeFoeClone();
+  const _t0 = performance.now(), _pooled = foePool.length > 0;
+  const root = foePool.length ? foePool.pop() : makeFoeClone();
+  refillFoePoolLater();
+  const _t1 = performance.now();
   if (!root) return null;
   const base = foes.find(f => f.ai) || foes[0];
   // 플레이어 시야 밖에서 걸어 들어오도록 사격 거리보다 넉넉히 뒤에 놓는다
@@ -2176,9 +2438,12 @@ function spawnOneFoe(){
   // 등장 유예 — 나타나자마자 쏘면 플레이어가 대응할 수 없다. 걸어 들어올 시간을 준다.
   rec.wait = 1.4 + Math.random()*1.2;
   foes.push(rec);
+  const _t2 = performance.now();
   attachGun(rec);
+  const _t3 = performance.now();
   if (!activeFoe) activateFoe(rec);
-  playTaunt(root.position);
+  spawnProfLast = { pooled:_pooled, clone:+(_t1-_t0).toFixed(1), place:+(_t2-_t1).toFixed(1), gun:+(_t3-_t2).toFixed(1), total:+(performance.now()-_t0).toFixed(1) };
+  if (cutProf.on) console.log('[SPAWN-PROF]', JSON.stringify(spawnProfLast));
   console.log('[ENDLESS] 적 등장 · 현재 ' + foes.filter(f => f.ai && !f.dead).length + '명 · 누적 처치 ' + endless.kills);
   return rec;
 }
@@ -2302,8 +2567,27 @@ function findBone(root, key){
   return hit;
 }
 
+const cutProf = { on:false, last:null };   // 절단 단계 계측 — __dbg.cutProfOn(true) 로 켠다
+/* 절단 프레임에서 뺀 조각들 — 다음 프레임에 충돌체를 붙인다 */
+const debrisQueue = [];
+function flushDebrisQueue(){
+  if (!debrisQueue.length) return;
+  while (debrisQueue.length){
+    const q = debrisQueue.shift();
+    try {
+      pieces.push(debrisPhysics.add(q.piece, q.velocity, q.spin, q.name, q.impact));
+    } catch (error){
+      scene.remove(q.piece);               // 충돌체가 없으면 허공에 굳은 조각이 남는다 → 치운다
+      console.error('[DEBRIS] 조각 충돌체 생성 실패', error);
+      setStatus('조각 충돌체를 만들지 못했습니다. 콘솔을 확인해 주세요.', true);
+    }
+  }
+  trimPieces();
+}
 function cut(index, impact = null, opts = null){
   const vertical = !!(opts && opts.vertical);
+  const _T = cutProf.on ? { t0: performance.now(), marks: [] } : null;
+  const mark = n => { if (_T){ const now = performance.now(); _T.marks.push([n, +(now - _T.t0).toFixed(1)]); } };
   if (!enemy) return false;
   if (blood.piece && !debrisPhysics){
     if (!debrisPhysicsError){ setStatus('조각 물리 준비 중…'); return false; }
@@ -2323,6 +2607,7 @@ function cut(index, impact = null, opts = null){
   const dSkins = skinsOf(enemy);
   if (!dSkins.length) return false;
 
+  mark('prep');
   // 1) 각 스킨 메시를 남는 쪽 / 떨어지는 쪽 삼각형으로 나눈다
   const splits = dSkins.map(sm => {
     if (!geoBackup.has(sm.uuid)) geoBackup.set(sm.uuid, sm.geometry);
@@ -2333,22 +2618,26 @@ function cut(index, impact = null, opts = null){
     unavailableCuts.add(index);
     return false;                          // 남은 살이 없는 후보는 절단/피격 성공으로 소비하지 않는다
   }
+  mark('split');
   splits.forEach((s,i) => {
     const sm = dSkins[i], bi = sm.skeleton.bones.indexOf(bone);
     s.cap = s.part.length ? buildCapGeometry(geoBackup.get(sm.uuid), s.part, s.body, Math.max(bi,0), vertical) : null;
   });
 
+  mark('cap');
   // 2) 떨어져 나갈 조각: 현재 포즈로 복제한 뒤 '떨어지는 쪽' 삼각형만 남긴다
   let piece = null;
   if (blood.piece && splits.some(s => s.part.length)){
     const clone = SkeletonUtils.clone(enemy);
-    prepMeshes(clone);
-    // 조각은 총을 들고 가지 않는다 (총은 죽을 때 손에 남거나 바닥에 떨어진다)
+    /* 조각은 총을 들고 가지 않는다 (총은 죽을 때 손에 남거나 바닥에 떨어진다).
+       ★ prepMeshes 보다 먼저 떼어내야 한다 — clone() 은 재질을 공유하므로, 복제된 총에 양면(DoubleSide)을
+       박으면 살아 있는 적들의 총까지 전부 양면으로 바뀌고 그 순간 새 셰이더가 컴파일돼 프레임이 멎는다. */
     const guns = []; clone.traverse(o => { if (o.userData.isGun) guns.push(o); });
     guns.forEach(g => g.parent && g.parent.remove(g));
+    prepMeshes(clone);
     const cSkins = skinsOf(clone);
     cSkins.forEach((cm, i) => {
-      cm.geometry = sharedGeo(geoBackup.get(dSkins[i].uuid), splits[i].part);
+      cm.geometry = sharedGeo(geoBackup.get(dSkins[i].uuid), splits[i].part, splits[i].partTri);
       if (splits[i].cap) attachCap(splits[i].cap, cm);
     });
 
@@ -2388,21 +2677,16 @@ function cut(index, impact = null, opts = null){
     const spin = impact
       ? new THREE.Vector3((Math.random()-0.5)*2.2, (Math.random()-0.5)*2.2, (Math.random()-0.5)*2.2)
       : new THREE.Vector3((Math.random()-0.5)*2.4, (Math.random()-0.5)*2.4, (Math.random()-0.5)*2.4);
-    try {
-      syncDebrisTerrain();
-      pieces.push(debrisPhysics.add(piece, velocity, spin, def.name, impact));
-      trimPieces();
-    } catch (error){
-      scene.remove(piece);
-      console.error('[DEBRIS] 조각 충돌체 생성 실패', error);
-      setStatus('조각 충돌체를 만들지 못했습니다. 콘솔을 확인해 주세요.', true);
-      return false;                         // 본체를 자르기 전 중단: 떠 있는 대체 조각을 남기지 않는다
-    }
+    mark('clone+pose');
+    /* 충돌체는 다음 프레임에 만든다 — 조각 하나에 12ms 가 들어서, 베는 프레임에 같이 하면 프레임이 튄다.
+       그때까지 조각은 방금 잘린 자리에 그대로 놓여 있다(한 프레임이라 눈에 띄지 않는다). */
+    debrisQueue.push({ piece, velocity, spin, name: def.name, impact });
+    mark('physics');
   }
 
   // 3) 본체에서 그 부위의 삼각형을 제거한다 → 실제로 떨어져 나간다
   dSkins.forEach((sm, i) => {
-    sm.geometry = sharedGeo(geoBackup.get(sm.uuid), splits[i].body);
+    sm.geometry = sharedGeo(geoBackup.get(sm.uuid), splits[i].body, splits[i].bodyTri);
     if (splits[i].cap) bodyCaps.push(attachCap(splits[i].cap, sm));
   });
   bone.traverse(b => { if (b.isBone) cutBones.add(b); }); // 허리와 함께 사라진 목/팔도 즉시 제외
@@ -2417,7 +2701,10 @@ function cut(index, impact = null, opts = null){
   const dWorld = dir.clone().applyQuaternion(enemy.quaternion);
   for (let i = 0, n = Math.round(blood.amount*0.35*boost); i < n; i++) emitOne(wp, dWorld, 1.6);
 
+  mark('body+blood');
   enemyReact(def.kind, dWorld, vertical);
+  mark('react');
+  if (_T){ cutProf.last = { total:+(performance.now() - _T.t0).toFixed(1), marks:_T.marks }; console.log('[CUT-PROF]', JSON.stringify(cutProf.last)); }
   if (activeFoe){                       // 전역 → 레코드 즉시 반영 (스냅샷 지연 사이 유실 방지)
     activeFoe.dead = enemyDead; activeFoe.down = enemyDown;
     activeFoe.frozen = enemyFrozen; activeFoe.ragdoll = enemyRagdoll; activeFoe.holder = enemyHolder;
@@ -2512,6 +2799,8 @@ function collapseEnemyBody(dir){
 }
 
 function enemyReact(kind, dir, halved){
+  /* 연출 중에는 마지막 타격 전까지 죽지 않는다 — 첫 타에 무너지면 남은 타격이 허공을 친다 */
+  if (cine.active && cine.hold) return;
   if (enemyDead) return;
   enemyDead = true;
   playScream(enemy ? enemy.position : null);
@@ -2555,6 +2844,9 @@ function restoreEnemy(){
   clearTimeout(restoreTimer); restoreTimer = null;
   cutBones.clear(); unavailableCuts.clear();
   emitters.length = 0;
+  // 아직 충돌체를 못 받은 대기 조각도 함께 치운다 (안 그러면 허공에 굳은 채 남는다)
+  debrisQueue.forEach(q => scene.remove(q.piece));
+  debrisQueue.length = 0;
   pieces.forEach(p => {
     if (debrisPhysics) debrisPhysics.remove(p);
     const mx = p.mesh && p.mesh.userData.poseMixer;
@@ -2606,7 +2898,8 @@ function restoreAfterDeath(){
 function cutOne(i, impact = null, opts = null){
   if (!partAvailable(i)) return false;
   const def = CUTS[i];
-  if (!cut(i, impact, opts)) return false;
+  let _ok; pf("cut", () => { _ok = cut(i, impact, opts); });
+  if (!_ok) return false;
   const cutName = (opts && opts.vertical) ? '세로 양단' : def.name;
   playGore(impact && impact.point ? impact.point : (enemy ? enemy.position : null));   // 썰리는 소리
   const prefix = cine.active ? '크리티컬 · ' : '';
@@ -2673,6 +2966,7 @@ function updateGore(dt){
   if (debrisPhysics){
     const _td = prof.on ? performance.now() : 0;
     syncDebrisTerrain();
+    flushDebrisQueue();
     if (!debrisPhysics.paused) debrisPhysics.step(dt);
     if (prof.on) prof.acc.g_debris = (prof.acc.g_debris || 0) + (performance.now() - _td);
     for (const p of pieces){
@@ -2704,7 +2998,7 @@ function gunPresetToUI(){
    스프링 상수보다 이쪽이 '몇 초 뒤에 다음 발이 나가는지' 눈에 보인다. */
 const fire = { rate:1.4, recoil:0, rise:0.05, fall:0.35, lock:true, flash:0.16, light:4,
                auto:true, tracer:true, smoke:true, shell:true, sync:false, shootSpeed:1.69,
-               phase:0.15, smokeLife:1.4, smokeAmt:0.5, smokeLen:0.06, deathSpeed:1.7,
+               phase:0.15, smokeLife:0.8, smokeAmt:0.26, smokeLen:0.06, deathSpeed:1.7,
                fx:0, fy:0, fz:0, sx:0, sy:0, sz:0,   // 화염·탄피 위치 미세조정(총구 로컬)
                t:0, rt:-1, kick:0 };
 
@@ -2885,7 +3179,7 @@ const PUFFS = 18;
 const puffGeo = new THREE.PlaneGeometry(1, 1);
 const puffs = [];
 for (let i = 0; i < PUFFS; i++){
-  const mat = new THREE.MeshBasicMaterial({ map:smokeTex, color:0xb9b0a4, transparent:true,
+  const mat = new THREE.MeshBasicMaterial({ map:smokeTex, color:0x6a635a, transparent:true,
     opacity:0, depthWrite:false, side:THREE.DoubleSide, toneMapped:false });
   const m = new THREE.Mesh(puffGeo, mat);
   m.visible = false; m.frustumCulled = false; scene.add(m);
@@ -2909,7 +3203,7 @@ function spawnSmoke(pos, fwd, right, up){
     p.dur = fire.smokeLife*(0.75 + Math.random()*0.5);
     p.life = p.dur;
     p.size0 = fire.flash*(0.5 + Math.random()*0.5);
-    p.grow = 3.5 + Math.random()*3;
+    p.grow = 2.0 + Math.random()*1.8;   // 예전 3.5~6.5 — 인물을 뒤덮을 만큼 부풀었다
     p.spin = (Math.random()-0.5)*1.2;
     p.mesh.rotation.z = Math.random()*Math.PI*2;
     p.mesh.visible = true;
@@ -3070,7 +3364,7 @@ function fireOnce(manual, rec){
       fx.position.copy(_mw).addScaledVector(dir, fire.fz);
       fx.quaternion.setFromUnitVectors(_fz1, dir);
       fx.rotateZ(Math.random()*Math.PI*2);                     // 매 발 회전 → 같은 그림 반복 방지
-      const ms = fire.flash*(0.85 + Math.random()*0.4)*6;
+      const ms = fire.flash*(0.85 + Math.random()*0.4)*4.2;   // 예전 x6 — 인물을 가릴 만큼 컸다
       fx.scale.set(ms, ms, ms*(0.85 + Math.random()*0.5));
       fx.visible = true;
       me.flashDur = 0.035 + Math.random()*0.03;
@@ -3476,6 +3770,7 @@ function resolveOverlaps(){
 
 function foeAIStep(me, dt){
   if (!me.root || me.enabled === false || me.dead || me.frozen) return;
+  if (cine.active && me === cine.foe) return;   // 연출 대상은 세워 둔 자리에 그대로
   if (me === activeFoe && (enemyDead || enemyFrozen)) return;
   const root = me.root;
   /* 회전을 순수 yaw 로 정규화한다. lookAt·복제 등으로 quaternion 이 직접 세팅된 적은
@@ -3648,18 +3943,24 @@ let comboStep = 0, comboIdle = 0, bufferedAt = -1;
 const nowS = () => performance.now()/1000;
 
 function pressAttack(){
+  if (cine.active) return;                 // 연출이 끝날 때까지 입력을 받지 않는다
   if (!mixer || rolling || playerDead) return;
   if (attacking){ bufferedAt = nowS(); return; }   // 하나만 기억, 연타는 덮어씀
   startAttack(0.1);
 }
 function startAttack(fade){
+  /* 크리티컬 자동 발동 — 근처에 적이 있을 때만, 확률로. 연출이 공격을 대신한다. */
+  if (critAuto.on && Math.random() < critAuto.chance && critTarget()){
+    startCinematic();
+    if (cine.active){ critAuto.t = critAuto.cool; return; }
+  }
   if (comboIdle > COMBO_RESET) comboStep = 0;
   const step = useCombo ? (comboStep % COMBO.length) : -1;
   let idx = useCombo ? COMBO[step] : atkIndex;
   /* 점프 공격 대체 — 적이 '이 공격이 닿는 거리' 안에 있을 때만, 그것도 확률적으로.
      유효 사거리 = 실측한 칼끝 거리 + 이 모션이 파고드는 거리. */
   let jumped = false;
-  if (upperAtk.on && character && !playerDead && clipCache.get(MOTIONS[IDX_UPPER].name)){
+  if (special.t <= 0 && upperAtk.on && character && !playerDead && clipCache.get(MOTIONS[IDX_UPPER].name)){
     const t = nearestFoe();
     if (t && t.root){
       const d = Math.hypot(t.root.position.x - character.position.x, t.root.position.z - character.position.z);
@@ -3667,7 +3968,7 @@ function startAttack(fade){
       if (eff > 0 && d >= upperAtk.min && d <= eff && Math.random() < upperAtk.chance){ idx = IDX_UPPER; jumped = true; }
     }
   }
-  if (!jumped && jumpAtk.on && character && !playerDead && clipCache.get(MOTIONS[IDX_JUMP].name)){
+  if (!jumped && special.t <= 0 && jumpAtk.on && character && !playerDead && clipCache.get(MOTIONS[IDX_JUMP].name)){
     const t = nearestFoe();
     if (t && t.root){
       const d = Math.hypot(t.root.position.x - character.position.x, t.root.position.z - character.position.z);
@@ -3677,7 +3978,7 @@ function startAttack(fade){
   }
   const clip = clipCache.get(MOTIONS[idx].name);
   if (!clip){ getClip(MOTIONS[idx]).then(() => startAttack(fade)).catch(() => {}); return; }
-  if (jumped) comboStep = 0;                      // 점프 공격은 콤보 밖 — 끝나면 1타부터 다시
+  if (jumped){ comboStep = 0; special.t = special.cool; }   // 특수 공격은 콤보 밖 · 대기 시작
   else if (useCombo) comboStep = (comboStep + 1) % COMBO.length;
   attackStep = jumped ? -1 : step;
   const a = mixer.clipAction(clip);
@@ -3710,6 +4011,7 @@ let rolling = false;
 const rollDir = new THREE.Vector3();
 
 function pressRoll(){
+  if (cine.active) return;                 // 연출 중 회피 금지
   if (!mixer || rolling || cine.active || playerDead || !character) return;
   if (attacking){
     // 회피 캔슬 — 판정이 끝난 후딜에서만 허용한다 (판정 전에 끊기면 헛스윙이 된다)
@@ -3808,7 +4110,10 @@ function motionStop(i){
 /* 점프 공격 — 근거리에 적이 있고 이 공격이 닿는 거리일 때만 확률적으로 나간다. */
 const jumpAtk = { on:true, chance:0.35, min:1.0, reach:0, split:0.7 };   // split = 이 공격이 맞았을 때 몸이 세로로 갈릴 확률
 /* 올려베기 — 점프 공격과 같은 규칙으로 가끔 나가고, 맞은 적은 목이 잘린다. */
-const upperAtk = { on:true, chance:0.30, min:0.6, reach:0 };   // 점프 공격보다 먼저 판정한다 (짧은 사거리 우선)
+const upperAtk = { on:true, chance:0.30, min:0.6, reach:0 };
+/* 특수 공격(점프·올려베기) 공용 재사용 대기. 확률만으로는 연달아 터지는 걸 못 막는다 —
+   근접형 적이 늘 창 안에 있어 스윙의 절반이 특수 공격이 되던 원인. */
+const special = { cool:5, t:0 };   // 점프 공격보다 먼저 판정한다 (짧은 사거리 우선)
 /* 닿는 거리 실측 — 화면에 없는 복제본으로 클립을 돌려, 칼끝이 루트에서 가장 멀어지는 수평 거리를 잰다.
    상수로 박아 두면 클립이 바뀔 때 어긋나므로 클립에서 직접 뽑는다. */
 function measureReach(clip){
@@ -3939,6 +4244,32 @@ function partSegment(i, a, b){
 }
 // 부위 캡슐은 broad phase 전용. 실제 절단 여부는 남아 있는 피부 삼각형과의 교차로 정한다.
 const _regions = PARTS.map(() => ({ radius:0, segments:[[new THREE.Vector3(), new THREE.Vector3()]] }));
+/* 지금 칼날에 가장 가까운 부위. bladeContact 가 접촉을 못 잡았을 때 쓴다 —
+   연출은 빗나가면 안 되므로 '닿을 뻔한 곳' 을 대신 벤다. */
+function nearestPartToBlade(eligible){
+  if (!holder || !bladeShape || !enemy || !eligible.length) return -1;
+  enemy.updateWorldMatrix(true, true); enemy.updateMatrixWorld(true);
+  const pose = bladeCombat.pose(holder, bladeShape);
+  const regions = bladeRegions(eligible);
+  let best = -1, bestD = Infinity;
+  for (const i of eligible){
+    const r = regions[i]; if (!r) continue;
+    const d = segSegDist(pose.base, pose.tip, r.segments[0][0], r.segments[0][1]) - r.radius;
+    if (d < bestD){ bestD = d; best = i; }
+  }
+  return best;
+}
+/* 칼이 그 순간 향하는 방향으로 자른다 — 피와 조각이 스윙을 따라 날아간다 */
+const _cvPrev = new THREE.Vector3();
+function bladeImpact(cutIdx){
+  const pose = bladeCombat.pose(holder, bladeShape);
+  const point = pose.base.clone().lerp(pose.tip, 0.72);
+  const v = point.clone().sub(_cvPrev);
+  if (v.lengthSq() < 1e-8) v.copy(pose.tip).sub(pose.base);     // 멈춰 있으면 칼날 방향으로
+  _cvPrev.copy(point);
+  return { cut:cutIdx, point, velocity:v.normalize().multiplyScalar(6),
+           source:'critical', attack:MOTIONS[IDX_COMBO2].name, stroke:null };
+}
 function bladeRegions(eligible){
   const out = [];
   for (let i = 0; i < PARTS.length; i++){
@@ -4053,79 +4384,138 @@ function updateHitboxViz(){
 
 /* ===== 크리티컬 시네마틱 ===== */
 const cine = {
-  active:false, t:0, part:-1, cutDone:false, action:null, dur:0, contact:null,
-  K:[], head:null, slow:0.16, fov:38, letter:true,
-  CUT_AT:1.55, TOTAL:4.6
+  active:false, t:0, action:null, dur:0, head:null, fov:38, letter:true,
+  hits:[],        // 이 클립의 타격 시점(클립 시간) — 칼 속도 봉우리에서 뽑는다
+  plan:[],        // 타격마다 자를 부위
+  done:0, punch:0, shotT:0, pivot:null, F:null, foe:null, hold:false,
+  speed:1.15, clipT:0, freeze:0, finT:0, TOTAL:4.6
 };
+const IDX_COMBO2 = 3;                        // 연속 공격 Ver.2 (Standing Melee Combo Attack Ver. 2.fbx)
+/* 타격마다 카메라가 바뀐다 — 한 바퀴 도는 것보다 컷이 끊기는 쪽이 눈에 세다.
+   az: 0 = 플레이어 등 뒤, 90 = 오른쪽 옆, 180 = 적 너머 */
+/* 평소 공격 중 가끔 크리티컬이 터진다. 연달아 나오면 싱거워서 쿨타임을 둔다. */
+const critAuto = { on:true, chance:0.10, range:3.4, cool:8, t:0, angle:55, shake:1, cutT:0.07, hud:true };
+/* 발동 가능 여부 — 적이 사거리 안에 있고, 플레이어가 그쪽을 보고 있어야 한다.
+   가능한 적을 돌려주고(없으면 null), 화면 표시와 실제 발동이 같은 판정을 쓴다. */
+function critTarget(){
+  if (!character || playerDead || cine.active || rolling) return null;
+  if (critAuto.t > 0) return null;
+  const yaw = facingYaw();
+  const fx = Math.sin(yaw), fz = Math.cos(yaw);
+  const lim = Math.cos(THREE.MathUtils.degToRad(critAuto.angle));
+  let best = null, bestD = Infinity;
+  for (const f of foes){
+    if (!f.root || !f.root.visible || f.dead || f.enabled === false || f.ragdoll) continue;
+    const dx = f.root.position.x - character.position.x, dz = f.root.position.z - character.position.z;
+    const d = Math.hypot(dx, dz);
+    if (d > critAuto.range || d < 1e-3) continue;
+    if ((dx/d)*fx + (dz/d)*fz < lim) continue;           // 바라보는 방향 밖
+    if (d < bestD){ bestD = d; best = f; }
+  }
+  return best;
+}
+/* 카메라 연출 — 타격마다 샷이 바뀐다. az: 0 = 플레이어 등 뒤, 90 = 오른쪽 옆, 180 = 적 너머.
+   h 는 화면에 담을 세로 크기(m) — 작을수록 바짝 붙는다. */
+const CRIT_CAMS = [
+  { name:'컷 전환', note:'타격마다 반대편으로 튄다 — 가장 세다', shots:[
+    { az: 38, el:13, h:3.3 }, { az:118, el: 6, h:2.2 }, { az:-64, el:20, h:2.0 },
+    { az:196, el: 5, h:2.4 }, { az:246, el:15, h:3.2 } ] },
+  { name:'한 바퀴', note:'끊지 않고 적 너머까지 돌아 나간다', shots:[
+    { az: 45, el:12, h:3.2 }, { az:100, el:10, h:2.8 }, { az:155, el: 9, h:2.5 },
+    { az:210, el: 8, h:2.4 }, { az:265, el:12, h:3.0 } ] },
+  { name:'어깨 너머', note:'플레이어 뒤에 붙어 따라간다', shots:[
+    { az: 22, el:10, h:2.9 }, { az: 30, el: 8, h:2.3 }, { az: 16, el:12, h:2.1 },
+    { az: 26, el: 7, h:2.2 }, { az: 34, el:14, h:2.9 } ] },
+  { name:'올려보기', note:'바닥에서 올려다본다 — 적이 커 보인다', shots:[
+    { az: 55, el:-8, h:3.0 }, { az:130, el:-12, h:2.3 }, { az:-70, el:-10, h:2.1 },
+    { az:200, el:-14, h:2.3 }, { az:250, el: 2, h:3.0 } ] },
+  { name:'적 시점', note:'적이 보는 쪽에서 — 플레이어를 정면으로 잡는다', shots:[
+    { az:178, el: 8, h:3.0 }, { az:168, el: 5, h:2.4 }, { az:190, el:10, h:2.2 },
+    { az:174, el: 4, h:2.3 }, { az:183, el:12, h:2.9 } ] },
+  { name:'부감', note:'위에서 내려다본다 — 상황이 잘 보인다', shots:[
+    { az: 40, el:38, h:3.6 }, { az:120, el:34, h:3.0 }, { az:-60, el:42, h:2.8 },
+    { az:200, el:30, h:2.9 }, { az:250, el:40, h:3.6 } ] },
+];
+let critCam = 0;
+let CRIT_SHOTS = CRIT_CAMS[0].shots;
 const barTop = document.getElementById('barTop'), barBot = document.getElementById('barBot');
 const cineLabel = document.getElementById('cineLabel'), critBtn = document.getElementById('critBtn');
 const ease = x => x*x*(3 - 2*x);
 const _kp = new THREE.Vector3(), _kt = new THREE.Vector3(), _tmp = new THREE.Vector3();
 
 function startCinematic(){
-  if (!character || !enemy || !holder || cine.active) return;
-  if (playerDead){ setStatus('사망 상태입니다 · R 키로 재시작'); return; }   // 죽은 채로 적을 벨 수 있었다
-  if (!enemy.visible){ setStatus('적이 꺼져 있습니다'); return; }
-  const remaining = remainingCuts();           // 실제로 남아 있는 부위 중에서 연출 대상을 정한다
-  if (!remaining.length){ setStatus('이미 다 잘렸습니다 · 적 복구 후 다시'); return; }
-  const pick = remaining[Math.floor(Math.random()*remaining.length)];
+  if (!character || !holder || cine.active) return;
+  if (playerDead){ setStatus('사망 상태입니다 · R 키로 재시작'); return; }
+  /* 바라보고 있는 가까운 적만 벤다 — 화면의 '크리티컬 가능' 과 같은 판정이다. */
+  const tgt = critTarget();
+  if (!tgt){ setStatus('크리티컬 · 적을 바라보고 가까이 서야 합니다'); return; }
+  activateFoe(tgt);
+  if (!enemy){ setStatus('벨 적이 없습니다'); return; }
+  const live = [tgt];
 
-  const clip = clipCache.get(MOTIONS[IDX_CRIT].name);
-  if (!clip){ getClip(MOTIONS[IDX_CRIT]).then(startCinematic).catch(() => {}); return; }
+  const M = MOTIONS[IDX_COMBO2];
+  const clip = clipCache.get(M.name);
+  if (!clip){ getClip(M).then(startCinematic).catch(() => {}); return; }
 
-  // 배치: 더미 정면 기준으로 플레이어를 사거리 안에 세운다
-  const fwd = _tmp.set(enemy.position.x - character.position.x, 0, enemy.position.z - character.position.z);
-  if (fwd.lengthSq() < 1e-6) fwd.set(0,0,1);
-  fwd.normalize();
-  const right = new THREE.Vector3().crossVectors(fwd, UP).normalize();
-  const F = fwd.clone(), P = character.position, D = enemy.position;
+  const remaining = remainingCuts();
+  if (!remaining.length){ setStatus('이미 다 잘렸습니다'); return; }
 
-  character.position.set(D.x - F.x*0.95, character.position.y, D.z - F.z*0.95);
+  /* 배치 — 먼저 플레이어가 적 쪽을 보게 돌린다. 그래야 적이 등 뒤에 남지 않는다.
+     그 다음 적을 그 정면 한 걸음 앞으로 끌어온다(연출이라 실제 거리는 보지 않는다). */
+  const P = character.position;
+  const F = new THREE.Vector3(enemy.position.x - P.x, 0, enemy.position.z - P.z);
+  if (F.lengthSq() < 1e-6) F.set(Math.sin(facingYaw()), 0, Math.cos(facingYaw()));
+  F.normalize();
   character.quaternion.setFromAxisAngle(UP, Math.atan2(F.x, F.z) - (faceFlip ? Math.PI : 0));
+  const ex = P.x + F.x*1.15, ez = P.z + F.z*1.15;
+  enemy.position.set(ex, terrainY(ex, ez) + enemyGroundY, ez);
+  enemy.rotation.set(0, Math.atan2(-F.x, -F.z), 0);      // 플레이어를 마주 본다
+  const D = enemy.position;
+  cine.foe = live[0];
+  cine.foe.chasing = false; cine.foe.repos = false; cine.foe.holdT = 99;
 
-  const B = character.position.y;          // 지형 위 발높이 — 아래 높이값은 모든 발 기준이다(월드 상수로 박으면 지형 위에서 카메라가 대상을 놓친다)
-  const cutH = B + (pick === 0 ? 1.45 : pick === 1 ? 1.05 : 1.1);
-  const cutPt = new THREE.Vector3(D.x, cutH, D.z);
+  /* 타격 시점 — 칼끝 속도 봉우리에서 뽑는다. 상수로 박으면 클립이 바뀔 때 어긋난다. */
+  let windows = [];
+  try { windows = bladeCombat.profile(character, clip, bladeShape, holder); } catch (e){ console.warn('[CRIT] 궤적 분석 실패', e); }
+  cine.hits = windows.length ? windows.map(w => w.peak) : [clip.duration*0.5];
 
-  cine.head = findBone(character, 'head');
-  const facePt = new THREE.Vector3(P.x, B + 1.55, P.z);
-  const mid = new THREE.Vector3((P.x + D.x)/2, B + 1.15, (P.z + D.z)/2);
-  const swingPt = new THREE.Vector3((P.x + D.x*2)/3, (cutH + B + 1.35)/2, (P.z + D.z*2)/3);
+  /* 부위는 타격 순간에 칼 위치로 정한다. 다만 남은 부위보다 타격이 많으면 헛치므로 잘라 둔다. */
+  cine.hits = cine.hits.slice(0, Math.max(1, remaining.length));
 
-  // az: 0 = 플레이어 등 뒤, 90 = 옆, 180 = 더미 너머(리빌)
-  // h : 화면에 담을 세로 크기(m) — 거리는 화각에 맞춰 매 프레임 역산한다
+  const B = character.position.y;
   cine.F = F.clone();
-  cine.K = [
-    { pivot: mid.clone(),     h:3.4, az: 62, el:14, target: mid.clone() },      // 와이드
-    { pivot: swingPt.clone(), h:2.3, az: 28, el: 7, target: swingPt.clone() },  // 칼이 들어가는 순간
-    { pivot: new THREE.Vector3((cutPt.x + P.x)/2, (cutH + B + 1.55)/2, (cutPt.z + P.z)/2),
-                              h:2.1, az:152, el: 6, target: facePt.clone() },   // 갈라진 틈으로
-    { pivot: facePt.clone(),  h:2.6, az:170, el:11, target: facePt.clone() },   // 얼굴 리빌
-  ];
-  cine.cutPt = cutPt;
+  cine.pivot = new THREE.Vector3((P.x + D.x)/2, B + 1.05, (P.z + D.z)/2);
+  cine.head = findBone(character, 'head');
 
-  // 공격 포즈는 타임라인이 직접 구동한다 (느리게 재생하면 스윙이 안 끝난다)
   attacking = false; bufferedAt = -1;
   const a = mixer.clipAction(clip);
   a.reset(); a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; a.play();
   if (currentAction && currentAction !== a) currentAction.crossFadeTo(a, 0.12, false);
-  currentAction = a; currentClip = clip; activeIndex = IDX_CRIT;
-  a.paused = false; a.timeScale = 0;      // 재생 위치는 타임라인이 지정하되 페이드는 정상 진행
-  a.time = clip.duration * 0.10;
+  currentAction = a; currentClip = clip; activeIndex = IDX_COMBO2;
+  a.paused = false; a.timeScale = 0;      // 재생 위치는 타임라인이 지정한다
+  a.time = 0;
   cine.action = a; cine.dur = clip.duration;
+  cine.clipT = 0; cine.freeze = 0; cine.finT = 0;
+  cine.TOTAL = clip.duration/cine.speed + 2.2;   // 정지·마무리 슬로우까지 더한 넉넉한 상한
 
-  cine.active = true; cine.t = 0; cine.part = pick; cine.cutDone = false; cine.contact = null;
+  critAuto.t = critAuto.cool;          // 수동·자동 모두 같은 쿨타임을 쓴다
+  cine.active = true; cine.t = 0; cine.done = 0; cine.punch = 0; cine.hold = true; cine.shotT = 0;
+  _cvPrev.set(0, 0, 0);
   cutThisSwing = false;
-  bladePrev = null;                        // 연출 스윙도 실제 검 궤적으로 접촉을 찾는다
+  bladePrev = null;
   controls.enabled = false;
   camera.fov = cine.fov; camera.updateProjectionMatrix();
   if (cine.letter) document.body.classList.add('cine');
   critBtn.disabled = true;
-  setStatus('크리티컬 · ' + CUTS[pick].name);
+  setStatus('크리티컬 · 타격 ' + cine.hits.length + '회');
+  console.log('[CRIT] 타격 ' + cine.hits.length + '회 · 남은 부위 ' + remaining.length);
 }
 
 function endCinematic(){
-  cine.active = false;
+  cine.active = false; cine.hold = false;
+  for (const k in keys) keys[k] = false;
+  bufferedAt = -1;
+  if (cine.foe){ cine.foe.holdT = 0; cine.foe = null; }
   if (cine.action){ cine.action.timeScale = 1; cine.action.paused = false; }
   cine.action = null;
   controls.enabled = true;
@@ -4142,51 +4532,83 @@ function endCinematic(){
 function updateCinematic(rdt){
   cine.t += rdt;
   const t = cine.t;
+  /* 재생 리듬 — 평소엔 빠르게 지나가고, 타격 순간 아주 잠깐 멈췄다가(팍!),
+     마지막 타격 뒤에만 슬로우로 늘어진다. 시간을 적분해서 만든다. */
+  const lastDone = cine.done >= cine.hits.length;
+  let rate = cine.speed;
+  if (cine.freeze > 0){ cine.freeze -= rdt; rate *= 0.05; }          // 타격 정지감
+  if (lastDone){
+    cine.finT += rdt;
+    rate *= THREE.MathUtils.lerp(0.22, 1, THREE.MathUtils.clamp((cine.finT - 0.9)/0.7, 0, 1));
+  }
+  cine.clipT = Math.min(cine.clipT + rdt*rate, cine.dur);
+  const clipT = cine.clipT;
+  if (cine.action) cine.action.time = clipT;
 
-  if (cine.action){
-    // 접촉 시점(CUT_AT)에 클립이 정확히 55% 가 되도록 나눠 매핑한다
-    let p;
-    if (t < cine.CUT_AT){
-      p = 0.04 + 0.46*ease(THREE.MathUtils.clamp((t - 0.10)/(cine.CUT_AT - 0.10), 0, 1));
-    } else {
-      p = 0.50 + 0.46*ease(THREE.MathUtils.clamp((t - cine.CUT_AT)/(cine.TOTAL - cine.CUT_AT - 0.4), 0, 1));
+  /* 타격 — 클립이 그 지점을 지나는 순간 한 부위씩. 칼이 실제로 닿았으면 그 부위를 쓰고,
+     안 닿았으면 미리 정한 부위를 자른다(연출이라 빗나가면 안 된다). */
+  if (cine.done < cine.hits.length && clipT >= cine.hits[cine.done]){
+    let last = cine.done >= cine.hits.length - 1;
+    const left = remainingCuts();
+    /* 부위는 칼이 실제로 가 있는 곳에서 고른다. 마무리 전에는 목·허리(둘 다 치명 — 먼저 베면 마무리할 몸이 없다)를 빼고
+       팔·다리 중 칼에 가장 가까운 곳. 다리는 한쪽까지만 — 한 발로 서 있는 건 괜찮지만, 두 다리가 다 없으면
+       사망을 보류한 몸통이 서 있던 높이에 떠 있게 된다. 세 타격을 다 맞은 뒤에야 쓰러진다. */
+    const legGone = [4, 5].some(i => !left.includes(i));
+    const limbs = left.filter(i => i !== CUT_NECK && i !== 1 && !(legGone && CUTS[i].kind === "leg"));
+    if (!last && !limbs.length) last = true;
+    const pool = last ? left : limbs;
+    const hit = bladeContact(pool);
+    let use = (hit && pool.includes(hit.cut) && partAvailable(hit.cut)) ? hit.cut : nearestPartToBlade(pool);
+    if (last){
+      const fin = [CUT_NECK, 1].filter(i => left.includes(i));   // 목 · 허리 — 칼이 가까운 쪽
+      if (fin.length) use = fin.length > 1 ? nearestPartToBlade(fin) : fin[0];
+      if (!fin.includes(use)) use = fin[0] ?? use;
     }
-    cine.action.time = cine.dur * p;
+    cine.hold = !last;                         // 마지막 타격에서만 쓰러진다
+    if (use < 0) use = left[0] ?? -1;
+    if (use >= 0){
+      if (hit) { hit.source = 'critical'; hit.attack = MOTIONS[IDX_COMBO2].name; hit.stroke = null; }
+      cutThisSwing = false;                    // 연출은 타격마다 한 번씩 자른다
+      cutOne(use, (hit && hit.cut === use) ? hit : bladeImpact(use));
+      if (last) cine.done = cine.hits.length - 1;              // 마무리했으면 남은 타격은 없다
+      cine.punch = 1; cine.shotT = 0; cine.freeze = 0.085;   // 팍!
+      /* 맞는 모션 — 연출 중에는 enemyReact 를 막아 둬서 그냥 두면 사격 대기 자세로 썰린다.
+         마지막 타격은 enemyReact 가 사망 모션을 재생하므로 건드리지 않는다. */
+      if (!last && cine.foe) enemyClip('hit').then(c => playOn(cine.foe, c, true, 0.05)).catch(() => {});
+      cineLabel.classList.add('on');
+      setTimeout(() => cineLabel.classList.remove('on'), 600);
+    }
+    cine.done++;
+  } else if (cine.done < cine.hits.length){
+    bladeContact([]);                          // 궤적을 이어 두기만 한다
   }
-  // 연출 스윙도 같은 접촉 판정을 돌린다. 별도 연출이므로 절단 시점은 CUT_AT 그대로 유지.
-  if (!cine.cutDone){
-    const found = bladeContact(cine.contact ? [] : remainingCuts());
-    if (found) cine.contact = found;
-  }
-  if (!cine.cutDone && t >= cine.CUT_AT){
-    cine.cutDone = true;
-    const hit = cine.contact && partAvailable(cine.contact.cut) ? cine.contact : null;
-    if (hit){ hit.source = 'critical'; hit.attack = MOTIONS[IDX_CRIT].name; hit.stroke = null; }
-    cutOne(hit ? hit.cut : cine.part, hit);    // 검이 닿은 부위, 못 찾으면 연출이 잡은 부위
-    cineLabel.classList.add('on');
-    setTimeout(() => cineLabel.classList.remove('on'), 900);
-  }
+  if (cine.punch > 0) cine.punch = Math.max(0, cine.punch - rdt*3.2);
 
-  const K = cine.K, C = cine.CUT_AT;
-  let a, b, u;
-  if (t < C){ a = K[0]; b = K[1]; u = t/C; }                                   // 스윙 전체를 보여주는 구간
-  else if (t < C + 1.3){ a = K[1]; b = K[2]; u = (t - C)/1.3; }                // 갈라지는 동안 반대편으로
-  else { a = K[2]; b = K[3]; u = (t - C - 1.3)/(cine.TOTAL - C - 1.3); }       // 얼굴 리빌 + 달리 아웃
-  u = ease(THREE.MathUtils.clamp(u, 0, 1));
+  /* 카메라 — 타격마다 다음 샷으로 휙 넘어가고, 샷 안에서는 천천히 흐른다. */
+  cine.shotT += rdt;
+  const si = Math.min(cine.done, CRIT_SHOTS.length - 1);
+  const A = CRIT_SHOTS[Math.max(0, si - 1)], B = CRIT_SHOTS[si];
+  const w = ease(THREE.MathUtils.clamp(cine.shotT/Math.max(critAuto.cutT, 0.01), 0, 1));
+  const drift = THREE.MathUtils.clamp(cine.shotT/1.6, 0, 1);         // 샷 안에서의 완만한 이동
+  let azD = THREE.MathUtils.lerp(A.az, B.az, w) + drift*13;
+  let elD = THREE.MathUtils.lerp(A.el, B.el, w) + drift*2.5;
+  let h   = THREE.MathUtils.lerp(A.h,  B.h,  w)*(1 - 0.20*cine.punch);
+  /* 손으로 든 것처럼 미세하게 흔든다. 타격 직후에 가장 크다. */
+  const sh = (0.4 + 6.0*cine.punch)*critAuto.shake;
+  azD += Math.sin(t*23.0)*0.32*sh + Math.sin(t*7.3)*0.5;
+  elD += Math.cos(t*19.7)*0.22*sh + Math.cos(t*5.1)*0.35;
+  const az = THREE.MathUtils.degToRad(azD);
+  const el = THREE.MathUtils.degToRad(elD);
 
-  _kp.lerpVectors(a.pivot, b.pivot, u);
-  _kt.lerpVectors(a.target, b.target, u);
-  if (cine.head && t > C + 0.5){ cine.head.getWorldPosition(_tmp); _kt.lerp(_tmp, 0.9); }
+  _kp.copy(cine.pivot);
+  _kt.copy(cine.pivot);
+  if (enemy){ _kt.lerp(_tmp.set(enemy.position.x, cine.pivot.y, enemy.position.z), 0.35); }
+  if (cine.head && t > cine.TOTAL*0.72){ cine.head.getWorldPosition(_tmp); _kt.lerp(_tmp, 0.55); }
 
-  const h  = THREE.MathUtils.lerp(a.h, b.h, u);
-  const az = THREE.MathUtils.degToRad(THREE.MathUtils.lerp(a.az, b.az, u));
-  const el = THREE.MathUtils.degToRad(THREE.MathUtils.lerp(a.el, b.el, u));
-
-  // 담을 세로 크기(h)를 화각에 맞춰 거리로 환산 — 이게 없으면 망원에서 프레임이 잘린다
   const vfov = THREE.MathUtils.degToRad(camera.fov);
   const aspect = Math.max(camera.aspect, 0.1);
-  let d = (h*0.5) / Math.tan(vfov*0.5) * 1.12;
-  if (aspect < 1) d /= aspect;                                  // 세로 화면에서는 더 물러난다
+  let d = (h*0.5)/Math.tan(vfov*0.5)*1.12;
+  if (aspect < 1) d /= aspect;
   d = Math.max(d, 1.2);
 
   const bx = -cine.F.x, bz = -cine.F.z;
@@ -4195,13 +4617,14 @@ function updateCinematic(rdt){
   const hz = Math.cos(el);
   camera.position.set(_kp.x + rx*hz*d, _kp.y + Math.sin(el)*d, _kp.z + rz*hz*d);
   const floorY = terrainY(camera.position.x, camera.position.z) + 0.25;
-  if (camera.position.y < floorY) camera.position.y = floorY;    // 지면 아래로 내려가지 않게
+  if (camera.position.y < floorY) camera.position.y = floorY;
   camera.lookAt(_kt);
 
-  if (t >= cine.TOTAL){ endCinematic(); return 1; }
-  if (t < cine.CUT_AT - 0.35) return Math.max(cine.slow*1.6, 0.18);   // 접근·윈드업
-  if (t < cine.CUT_AT + 1.5) return cine.slow;                   // 가르는 순간
-  return THREE.MathUtils.lerp(cine.slow, 1, THREE.MathUtils.clamp((t - cine.CUT_AT - 1.5)/0.9, 0, 1));
+  if ((lastDone && cine.finT >= 1.7 && clipT >= cine.dur - 1e-3) || t >= cine.TOTAL){ endCinematic(); return 1; }
+  /* 월드 시간도 같은 리듬 — 타격 순간 멎고, 마지막에만 늘어진다 */
+  if (cine.freeze > 0) return 0.06;
+  if (lastDone) return THREE.MathUtils.lerp(0.22, 1, THREE.MathUtils.clamp((cine.finT - 0.9)/0.7, 0, 1));
+  return Math.min(1, cine.speed);
 }
 
 function facingYaw(){ return character.rotation.y + (faceFlip ? Math.PI : 0); }
@@ -4268,6 +4691,38 @@ tabs.forEach(([tid, pid]) => {
     document.getElementById(p).dataset.active = String(t === tid);
   });
 });
+/* 배경 색·톤 — 재질을 여러 개 쓰므로 유니폼을 공유해서 슬라이더 하나로 전부 움직인다.
+   ※ 값을 바꾼 뒤 [값 복사] 로 뽑아 보내 주면 기본값으로 박아 드립니다. */
+const BG_DEFAULT = { tint:'#ffffff', tintA:0.42, bright:0.77, sat:1.03, con:1.10 };
+const bgTone = { ...BG_DEFAULT };
+const bgU = {
+  bgTint:  { value: new THREE.Color(BG_DEFAULT.tint) },
+  bgTintA: { value: BG_DEFAULT.tintA },
+  bgBright:{ value: BG_DEFAULT.bright },
+  bgSat:   { value: BG_DEFAULT.sat },
+  bgCon:   { value: BG_DEFAULT.con },
+};
+/* 밝기 → 채도 → 대비 → 색조 순으로 먹인다. 색조는 밝기만 남기고 그 색으로 칠하는 방식이라
+   1.0 에서 원본 색이 완전히 사라진다. */
+function applyBgGrade(mat){
+  mat.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, bgU);
+    sh.fragmentShader = 'uniform vec3 bgTint; uniform float bgTintA, bgBright, bgSat, bgCon;\n' + sh.fragmentShader
+      .replace('#include <colorspace_fragment>',
+        `{
+           vec3 c = gl_FragColor.rgb * bgBright;
+           float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+           c = mix(vec3(l), c, bgSat);
+           c = (c - 0.5)*bgCon + 0.5;
+           c = mix(c, l*bgTint*1.6, bgTintA);
+           gl_FragColor.rgb = max(c, 0.0);
+         }
+         #include <colorspace_fragment>`);
+    mat.userData.shader = sh;
+  };
+  mat.needsUpdate = true;
+  return mat;
+}
 const bind = (id, outId, fmt, onChange) => {
   const el = document.getElementById(id), out = document.getElementById(outId);
   const sync = () => { const v = parseFloat(el.value); out.textContent = fmt(v); onChange(v); };
@@ -4392,6 +4847,7 @@ bind('comboOpen','comboOpenv',f2, v => comboOpen = v);
 bind('jumpAtk','jumpAtkv',f2, v => jumpAtk.chance = v);
 bind('jumpSplit','jumpSplitv',f2, v => jumpAtk.split = v);
 bind('upperAtk','upperAtkv',f2, v => upperAtk.chance = v);
+bind('specialCool','specialCoolv',f1, v => special.cool = v);
 chk('rollCancelChk', v => rollCancel = v);
 const atkListEl = document.getElementById('atkList');
 COMBO.forEach(idx => {
@@ -4404,7 +4860,31 @@ COMBO.forEach(idx => {
 document.getElementById('atkBtn').onclick = pressAttack;
 document.getElementById('rollBtn').onclick = pressRoll;
 critBtn.onclick = startCinematic;
-bind('cineS','cineSv',f2, v => cine.slow = v);
+bind('cineS','cineSv',f2, v => cine.speed = v);
+bind('critAuto','critAutov',f2, v => critAuto.chance = v);
+bind('critRange','critRangev',f1, v => critAuto.range = v);
+bind('critAngle','critAnglev',f0, v => critAuto.angle = v);
+bind('critCool','critCoolv',f1, v => critAuto.cool = v);
+bind('critShake','critShakev',f1, v => critAuto.shake = v);
+bind('critCutT','critCutTv',f2, v => critAuto.cutT = v);
+chk('critHudChk', v => { critAuto.hud = v; });
+document.getElementById('critTestBtn').onclick = startCinematic;
+/* 카메라 연출 고르기 */
+{
+  const list = document.getElementById('critCamList'), note = document.getElementById('critCamNote');
+  const draw = () => {
+    list.innerHTML = '';
+    CRIT_CAMS.forEach((C, i) => {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = C.name;
+      b.setAttribute('aria-pressed', String(i === critCam));
+      b.onclick = () => { critCam = i; CRIT_SHOTS = C.shots; draw(); };
+      list.appendChild(b);
+    });
+    note.textContent = CRIT_CAMS[critCam].note;
+  };
+  draw();
+}
 bind('cineZ','cineZv',f0, v => { cine.fov = v; if (cine.active){ camera.fov = v; camera.updateProjectionMatrix(); } });
 chk('letterChk', v => { cine.letter = v; if (!v) document.body.classList.remove('cine'); });
 
@@ -4456,8 +4936,6 @@ chk('bgmChk', v => { bgmOn = v; if (!v){ bgm.pause(); bgmStarted = false; } else
 bind('bgmVol','bgmVolv',f2, v => { bgmVol = v; setVol(bgm, v); });
 bind('sfxVol','sfxVolv',f2, v => sfxShot.vol = v);
 bind('goreVol','goreVolv',f2, v => sfxGore.vol = v);
-bind('tauntVol','tauntVolv',f2, v => sfxTaunt.vol = v);
-bind('tauntChance','tauntChancev',f2, v => tauntChance = v);
 bind('screamVol','screamVolv',f2, v => sfxScream.forEach(g => g.vol = v));
 document.getElementById('camResetBtn').onclick = resetCamOffset;
 /* 피 프리셋 — 양·솟구침·굵기·지속을 한 번에. 슬라이더에 값을 넣고 input 이벤트로 bind 를 태운다 */
@@ -4546,6 +5024,8 @@ function buildPartUI(){
 /* 높이맵: 삼각형을 격자에 래스터라이즈해 굽는다.
    레이캐스트는 삼각형 전수 검사라 굽는 데만 수십 초가 걸린다. */
 let hm = null, hmT = { x:0, y:0, z:0, s:1, rot:0 };
+let hmReady = () => {};
+const hmReadyP = new Promise(r => { hmReady = r; });   // 첫 높이맵이 구워질 때 한 번 풀린다
 function bakeHeightmap(){
   hm = null;
   const meshes = [];
@@ -4598,6 +5078,7 @@ function bakeHeightmap(){
     }
   }
   hm = { n:N, minX, minZ, sx, sz, data };
+  hmReady();                                 // 기다리는 쪽(하늘 상자 로드 등)을 깨운다
   hmT = { x:mapT.x, y:mapT.y, z:mapT.z, s:mapT.s, rot:mapT.rot };
   hm.bias = 0;
   splatMesh.position.set(0, 0.004, 0);
@@ -4649,10 +5130,13 @@ let placeWanted = false;
 function placeOnTerrain(){
   if (!character){ placeWanted = true; return; }
   if (!hm){
+    /* 맵이 아직 없다 — 임시로 원점에 두고, 높이맵이 구워지면 다시 놓도록 표시한다.
+       이 표시가 없으면 캐시가 비어 캐릭터가 맵보다 먼저 오는 날 영원히 원점에서 시작한다. */
     character.position.set(0, charGroundY, 0);
     if (enemy) enemy.position.set(1.3, enemyGroundY, 0);
     controls.target.set(0, 0.95, 0);
     applyCamOffset(loadCamOffset());
+    placeWanted = true;
     return;
   }
   const N = hm.n, lo = Math.floor(N*0.25), hi = Math.floor(N*0.75);
@@ -4689,6 +5173,7 @@ function placeOnTerrain(){
   };
   const gy = groundAt(wx, wz);
   character.position.set(wx, gy + charGroundY, wz);
+  propsRestore();                       // 지형이 준비됐다 — 저장해 둔 소품을 제자리에 되살린다 (한 번만)
   character.quaternion.setFromAxisAngle(UP, faceFlip ? Math.PI : 0);
   if (enemy) placeEnemyNearPlayer();
   // 플레이 영역: 지형 경계에서 25m 안쪽까지만 허용한다 → 경계에 서도 지형이 계속 이어져 보인다
@@ -4778,77 +5263,98 @@ function shiftOnly(){
 /* ===== 건물 배치 =====
    맵 모델과 달리 지형을 굽는 대상이 아니다 — 지붕 위로 걸어 다니게 되면 곤란하므로
    높이맵에는 넣지 않고, 지면 높이에 세워 두는 소품으로 다룬다. */
-const HOUSE_FILE = 'jeff/house.glb';
-const HOUSE_KEY = 'motionViewer.houses.v1';
-const houses = [];
-let houseProto = null, houseSel = -1, houseLoading = null;
-function houseSay(m, err){ const el = document.getElementById('hOut'); if (el){ el.textContent = m; el.style.color = err ? '#f2a0a0' : ''; } }
-function loadHouse(){
-  if (houseProto) return Promise.resolve(houseProto);
-  if (houseLoading) return houseLoading;
-  houseSay('house.glb 불러오는 중…');
-  houseLoading = new Promise((res, rej) => gltfLoader.load(url(HOUSE_FILE), g => res(g.scene), undefined, rej))
+/* ===== 소품 배치 =====
+   맵 모델과 달리 지형을 굽는 대상이 아니다 — 지붕이나 차 위로 걸어 다니게 되면 곤란하므로
+   높이맵에는 넣지 않고, 지면에 세워 두고 옆면만 막는 소품으로 다룬다.
+   종류가 늘어도 이 표에 한 줄만 더하면 된다. */
+const PROPS = [
+  { name:'집', file:'jeff/house.glb', height:4, key:'motionViewer.houses.v1' },
+];
+let propKind = 0;
+const props = [];                      // 배치된 것 전부 (종류 섞여 있음) — 충돌 판정이 이 배열을 본다
+const houses = props;                  // blockByHouses 가 쓰던 이름 유지
+let propSel = -1;
+function propSay(m, err){ const el = document.getElementById('hOut'); if (el){ el.textContent = m; el.style.color = err ? '#f2a0a0' : ''; } }
+function loadProp(i){
+  const P = PROPS[i];
+  if (P.proto) return Promise.resolve(P.proto);
+  if (P.loading) return P.loading;
+  propSay(P.name + ' 불러오는 중…');
+  P.loading = new Promise((res, rej) => gltfLoader.load(url(P.file), g => res(g.scene), undefined, rej))
     .then(o => {
       /* 모델마다 단위가 달라 그대로 놓으면 티끌이거나 산맥이 된다.
-         바운딩 박스 높이를 4m(2층집)로 맞춘 값을 기준 크기로 삼는다. */
+         바운딩 박스 높이를 실제 크기(집 4m · 험비 2.1m)에 맞춘 값을 기준 배율로 삼는다. */
       const box = new THREE.Box3().setFromObject(o);
       const h = Math.max(box.max.y - box.min.y, 1e-3);
-      o.userData.baseScale = 4/h;
+      o.userData.baseScale = P.height/h;
       o.userData.footY = box.min.y;
-      // 충돌용 바닥 넓이(모델 단위). 회전·크기는 worldToLocal 이 처리하므로 그대로 둔다.
+      // 충돌용 바닥 넓이(모델 단위). 회전·크기는 worldToLocal 이 처리한다.
       o.userData.box = { minX:box.min.x, maxX:box.max.x, minZ:box.min.z, maxZ:box.max.z };
       o.traverse(m => { if (m.isMesh){ m.castShadow = true; m.receiveShadow = true; } });
-      houseProto = o;
-      houseSay('house.glb 준비됨 · 기준 배율 ' + (4/h).toFixed(3));
+      P.proto = o;
+      propSay(P.name + ' 준비됨 · 기준 배율 ' + (P.height/h).toFixed(3));
       return o;
     })
-    .catch(e => { houseLoading = null; houseSay('house.glb 를 못 불러왔습니다 — ' + (e && e.message ? e.message : e), true); throw e; });
-  return houseLoading;
+    .catch(e => { P.loading = null; propSay(P.name + ' 을(를) 못 불러왔습니다 — ' + (e && e.message ? e.message : e), true); throw e; });
+  return P.loading;
 }
-function houseGroundY(o){ return terrainY(o.position.x, o.position.z) - o.userData.footY*o.scale.y; }
-function addHouse(st){
-  return loadHouse().then(proto => {
+function propGroundY(o){ return terrainY(o.position.x, o.position.z) - o.userData.footY*o.scale.y; }
+function addProp(kind, st){
+  return loadProp(kind).then(proto => {
     const o = proto.clone(true);
     o.userData.baseScale = proto.userData.baseScale;
     o.userData.footY = proto.userData.footY;
     o.userData.box = proto.userData.box;
+    o.userData.kind = kind;
     const b = proto.userData.baseScale;
     if (st){
       o.scale.setScalar(b*st.s); o.rotation.y = st.r;
-      o.position.set(st.x, 0, st.z); o.position.y = houseGroundY(o) + (st.dy || 0);
+      o.position.set(st.x, 0, st.z); o.position.y = propGroundY(o) + (st.dy || 0);
       o.userData.dy = st.dy || 0; o.userData.k = st.s;
     } else {
       o.scale.setScalar(b); o.userData.k = 1; o.userData.dy = 0;
-      // 캐릭터가 보는 쪽 6m 앞에 세운다 — 발밑에 겹쳐 놓으면 안이 안 보인다
+      // 캐릭터가 보는 쪽 6m 앞 — 발밑에 겹쳐 놓으면 안이 안 보인다
       const fw = character ? new THREE.Vector3(0,0,1).applyQuaternion(character.quaternion) : new THREE.Vector3(0,0,1);
       const p = character ? character.position : new THREE.Vector3();
       o.position.set(p.x + fw.x*6, 0, p.z + fw.z*6);
       o.rotation.y = Math.atan2(-fw.x, -fw.z);     // 정면이 캐릭터를 보게
-      o.position.y = houseGroundY(o);
+      o.position.y = propGroundY(o);
     }
     scene.add(o);
-    houses.push(o);
-    houseSel = houses.length - 1;
-    buildHouseUI(); syncHouseUI();
+    props.push(o);
+    propSel = props.length - 1;
+    buildPropUI(); syncPropUI();
+    if (!propsLoading) propsKeep();
     return o;
   }).catch(() => {});
 }
-function buildHouseUI(){
+function buildPropUI(){
+  const kindEl = document.getElementById('propKind');
+  if (kindEl){
+    kindEl.innerHTML = '';
+    PROPS.forEach((P, i) => {
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = P.name;
+      b.setAttribute('aria-pressed', String(i === propKind));
+      b.onclick = () => { propKind = i; buildPropUI(); };
+      kindEl.appendChild(b);
+    });
+  }
   const el = document.getElementById('houseList');
   el.innerHTML = '';
-  houses.forEach((o, i) => {
+  props.forEach((o, i) => {
     const b = document.createElement('button');
-    b.className = 'chip'; b.textContent = '집 ' + (i+1);
-    b.setAttribute('aria-pressed', String(i === houseSel));
-    b.onclick = () => { houseSel = i; buildHouseUI(); syncHouseUI(); };
+    b.className = 'chip'; b.textContent = PROPS[o.userData.kind].name + ' ' + (i+1);
+    b.setAttribute('aria-pressed', String(i === propSel));
+    b.onclick = () => { propSel = i; buildPropUI(); syncPropUI(); };
     el.appendChild(b);
   });
 }
-/* 슬라이더를 선택된 집의 현재 값으로 되돌린다 (값을 쏘지 않고 표시만) */
-let houseSyncing = false;
-function syncHouseUI(){
-  const o = houses[houseSel];
-  houseSyncing = true;
+/* 슬라이더를 선택된 소품의 현재 값으로 되돌린다 (값을 쏘지 않고 표시만) */
+let propSyncing = false;
+function syncPropUI(){
+  const o = props[propSel];
+  propSyncing = true;
   const put = (id, v, f) => { const e = document.getElementById(id), out = document.getElementById(id+'v');
     if (!e) return; e.value = v; if (out) out.textContent = f(v); };
   if (o){
@@ -4858,46 +5364,72 @@ function syncHouseUI(){
     put('hZ', o.position.z, v => (+v).toFixed(2));
     put('hY', o.userData.dy, v => (+v).toFixed(2));
   }
-  houseSyncing = false;
-  houseSay(houses.length ? (houses.length + '채 · ' + (houseSel >= 0 ? '집 ' + (houseSel+1) + ' 선택됨' : '선택 없음')) : '아직 없습니다');
+  propSyncing = false;
+  propSay(props.length ? (props.length + '개 · ' + (propSel >= 0 ? PROPS[props[propSel].userData.kind].name + ' ' + (propSel+1) + ' 선택됨' : '선택 없음')) : '아직 없습니다');
 }
-function houseEdit(fn){
-  if (houseSyncing) return;
-  const o = houses[houseSel]; if (!o) return;
+function propEdit(fn){
+  if (propSyncing) return;
+  const o = props[propSel]; if (!o) return;
   fn(o);
-  o.position.y = houseGroundY(o) + o.userData.dy;
+  o.position.y = propGroundY(o) + o.userData.dy;
+  propsKeep();
 }
-bind('hScale','hScalev',f2, v => houseEdit(o => { o.userData.k = v; o.scale.setScalar(o.userData.baseScale*v); }));
-bind('hRot','hRotv',f0, v => houseEdit(o => { o.rotation.y = THREE.MathUtils.degToRad(v); }));
-bind('hX','hXv',f2, v => houseEdit(o => { o.position.x = v; }));
-bind('hZ','hZv',f2, v => houseEdit(o => { o.position.z = v; }));
-bind('hY','hYv',f2, v => houseEdit(o => { o.userData.dy = v; }));
-document.getElementById('hAddBtn').onclick = () => addHouse(null);
+bind('hScale','hScalev',f2, v => propEdit(o => { o.userData.k = v; o.scale.setScalar(o.userData.baseScale*v); }));
+bind('hRot','hRotv',f0, v => propEdit(o => { o.rotation.y = THREE.MathUtils.degToRad(v); }));
+bind('hX','hXv',f2, v => propEdit(o => { o.position.x = v; }));
+bind('hZ','hZv',f2, v => propEdit(o => { o.position.z = v; }));
+bind('hY','hYv',f2, v => propEdit(o => { o.userData.dy = v; }));
+document.getElementById('hAddBtn').onclick = () => addProp(propKind, null);
 document.getElementById('hDelBtn').onclick = () => {
-  const o = houses[houseSel]; if (!o) return;
-  scene.remove(o); houses.splice(houseSel, 1);
-  houseSel = Math.min(houseSel, houses.length - 1);
-  buildHouseUI(); syncHouseUI();
+  const o = props[propSel]; if (!o) return;
+  scene.remove(o); props.splice(propSel, 1);
+  propSel = Math.min(propSel, props.length - 1);
+  buildPropUI(); syncPropUI();
+  propsKeep();
 };
 document.getElementById('hClearBtn').onclick = () => {
-  houses.forEach(o => scene.remove(o)); houses.length = 0; houseSel = -1;
-  buildHouseUI(); syncHouseUI();
+  props.forEach(o => scene.remove(o)); props.length = 0; propSel = -1;
+  buildPropUI(); syncPropUI();
+  propsKeep();
 };
-document.getElementById('hGroundBtn').onclick = () => houseEdit(o => { o.userData.dy = 0; });
+document.getElementById('hGroundBtn').onclick = () => propEdit(o => { o.userData.dy = 0; });
+/* 저장은 종류까지 함께 — 예전 형식(종류 없음)은 집으로 읽는다 */
+const PROP_KEY = 'motionViewer.props.v1';
+function propsSnapshot(){
+  return props.map(o => ({ t:o.userData.kind, x:+o.position.x.toFixed(3), z:+o.position.z.toFixed(3),
+                           s:+o.userData.k.toFixed(3), r:+o.rotation.y.toFixed(4), dy:+o.userData.dy.toFixed(3) }));
+}
+/* 배치가 바뀔 때마다 적어 둔다 — 슬라이더를 끄는 중에도 계속 불리므로 한 박자 쉬었다 쓴다 */
+let propSaveT = null, propsLoading = false, propsRestored = false;
+function propsKeep(){
+  clearTimeout(propSaveT);
+  propSaveT = setTimeout(() => {
+    try { localStorage.setItem(PROP_KEY, JSON.stringify(propsSnapshot())); } catch {}
+  }, 250);
+}
+async function propsRestore(){
+  if (propsRestored) return 0;
+  propsRestored = true; propsLoading = true;
+  let data = [];
+  try { data = JSON.parse(localStorage.getItem(PROP_KEY) || '[]'); } catch {}
+  if (!data.length){ try { data = JSON.parse(localStorage.getItem(PROPS[0].key) || '[]'); } catch {} }
+  for (const st of data) await addProp(st.t || 0, st);
+  propsLoading = false;
+  if (data.length) propSay(data.length + '개 불러옴');
+  return data.length;
+}
 document.getElementById('hSaveBtn').onclick = () => {
-  const data = houses.map(o => ({ x:+o.position.x.toFixed(3), z:+o.position.z.toFixed(3),
-                                  s:+o.userData.k.toFixed(3), r:+o.rotation.y.toFixed(4), dy:+o.userData.dy.toFixed(3) }));
-  try { localStorage.setItem(HOUSE_KEY, JSON.stringify(data)); houseSay(data.length + '채 저장됨'); }
-  catch (e){ houseSay('저장 실패 — ' + e.message, true); }
+  const data = propsSnapshot();
+  try { localStorage.setItem(PROP_KEY, JSON.stringify(data)); propSay(data.length + '개 저장됨'); }
+  catch (e){ propSay('저장 실패 — ' + e.message, true); }
 };
 document.getElementById('hLoadBtn').onclick = async () => {
-  let data; try { data = JSON.parse(localStorage.getItem(HOUSE_KEY) || '[]'); } catch { data = []; }
-  if (!data.length){ houseSay('저장된 배치가 없습니다', true); return; }
-  houses.forEach(o => scene.remove(o)); houses.length = 0; houseSel = -1;
-  for (const st of data) await addHouse(st);
-  houseSay(houses.length + '채 불러옴');
+  props.forEach(o => scene.remove(o)); props.length = 0; propSel = -1;
+  propsRestored = false;
+  const n = await propsRestore();
+  if (!n) propSay('저장된 배치가 없습니다', true);
 };
-buildHouseUI(); syncHouseUI();
+buildPropUI(); syncPropUI();
 
 const mS = bind('mScale','mScalev',f2, v => { mapT.s = v; applyMapTransform(); laterBake(); });
 const mYc = bind('mY','mYv',f2, v => {
@@ -4939,6 +5471,39 @@ document.getElementById('mAlignBtn').onclick = () => {
 };
 chk('mGroundChk', v => { ground.visible = !(v && mapObj); });
 chk('mShadowChk', v => { if (mapObj) mapObj.traverse(o => { if (o.isMesh){ o.receiveShadow = v; o.castShadow = v; } }); });
+chk('sky1Chk', v => { sky1to1 = v; });
+/* 배경 색·톤 */
+{
+  const out = document.getElementById('bgOut');
+  const line = () => 'tint:' + bgTone.tint + ' tintA:' + bgTone.tintA.toFixed(2) +
+                     ' bright:' + bgTone.bright.toFixed(2) + ' sat:' + bgTone.sat.toFixed(2) +
+                     ' con:' + bgTone.con.toFixed(2);
+  const show = () => { out.textContent = line(); };
+  const BG_KEY = 'motionViewer.bgTone.v2';   // 기본값이 바뀌었다 — 예전 저장본이 덮지 않게 키를 올린다
+  const tintEl = document.getElementById('bgTint');
+  tintEl.addEventListener('input', () => { bgTone.tint = tintEl.value; bgU.bgTint.value.set(tintEl.value); show(); });
+  bind('bgTintA','bgTintAv',f2, v => { bgTone.tintA = v; bgU.bgTintA.value = v; show(); });
+  bind('bgBright','bgBrightv',f2, v => { bgTone.bright = v; bgU.bgBright.value = v; show(); });
+  bind('bgSat','bgSatv',f2, v => { bgTone.sat = v; bgU.bgSat.value = v; show(); });
+  bind('bgCon','bgConv',f2, v => { bgTone.con = v; bgU.bgCon.value = v; show(); });
+  /* 슬라이더에 값을 밀어 넣고 이벤트를 쏜다 — 배선을 두 벌 두지 않으려고 */
+  const put = (id, v) => { const e = document.getElementById(id);
+    e.value = v; e.dispatchEvent(new Event('input')); };
+  const applyAll = t => { put('bgTint', t.tint); put('bgTintA', t.tintA); put('bgBright', t.bright); put('bgSat', t.sat); put('bgCon', t.con); };
+  document.getElementById('bgCopyBtn').onclick = () => {
+    const txt = line();
+    out.textContent = txt;
+    try { navigator.clipboard.writeText(txt); setStatus('배경 톤 값을 복사했습니다 · ' + txt); }
+    catch { setStatus('복사 실패 — 아래 값을 직접 선택해 복사하세요', true); }
+  };
+  document.getElementById('bgSaveBtn').onclick = () => {
+    try { localStorage.setItem(BG_KEY, JSON.stringify(bgTone)); setStatus('배경 톤 저장됨'); }
+    catch (e){ setStatus('저장 실패 — ' + e.message, true); }
+  };
+  document.getElementById('bgResetBtn').onclick = () => { applyAll(BG_DEFAULT); };
+  try { const sv = JSON.parse(localStorage.getItem(BG_KEY) || 'null'); if (sv) applyAll({ ...BG_DEFAULT, ...sv }); } catch {}
+  show();
+}
 chk('mWireChk', v => { if (mapObj) mapObj.traverse(o => { if (o.isMesh) (Array.isArray(o.material)?o.material:[o.material]).forEach(mt => mt && (mt.wireframe = v)); }); });
 chk('mWalkChk', v => { walkOnMap = v; });
 document.getElementById('mCopyBtn').onclick = async () => {
@@ -5034,7 +5599,146 @@ function duneRing(radius, count, baseH, amp, cNear, cFar, seed){
   return new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors:true, fog:true, side:THREE.DoubleSide }));
 }
 
+/* ===== 하늘 상자 =====
+   대기 산란 돔 + 사구 띠 대신, 통째로 그려진 배경 모델을 쓴다.
+   안쪽에서 보므로 뒷면을 그리고, 깊이는 쓰지 않으며 가장 먼저 그린다. */
+const SKYBOX_FILE = 'jeff/stylized_desert_skybox_2.glb';
+let skyboxProto = null, skyboxLoading = null, skyboxInfo = null, skyboxObj = null;
+function loadSkybox(){
+  if (skyboxProto) return Promise.resolve(skyboxProto);
+  if (skyboxLoading) return skyboxLoading;
+  skyboxLoading = new Promise((res, rej) => gltfLoader.load(url(SKYBOX_FILE), g => res(g.scene), undefined, rej))
+    .then(o => {
+      const box = new THREE.Box3().setFromObject(o);
+      const size = box.getSize(new THREE.Vector3());
+      const ctr = box.getCenter(new THREE.Vector3());
+      /* 가장 큰 변을 기준으로 장면을 감싸는 크기(반지름 900m)에 맞춘다 */
+      const k = 1800/Math.max(size.x, size.y, size.z, 1e-6);
+      let tris = 0, maps = 0, px = 0, texW = 0, texH = 0;
+      o.traverse(m => {
+        if (!m.isMesh) return;
+        const g2 = m.geometry;
+        tris += g2.index ? g2.index.count/3 : (g2.attributes.position ? g2.attributes.position.count/3 : 0);
+        const mats = Array.isArray(m.material) ? m.material : [m.material];
+        const lit = mats.map(mt => {
+          if (!mt) return mt;
+          const map = mt.map || mt.emissiveMap || null;
+          if (map){
+            map.colorSpace = THREE.SRGBColorSpace;
+            map.anisotropy = MAX_ANISO;                 // 지평선 쪽 비스듬한 각도에서 뭉개지지 않게
+            map.minFilter = THREE.LinearMipmapLinearFilter;
+            map.magFilter = THREE.LinearFilter;
+            map.generateMipmaps = true;
+            map.needsUpdate = true;
+            maps++;
+            if (map.image){ px += (map.image.width||0)*(map.image.height||0); texW = map.image.width||0; texH = map.image.height||0; }
+          }
+          /* 조명을 받지 않는 재질로 갈아끼운다 — 그림에 그려진 색이 그대로 나온다.
+             원본 속성(색·투명도)을 그대로 옮겨야 한다. 이 모델에는 opacity 0 짜리
+             투명 헬퍼 큐브가 들어 있어서, 그걸 무시하면 흰 상자가 장면을 덮는다. */
+          return applyBgGrade(new THREE.MeshBasicMaterial({
+            map,
+            color: mt.color ? mt.color.clone() : new THREE.Color(0xffffff),
+            transparent: !!mt.transparent,
+            opacity: mt.opacity === undefined ? 1 : mt.opacity,
+            alphaMap: mt.alphaMap || null,
+            vertexColors: !!mt.vertexColors,
+            side: THREE.BackSide, depthWrite:false, fog:false, toneMapped:false,
+          }));
+        });
+        m.material = Array.isArray(m.material) ? lit : lit[0];
+        m.castShadow = false; m.receiveShadow = false; m.frustumCulled = false;
+        m.renderOrder = -1000;               // 무엇보다 먼저
+        // 보이지도 않는 껍데기는 그릴 이유가 없다 (이 모델의 Cube_Material_0)
+        const vis = (Array.isArray(m.material) ? m.material : [m.material]).some(mt => mt && mt.opacity > 0.001);
+        if (!vis) m.visible = false;
+      });
+      o.userData.fit = { k, ctr };
+      skyboxInfo = { tris:Math.round(tris), maps, mpx:+(px/1e6).toFixed(2), tex:texW + 'x' + texH, scale:+k.toFixed(4) };
+      console.log('[SKYBOX] ' + SKYBOX_FILE + ' · 삼각형 ' + skyboxInfo.tris + ' · 텍스처 ' + maps + '장 ' + skyboxInfo.tex + ' (' + skyboxInfo.mpx + 'MP) · 배율 ' + skyboxInfo.scale);
+      skyboxProto = o;
+      return o;
+    })
+    .catch(e => { skyboxLoading = null; console.warn('[SKYBOX] 불러오기 실패 — 예전 하늘로 갑니다', e); throw e; });
+  return skyboxLoading;
+}
+function addSkybox(){
+  return loadSkybox().then(proto => {
+    const o = proto.clone(true);
+    const { k, ctr } = proto.userData.fit;
+    o.scale.setScalar(k);
+    o.userData.off = new THREE.Vector3(-ctr.x*k, -ctr.y*k, -ctr.z*k);   // 모델 중심을 원점으로 맞추는 보정
+    o.position.copy(o.userData.off);
+    o.renderOrder = -1000;
+    envGroup.add(o);
+    skyboxObj = o;
+    return o;
+  }).catch(() => null);
+}
+
+/* ===== 배경 1:1 모드 =====
+   구체에 붙이면 1024x512 파노라마가 하늘 전체로 늘어나 약 9배 확대된다.
+   이 모드는 카메라에 붙인 판에 텍스처를 '화면 픽셀 = 텍스처 픽셀' 로 깔고,
+   카메라 방향에 따라 UV 를 밀어 준다. 선명한 대신, 화면이 텍스처보다 커서 좌우로 반복된다. */
+let sky1to1 = false, skyPlane = null, skyPlaneMat = null;
+const SKY_PLANE_D = 400;                       // 카메라 앞 거리 — 멀수록 다른 물체와 겹칠 일이 없다
+function ensureSkyPlane(){
+  if (skyPlane || !skyboxProto) return skyPlane;
+  let tex = null;
+  skyboxProto.traverse(m => { if (!tex && m.isMesh){
+    const ms = Array.isArray(m.material) ? m.material : [m.material];
+    ms.forEach(mt => { if (!tex && mt && mt.map) tex = mt.map; });
+  }});
+  if (!tex) return null;
+  const t = tex.clone(); t.needsUpdate = true;
+  t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping;
+  t.minFilter = THREE.LinearFilter; t.magFilter = THREE.LinearFilter;   // 1:1 이라 밉맵이 필요 없다
+  t.generateMipmaps = false;
+  skyPlaneMat = applyBgGrade(new THREE.MeshBasicMaterial({ map:t, depthWrite:false, depthTest:false, fog:false, toneMapped:false }));
+  skyPlane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), skyPlaneMat);
+  skyPlane.frustumCulled = false;
+  skyPlane.renderOrder = -2000;
+  skyPlane.position.set(0, 0, -SKY_PLANE_D);
+  camera.add(skyPlane);
+  if (!camera.parent) scene.add(camera);        // 카메라가 씬에 없으면 자식이 안 그려진다
+  return skyPlane;
+}
+function updateSkyPlane(){
+  if (!sky1to1){ if (skyPlane) skyPlane.visible = false; return; }
+  const pl = ensureSkyPlane(); if (!pl) return;
+  pl.visible = true;
+  const img = skyPlaneMat.map.image; if (!img) return;
+  const h = renderer.domElement.height / Math.max(renderer.getPixelRatio(), 1e-6);
+  const w = renderer.domElement.width  / Math.max(renderer.getPixelRatio(), 1e-6);
+  /* 화면 높이에 해당하는 월드 크기 */
+  const worldH = 2*SKY_PLANE_D*Math.tan(THREE.MathUtils.degToRad(camera.fov)*0.5);
+  const worldW = worldH*camera.aspect;
+  pl.scale.set(worldW, worldH, 1);
+  /* 화면이 텍스처보다 크면 그만큼 반복해서 채운다 = 텍스처 1픽셀이 화면 1픽셀 */
+  skyPlaneMat.map.repeat.set(w/img.width, h/img.height);
+  /* 카메라 방향으로 민다 — 한 바퀴 돌면 파노라마도 한 바퀴 */
+  const e = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+  skyPlaneMat.map.offset.set(-e.y/(Math.PI*2), (e.x/(Math.PI*0.5))*0.25 - skyPlaneMat.map.repeat.y*0.5 + 0.5);
+}
+
+/* 배경은 무한히 멀리 있는 것처럼 보여야 한다 — 카메라를 따라다니면 시차가 사라진다. */
+const skyLag = { max:0, camDy:0, n:0 };
+const _camPrev = new THREE.Vector3(NaN, NaN, NaN);
+function skyLagSample(){                       // 계측: 옮기기 직전 하늘 중심과 카메라의 거리(= 예전 방식의 오차)
+  if (skyboxObj && skyboxObj.parent && skyboxObj.userData.off){
+    const d = skyboxObj.position.clone().sub(skyboxObj.userData.off).distanceTo(camera.position);
+    if (d > skyLag.max) skyLag.max = d;
+  }
+  if (!isNaN(_camPrev.x)) skyLag.camDy = Math.max(skyLag.camDy, Math.abs(camera.position.y - _camPrev.y));
+  _camPrev.copy(camera.position); skyLag.n++;
+}
+function followSkybox(){
+  if (!skyboxObj || !skyboxObj.parent) return;
+  skyboxObj.visible = !sky1to1;              // 1:1 판이 대신 그린다
+  skyboxObj.position.copy(camera.position).add(skyboxObj.userData.off);
+}
 function buildEnv(p){
+  skyboxObj = null;
   while (envGroup.children.length){
     const o = envGroup.children.pop();
     o.traverse(x => { if (x.geometry) x.geometry.dispose(); });
@@ -5058,17 +5762,14 @@ function buildEnv(p){
   };
   envGroup.add(sky);
   skyMat = null;
+  /* 하늘 상자가 오기 전까지는 산란 돔을 보여 준다. 상자가 크므로 맵이 구워진 뒤에 받는다. */
+  const kick = () => addSkybox().then(o => { if (o) sky.visible = false; });
+  if (hm || skyboxProto) kick(); else hmReadyP.then(kick);
 
-  // 지평선까지 이어지는 모래 바닥
-  const farGround = new THREE.Mesh(new THREE.CircleGeometry(1400, 64),
-    new THREE.MeshBasicMaterial({ color:p.sand, fog:true }));
-  farGround.rotation.x = -Math.PI/2; farGround.position.y = -0.06;
-  envGroup.add(farGround);
+  /* 먼 모래 바닥은 넣지 않는다 — 하늘 상자에 사막 바닥이 그려져 있고,
+     예전 원판(1400m)은 하늘 구체(900m)보다 커서 수평선 아래를 덮어 버렸다. */
 
-  // 사구 두 겹 + 먼 산맥
-  envGroup.add(duneRing(150, 90, 4, 12, p.sand, p.hor, 3));
-  envGroup.add(duneRing(330, 110, 10, 26, p.rock, p.hor, 9));
-  envGroup.add(duneRing(760, 120, 24, 60, p.rock, p.hor, 17));
+  /* 사구 띠는 넣지 않는다 — 하늘 상자에 이미 지평선이 그려져 있어 겹치면 두 겹으로 보인다. */
 
 }
 
@@ -5537,6 +6238,236 @@ addEventListener('keyup', e => { keys[e.code] = false; });
   setTimeout(syncPanel, 800);   // 설정 복원과 첫 레이아웃이 끝난 뒤
   showNote();
 }
+addEventListener('keydown', e => {
+  if (e.code !== 'KeyF' || e.target.matches('input,textarea,select')) return;
+  perfHud.style.display = perfHud.style.display === 'none' ? 'block' : 'none';
+  perfN = 0; perfAt = 0;                 // 켤 때마다 새로 잰다
+});
+
+/* ===== 시작 로딩 =====
+   예전에는 게임이 먼저 돌고 뒤에서 에셋이 들어오면서 프레임이 튀었다.
+   필요한 것을 다 받고, 셰이더까지 미리 컴파일한 뒤에 시작한다. */
+let booting = true, rehearsal = null, bootTimeline = null;
+{
+  const el = document.getElementById('boot');
+  const fill = document.getElementById('bootFill'), txt = document.getElementById('bootTxt');
+  let shown = 0;
+  /* 단계별 소요와 멈춤 계측 — 로딩이 '진행'만 하고 화면은 멎어 있을 수 있어서, 둘을 따로 본다 */
+  const bootT0 = performance.now();
+  const steps = [];
+  let curStep = null, blockPrev = 0, blockMax = 0, blockSum = 0;
+  const blockTick = () => {
+    const n = performance.now();
+    if (blockPrev){
+      const d = n - blockPrev - 16;
+      if (d > 30){ blockSum += d; if (d > blockMax) blockMax = d;
+        if (curStep){ curStep.blocks = (curStep.blocks || 0) + 1;
+          curStep.blocked = +((curStep.blocked || 0) + d).toFixed(0);
+          if (d > (curStep.worst || 0)) curStep.worst = +d.toFixed(0); } }
+    }
+    blockPrev = n;
+    if (booting) setTimeout(blockTick, 16);
+  };
+  setTimeout(blockTick, 16);
+  const setP = (p, msg) => {
+    shown = Math.max(shown, Math.min(1, p));          // 진행률은 되돌아가지 않는다
+    fill.style.transform = 'scaleX(' + shown.toFixed(4) + ')';
+    if (msg){
+      txt.textContent = msg;
+      const now = performance.now();
+      if (curStep) curStep.ms = +(now - curStep.at0).toFixed(0);
+      curStep = { 단계: msg, at: +(now - bootT0).toFixed(0), at0: now };
+      steps.push(curStep);
+    }
+  };
+  /* 로더 진행률 — FBX·GLTF 는 모두 기본 매니저를 쓴다 */
+  let mgrDone = 0, mgrTotal = 1;
+  THREE.DefaultLoadingManager.onProgress = (u, loaded, total) => {
+    mgrDone = loaded; mgrTotal = Math.max(total, 1);
+    setP(0.22 + 0.48*(loaded/mgrTotal), '자원 ' + loaded + ' / ' + total + ' · ' + String(u).split('/').pop().slice(0, 34));
+  };
+  const frame = () => new Promise(r => requestAnimationFrame(() => r()));
+  const until = async (fn, ms) => {                    // 조건이 참이 될 때까지 (상한 있음)
+    const t0 = performance.now();
+    while (!fn() && performance.now() - t0 < ms) await frame();
+    return fn();
+  };
+
+  async function boot(){
+    setP(0.05, '캐릭터 불러오는 중…');
+    /* ★ 순서가 중요하다. retarget() 은 boneMap 을 쓰는데 그건 캐릭터 FBX 가 로드된 뒤에 채워진다.
+       그 전에 클립을 받으면 본 이름이 안 맞는 '깨진 클립' 이 캐시되어 T 포즈로 굳는다. */
+    await until(() => !!character && boneMap.size > 0, 60000);
+    const skyJob = hmReadyP.then(() => loadSkybox()).catch(() => null);   // 맵 뒤에
+    setP(0.22, '모션 불러오는 중…');
+    /* 게임에서 쓰는 클립·모델을 미리 전부 받는다. 하나가 실패해도 나머지는 계속한다. */
+    const motionIdx = [2, IDX_COMBO2, IDX_HIT, IDX_DEATH, IDX_ROLL,
+                       IDX_RUN_SWORD, IDX_TURN, IDX_C2, IDX_C3, IDX_JUMP, IDX_UPPER];
+    await Promise.allSettled([
+      ...motionIdx.map(i => getClip(MOTIONS[i])),
+      ...['idle','run','hit','shoot','death'].map(k => enemyClip(k)),
+    ]);
+    setP(0.74, '지형 굽는 중…');
+    await until(() => !!hm, 150000);                   // 맵이 늦어도 기다린다 — 포기하면 원점에서 시작하게 된다
+    /* 하늘 상자는 맵 뒤에 받기로 했으니 여기서 기다려 준다 (실패해도 진행) */
+    setP(0.80, '하늘 불러오는 중…');
+    await Promise.race([skyJob, new Promise(r => setTimeout(r, 40000))]);
+
+    setP(0.80, '전투 준비 중…');
+    /* 처음 쓸 때 계산하던 것들을 여기서 미리 한다 — 첫 스윙(76ms)·첫 절단(470ms)·첫 스폰(144ms)의 원인.
+       하나라도 실패하면 예전처럼 그때 계산하면 되니 전부 try 로 감싼다. */
+    await until(() => !!holder && !!bladeShape, 20000);                 // 칼이 손에 붙어야 궤적을 잴 수 있다
+    try { for (const i of [2, IDX_C3, IDX_JUMP, IDX_UPPER, IDX_COMBO2]){
+            const c = clipCache.get(MOTIONS[i].name);
+            if (c && character && holder && bladeShape) bladeCombat.profile(character, c, bladeShape, holder);
+          } } catch (e){ console.warn('[BOOT] 궤적 분석 워밍업 실패', e); }
+    try { jumpReach(); upperReach(); } catch (e){}
+    /* 첫 스윙에서 clipAction 이 본 바인딩을 만든다 — 미리 만들어 두면 첫 스윙이 튀지 않는다 */
+    try { if (mixer) for (const i of [2, IDX_C3, IDX_JUMP, IDX_UPPER, IDX_COMBO2, IDX_ROLL, IDX_HIT]){
+            const c = clipCache.get(MOTIONS[i].name); if (c) mixer.clipAction(c);
+          } } catch (e){ console.warn('[BOOT] 액션 워밍업 실패', e); }
+    await until(() => !!debrisPhysics || !!debrisPhysicsError, 30000);   // 조각 물리 — 첫 절단에서 초기화되지 않게
+    await frame();
+    /* 지형 충돌체(삼각형 3.6만) 는 첫 절단 때 게으르게 만들어졌다 — 그 프레임이 0.4초 멎는 주범 */
+    try { syncDebrisTerrain(); } catch (e){ console.warn('[BOOT] 지형 충돌체 워밍업 실패', e); }
+    await frame();
+    /* 칼날-피부 영역 캐시(regionFaces) 도 첫 스윙에 계산된다 — 마른 스윕 한 번으로 채운다.
+       bladeContact 는 직전 포즈가 있어야 하므로 두 프레임에 나눠 부른다. 절단은 bladeSweep 이 하니 여기선 안전하다. */
+    try {
+      if (enemy && holder && bladeShape){
+        enemy.updateWorldMatrix(true, true); enemy.updateMatrixWorld(true);
+        const cur = bladeCombat.pose(holder, bladeShape);
+        const prev = { base: cur.base.clone().addScalar(0.4), tip: cur.tip.clone().addScalar(0.4), side: cur.side };
+        const eligible = remainingCuts(), regions = bladeRegions(eligible);
+        bladeCombat.sweep({ previous:prev, current:cur, delta:0.016, meshes:skinsOf(enemy), defs:CUTS, regions, eligible, margin:hitR, minSpeed:cutMinSpeed });
+        bladePrev = null;
+      }
+    } catch (e){ console.warn('[BOOT] 칼날 영역 워밍업 실패', e); }
+    try { fillFoePool(FOE_POOL); } catch (e){ console.warn('[BOOT] 적 복제 풀 실패', e); }
+    await frame();
+    /* ── 사망 리허설 ──
+       셰이더 변종을 키 단위로 하나씩 맞추는 방식은 놓치는 게 계속 나왔다(떨어진 총의 양면·반전 깊이 변종 등).
+       실제 경로를 한 번 밟는 게 확실하다. 로딩 화면이 캔버스를 덮고 있으니 플레이어 바로 앞에서 해도 보이지 않는다. */
+    setP(0.82, '전투 리허설…');
+    rehearsal = { guard:{ physics:!!debrisPhysics, character:!!character, pool:foePool.length }, ran:false, cuts:[], err:null, programsBefore:renderer.info.programs.length };
+    if (debrisPhysics && character && foePool.length){
+      rehearsal.ran = true;
+      const vols = { gore:sfxGore.vol, scream:sfxScream.map(g => g.vol) };
+      const slowWas = killSlow.on;
+      const rec = spawnOneFoe();
+      try {
+        sfxGore.vol = 0; sfxScream.forEach(g => g.vol = 0); killSlow.on = false;
+        if (rec && rec.root){
+          const yaw = facingYaw();
+          const rx = character.position.x + Math.sin(yaw)*2.0, rz = character.position.z + Math.cos(yaw)*2.0;
+          rec.root.position.set(rx, terrainY(rx, rz) + rec.groundY, rz);   // 화면 안(가려져 있음)에 세운다
+          activateFoe(rec);
+          await frame();
+          rehearsal.cuts.push(cutOne(CUT_RARM, null));         // 팔 — 조각·단면
+          if (activeFoe === rec && !rec.gunDropped) dropGun();  // 총 떨어뜨림 — 반전·양면 깊이 변종
+          await frame();
+          rehearsal.cuts.push(cutOne(1, null));                // 허리 — 남은 몸 강체 전환
+          await frame(); await frame(); await frame();         // 그림자 패스까지 실제로 그려 컴파일한다
+        }
+      } catch (e){ console.warn('[BOOT] 리허설 실패', e); rehearsal.err = String(e && e.message || e); }
+      rehearsal.programsAfter = renderer.info.programs.length;
+      /* 흔적 정리 — 조각·시체·떨어진 총·핏자국·입자·처치 수·슬로모 */
+      try {
+        while (pieces.length) dropPiece(pieces.shift());
+        if (rec) removeFoe(rec);
+        emitters.length = 0;
+        for (let i = 0; i < MAXP; i++){ pLife[i] = 0; pAlpha[i] = 0; pSlot[i] = -1; } pCount = 0;
+        clearSplat();
+        killSlowT = 0; endless.kills = 0; setKills(0);
+        enemyDead = false; enemyDown = false; enemyFrozen = false; enemyRagdoll = null; enemyHolder = null;
+      } catch (e){ console.warn('[BOOT] 리허설 정리 실패', e); }
+      sfxGore.vol = vols.gore; sfxScream.forEach((g, i) => g.vol = vols.scream[i]); killSlow.on = slowWas;
+      console.log('[BOOT] 사망 리허설 완료 · 프로그램 ' + renderer.info.programs.length);
+    }
+    setP(0.84, '셰이더 준비 중…');
+    /* 셰이더는 그 재질이 처음 화면에 나올 때 컴파일된다 — 그게 전투 중이면 그대로 렉이 된다.
+       여기서 미리 컴파일해 두면 첫 등장에서 튀지 않는다. */
+    /* 측정: 첫 절단·사망 뒤 셰이더가 36 → 41개로 늘며 렌더가 0.3~0.4초 멎었다.
+       새로 생긴 것은 '떨어진 총'(골격에서 떨어져 스키닝 없는 변종), 단면, 그리고 그림자 깊이 변종들이다.
+       renderer.compile 은 보이는 물체만, 그리고 그림자 패스는 컴파일하지 않으므로
+       임시 물체를 보이게 두고 castShadow 를 켠 채 실제로 두 프레임을 그린다. */
+    const warm = [], restore = [];
+    try {
+      const src = enemy ? skinsOf(enemy)[0] : null;
+      if (src){                                            // 단면 (스키닝 + 그림자)
+        const w = new THREE.SkinnedMesh(src.geometry, capMat);
+        w.bind(src.skeleton, src.bindMatrix);
+        w.position.set(0, -500, 0); w.frustumCulled = false; w.castShadow = true; w.receiveShadow = true;
+        scene.add(w); warm.push(w);
+      }
+      if (gunProto){                                       // 떨어진 총 = 골격 밖의 일반 메시
+        const g = gunProto.clone(true);
+        g.position.set(0, -500, 0);
+        g.traverse(o => { if (o.isMesh){ o.frustumCulled = false; o.castShadow = true; o.receiveShadow = true; } });
+        scene.add(g); warm.push(g);
+        /* 떨어진 총은 손 뼈의 거울상 스케일을 물려받아 결정자가 음수가 된다 → 그림자 깊이 재질이 flipSided 변종으로
+           따로 컴파일된다(측정: 사망 뒤 무명 셰이더 1개). 반전된 클론을 하나 더 그려 그 변종도 미리 만든다. */
+        const g2 = gunProto.clone(true);
+        g2.position.set(2, -500, 0); g2.scale.set(-1, 1, 1);
+        g2.traverse(o => { if (o.isMesh){ o.frustumCulled = false; o.castShadow = true; o.receiveShadow = true; } });
+        scene.add(g2); warm.push(g2);
+      }
+      /* 이미 씬에 있지만 숨어 있는 효과들 — 잠시 켠다 */
+      const show = o => { if (!o) return; restore.push([o, o.visible, o.frustumCulled]); o.visible = true; o.frustumCulled = false; };
+      if (casings[0]) show(casings[0].mesh);
+      if (puffs[0]) show(puffs[0].mesh);
+      show(tracer); show(flashGroup); show(muzzleHolder);
+      if (typeof muzzleInstance !== 'undefined' && muzzleInstance && muzzleInstance.obj) show(muzzleInstance.obj);
+      renderer.compile(scene, camera);
+      await frame(); await frame();                        // 그림자 깊이 변종은 실제 렌더에서만 컴파일된다
+    } catch (e){ console.warn('[BOOT] 셰이더 사전 컴파일 실패', e); }
+    for (const w of warm) scene.remove(w);
+    for (const [o, v, fc] of restore){ o.visible = v; o.frustumCulled = fc; }
+    setP(0.92, '예열 중…');
+    for (let i = 0; i < 6; i++) await frame();         // 첫 프레임들의 업로드 비용을 로딩 화면 뒤에서 치른다
+
+    setP(1, '시작');
+    booting = false;
+    /* 로딩 동안 흐른 시간이 한 프레임에 쏟아지지 않게 시계를 끊는다 */
+    clock.getDelta();
+    endless.t = 0; setKills(0); setHP(playerMaxHP);
+    for (const k in keys) keys[k] = false;
+    el.classList.add('gone');
+    setTimeout(() => { el.style.display = 'none'; }, 500);
+    if (curStep) curStep.ms = +(performance.now() - curStep.at0).toFixed(0);
+    steps.forEach(x => delete x.at0);
+    /* 내려받기 실태 — 같은 파일이라도 최상위 사이트가 다르면 캐시 칸이 달라서 새로 받게 된다 */
+    let net = null;
+    try {
+      const res = performance.getEntriesByType('resource')
+        .filter(r => /\.(fbx|glb|gltf|png|jpg|jpeg|mp3|bin)(\?|$)/i.test(r.name));
+      let bytes = 0, cached = 0, fresh = 0, netMs = 0, slowest = [];
+      for (const r of res){
+        const t = r.transferSize === undefined ? null : r.transferSize;
+        if (t === 0 && r.decodedBodySize > 0) cached++; else { fresh++; bytes += (t || 0); }
+        netMs += r.duration;
+        slowest.push({ 파일: r.name.split('/').pop().slice(0, 30), ms: +r.duration.toFixed(0),
+                       KB: +((t || 0)/1024).toFixed(0), 캐시: t === 0 && r.decodedBodySize > 0 });
+      }
+      slowest.sort((a, b) => b.ms - a.ms);
+      net = { 파일수: res.length, 캐시적중: cached, 새로받음: fresh, 받은MB: +(bytes/1048576).toFixed(2),
+              전송합계ms: +netMs.toFixed(0), 느린순: slowest.slice(0, 8) };
+    } catch {}
+    bootTimeline = { 총ms: +(performance.now() - bootT0).toFixed(0), 최대멈춤ms: +blockMax.toFixed(0),
+                     총멈춤ms: +blockSum.toFixed(0), 네트워크: net, 단계: steps };
+    console.log('[BOOT] 준비 완료 · ' + mgrDone + '개 자원 · ' + bootTimeline.총ms + 'ms · 최대 멈춤 '
+      + bootTimeline.최대멈춤ms + 'ms' + (net ? ' · 새로 받음 ' + net.새로받음 + '개 ' + net.받은MB + 'MB · 캐시 ' + net.캐시적중 + '개' : ''));
+  }
+  /* 부팅이 어떤 이유로 막혀도 게임은 열려야 한다 */
+  if (/[?&]noboot/.test(location.search)){
+    booting = false; el.style.display = 'none'; console.log('[BOOT] noboot — 로딩 절차 생략');
+  } else {
+    boot().catch(e => { console.warn('[BOOT] 실패', e); booting = false; el.classList.add('gone'); });
+  }
+  setTimeout(() => { if (booting){ console.warn('[BOOT] 시간 초과 — 그냥 시작한다'); booting = false; el.classList.add('gone'); } }, 240000);
+  window.__boot = { state: () => ({ booting, p:shown, txt:txt.textContent, rehearsal }) };
+}
+
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
 
@@ -5561,12 +6492,48 @@ function updateDummyTag(){
 /* ===== 루프 ===== */
 /* 프레임 구간별 CPU 시간 — 어디서 시간을 쓰는지 숫자로 보려고 둔다. 꺼져 있으면 비용 없음. */
 const prof = { on:false, acc:{}, n:0, splatCalls:0, t0:0 };
+/* ── 성능 표시 (F) ── */
+const perfHud = document.createElement('div');
+perfHud.style.cssText = 'position:fixed;left:8px;top:8px;z-index:9999;display:none;padding:7px 9px;'
+  + 'background:rgba(10,12,16,.82);color:#d8e2ef;font:11px/1.55 ui-monospace,Menlo,Consolas,monospace;'
+  + 'border:1px solid rgba(255,255,255,.14);border-radius:6px;white-space:pre;pointer-events:none';
+document.body.appendChild(perfHud);
+const perfRing = new Float32Array(180), perfCpu = new Float32Array(180);
+let perfN = 0, perfAt = 0, perfPrev = 0;
+function perfSample(gap, cpu){
+  if (gap > 0){ perfRing[perfN % 180] = gap; perfCpu[perfN % 180] = cpu; perfN++; }
+  if (perfHud.style.display === 'none') return;
+  const now = performance.now();
+  if (now - perfAt < 250) return;
+  perfAt = now;
+  const n = Math.min(perfN, 180);
+  if (n < 10) return;
+  const g = Array.from(perfRing.slice(0, n)).sort((a, b) => a - b);
+  const c = Array.from(perfCpu.slice(0, n)).sort((a, b) => a - b);
+  const q = (arr, p) => arr[Math.min(arr.length - 1, Math.floor(arr.length*p))];
+  const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+  let framed = '아니오';
+  try { framed = (window.self !== window.top) ? '예' : '아니오'; } catch { framed = '예(교차출처)'; }
+  perfHud.textContent =
+    'FPS ' + (1000/q(g, 0.5)).toFixed(0) + '   프레임 ' + q(g, 0.5).toFixed(1) + ' / ' + q(g, 0.95).toFixed(1) + 'ms (중앙/p95)\n'
+    + 'CPU  ' + q(c, 0.5).toFixed(1) + ' / ' + q(c, 0.95).toFixed(1) + 'ms      ' + (q(g, 0.5) - q(c, 0.5) > 4 ? '← 그리기·바깥이 더 큼' : '← 계산이 대부분') + '\n'
+    + '버퍼 ' + size.x + '×' + size.y + '  DPR ' + (window.devicePixelRatio || 1).toFixed(2)
+    + '  배율 ' + renderScale.toFixed(2) + '  MSAA ' + (msaaOn ? '켜짐' : '꺼짐') + '\n'
+    + '창 ' + innerWidth + '×' + innerHeight + '  iframe 안 ' + framed + '  적 ' + foes.filter(f => f.enabled !== false).length
+    + '  조각 ' + pieces.length;
+}
+const peaks = {};                        // 구간별 한 프레임 최대 소요(ms) — 스파이크가 어디서 나는지
+/* 느린 프레임 해부 — 25ms 넘는 프레임마다 구간별 소요와, 어느 구간에도 안 잡힌 나머지(etc)를 남긴다 */
+const frameLog = { on:false, cur:{}, list:[], t0:0, prev:0, progN:0 };
 function pf(name, fn){
-  if (!prof.on) return fn();
-  const t = performance.now(); fn(); prof.acc[name] = (prof.acc[name] || 0) + (performance.now() - t);
+  const t = performance.now(); fn(); const d = performance.now() - t;
+  if (frameLog.on) frameLog.cur[name] = (frameLog.cur[name] || 0) + d;
+  if (d > (peaks[name] || 0)) peaks[name] = d;
+  if (prof.on) prof.acc[name] = (prof.acc[name] || 0) + d;
 }
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
+  const _fl0 = performance.now();
   const rdt = clock.getDelta();
   if (paused){ renderer.shadowMap.needsUpdate = true; if (fxOn) composer.render(); else renderer.render(scene, camera); return; }
   shadowTick = (shadowTick + 1) % Math.max(1, shadowEvery);
@@ -5584,10 +6551,10 @@ renderer.setAnimationLoop(() => {
     // timeScale 0 인 액션이라 클립 위치는 고정되고, 믹서 시간만 흘러 페이드가 진행된다
     if (mixer) mixer.update(rdt);
   } else {
-    updateControl(dt);
-    if (mixer) mixer.update(dt);
-    rollUpdate(dt);
-    attackUpdate(dt);
+    pf("control", () => updateControl(dt));
+    pf("mixer", () => { if (mixer) mixer.update(dt); });
+    pf("roll", () => rollUpdate(dt));
+    pf("attack", () => attackUpdate(dt));
     if (!attacking) comboIdle += rdt;
   }
   snapToGround(character, charGroundY, rdt);
@@ -5608,12 +6575,16 @@ renderer.setAnimationLoop(() => {
   pf("aimGuns", aimGuns);   // 뼈 갱신 뒤 · 사격 판정 앞 — 이 순서라야 총구와 탄착이 같다
   pf("followSplat", followSplat);
   pf("gore", () => updateGore(Math.min(dt, 0.05)));
-  pf("ai", () => updateAI(rdt));
+  if (!booting) pf("ai", () => updateAI(rdt));
   overlapDt = fdt;
   pf("overlap", resolveOverlaps);       // 모든 이동이 끝난 뒤 한 번만 겹침을 푼다
-  updateEndless(rdt);      // snapshotFoe 뒤라야 f.dead 가 최신이다
-  pf("fire", () => updateFire(rdt));
+  if (!booting) pf("endless", () => updateEndless(rdt));   // 로딩 중에는 적을 부르지 않는다
+  if (!booting) pf("fire", () => updateFire(rdt));
   updateHurt(rdt);
+  if (critAuto.t > 0) critAuto.t -= rdt;
+  if (special.t > 0) special.t -= rdt;
+  { const el = document.getElementById('critReady');
+    if (el) el.classList.toggle('on', critAuto.hud && !cine.active && !!critTarget()); }
   if (hitReactT > 0) hitReactT -= rdt;
   if (hitReactCd > 0) hitReactCd -= rdt;
   updateHitboxViz();
@@ -5633,8 +6604,27 @@ renderer.setAnimationLoop(() => {
     gradePass.uniforms.chroma.value = feel.chroma; gradePass.uniforms.hitVig.value = feel.vig;
     gradePass.uniforms.hitFlash.value = feel.flash*hitFlashMul; }
   gradePass.uniforms.time.value = clock.elapsedTime;
+  /* 배경은 카메라가 이 프레임의 최종 위치를 잡은 뒤에 붙인다 — 앞에서 붙이면 한 프레임 전 카메라에 놓여
+     카메라가 지형을 따라 오르내릴 때마다 하늘이 뚝뚝 어긋난다. */
+  skyLagSample();
+  followSkybox(); updateSkyPlane();
   pf("render", () => { if (fxOn) composer.render(); else renderer.render(scene, camera); });
+  { const now = performance.now();
+    perfSample(perfPrev ? now - perfPrev : 0, now - _fl0);
+    perfPrev = now; }
   if (prof.on) prof.n++;
+  if (frameLog.on){
+    const now = performance.now(), gap = frameLog.prev ? now - frameLog.prev : 0, cpu = now - _fl0;
+    if (gap > 25 || cpu > 25){
+      const parts = {}; let sum = 0;
+      for (const k in frameLog.cur){ if (frameLog.cur[k] >= 1){ parts[k] = +frameLog.cur[k].toFixed(1); } sum += frameLog.cur[k]; }
+      const np = renderer.info.programs.length;
+      frameLog.list.push({ t:+((now - frameLog.t0)/1000).toFixed(2), gap:+gap.toFixed(1), cpu:+cpu.toFixed(1), etc:+(cpu - sum).toFixed(1),
+        newProg: np - frameLog.progN, ...parts });
+      frameLog.progN = np;
+    }
+    frameLog.cur = {}; frameLog.prev = now;
+  }
 });
 
 /* ===== 시작 ===== */
@@ -5712,7 +6702,7 @@ window.__dbg = {
   bgm: () => ({ start: BGM_START, loopNative: bgm.loop, src: bgm.currentSrc || bgm.src, ready: bgm.readyState, paused: bgm.paused, t: +bgm.currentTime.toFixed(2), dur: bgm.duration, vol: bgmVol, err: bgm.error ? bgm.error.code : null, on: bgmOn }),
   hurt: () => ({ ...hitReact, t:+hitReactT.toFixed(2), cd:+hitReactCd.toFixed(2), motion:activeIndex }),
   atk: () => ({ attacking, p: (currentAction&&currentClip)? +(currentAction.time/currentClip.duration).toFixed(3):null, dur: currentClip?+currentClip.duration.toFixed(2):null, bufAt:+bufferedAt.toFixed(2), startAt:+attackStartAt.toFixed(2), now:+nowS().toFixed(2), open:comboOpen, step:attackStep, idx:activeIndex, hitStop:+hitStop.toFixed(3) }),
-  sfx: () => ({ screamReady: sfxScream.map(g => g.pool[0] ? g.pool[0].readyState : -1), screamPlayed: sfxScream.map(g => g.pool.filter(a => a.currentTime > 0).length), tauntPlayed: sfxTaunt.pool.filter(x => x.currentTime > 0).length, tauntVol: sfxTaunt.vol, tauntChance, gorePlayed: sfxGore.pool.filter(a => a.currentTime > 0).length, calls: shotCalls, fails: shotFails, shotPool: sfxShot.pool.length, src: sfxShot.pool[0] && (sfxShot.pool[0].currentSrc || sfxShot.pool[0].src), ready: sfxShot.pool[0] && sfxShot.pool[0].readyState, shotVol: sfxShot.vol, goreVol: sfxGore.vol, played: sfxShot.pool.filter(a => a.currentTime > 0).length }),
+  sfx: () => ({ screamReady: sfxScream.map(g => g.pool[0] ? g.pool[0].readyState : -1), screamPlayed: sfxScream.map(g => g.pool.filter(a => a.currentTime > 0).length), gorePlayed: sfxGore.pool.filter(a => a.currentTime > 0).length, calls: shotCalls, fails: shotFails, shotPool: sfxShot.pool.length, src: sfxShot.pool[0] && (sfxShot.pool[0].currentSrc || sfxShot.pool[0].src), ready: sfxShot.pool[0] && sfxShot.pool[0].readyState, shotVol: sfxShot.vol, goreVol: sfxGore.vol, played: sfxShot.pool.filter(a => a.currentTime > 0).length }),
   prof: (sec) => {
     prof.acc = {}; prof.n = 0; prof.splatCalls = 0; prof.on = true; prof.t0 = performance.now();
     return new Promise(res => setTimeout(() => {
@@ -5729,6 +6719,21 @@ window.__dbg = {
   },
   reach: () => [2, IDX_C3, IDX_JUMP].map(i => { const c = clipCache.get(MOTIONS[i].name); return { i, name:MOTIONS[i].name, reach: c ? +measureReach(c).toFixed(2) : null, dur: c ? +c.duration.toFixed(2) : null, speed: MOTIONS[i].speed || 1, lunge: +motionLunge(i).toFixed(2), stop: lunge.stop }; }),
   upper: () => ({ ...upperAtk, eff:+(upperAtk.reach + motionLunge(IDX_UPPER)).toFixed(2), loaded: !!clipCache.get(MOTIONS[IDX_UPPER].name) }),
+  special: () => ({ ...special, t:+special.t.toFixed(2) }),
+  assets: () => ({ ...assetSrc, 예시: url('jeff/model.glb') }),
+  boot: () => bootTimeline,
+  /* 조각 물리 상세 로그 — 기본 꺼짐. 스튜디오 Console 패널이 한 줄씩 DOM 으로 그리느라 전투 중 렉이 된다. */
+  trace: (v) => { if (debrisPhysics) debrisPhysics.trace = !!v; return !!(debrisPhysics && debrisPhysics.trace); },
+  foeGeo: () => foes.filter(f => f.enabled !== false).map(f => {
+    const g = []; f.root.traverse(o => { if (o.isSkinnedMesh && !o.userData.cutCap) g.push(o.geometry.index ? o.geometry.index.count : 0); });
+    return { id:f.id, dead:!!f.dead, idx:g };
+  }),
+  frames: (cmd) => { if (cmd === "on"){ frameLog.on = true; frameLog.list = []; frameLog.t0 = performance.now(); frameLog.prev = 0; frameLog.progN = renderer.info.programs.length; return "on"; } if (cmd === "off") frameLog.on = false; return frameLog.list; },
+  skyLag: (reset) => { const o = { lagBeforeFix_m:+skyLag.max.toFixed(4), camMaxDy_m:+skyLag.camDy.toFixed(4), frames:skyLag.n }; if (reset){ skyLag.max = 0; skyLag.camDy = 0; skyLag.n = 0; } return o; },
+  /* 컴파일된 셰이더 프로그램 — 새로 늘어나는 순간이 곧 첫 등장 컴파일 스파이크다 */
+  programs: () => ({ n: renderer.info.programs.length, names: renderer.info.programs.map(p => p.name), keys: renderer.info.programs.map(p => ({ name:p.name, key:String(p.cacheKey) })) }),
+  peaks: (reset) => { const o = {}; for (const k in peaks) o[k] = +peaks[k].toFixed(1); if (reset) for (const k in peaks) delete peaks[k]; return o; },
+  cutProf: () => cutProf.last, cutProfOn: v => { cutProf.on = !!v; return cutProf.on; }, spawnProf: () => spawnProfLast, pool: () => foePool.length,
   jump: () => ({ ...jumpAtk, eff:+(jumpAtk.reach + motionLunge(IDX_JUMP)).toFixed(2), loaded: !!clipCache.get(MOTIONS[IDX_JUMP].name) }),
   warp: (d) => {           // 진단 — 가장 가까운 적을 플레이어 정면 d 미터로 옮긴다 (근거리 판정 측정용)
     const l = foes.filter(f => f.ai && !f.dead && f.root && f.enabled !== false);
@@ -5740,8 +6745,11 @@ window.__dbg = {
     return +f.root.position.distanceTo(character.position).toFixed(2);
   },
   pos: () => character ? [+character.position.x.toFixed(2), +character.position.y.toFixed(2), +character.position.z.toFixed(2)] : null,
-  house: () => ({ loaded: !!houseProto, n: houses.length, sel: houseSel, file: HOUSE_FILE, scale: houses[0] ? +houses[0].scale.x.toFixed(3) : null,
-    list: houses.map(o => ({ x:+o.position.x.toFixed(2), y:+o.position.y.toFixed(2), z:+o.position.z.toFixed(2), k:o.userData.k })) }),
+  props: () => ({ kinds: PROPS.map(P => ({ name:P.name, file:P.file, loaded: !!P.proto })), n: props.length, sel: propSel, kind: propKind,
+    list: props.map(o => ({ t:PROPS[o.userData.kind].name, x:+o.position.x.toFixed(2), y:+o.position.y.toFixed(2), z:+o.position.z.toFixed(2), k:o.userData.k })) }),
+  crit: () => ({ ...critAuto, active:cine.active, hits:cine.hits.length, done:cine.done, clipT:+cine.clipT.toFixed(2), dur:+cine.dur.toFixed(2), speed:cine.speed }),
+  bgTone: () => ({ ...bgTone }),
+  skybox: () => ({ oneToOne: sky1to1, planeRepeat: skyPlaneMat ? [+skyPlaneMat.map.repeat.x.toFixed(2), +skyPlaneMat.map.repeat.y.toFixed(2)] : null, file:SKYBOX_FILE, loaded:!!skyboxProto, ...(skyboxInfo || {}), inScene: envGroup.children.length, skyDomeOn: sky ? sky.visible : null }),
   combo: () => ({ on:useCombo, step:comboStep, attackStep, open:comboOpen, buffered:bufferedAt >= 0, names:COMBO.map(i => MOTIONS[i].name), motion:activeIndex }),
   near: () => { const l = foes.filter(f=>f.ai&&!f.dead&&f.root&&f.enabled!==false);
     return { toPlayer: l.length && character ? +Math.min(...l.map(f=>f.root.position.distanceTo(character.position))).toFixed(2) : null,
