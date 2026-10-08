@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-299 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-300 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-299'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-300'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6774,6 +6774,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       const s = surfUnder(), v = run ? 0.42 : 0.34;
       const Bh = window.__breath && window.__breath.hero, fast = run || !!(Bh && Bh.sp > 3.2 && !(G.carry && G.carry.heldBody));   // 게임의 run 은 다른 뜻 — 실제 빠르기로(나르는 중엔 없음)
       if (fast && foleyOn() && Math.random() < 0.45) play('p_cloth', { vol: 0.09, rate: rnd(0.9, 1.1), delay: rnd(0.02, 0.07) });   // 달릴 때 옷 스침(걸음 절반쯤)
+      else if (G.carry && G.carry.heldBody && G.carry.lastKind === 'carry' && foleyOn() && Math.random() < 0.5) play('p_cloth', { vol: 0.08, rate: rnd(0.72, 0.84), delay: rnd(0.04, 0.1) });   // 업은 몸이 걸음마다 출렁이며 옷이 쓸림(낮고 무겁게 · 2026-10-09)
       if (s !== 'dirt' && play('p_step_' + s, { vol: v * 0.9, rate: rnd(0.95, 1.05) })) return;
       if (!play('p_step', { vol: v, rate: rnd(0.93, 1.07) })) o.step(run);
     };
