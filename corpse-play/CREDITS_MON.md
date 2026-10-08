@@ -98,3 +98,18 @@
 | p_gasp3.mp3 | 들킴 — 젊은 남자 놀라 들이켬(160Hz) | freesound_community(ecbhappyinc) · horror-andygasp-67846 | 25.16–25.82s |
 | p_gasp4.mp3 | 들킴 — 젊은 남자 짧게 헙(130Hz) | freesound_community(ecbhappyinc) · horror-andygasp-67846 | 27.27–27.74s |
 | p_gasp5.mp3 | 들킴 — 젊은 남자 겁먹은 헉(180Hz) | freesound_community(ecbhappyinc) · horror-andygasp-67846 | 29.45–29.97s |
+| p_drag_stone1.mp3 | 시체 끌기 — 돌바닥 긁힘 1 | freesound_community(GrayEpic) · film-special-effects-gray-epic-drag-38459 | 0.55–1.85s |
+| p_drag_stone2.mp3 | 시체 끌기 — 돌바닥 긁힘 2 | freesound_community(GrayEpic) · film-special-effects-gray-epic-drag-38459 | 2.90–4.15s |
+| p_drag_stone3.mp3 | 시체 끌기 — 돌바닥 긁힘 3 | freesound_community(GrayEpic) · film-special-effects-gray-epic-drag-38459 | 5.15–6.35s |
+| p_drag_wood1.mp3 | 시체 끌기 — 나무 바닥 1(나무 마찰 + 팔다리 툭) | freesound_community(krnash) · household-crawling-on-a-wooden-floor-70986 0.90–2.20s + freesound_community(SpliceSound) · household-wooden-chair-slide-scrape-on-wood-floor-75857 1.00–2.30s |
+| p_drag_wood2.mp3 | 시체 끌기 — 나무 바닥 2(나무 마찰 + 팔다리 툭) | freesound_community(krnash) · household-crawling-on-a-wooden-floor-70986 3.62–4.87s + freesound_community(SpliceSound) · household-wooden-chair-slide-scrape-on-wood-floor-75857 5.00–6.25s |
+| p_drag_wood3.mp3 | 시체 끌기 — 나무 바닥 3(나무 마찰 + 팔다리 툭) | freesound_community(krnash) · household-crawling-on-a-wooden-floor-70986 11.45–12.65s + freesound_community(SpliceSound) · household-wooden-chair-slide-scrape-on-wood-floor-75857 16.00–17.20s |
+| p_drip1.mp3 | 업은 시체에서 떨어진 피가 바닥에 톡 1 | freesound_community(hybu) · film-special-effects-water-dripping-2-77223 | 17.841–18.191s |
+| p_drip2.mp3 | 업은 시체에서 떨어진 피가 바닥에 톡 2 | freesound_community(hybu) · film-special-effects-water-dripping-2-77223 | 30.561–30.911s |
+| p_drip3.mp3 | 업은 시체에서 떨어진 피가 바닥에 톡 3 | freesound_community(hybu) · film-special-effects-water-dripping-2-77223 | 3.033–3.383s |
+| p_drip4.mp3 | 업은 시체에서 떨어진 피가 바닥에 톡 4 | freesound_community(hybu) · film-special-effects-water-dripping-2-77223 | 9.379–9.729s |
+| p_drip5.mp3 | 업은 시체에서 떨어진 피가 바닥에 톡 5 | freesound_community(Zwecker) · film-special-effects-water-drips-76848 | 11.891–12.241s |
+| p_cloth1.mp3 | 달릴 때 옷 스침 1 | freesound_community(sunnyflower) · film-special-effects-cloth-rustle-7-69378 | 8.74–9.02s |
+| p_cloth2.mp3 | 달릴 때 옷 스침 2 | freesound_community(sunnyflower) · film-special-effects-cloth-rustle-7-69378 | 10.58–10.86s |
+| p_cloth3.mp3 | 달릴 때 옷 스침 3 | freesound_community(sunnyflower) · film-special-effects-cloth-rustle-7-69378 | 12.54–12.82s |
+| p_cloth4.mp3 | 달릴 때 옷 스침 4 | freesound_community(sunnyflower) · film-special-effects-cloth-rustle-7-69378 | 17.18–17.46s |

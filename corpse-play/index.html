@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-280 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-283 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -230,6 +230,7 @@
     'sfx/fly_loop.mp3': 'corpse/sfx/fly_loop', 'sfx/p_bodydrop1.mp3': 'corpse/sfx/p_bodydrop1', 'sfx/p_bodydrop2.mp3': 'corpse/sfx/p_bodydrop2', 'sfx/p_bodydrop3.mp3': 'corpse/sfx/p_bodydrop3', 'sfx/p_bodydrop4.mp3': 'corpse/sfx/p_bodydrop4', 'sfx/p_bodydrop5.mp3': 'corpse/sfx/p_bodydrop5',   // 시체 둘레 파리 · 시체 내려놓기 쿵
     'sfx/p_step_stone1.mp3': 'corpse/sfx/p_step_stone1', 'sfx/p_step_stone2.mp3': 'corpse/sfx/p_step_stone2', 'sfx/p_step_stone3.mp3': 'corpse/sfx/p_step_stone3', 'sfx/p_step_stone4.mp3': 'corpse/sfx/p_step_stone4', 'sfx/p_step_stone5.mp3': 'corpse/sfx/p_step_stone5', 'sfx/p_step_stone6.mp3': 'corpse/sfx/p_step_stone6', 'sfx/p_step_stone7.mp3': 'corpse/sfx/p_step_stone7', 'sfx/p_step_stone8.mp3': 'corpse/sfx/p_step_stone8', 'sfx/p_step_wood1.mp3': 'corpse/sfx/p_step_wood1', 'sfx/p_step_wood2.mp3': 'corpse/sfx/p_step_wood2', 'sfx/p_step_wood3.mp3': 'corpse/sfx/p_step_wood3', 'sfx/p_step_wood4.mp3': 'corpse/sfx/p_step_wood4', 'sfx/p_step_wood5.mp3': 'corpse/sfx/p_step_wood5', 'sfx/p_step_wood6.mp3': 'corpse/sfx/p_step_wood6', 'sfx/p_step_wood7.mp3': 'corpse/sfx/p_step_wood7', 'sfx/p_step_wood8.mp3': 'corpse/sfx/p_step_wood8',   // 바닥 따라 발소리(돌 · 나무)
     'sfx/p_gasp1.mp3': 'corpse/sfx/p_gasp1', 'sfx/p_gasp2.mp3': 'corpse/sfx/p_gasp2', 'sfx/p_gasp3.mp3': 'corpse/sfx/p_gasp3', 'sfx/p_gasp4.mp3': 'corpse/sfx/p_gasp4', 'sfx/p_gasp5.mp3': 'corpse/sfx/p_gasp5',   // 들킴 — 젊은 남자 헉
+    'sfx/p_drag_stone1.mp3': 'corpse/sfx/p_drag_stone1', 'sfx/p_drag_stone2.mp3': 'corpse/sfx/p_drag_stone2', 'sfx/p_drag_stone3.mp3': 'corpse/sfx/p_drag_stone3', 'sfx/p_drag_wood1.mp3': 'corpse/sfx/p_drag_wood1', 'sfx/p_drag_wood2.mp3': 'corpse/sfx/p_drag_wood2', 'sfx/p_drag_wood3.mp3': 'corpse/sfx/p_drag_wood3', 'sfx/p_drip1.mp3': 'corpse/sfx/p_drip1', 'sfx/p_drip2.mp3': 'corpse/sfx/p_drip2', 'sfx/p_drip3.mp3': 'corpse/sfx/p_drip3', 'sfx/p_drip4.mp3': 'corpse/sfx/p_drip4', 'sfx/p_drip5.mp3': 'corpse/sfx/p_drip5', 'sfx/p_cloth1.mp3': 'corpse/sfx/p_cloth1', 'sfx/p_cloth2.mp3': 'corpse/sfx/p_cloth2', 'sfx/p_cloth3.mp3': 'corpse/sfx/p_cloth3', 'sfx/p_cloth4.mp3': 'corpse/sfx/p_cloth4',   // 끌림(돌 · 나무) · 피 방울 · 옷 스침
     'sfx/amb_bell1.mp3': 'corpse/sfx/amb_bell1', 'sfx/amb_bell2.mp3': 'corpse/sfx/amb_bell2', 'sfx/amb_owl1.mp3': 'corpse/sfx/amb_owl1', 'sfx/amb_owl2.mp3': 'corpse/sfx/amb_owl2', 'sfx/amb_dog1.mp3': 'corpse/sfx/amb_dog1', 'sfx/amb_dog2.mp3': 'corpse/sfx/amb_dog2', 'sfx/amb_gust1.mp3': 'corpse/sfx/amb_gust1', 'sfx/amb_gust2.mp3': 'corpse/sfx/amb_gust2', 'sfx/amb_snap1.mp3': 'corpse/sfx/amb_snap1', 'sfx/amb_snap2.mp3': 'corpse/sfx/amb_snap2', 'sfx/amb_moan1.mp3': 'corpse/sfx/amb_moan1', 'sfx/amb_moan2.mp3': 'corpse/sfx/amb_moan2', 'sfx/amb_ema1.mp3': 'corpse/sfx/amb_ema1', 'sfx/amb_ema2.mp3': 'corpse/sfx/amb_ema2', 'sfx/amb_suzu1.mp3': 'corpse/sfx/amb_suzu1',   // 밤 소리 사건(멀리서 가끔 · realsfx.js)
     'sfx/mon_stalk1.mp3': 'corpse/sfx/mon_stalk1', 'sfx/mon_stalk2.mp3': 'corpse/sfx/mon_stalk2', 'sfx/mon_stalk3.mp3': 'corpse/sfx/mon_stalk3', 'sfx/mon_stalk4.mp3': 'corpse/sfx/mon_stalk4',   // 괴물이 가까이 어슬렁거릴 때 숨 · 그르렁          // 서 있을 때 겁먹어 고르지 않게 끊기는 남자 숨(2026-10-08 · p_breath_idle2 대신)
     'sfx/p_strain1.mp3': 'corpse/sfx/p_strain1', 'sfx/p_strain2.mp3': 'corpse/sfx/p_strain2', 'sfx/p_strain3.mp3': 'corpse/sfx/p_strain3', 'sfx/p_strain4.mp3': 'corpse/sfx/p_strain4',
@@ -311,7 +312,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-280'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-283'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5946,6 +5947,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'torchflick', name: '불빛 흔들림(sway.js — 괴물이 나를 보고 쫓기 시작하는 순간 · 겁에 질린 채 가끔 — 손전등 · 가까운 등롱이 0.6초 툭툭 끊김)', def: true },
     { key: 'muffle', name: '맞으면 귀가 먹먹(realsfx.js — 몽둥이에 맞는 순간 온 소리가 둔탁해졌다 2초에 걸쳐 돌아온다 · 배경 음악 빼고)', def: true },
     { key: 'stepsurf', name: '바닥 따라 발소리(realsfx.js — 발밑이 돌바닥 · 바위 · 타일이면 돌 걸음, 나무 단이면 나무 걸음, 그 밖은 흙 · 자갈 / 보기: 돌 셋 → 나무 셋 → 흙 셋)', def: true },
+    { key: 'foley2', name: '피 방울 · 옷 스침 소리(realsfx.js — 업은 시체에서 떨어진 피가 바닥에 닿으면 톡(7m 안 · 띄엄띄엄) · 달릴 때 옷 스침 / 보기: 톡 셋 → 스침 셋)', def: true },
     { key: 'spotted', name: '들킴 반응(breathe.js — 괴물이 나를 쫓기 시작하는 순간: 괴물 쪽으로 고개 홱 · 움찔 · 「헉」 얼굴 · 남자 헉 소리 · 시야가 순간 조여듦 / 봇도 같이)', def: true },
     { key: 'othersteps', name: '남의 발소리(realsfx.js — 봇 · 같이 하기 상대가 달리고 끌 때 그 자리에서 · 걸음 박자는 그 몸의 동작 · 그 자리 바닥 · 24m 안 / 보기: 등 뒤에서 누가 달려와 옆을 스쳐 감)', def: true },
     { key: 'ambev', name: '밤 소리 사건(realsfx.js — 22~48초마다 멀리서: 범종 · 올빼미 · 먼 개 · 등 뒤 덤불 잔가지 · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마 카라카라)', def: true },
@@ -6412,6 +6414,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'torchflick') { if (window.__wind && window.__wind.flicker) window.__wind.flicker(); }
     else if (key === 'muffle') { const R2 = window.__rsfx; if (R2) { R2.play('mon_hit', { vol: 0.9 }); R2.muffle(); } }   // 맞는 소리 + 먹먹
     else if (key === 'stepsurf') { if (window.__rsfx && window.__rsfx.stepDemo) window.__rsfx.stepDemo(); }
+    else if (key === 'foley2') { if (window.__rsfx && window.__rsfx.foleyDemo) window.__rsfx.foleyDemo(); }
     else if (key === 'spotted') { if (window.__breath && window.__breath.spotDemo) window.__breath.spotDemo(); }
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
     else if (key === 'ambev') { if (window.__rsfx && window.__rsfx.ambEvent) window.__rsfx.ambEvent(); }   // 하나 바로(무작위)
@@ -6445,7 +6448,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -6531,7 +6534,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
 (() => {
   const N = {
     mon_hit: 3, mon_step: 6, mon_swing: 3, mon_breath: 3, mon_inhale: 1, mon_stalk: 4,
-    p_step: 8, p_step_stone: 8, p_step_wood: 8, p_gasp: 5, p_drag: 3, p_pickup: 2, p_breath_idle2: 0, p_breath_fear: 0, p_strain: 7, p_pant_run: 0, p_pant_after: 0,
+    p_step: 8, p_step_stone: 8, p_step_wood: 8, p_gasp: 5, p_drag_stone: 3, p_drag_wood: 3, p_drip: 5, p_cloth: 4, p_drag: 3, p_pickup: 2, p_breath_idle2: 0, p_breath_fear: 0, p_strain: 7, p_pant_run: 0, p_pant_after: 0,
     sys_danger: 0, sys_score: 0, sys_tick: 0, sys_win: 0, sys_lose: 0, sys_heart: 2, sys_creak: 4, sys_gore: 2,
     sys_fire_loop: 0, sys_fire_ign: 2, sys_fire_boom: 0,
     fly_loop: 0, p_bodydrop: 5,
@@ -6613,6 +6616,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     ['괴물에게 맞음', '둔탁한 쿵 + 뼈 으스러짐 — 맞는 순간(피 철퍽이 살짝 겹친다)', 'mon_hit', 3],
     ['괴물 발소리', '무거운 발 + 진흙 질척 — 거리 35m · 좌우', 'mon_step', 6],
     ['밤 소리 사건(10-08 밤 새로)', '22~48초마다 하나 · 멀리서 · 방향 — 범종 · 올빼미 · 먼 개 · 덤불 잔가지(등 뒤) · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마', ['amb_bell1', 'amb_bell2', 'amb_owl1', 'amb_owl2', 'amb_dog1', 'amb_dog2', 'amb_snap1', 'amb_snap2', 'amb_moan1', 'amb_moan2', 'amb_suzu1', 'amb_gust1', 'amb_gust2', 'amb_ema1', 'amb_ema2']],
+    ['끌림 · 피 · 옷(10-09 새벽 새로)', '돌바닥에서 끌 때 1~3 · 나무 바닥에서 끌 때 1~3 · 업은 시체의 피가 바닥에 톡 1~5 · 달릴 때 옷 스침 1~4', ['p_drag_stone1', 'p_drag_stone2', 'p_drag_stone3', 'p_drag_wood1', 'p_drag_wood2', 'p_drag_wood3', 'p_drip1', 'p_drip2', 'p_drip3', 'p_drip4', 'p_drip5', 'p_cloth1', 'p_cloth2', 'p_cloth3', 'p_cloth4']],
     ['들킴(10-09 새벽 새로)', '괴물이 나를 쫓기 시작하는 순간 젊은 남자가 놀라 「헉」(130~188Hz 남자 · 봇이 들키면 그 자리에서)', 'p_gasp', 5],
     ['바닥 발소리(10-08 밤 새로)', '발밑을 보고 고른다 — 돌(돌바닥 · 바위 · 타일) 1~8 · 나무(나무 단 · 마루) 1~8 · 그 밖은 위의 흙 · 자갈', ['p_step_stone1', 'p_step_stone2', 'p_step_stone3', 'p_step_stone4', 'p_step_stone5', 'p_step_stone6', 'p_step_stone7', 'p_step_stone8', 'p_step_wood1', 'p_step_wood2', 'p_step_wood3', 'p_step_wood4', 'p_step_wood5', 'p_step_wood6', 'p_step_wood7', 'p_step_wood8']],
     ['시체(10-08 밤 새로)', '누운 시체 6m 안 — 파리 떼 윙윙(되풀이 — 4초만) · 내려놓거나 떨어뜨리면 털썩 1~5', ['fly_loop', 'p_bodydrop1', 'p_bodydrop2', 'p_bodydrop3', 'p_bodydrop4', 'p_bodydrop5']],
@@ -6630,7 +6634,9 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     ['꺼 둔 것', '심장 1~2(심장은 예전 녹음을 씀)', ['sys_heart1', 'sys_heart2']],
   ];
   const LABEL = { sys_danger: '도난·쫓김', sys_score: '내 득점', sys_tick: '남 득점', sys_win: '승리', sys_lose: '패배', mon_inhale1: '들숨', p_pant_run: '헐떡임', p_pant_after: '숨 고르기', sys_fire_loop: '타는 동안', sys_fire_boom: '불덩이', p_pickup1: '들기 1', p_pickup2: '들기 2', p_breath_idle2: '예전 느린 숨', p_breath_fear: '겁먹은 숨(새)', fly_loop: '파리 떼', p_bodydrop1: '털썩 1', p_bodydrop2: '털썩 2', p_bodydrop3: '털썩 3', p_bodydrop4: '털썩 4', p_bodydrop5: '털썩 5', amb_bell1: '범종 1', amb_bell2: '범종 2', amb_owl1: '올빼미 1', amb_owl2: '올빼미 2', amb_dog1: '개 울음', amb_dog2: '개 짖음', amb_snap1: '잔가지', amb_snap2: '덤불 발소리', amb_moan1: '먼 신음 1', amb_moan2: '먼 신음 2', amb_suzu1: '신사 방울', amb_gust1: '돌풍 1', amb_gust2: '돌풍 2', amb_ema1: '에마 1', amb_ema2: '에마 2', sys_heart1: '심장 1', sys_heart2: '심장 2' };
-  for (let i = 1; i <= 5; i++) LABEL['p_gasp' + i] = '헉 ' + i;
+  for (let i = 1; i <= 5; i++) { LABEL['p_gasp' + i] = '헉 ' + i; LABEL['p_drip' + i] = '톡 ' + i; }
+  for (let i = 1; i <= 4; i++) LABEL['p_cloth' + i] = '스침 ' + i;
+  for (let i = 1; i <= 3; i++) { LABEL['p_drag_stone' + i] = '돌 끌림 ' + i; LABEL['p_drag_wood' + i] = '나무 끌림 ' + i; }
   for (let i = 1; i <= 8; i++) { LABEL['p_step_stone' + i] = '돌 ' + i; LABEL['p_step_wood' + i] = '나무 ' + i; }
   let pv = null;
   R.preview = (key) => {
@@ -6698,6 +6704,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const H = () => G.hero.position;
     wi.step = (run) => {
       const s = surfUnder(), v = run ? 0.42 : 0.34;
+      const Bh = window.__breath && window.__breath.hero, fast = run || !!(Bh && Bh.sp > 3.2 && !(G.carry && G.carry.heldBody));   // 게임의 run 은 다른 뜻 — 실제 빠르기로(나르는 중엔 없음)
+      if (fast && foleyOn() && Math.random() < 0.45) play('p_cloth', { vol: 0.09, rate: rnd(0.9, 1.1), delay: rnd(0.02, 0.07) });   // 달릴 때 옷 스침(걸음 절반쯤)
       if (s !== 'dirt' && play('p_step_' + s, { vol: v * 0.9, rate: rnd(0.95, 1.05) })) return;
       if (!play('p_step', { vol: v, rate: rnd(0.93, 1.07) })) o.step(run);
     };
@@ -6712,7 +6720,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     wi.tick = () => { if (!R.on || !R.ready()) o.tick(); };
     wi.gore = () => { if (!play('sys_gore', { vol: 0.7 })) o.gore(); };
     // 끄는 소리는 끌 때만 — 게임은 업기 · 끌기를 둘 다 「들고 있음(dragMode)」으로 부른다(2026-10-08 사용자: 「업고 갈 때도 끌고 가는 소리가 난다」)
-    wi.dragScrape = (k) => { const D = G.carry; if (D && D.lastKind === 'carry') return; const t = performance.now(); if (t - dragT < 950) return; dragT = t; if (!play('p_drag', { vol: 0.3, rate: rnd(0.9, 1.05) })) o.dragScrape(k); };
+    wi.dragScrape = (k) => { const D = G.carry; if (D && D.lastKind === 'carry') return; const t = performance.now(); if (t - dragT < 950) return; dragT = t; const sf = surfUnder(); if (!((sf !== 'dirt' && play('p_drag_' + sf, { vol: sf === 'stone' ? 0.26 : 0.3, rate: rnd(0.92, 1.05) })) || play('p_drag', { vol: 0.3, rate: rnd(0.9, 1.05) }))) o.dragScrape(k); };   // 발밑이 돌 · 나무면 그 끌림
     return true;
   }
   /* ── 불 · 휘두름(fx.js sfx) ── */
@@ -6778,6 +6786,19 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (h) { const m = h.object.material, mm = Array.isArray(m) ? m[h.face && h.face.materialIndex || 0] : m, n = (mm && mm.name) || ''; s = SURF.stone.test(n) ? 'stone' : SURF.wood.test(n) ? 'wood' : 'dirt'; }
     c.x = p.x; c.z = p.z; c.s = s; return s;
   }
+  /* ── 피 방울 · 옷 스침(2026-10-09 새벽) — 업은 시체에서 떨어진 피가 바닥에 닿으면 톡(blood.js onLand · 7m 안 · 0.25~0.6초에 하나만 · 물 위는 없음 · 낮게 · 나와 봇 모두)
+       달릴 때 걸음의 절반쯤 옷이 스치는 소리 · 끄기: 시연실 연출 「피 방울 · 옷 스침 소리」 · 보기: 톡 셋 → 스침 셋 ── */
+  const foleyOn = () => { const X = window.__fx; return !(X && X.on && X.on.foley2 === false); };
+  let dripT = 0;
+  function onDrip(x, y, z) {
+    if (!G || !foleyOn() || !(G.started && !(G.game && G.game.over))) return;
+    const now = performance.now(); if (now < dripT) return;
+    const h = G.hero.position; if (Math.hypot(x - h.x, z - h.z) > 7) return;
+    if (window.__wetAt && window.__wetAt(x, z)) return;
+    dripT = now + 250 + Math.random() * 350;
+    play('p_drip', { pos: { x, y, z }, range: 8, vol: 0.12, rate: rnd(0.78, 0.95) });
+  }
+  R.foleyDemo = () => { if (!G || !au()) return false; for (let i = 0; i < 3; i++) play('p_drip', { vol: 0.12, rate: rnd(0.78, 0.95), delay: i * 0.55 }); for (let i = 0; i < 3; i++) play('p_cloth', { vol: 0.09, rate: rnd(0.9, 1.1), delay: 1.9 + i * 0.3 }); return true; };
   /* ── 남의 발소리(2026-10-08 밤) — 봇 · 같이 하기 상대도 달리고 끌 때 그 자리에서 발소리(예전엔 나만 났다 — 등 뒤로 누가 달려와도 조용했다)
        걸음 박자 = 그 몸의 걷기 · 끌기 동작 반 바퀴마다(내 발소리와 같은 방식 · 같이 하기도 같은 동작이 돈다) · 그 자리 바닥(돌 · 나무 · 흙) · 좌우 · 24m 안(5m 0.69 · 10m 0.42 · 15m 0.21)
        물속 · 안 보이는 몸 · 멈춘 몸은 없음 · 끄기: 시연실 연출 「남의 발소리」 · 보기: 등 뒤 14m 에서 누가 달려와 옆을 스쳐 감 ── */
@@ -6832,7 +6853,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
         const p = b.bones && b.bones.hips ? b.bones.hips.getWorldPosition(VF) : b.root.position;
         if (Math.hypot(p.x - was.x, p.z - was.z) > 2.5) continue;                 // 바쳐서 다른 데로 옮겨졌다 — 소리 없음
         const fall = Math.min(0.5, Math.sqrt(2 * Math.max(0, p.y - h.y - 0.25) / 9.8));   // 어깨에서 놓으면 땅에 닿을 때(끌던 몸은 바로)
-        if (!(N && N.waterAt && N.waterAt(p.x, p.z))) play('p_bodydrop', { pos: { x: p.x, y: h.y, z: p.z }, range: 26, vol: 0.85, rate: rnd(0.94, 1.04), delay: fall });
+        if (!(N && N.waterAt && N.waterAt(p.x, p.z))) play('p_bodydrop', { pos: { x: p.x, y: h.y, z: p.z }, range: 26, vol: 1.15, rate: rnd(0.94, 1.04), delay: fall });
       }
     }
   }
@@ -6854,6 +6875,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   }
   function frame(dt) {
     if (!G) { if (!window.__G) return; G = window.__G; VF = new G.THREE.Vector3(); }
+    if (window.__blood && !window.__blood.onLand) window.__blood.onLand = (x, y, z) => onDrip(x, y, z);
     const A = au(); if (!A) return;
     if (!loading) load(A.ctx);
     hookWi(); hookFx();
@@ -7182,11 +7204,11 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (key === 'hero') {
       window.__spotT = performance.now();
       const Bd = G.body; if (Cc && Cc.playOnKey && Bd) Cc.playOnKey([skinOf(Bd.main), skinOf(Bd.drag)].filter(Boolean), 'gasp');
-      if (R && R.play) R.play('p_gasp', { vol: 0.85, rate: 0.97 + Math.random() * 0.06, delay: 0.03 });
+      if (R && R.play) R.play('p_gasp', { vol: 1.2, rate: 0.97 + Math.random() * 0.06, delay: 0.03 });
     } else {
       const sm = key.__sm || (key.model && skinOf(key.model));
       if (Cc && Cc.playOnKey && sm) Cc.playOnKey([sm], 'gasp');
-      if (R && R.play) R.play('p_gasp', { pos: { x: pos.x, y: pos.y, z: pos.z }, range: 22, vol: 0.7, rate: 0.95 + Math.random() * 0.08, delay: 0.03 });
+      if (R && R.play) R.play('p_gasp', { pos: { x: pos.x, y: pos.y, z: pos.z }, range: 22, vol: 1.0, rate: 0.95 + Math.random() * 0.08, delay: 0.03 });
     }
   }
   S.spotDemo = () => { const G = window.__G; if (!G || !G.started) return false; const s = stateOf('hero'); s.spT = performance.now(); spotted('hero', G.hero.position); return true; };
@@ -9713,6 +9735,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
       q.x += q.vx * dt; q.y += q.vy * dt; q.z += q.vz * dt;
       if (q.y <= q.gy + 0.01 || q.age > 3) {
         if (q.y <= q.gy + 0.01 && gore && gore.drop && Math.random() < 0.3 && !window.__wetAt(q.x, q.z)) gore.drop(V.set(q.x, q.gy + 0.03, q.z), S.set(0, -1, 0));   // 바닥 얼룩
+        if (q.y <= q.gy + 0.01 && B.onLand) B.onLand(q.x, q.gy, q.z, q.w);                    // 닿는 소리(realsfx.js — 톡)
         parts.splice(i, 1); continue;
       }
     }
