@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- GitHub 단독판 (MSW 없이): 코드 · 그림 · 소리 · 영상을 모두 GitHub sukyonghyun-sudo/three 의 maple-sound-wave/ 에서 받아요 (커밋 1523151 고정)
+     이 파일 하나만 있으면 돼요 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같아요 · 랭킹 · 기록은 이 브라우저 안에만 저장돼요 -->
+<base href="https://cdn.jsdelivr.net/gh/sukyonghyun-sudo/three@1523151b72196ae817edade387177cb80e654337/maple-sound-wave/play/">
+<meta charset="utf-8">
+<meta name="screen-orientation" content="portrait"><meta name="x5-orientation" content="portrait">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>maple SOUND WAVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Jua&family=Black+Han+Sans&family=Nunito:wght@800;900&family=Bagel+Fat+One&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/innks/NanumSquareRound@master/nanumsquareround.min.css" rel="stylesheet">   <!-- 곡 화면 판 글꼴 (둥근 고딕) -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css" rel="stylesheet">   <!-- 픽몬 도트 글꼴 -->
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=b20261007-257">
+<link rel="stylesheet" href="css/weekend.css?v=b20261007-257">   <!-- 주말 업데이트 (빼면 예전 모습) -->
+<style>/* MSW 가 html, body 배경을 투명으로 덮어써서 무대에 직접 배경을 깔아요 */ #stage{background:var(--night)}</style>
+<script>/* 모바일판 (2026-10-07 사용자: 「PC 판에 심고 — 모바일에서 접속할 때만 모바일 버전」): 폰(아이폰 · 안드로이드 폰)일 때만 세로 모바일 화면, PC · 노트북 · 태블릿은 PC 판 그대로
+   모바일판일 때만 css/mobile.css · js/mobile.js 를 받아요 (PC 는 안 받아요) · 모바일 코드는 전부 window.MOB 일 때만 켜져요
+   시험용: localStorage mds-mob-force = 1 (모바일판) / 0 (PC 판) · mds-mob-touch = 1 (마우스 기기에서도 폰처럼 — 가로 창이면 돌려 보여요) */
+(function(){const ua=navigator.userAgent||'';let f=null;try{f=localStorage.getItem('mds-mob-force')}catch(e){}
+  const phone=/iPhone|iPod|Windows Phone|IEMobile|BlackBerry|Opera Mini/i.test(ua)||(/Android/i.test(ua)&&/Mobile/i.test(ua));
+  window.MOB=f==='1'?true:f==='0'?false:phone;
+  if(window.MOB){document.documentElement.classList.add('mob');document.write('<link rel="stylesheet" href="css/mobile.css?v=b20261007-257">');try{window.MOB_TOUCH=localStorage.getItem('mds-mob-touch')==='1'}catch(e){}}})();
+</script>
+</head>
+<body class="menu ui2">
+<div id="stage">
+  <video id="bga" muted playsinline preload="auto" aria-hidden="true"></video>
+  <canvas id="bg"></canvas>
+  <div id="monBox"><canvas id="mon" aria-label="무대 위에서 춤추는 모자 쓴 신사"></canvas></div>
+  <canvas id="fx"></canvas>
+  <div class="hud" style="visibility:hidden"><div class="song"><span class="p1" data-spr="p1" aria-hidden="true"></span><span id="hudSong"></span><small id="hudDiff">NORMAL</small></div><div class="score"><div id="scoreBox" class="plate" data-spr="plate"><span id="score">0</span></div><small>최대 콤보 <span id="maxc">0</span></small></div><div class="gauge2 g0" id="gauge2" aria-hidden="true"><b class="g2t">CLEAR GAUGE</b><b class="g2f">FEVER ×2</b><span class="g2p" id="g2p">0%</span><span class="g2bar"><i></i></span><span class="g2prog"><i></i></span></div></div>
+  <button class="pausebtn hidden" id="pauseBtn" aria-label="일시정지 (Esc)">⏸</button>
+  <section class="screen hidden" id="pauseMenu" aria-label="일시정지">
+    <h2 class="logo"><span class="b">일시정지</span></h2>
+    <div class="pm"><button class="pmb" id="pmResume">▶ 계속하기</button><button class="pmb alt" id="pmRetry">↺ 처음부터</button><button class="pmb alt" id="pmSelect">곡 선택으로</button></div>
+    <p class="keys"><kbd>Esc</kbd> 로 멈추고 다시 계속할 수 있어요</p>
+  </section>
+  <div class="sync hidden" id="live"><button id="mi" aria-label="노트를 늦게">−</button><span id="liveV">0ms</span><button id="pl" aria-label="노트를 빨리">+</button></div>
+
+  <section class="screen" id="main" aria-label="메인 화면">
+    <h1 class="logo" lang="en"><span class="gimg titleimg" role="img" aria-label="maple SOUND WAVE"></span>
+      <span class="mstar s1" data-spr="star" aria-hidden="true"></span><span class="mstar s2" data-spr="star_p" aria-hidden="true"></span><span class="mstar s3" data-spr="star_c" aria-hidden="true"></span><span class="mstar s4" data-spr="star" aria-hidden="true"></span></h1>
+    <div class="mload"><div class="mbar"><i id="mBar"></i></div><p class="mmsg" id="mMsg" role="status">준비 중…</p></div>
+    <button class="go go2" id="mGo" disabled><span class="pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.6 5.6c0-.9 1-1.5 1.8-1l9 5.9c.7.5.7 1.5 0 2l-9 5.9c-.8.5-1.8-.1-1.8-1z" fill="#fff"/></svg></span><span class="gt"><b>START</b></span></button>
+    <p class="mfull"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>전체화면으로 플레이해 주세요 <kbd>F11</kbd></p>
+  </section>
+
+
+  <section class="screen hidden" id="title">
+    <div class="colA"><button class="back bk2" id="back" aria-label="곡 선택으로 돌아가기"><i class="tri" aria-hidden="true"></i><svg class="bnote" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V5.2l11-2.4v12.1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><ellipse cx="6.4" cy="17.6" rx="3.4" ry="2.7" fill="currentColor"/><ellipse cx="17.4" cy="15.1" rx="3.4" ry="2.7" fill="currentColor"/></svg><span class="bl">곡 선택</span><svg class="bchev" viewBox="0 0 16 24" aria-hidden="true"><path d="M5 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="awrap" id="artWrap"><h1 class="logo" lang="ja"><span class="txt"><span class="a" id="lgA"></span><span class="b" id="lgB"></span><span class="c" id="lgC"></span></span><span class="gimg" id="lgImg" role="img"></span></h1>
+    <div class="songart" id="songArt" hidden><img id="songArtImg" alt="" decoding="async"></div>
+    <p class="meta" lang="ja" id="lgMeta"></p></div></div>
+    <div class="colB">
+    <div class="pnl">
+    <div class="diffs" id="diffs"></div>
+    <div class="opts">
+    <div class="nstyle"><span class="nlab">노트 스타일</span><div class="chips" id="notemove"></div></div>
+    <div class="nstyle spd"><span class="nlab">노트 스피드</span><div class="chips" id="spxs"></div></div></div>
+    <div class="startrow"><button class="snav" id="songPrev" aria-label="이전 곡"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M17 7l-9 9 9 9M26 7l-9 9 9 9" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="go go2" id="start"><span class="pi" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.6 5.6c0-.9 1-1.5 1.8-1l9 5.9c.7.5.7 1.5 0 2l-9 5.9c-.8.5-1.8-.1-1.8-1z" fill="#fff"/></svg></span><span class="gt"><span class="lbl">START</span></span></button><button class="snav" id="songNext" aria-label="다음 곡"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 7l9 9-9 9M15 7l9 9-9 9" fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+    <p class="keys" id="loadMsg" role="status"></p></div>
+    <div class="rankbox" id="rankBox" aria-live="polite"></div></div>
+    <details id="settings" class="setpop"><summary>설정</summary><i class="setbd" aria-hidden="true"></i><div class="set" role="dialog" aria-label="설정">
+      <!-- 설정 v2 (2026-10-03 주말 작업): DJMAX RESPECT V · 프로젝트 세카이처럼 탭으로 나눈 큰 창. 칩 · 슬라이더 id 는 예전 그대로라 엔진 코드는 바뀌지 않아요 -->
+      <div class="shead"><b>설정</b><span>OPTIONS</span><button class="sclose" id="setClose" aria-label="설정 닫기">✕</button></div>
+      <div class="stabs" role="tablist">
+        <button class="stab" role="tab" data-tab="play" aria-selected="true"><i aria-hidden="true">🎮</i>플레이</button>
+        <button class="stab" role="tab" data-tab="view" aria-selected="false"><i aria-hidden="true">🖼️</i>화면</button>
+        <button class="stab" role="tab" data-tab="sound" aria-selected="false"><i aria-hidden="true">🔊</i>소리</button>
+        <button class="stab" role="tab" data-tab="sync" aria-selected="false"><i aria-hidden="true">⏱️</i>싱크</button>
+        <button class="stab" role="tab" data-tab="keys" aria-selected="false"><i aria-hidden="true">⌨️</i>조작키</button>
+        <button class="stab" role="tab" data-tab="rec" aria-selected="false"><i aria-hidden="true">🏆</i>내 기록</button>
+      </div>
+      <div class="spanes">
+      <section class="spane" data-pane="play">
+        <div class="srow"><div class="sl"><h3>타격 이펙트</h3><p class="sd">노트를 쳤을 때 터지는 빛 — 「기본」 이 더 가벼워요</p></div><div class="sc"><div class="chips" id="hitfx"></div></div></div>
+        <div class="srow"><div class="sl"><h3>타이밍 미터</h3><p class="sd">판정선 아래 얇은 막대에 빠름 · 늦음이 눈금으로 찍혀요 (osu! · IIDX 방식)</p></div><div class="sc"><div class="chips" id="hmeter"></div></div></div>
+      </section>
+      <section class="spane" data-pane="view" hidden>
+        <div class="srow"><div class="sl"><h3>배경 영상</h3><p class="sd">곡 영상을 끄면 가벼워져요 — 화면이 버벅이면 꺼 보세요</p></div><div class="sc"><div class="chips" id="bgas"></div></div></div>
+      </section>
+      <section class="spane" data-pane="sound" hidden>
+        <div class="srow wide"><div class="sl"><h3>볼륨</h3><p class="sd">반주와 드럼 소리 크기</p></div><div class="sc"><div id="vols"></div></div></div>
+        <div class="srow"><div class="sl"><h3>UI 효과음</h3><p class="sd">곡 넘길 때 · 난이도 바꿀 때 · 시작할 때 · 결과 화면에서 나는 소리</p></div><div class="sc"><div class="chips" id="uisfxOpt"></div></div></div>
+      </section>
+      <section class="spane" data-pane="sync" hidden>
+        <div class="srow wide"><div class="sl"><h3>싱크 <span id="offV">0ms</span></h3><p class="sd">노트가 소리보다 늦게 보이면 + 쪽, 빨리 보이면 − 쪽으로. 결과 화면의 「싱크 자동 보정」 버튼으로도 맞출 수 있어요</p></div><div class="sc"><input id="off" type="range" min="-300" max="300" step="5" value="0" aria-label="싱크 조절"></div></div>
+        <div class="srow"><div class="sl"><h3>음악 들으며 맞추기</h3><p class="sd">들리는 박자마다 스페이스바를 16번 — 자동으로 맞춰 줘요</p></div><div class="sc"><div class="chips"><button class="chip" id="calib">음악 들으며 싱크 맞추기</button></div></div></div>
+        <div class="stip"><b>TIP</b> 판정 창: 퍼펙트 ±45ms · 그레이트 ±85ms · 굿 ±125ms. 타이밍 미터의 분홍 화살표가 가운데에서 한쪽으로 쏠려 있으면 싱크를 그만큼 옮기면 돼요.</div>
+      </section>
+      <section class="spane" data-pane="keys" hidden></section>   <!-- 조작키 (js/keys.js 가 채워요) -->
+      <section class="spane" data-pane="rec" hidden>
+        <p class="recsync" id="recSync" role="status"></p>   <!-- 서버 동기화 상태 (js/cloud.js) -->
+        <div class="rectab" id="recTable"></div>
+        <p class="stip"><b>TIP</b> MSW 서버에 저장되는 내 기록이에요 — 다른 기기 · 브라우저에서 열어도 같아요. 램프: <em class="lp2">CLEAR</em> 정확도 72% 이상 · <em class="lp3">FC</em> 미스 없음 · <em class="lp4">AP</em> 전부 퍼펙트</p>
+      </section>
+      </div>
+    </div></details>
+    <div class="keybar tkeys"><span class="kbl">게임 조작키</span>
+      <button class="kl" data-l="0"><kbd class="k0">D</kbd><span class="kn">핑크빈<small>킥</small></span></button><button class="kl" data-l="1"><kbd class="k1">F</kbd><span class="kn">버섯<small>스네어</small></span></button><button class="kl" data-l="2"><kbd class="k2">J</kbd><span class="kn">슬라임<small>하이햇</small></span></button><button class="kl" data-l="3"><kbd class="k3">K</kbd><span class="kn">예티<small>박수</small></span></button></div>
+  </section>
+
+  <section class="screen hidden" id="cal">
+    <h2 class="logo"><span class="b">박자에 맞춰 탭!</span></h2>
+    <div id="calBig">0 / 16</div>
+    <p class="keys">들리는 쿵, 쿵 박자마다 스페이스바나 화면을 누르세요.<br>16번 누르면 자동으로 맞춰져요.</p>
+  </section>
+
+  <section class="screen hidden" id="result2" aria-label="결과"></section>   <!-- 결과 화면 v2 (js/result2.js · css/weekend.css) -->
+  <section class="screen hidden" id="result">
+    <div class="rtop"><div class="rank" id="rRank">S</div><div class="rankImg" id="rRankImg" role="img"></div>
+      <div class="fc hidden" id="rFc">풀 콤보!</div><div class="fcImg hidden" id="rFcImg" data-spr="fc" role="img" aria-label="풀 콤보"></div></div>
+    <div class="rpanel" id="rPanel" data-spr="result_panel">
+      <div class="rscore" id="rScore">0</div>
+      <div class="rstats" id="rStats"></div>
+    </div>
+    <div class="row" style="margin-top:14px"><button class="go" id="again" style="margin:0" data-spr="btn_retry"><span class="lbl">다시 하기</span></button><button class="ghost" id="toTitle" data-spr="btn_diff"><span class="lbl">난이도 선택</span></button><button class="ghost" id="toSelect" data-spr="btn_sel"><span class="lbl">곡 선택</span></button></div>
+  </section>
+</div>
+<!-- 부팅: 곡 데이터 → MSW 초기화 → 리소스 주소 → 엔진·three.js·댄서 순서로 불러와요 -->
+<script crossorigin="anonymous" src="data/songs.js?v=b20261007-257"></script>
+<script type="module">
+// ---- MSW 대체판 (GitHub 단독판) — 'msw-game-core' 대신 이 브라우저 안에서 해요 (2026-10-08) ----
+//  리소스: GitHub maple-sound-wave/res/<이름>.<확장자> (MSW 리소스와 같은 파일) · jsDelivr 가 안 되면 GitHub 원본
+//  랭킹 · 기록 저장(UserStorage · GlobalStorage): 이 브라우저 localStorage 에만 — 온라인 랭킹은 MSW 판에서
+const SA='1523151b72196ae817edade387177cb80e654337',RES=[`https://cdn.jsdelivr.net/gh/sukyonghyun-sudo/three@${SA}/maple-sound-wave/res/`,`https://raw.githubusercontent.com/sukyonghyun-sudo/three/${SA}/maple-sound-wave/res/`];
+const RES_EXT={"art/cut_ballgirl":"webp","art/cut_cliff2":"webp","art/cut_forest":"webp","art/cut_hug":"webp","art/cut_run":"webp","art/cut_side":"webp","art/cut_sleep":"webp","art/cut_slimeq":"webp","art/cut_smile":"webp","art/leaf":"webp","art/logo_en":"webp","art/logo_jp":"webp","art/logo_yonbai3":"webp","art/pictra":"png","art/songart_maple":"webp","art/songart_pickmon":"png","art/songart_pictra":"webp","art/songart_whick":"png","fx/pickball":"png","kit2/clap":"wav","kit2/crash":"wav","kit2/hat_c":"wav","kit2/hat_o":"wav","kit2/kick_a":"wav","kit2/kick_b":"wav","kit2/kick_crash":"wav","kit2/snare_a":"wav","kit2/snare_b":"wav","kit2/tom_h":"wav","kit2/tom_l":"wav","kit2/tom_m":"wav","pix/av_black":"png","pix/av_boy":"png","pix/av_goggle":"png","pix/av_pink":"png","pix/av_purple":"png","pix/av_wink":"png","pix/boss":"png","pix/chick":"png","pix/egg":"png","pix/fox":"png","pix/ghost":"png","pix/luti":"png","pix/moss":"png","pix/rider":"png","pix/shrub":"png","song/maple/jacket":"jpg","song/pickmon/jacket":"jpg","song/pictra/jacket":"jpg","song/whick/jacket":"jpg","song/yonbai/jacket":"jpg","ui/atlas":"webp","ui/diff_easy":"png","ui/pads":"png","ui/title":"png","ui/title_parts":"webp"};let RB=RES[0];
+const LSJ={get:k=>{try{const v=localStorage.getItem(k);return v==null?null:JSON.parse(v)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const ME={userId:'local-me',nickname:'나',isGuest:false};
+function board(name,{order='desc'}={}){const K='msw-local-rank:'+name,better=(a,b)=>order==='asc'?a<b:a>b;
+  const all=()=>(LSJ.get(K)||[]).sort((a,b)=>order==='asc'?a.value-b.value:b.value-a.value),ent=(x,i)=>({rank:i+1,userId:x.userId,value:x.value,extras:x.extras||{},updatedAt:x.updatedAt});
+  return {getEntries:async({from=1,count=5}={})=>{const a=all();return {total:a.length,entries:a.slice(from-1,from-1+count).map((x,i)=>ent(x,from-1+i))}},
+    getEntry:async()=>{const a=all(),i=a.findIndex(x=>x.userId===ME.userId);return i<0?null:ent(a[i],i)},
+    submitScore:async({score,extras})=>{const a=all(),i=a.findIndex(x=>x.userId===ME.userId);if(i>=0&&!better(score,a[i].value))return {updated:false};if(i>=0)a.splice(i,1);a.push({userId:ME.userId,value:score,extras:extras||{},updatedAt:Date.now()});LSJ.set(K,a);return {updated:true}},
+    deleteScore:async()=>{LSJ.set(K,all().filter(x=>x.userId!==ME.userId))}}}
+const store=p=>({get:async k=>LSJ.get(p+k),set:async(k,v)=>{LSJ.set(p+k,v);return true}});
+const MSW=window.MSW={
+  init:async()=>{const ac=new AbortController(),t=setTimeout(()=>ac.abort(),8000);try{const r=await fetch(RES[0]+'fx/pickball.png',{method:'HEAD',signal:ac.signal});if(!r.ok)throw new Error(r.status)}catch(e){RB=RES[1];console.warn('jsDelivr 대신 GitHub 원본에서 받아요',e)}finally{clearTimeout(t)}},
+  Users:{me:ME,get:async uid=>uid===ME.userId?ME:{userId:uid,nickname:'플레이어'}},
+  Ranking:{board},UserStorage:store('msw-local-us:'),GlobalStorage:store('msw-local-gs:'),
+  Resources:{load:async name=>{const e=RES_EXT[name];if(!e)throw new Error('리소스 없음: '+name);return {defaultState:'default',states:{default:{url:RB+name+'.'+e}}}}}};
+const V='b20261007-257',BV='bga5';   // BV: 영상 조각 버전 — 영상을 바꿀 때만 올려요 (코드 버전과 따로 둬서 영상을 매번 다시 받지 않게)
+const load=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.crossOrigin='anonymous';   /* GitHub 단독판: 코드도 다른 출처(jsDelivr)라 오류 내용이 보이게 늘 */s.src=src;s.onload=res;s.onerror=()=>rej(new Error(src));document.body.appendChild(s)});
+const PIX=['av_boy','av_goggle','av_pink','av_purple','av_wink','av_black','shrub','ghost','fox','boss','egg','chick','moss','luti','rider'];   // 픽몬 도트 그림 (pix/*)
+const FILES=['mix.mp3',...['kick','snare','hat','clap'].map(n=>'stem_'+n+'.mp3'),...['kick','snare','hat','clap'].map(n=>'pad_'+n+'.wav')];
+// 노래 · 3D · 영상은 GitHub 저장소 sukyonghyun-sudo/three 의 maple-sound-wave/ 에서 받아요 (2026-10-07 사용자: 「git 에 올리자 — MSW 에는 안전하게 15MB 로만」)
+//  MSW 출시 검사는 게임이 16MB 밑이어야 돼요 · 주소는 커밋으로 고정 (저장소의 다른 게임 파일이 바뀌어도 이 게임은 그대로)
+//  jsDelivr CDN 먼저 (「더 안정적인 걸로」), 12초 안에 응답이 없거나 실패하면 GitHub 원본(raw) — 올린 파일: song/<곡>/*.mp3·wav (MSW 리소스와 같은 바이트) · model/* · video/720 · video/360
+const MEDIA_C='c3d706ce6342ad3b1d2b5009adb2d38e30812198',MEDIA=[`https://cdn.jsdelivr.net/gh/sukyonghyun-sudo/three@${MEDIA_C}/maple-sound-wave/`,`https://raw.githubusercontent.com/sukyonghyun-sudo/three/${MEDIA_C}/maple-sound-wave/`];
+async function mfetch(p){let err;for(const b of MEDIA){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),12000);try{const r=await fetch(b+p,{signal:ac.signal});clearTimeout(t);if(r.ok)return r;err=new Error(p+' '+r.status)}catch(e){clearTimeout(t);err=e;console.warn('media',b,p,e)}}throw err||new Error(p)}
+window.MEDIA_ALT=u=>u&&MEDIA.length>1&&u.startsWith(MEDIA[0])?MEDIA[1]+u.slice(MEDIA[0].length):'';   // 3D 모델 예비 주소 (js/dancer.js)
+const blobData=b=>new Promise((res,rej)=>{const f=new FileReader();f.onload=()=>res(f.result);f.onerror=rej;f.readAsDataURL(b)});
+// 리소스 이름 → 받을 주소 (소리는 미리 받지 않고 주소만 꺼내요. 엔진이 직접 받아서 디코딩해요)
+async function url(name){const r=await MSW.Resources.load(name,{audioPreload:false});
+  const st=r.states[r.defaultState]||r.states.default||Object.values(r.states)[0],u=st&&(st.url||(st.frames&&st.frames[0]&&st.frames[0].url));
+  if(!u)throw new Error(name+' 주소를 못 찾음');return u}
+// 신사 텍스처는 WebGL 에 올려야 해서 다른 출처 그림 대신 data: 주소로 바꿔요
+async function dataUrl(u){const b=await(await fetch(u)).blob();return new Promise((res,rej)=>{const f=new FileReader();f.onload=()=>res(f.result);f.onerror=rej;f.readAsDataURL(b)})}
+// 배경 영상: bga/<곡id>/NN.txt 의 base64 조각을 받아 mp4 로 되돌려요. 곡마다 한 번만 받아요
+const b64=t=>{if(Uint8Array.fromBase64)return Uint8Array.fromBase64(t);const s=atob(t),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a};
+const bgaCache={};
+// 뒤에서 받는 다른 곡 영상은 플레이 중엔 쉬어요 — 글자 조각을 영상으로 바꾸는 일이 무거워 판정 중에 끊겨서 (2026-10-06 출시 점검) · 지금 곡 영상은 바로 받아요
+const bgaIdle=id=>new Promise(res=>{const f=()=>{let pl=false,cid='';try{pl=typeof playing!=='undefined'&&playing;cid=window.SONGS&&typeof cur!=='undefined'&&SONGS[cur]?SONGS[cur].id:''}catch(e){}if(pl&&cid!==id)setTimeout(f,500);else res()};f()});
+const BGA_GOT={};window.BGA_PROG=id=>{const w=((window.PRELOAD_SIZES||{}).bga||{})[id];return w?Math.min(1,(BGA_GOT[id]||0)/w):0};   // 받은 비율 (곡 시작 카드의 「영상 준비 중 63%」 — engine.js vidWait)
+function bgaLoad(id,onPart){if(!bgaCache[id])BGA_GOT[id]=0;return bgaCache[id]||(bgaCache[id]=bgaIdle(id).then(()=>mfetch(`video/${window.MOB?360:720}/${id}.mp4`)).then(async r=>{   // GitHub 의 mp4 를 받아요 (PC 720p 원본 · 모바일 360p) — 받는 만큼 진행률
+    const rd=r.body&&r.body.getReader?r.body.getReader():null,parts=[];if(!rd){const b=await r.blob();BGA_GOT[id]=b.size;onPart&&onPart(b.size);parts.push(b)}
+    else for(let n=0;;n++){const {done,value}=await rd.read();if(done)break;parts.push(value);BGA_GOT[id]=(BGA_GOT[id]||0)+value.length;onPart&&onPart(value.length);if(n%16===15)await bgaIdle(id)}   // 다른 곡 영상은 플레이 중엔 쉬어요
+    return URL.createObjectURL(new Blob(parts,{type:'video/mp4'}))}).catch(e=>{delete bgaCache[id];throw e}))}
+// 소리 파일 바이트: 메인 화면에서 미리 받아 두고, 엔진이 곡을 열 때 꺼내서 디코딩해요
+const abCache={};
+function getAB(k,u){return abCache[k]||(abCache[k]=(u.startsWith(MEDIA[0])?mfetch(u.slice(MEDIA[0].length)):fetch(u)).then(r=>{if(!r.ok)throw new Error(`${k} ${r.status}`);return r.arrayBuffer()}).catch(e=>{delete abCache[k];throw e}))}
+// 메인 화면 미리 불러오기 (2026-10-06 사용자: 「추천안으로」): 「시작!」은 ① 모든 곡의 소리 ② 3D(신사 · 소년 · 노트 캐릭터 + 노트 그림 굽기)
+//   ③ 처음 열릴 곡(마지막에 고른 곡)의 영상까지 받으면 켜져요 — 진행률도 셋을 합쳐서 (js/main.js 가 그려요) · 모든 곡에 필요한 건 처음에, 곡마다 다른 큰 영상은 뒤에서
+// 나머지 배경 영상은 그 뒤에 뒤에서 한 곡씩 받아요 — 플레이 중엔 쉬어요 (bgaIdle) · 아직 영상이 없는 곡의 START 는 곡 시작 카드에서 다 받을 때까지 기다려요 (engine.js vidWait — 영상 없이 시작하지 않게)
+//  · 아직 안 받은 곡을 열면 그 곡을 바로 받기 시작하고(engine openSong), 받는 대로 곡 화면 뒤에 서서히 나타나요
+//  · 한 곡 받을 때마다 PRELOAD.onBga(S) (js/main.js: 메인 · 곡 선택 화면 뒤 영상) · bgaAt = 받은 시각(ms, 확인용)
+const P=window.PRELOAD={total:0,done:0,failed:0,tick:null,ready:null,bga:null,onBga:null,bgaAt:{}};
+// 3D 준비: js/dancer.js 가 받는 대로 R3D.prog(이름, 받은 바이트), 끝나면(실패해도) R3D.fin(이름) — 다 끝나면 R3D.p 가 풀려요 · 무게 = 대략 바이트 (막대 진행률)
+const R3W={gentle:3e6,boy:5.7e6,note0:2.4e5,note1:1.5e5,note2:2.6e5,note3:2.2e5,bake:2e5};   // note0~3 · bake: 노트 그림 판 (NSHEET)
+window.R3D=(()=>{let res;const p=new Promise(r=>res=r),got={},left=new Set(Object.keys(R3W));
+  const prog=(k,v)=>{const w=R3W[k]||0,nv=Math.min(w,v||0),d=nv-(got[k]||0);if(d>0){got[k]=nv;P.done+=d;P.tick&&P.tick()}};
+  const fin=k=>{if(!left.has(k))return;prog(k,R3W[k]||0);left.delete(k);if(!left.size)res()};
+  return {p,W:R3W,prog,fin,all:()=>[...left].forEach(fin)}})();
+setTimeout(()=>R3D.all(),60000);   // 아주 느린 인터넷에서 막대가 끝없이 멈춰 있지 않게 — 1분이 지나면 3D 는 뒤에서 마저 받아요
+// 노트 그림 판 (2026-10-07 사용자: 「64MB 밑으로」): 3D 노트 모델 4개(34MB)를 받아 굽는 대신, 미리 구운 그림 판을 받아요
+//  notes/nN.txt = webp 1536×1536 (256px × 36장 · 6×6) base64 — 게임이 굽던 그림 그대로 (maple-drum-assets/notes_baked) · 모바일은 160px 로 줄여 써요
+//  NOTE_MODEL: 신사 모양 대체 노트를 만들지 않게 (js/dancer.js makeSprites) · 그림 판을 못 받으면 예전 2D 노트 그림(아틀라스)으로 그려요
+window.NOTE_MODEL=true;
+const NSHEET=(async()=>{const PX=window.MOB?160:256,S=256;
+  const sets=await Promise.all([0,1,2,3].map(async i=>{try{const r=await fetch(`notes/n${i}.txt?v=${V}`);if(!r.ok)throw new Error('notes '+i+' '+r.status);
+      const blob=new Blob([b64((await r.text()).trim())],{type:'image/webp'});let src;
+      if(window.createImageBitmap)src=await createImageBitmap(blob);else{const u=URL.createObjectURL(blob);src=new Image();src.src=u;await src.decode();URL.revokeObjectURL(u)}
+      const fr=[];for(let k=0;k<36;k++){const c=document.createElement('canvas');c.width=c.height=PX;const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(src,(k%6)*S,Math.floor(k/6)*S,S,S,0,0,PX,PX);fr.push(window.createImageBitmap?await createImageBitmap(c):c)}
+      src.close&&src.close();return fr}catch(e){console.warn('note sheet',i,e);return null}finally{R3D.fin('note'+i)}}));
+  if(sets.some(Boolean)){window.NOTE_SPRS=sets;window.NOTE_SPR=sets.find(Boolean)}R3D.fin('bake');return sets})();
+function preload(songs){const SZ=window.PRELOAD_SIZES||{bga:{},audio:{}},add=n=>{P.done+=n;P.tick&&P.tick()},jobs=[],t0=performance.now(),later=[];
+  let first=0;try{first=Math.max(0,Math.min(songs.length-1,parseInt(localStorage.getItem('mds-song'),10)||0))}catch(e){}
+  const order=[songs[first],...songs.filter((S,i)=>i!==first)];
+  for(const S of songs)for(const f of FILES){const w=(SZ.audio[S.id]||{})[f]||1e5;
+    if(window.MOB&&S!==order[0]){later.push(()=>S.getAB(f).catch(e=>console.warn('audio',S.id,f,e)));continue}   /* 모바일: 첫 화면은 처음 열릴 곡 소리만 기다리고 나머지 곡은 준비가 끝난 뒤 뒤에서 하나씩 (고르면 그 곡이 먼저) */
+    P.total+=w;jobs.push(S.getAB(f).then(()=>add(w),e=>{P.failed++;add(w);console.warn('audio',S.id,f,e)}))}
+  const F=order[0];let vOff=false;try{vOff=localStorage.getItem('mds-bga')==='off'}catch(e){}   // 처음 열릴 곡 영상도 막대에 (영상을 꺼 둔 사람은 빼요)
+  if(F&&F.bgaLoad&&!vOff){const w=SZ.bga[F.id]||1e7;let got=0;P.total+=w;jobs.push(bgaLoad(F.id,n=>{got+=n;add(n)}).then(u=>{F.bga=u;add(Math.max(0,w-got))},e=>{console.warn('bga',F.id,e);add(Math.max(0,w-got))}))}
+  P.total+=Object.values(R3W).reduce((a,b)=>a+b,0);jobs.push(R3D.p);   // 3D 도 막대에
+  P.ready=Promise.all(jobs);if(later.length)P.ready.then(()=>later.reduce((p,fn)=>p.then(fn),Promise.resolve()));
+  P.bga=window.MOB?P.ready:P.ready.then(async()=>{for(const S of order){if(!S.bgaLoad)continue;try{await bgaIdle(S.id);S.bga=await S.bgaLoad();P.bgaAt[S.id]=Math.round(performance.now()-t0);P.onBga&&P.onBga(S)}catch(e){console.warn('bga',S.id,e)}}})}
+try{
+  // 스크립트 미리 받기 (2026-10-06 로딩 추천안): 아래에서 차례로 부르는 스크립트를 처음에 한꺼번에 받아 둬요 — 하나씩 받으면 개마다 서버 왕복이라 30여 개에 3초 넘게 걸려 「준비 중」 막대가 늦게 끝났어요 · 실행 순서는 아래 그대로
+  [...'titleintro,hitfx,engine,tune,postfx,dancer,result2,hitmeter,adlib,songinfo,settings2,keys,practice,guide,options,playui,ballfx,uisfx,songintro,main,selectfx,rank,top1,profile,cloud,songlist,vj,vj_pixel,vj_code,vj_4x,vj_logo,titlefx,mobile'.split(',').filter(n=>window.MOB?!/^(postfx|dancer|vj|vj_pixel|vj_code|vj_4x|vj_logo)$/.test(n):n!=='mobile').map(n=>`js/${n}.js?v=${V}`),...(window.MOB?[]:'build/three.min.js,examples/js/loaders/GLTFLoader.js,examples/js/environments/RoomEnvironment.js,examples/js/libs/meshopt_decoder.js'.split(',').map(f=>'https://cdn.jsdelivr.net/npm/three@0.147.0/'+f))]   /* 모바일: 3D · VJ 는 미리 받지 않아요 (필요할 때만) */
+    .forEach(u=>{const l=document.createElement('link');l.rel='preload';l.as='script';l.href=u;document.head.appendChild(l)});
+  await MSW.init();
+  const [atlas,glb,tex,noteGlbs,artP,pixP,boyGlb,boyMix,logoP,songs]=await Promise.all([url('ui/atlas').then(u=>fetch(u)).then(r=>r.blob()).then(b=>URL.createObjectURL(b)),   // UI 그림은 한 번 받아 blob 으로: 화면 배경·곱게 줄이기 모두 이걸 같이 써요 (따로 받으면 처음에 로고가 잠깐 비어요)
+    window.MOB?'':MEDIA[0]+'model/gentleman.glb',window.MOB?'':mfetch('model/gentleman_tex.jpg').then(r=>r.blob()).then(b=>blobData(new Blob([b],{type:'image/jpeg'}))).catch(e=>{console.warn('gentleman tex',e);return ''}),   /* 신사 · 텍스처: GitHub */   /* 모바일: 3D 신사 · 텍스처 안 받아요 */[]   /* 노트: 3D 모델 대신 그림 판 (NSHEET) */,window.MOB?[]:Promise.all(['art/pictra','art/cut_cliff2','art/cut_forest','art/cut_hug','art/cut_run','art/cut_smile','art/cut_sleep','art/cut_side','art/cut_ballgirl','art/cut_slimeq'].map(n=>url(n).catch(()=>''))),
+    window.MOB?[]:Promise.all(PIX.map(n=>url('pix/'+n).catch(()=>''))),'',window.MOB?'':MEDIA[0]+'model/boy_mixamo.glb'   /* 소년: GitHub */   /* 소년: 예비 모델은 안 받아요 (2026-10-07 용량 줄이기) */,window.MOB?[]:Promise.all(['art/logo_jp','art/logo_en','art/leaf'].map(n=>url(n).catch(()=>''))),   /* 모바일: 가로 화면 전용 VJ 그림 · 소년 모델 안 받아요 */
+    Promise.all(SONG_DATA.map(async s=>{const urls={};await Promise.all(FILES.map(async f=>{urls[f]=MEDIA[0]+`song/${s.id}/${f}`   /* 노래: GitHub (getAB → mfetch) */}));
+      return Object.assign(s,{dir:'',urls,getAB:f=>getAB(`${s.id}/${f}`,urls[f]),jacket:await url(`song/${s.id}/jacket`).catch(()=>''),bga:'',bgaLoad:s.bga!==false&&BGA_CHUNKS[s.id]?()=>bgaLoad(s.id):null})}))]);
+  window.SONGS=songs;window.CHART=songs[0].chart;window.ATLAS_URL=atlas;window.MONSTER_GLB=glb;window.MONSTER_TEX=tex;window.NOTE_GLBS=noteGlbs;window.BOY_GLB=window.MOB?'':boyGlb;window.BOY_MIXAMO=window.MOB?'':boyMix;   /* 모바일: 4배의 세계 소년(가로 화면 왼쪽 댄서)은 안 받아요 */window.ART_LOGO=Object.assign(logoP[0]?{maple:{jp:logoP[0],en:logoP[1],leaf:logoP[2]}}:{},{yonbai:{}});   /* yonbai: 그림 없이 의성어만 */   // 기리기리 메이플월드 로고 연출 (js/vj_logo.js)   // 4倍の世界 왼쪽 댄서 (js/dancer.js)
+  
+  window.ART_SONGS=artP[1]?{pictra:{rider:artP[0],cliff:artP[1],forest:artP[2],hug:artP[3],run:artP[4],smile:artP[5],sleep:artP[6],side:artP[7],ballgirl:artP[8],slimeq:artP[9]}}:{};
+  window.CODE_V=V;
+  window.ART_PIXEL=pixP.some(Boolean)?{pickmon:Object.fromEntries(PIX.map((n,i)=>[n,pixP[i]]))}:{};   // 픽몬 도트 캐릭터 (js/vj_pixel.js)   // 포인트 컷 그림 (js/vj.js)
+  preload(songs);
+  url('ui/pads').then(u=>{window.PADS_URL=u}).catch(e=>console.warn('pads',e));   // 노트 버튼 (핑크빈·버섯·슬라임·예티)
+  Promise.all(['kick_a','kick_b','snare_a','snare_b','clap','hat_c','hat_o','tom_l','tom_m','tom_h','crash','kick_crash'].map(n=>url('kit2/'+n).then(u=>[n,u]).catch(()=>[n,'']))).then(a=>{window.KIT_URLS=Object.fromEntries(a)});   // 드럼 키트 한 타 소리 — 진짜 TR-808·707 녹음 (maple-drum-assets/realkit/make_realkit.py)
+  url('art/songart_maple').then(u=>{(window.SONG_ART=window.SONG_ART||{}).maple=u;window.applySongArt&&applySongArt()}).catch(e=>console.warn('song art maple',e));   // ギリギリ メイプルワールド 앨범아트 (흰 스티커 테두리 — maple-drum-assets/logo_maple)
+  url('art/songart_pictra').then(u=>{(window.SONG_ART=window.SONG_ART||{}).pictra=u;window.applySongArt&&applySongArt()}).catch(e=>console.warn('song art pictra',e));   // 픽트라 몬스터 곡 화면 그림 (고글 소녀 + PICKMON, BY MY SIDE — maple-drum-assets/logo_pictra)
+  window.SONG_ART_KIND={yonbai:'char',pictra:'char'};   // 캐릭터가 로고 위로 솟은 그림 — 앨범 아트 영역의 좌우만 맞추고 위로는 솟게 (js/songlist.js ART_LAYOUT)
+  window.ART_FIT={yonbai:{s:.77,x:0,y:0,gx:0,gy:-102},maple:{s:.85,x:0,y:0,gx:0,gy:-104},pickmon:{s:.8,x:0,y:0,gx:0,gy:-111},pictra:{s:.75,x:0,y:0,gx:0,gy:-82},whick:{s:.82,x:0,y:0,gx:0,gy:-130}};   // 앨범 영역 — 곡마다 크기 s · 자리 gx · gy (2026-10-06 사용자가 배치 조절 패널로 맞춰 「저장」 한 값을 굳혔어요 · 패널은 출시 전에 없앴어요)
+  window.SEL_FIT={hx:131,hy:-23,hs:1,lx:0,ly:-74,ls:1,lg:12,lb:14,ax:0,ay:0,as:1,gap:0,ps:1,kx:0,ky:20,ks:1};   // 곡 화면 배치 — 제목 줄 · 곡 목록 · 키 안내 (2026-10-06 사용자가 배치 조절 패널로 맞춰 「저장」 한 값 · js/songlist.js)
+  window.SONG_ART_DOTS={};   // 도트 그림의 원래 도트 폭 (engine fitPixelArt: 정수 배율로 또렷하게) — 픽몬은 2026-10-06 사용자 로고 그림으로 바꿔서 비워 둠 (도트판: maple-drum-assets/jacket_pickmon/out, 다시 쓰려면 {pickmon:167})
+  url('fx/pickball').then(u=>{window.PICKBALL_URL=u}).catch(e=>console.warn('pickball',e));   // 픽몬 볼 (js/ballfx.js · maple-drum-assets/jacket_pickmon/fx_pickball.png)
+  url('art/songart_pickmon').then(u=>{(window.SONG_ART=window.SONG_ART||{}).pickmon=u;window.applySongArt&&applySongArt()}).catch(e=>console.warn('song art pickmon',e));   // 픽몬 곡 화면 그림 (PIKTRA MONSTER 로고 + 석판 장식, 투명 — 사용자 제공 2026-10-06 · maple-drum-assets/jacket_pickmon/songart_pickmon_logo.png)
+  url('art/songart_whick').then(u=>{(window.SONG_ART=window.SONG_ART||{}).whick=u;window.applySongArt&&applySongArt()}).catch(e=>console.warn('song art whick',e));   // WHICK 앨범 아트 (maplestory WORLDS HWICK 로고 · 흰 스티커 테두리 — 사용자 그림 Desktop/rhythm/SDF.png · maple-drum-assets/songs/whick/make_art.py)
+  url('art/logo_yonbai3').then(u=>{(window.SONG_ART=window.SONG_ART||{}).yonbai=u;window.applySongArt&&applySongArt()}).catch(e=>console.warn('song art',e));   // 곡 화면 왼쪽 큰 로고 그림 (4倍の世界 펠트 소년 상반신 + 4배의 세계 — v3, maple-drum-assets/logo4x/logo4x_v3.webp)
+  url('ui/diff_easy').then(u=>{(window.EXTRA_SPR=window.EXTRA_SPR||{}).diff_easy={url:u,w:336,h:348};if(window.sprEl)document.querySelectorAll('[data-spr="diff_easy"]').forEach(e=>sprEl(e))}).catch(e=>console.warn('diff_easy',e));   // 난이도 카드 「쉬움」 (아틀라스 밖 낱장)
+  url('ui/title').then(u=>{window.TITLE_URL=u;document.querySelectorAll('.titleimg').forEach(e=>e.style.backgroundImage=`url(${u})`);document.body.classList.add('has-title')}).catch(e=>console.warn('title',e));   // 타이틀 로고 (maple SOUND WAVE)
+  // 타이틀 로고 조각 (maple-drum-assets/title/split.py): [이름, 로고 안 x, y, 폭, 높이, 아틀라스 x, y] — 다 받아지면 통짜 그림 대신 조각으로 바꿔 박자에 맞춰 움직여요 (js/titlefx.js · css .tp)
+  const TP={"W":1617,"H":601,"AW":1640,"AH":841,"p":[["plate",9,235,1484,356,0,0],["maple",421,8,659,246,0,358],["note",1360,13,247,217,661,358],["L0",51,271,150,230,910,358],["L1",210,271,139,203,1062,358],["L2",361,273,136,182,1203,358],["L3",511,272,131,171,1341,358],["L4",655,272,132,164,1474,358],["L5",830,272,208,174,0,606],["L6",1017,272,152,193,210,606],["L7",1143,272,157,204,364,606],["L8",1305,272,145,235,523,606]]};
+  url('ui/title_parts').then(u=>load(`js/titlefx.js?v=${V}`).then(()=>TITLE_FX(u,TP))).catch(e=>console.warn('title parts',e));   // js/titlefx.js: 판은 글자와 테두리째 물결, maple·♫ 는 CSS
+  await load(`js/titleintro.js?v=${V}`).catch(e=>console.warn('titleintro',e));   // 첫 화면 모션그래픽 인트로 (곡 영상 대신)
+  await load(`js/hitfx.js?v=${V}`);
+  await load(`js/engine.js?v=${V}`);
+  // 3D 묶음(모델 조절 기본값 · three.js · 후처리 · 신사/소년/노트 캐릭터)은 화면 스크립트와 따로 나란히 불러요 (2026-10-06 로딩 추천안)
+  //  · 화면 스크립트 30여 개를 차례로 다 부른 뒤에 출발하면 3D 가 5초 넘어서야 받기 시작해 「준비 중」 막대가 7.7초 걸렸어요 · dancer.js 는 엔진만 있으면 돼요 (나머지는 window.X 로 확인)
+  const P3D=(async()=>{try{await load(`js/tune.js?v=${V}`);
+    if(window.MOB){await NSHEET;R3D.all();return}   /* 모바일: 기기에 노트 그림이 있으면 three.js · 3D 모델을 아예 안 받아요 */
+    await load('https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js').catch(()=>{});
+    await load('https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js').catch(()=>{});
+    await load('https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js').catch(()=>{});   // 환경광
+    await load('https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/libs/meshopt_decoder.js').catch(()=>{});   // 원본 모델 압축 해제
+    if(!window.MOB)await load(`js/postfx.js?v=${V}`);   // 화면 효과 (게임식 후처리) — 모바일은 빼요 (화면 전체를 여러 번 다시 그려서 폰엔 무거워요)
+    await load(`js/dancer.js?v=${V}`)}catch(e){console.warn('3d',e)}
+    if(!window.R3D_GO)R3D.all()})();   // 3D 를 못 쓰는 환경(WebGL 없음 · three.js 못 받음)이면 막대가 3D 를 기다리지 않게
+  await load(`js/result2.js?v=${V}`).catch(e=>console.warn('result2',e));   // 결과 화면 v2 · 내 기록 · 풀콤보 연출
+  await load(`js/hitmeter.js?v=${V}`).catch(e=>console.warn('hitmeter',e));   // 판정선 아래 타이밍 미터
+  await load(`js/adlib.js?v=${V}`).catch(e=>console.warn('adlib',e));   // 애드리브 (숨은 노트)
+  await load(`js/songinfo.js?v=${V}`).catch(e=>console.warn('songinfo',e));   // 곡 화면 채보 정보 카드 (레벨 · 레이더) · 클리어 램프
+  await load(`js/settings2.js?v=${V}`).catch(e=>console.warn('settings2',e));   // 설정 v2 (탭 · 내 기록)
+  await load(`js/keys.js?v=${V}`).catch(e=>console.warn('keys',e));   // 조작키 바꾸기
+  await load(`js/practice.js?v=${V}`).catch(e=>console.warn('practice',e));   // 연습 모드 · 자동 플레이 (관람)
+  await load(`js/guide.js?v=${V}`).catch(e=>console.warn('guide',e));   // 게임 방법 안내 창
+  await load(`js/options.js?v=${V}`).catch(e=>console.warn('options',e));   // 플레이 옵션 (미러 · 랜덤 · 서든 · 히든)
+  await load(`js/playui.js?v=${V}`).catch(e=>console.warn('playui',e));   // 플레이 화면 UI v2 · 새 건반 켜고 끄기
+  await load(`js/ballfx.js?v=${V}`).catch(e=>console.warn('ballfx',e));
+  await load(`js/uisfx.js?v=${V}`).catch(e=>console.warn('uisfx',e));
+  await load(`js/songintro.js?v=${V}`).catch(e=>console.warn('songintro',e));   // 곡 시작 인트로 카드   // UI 효과음 (곡 넘김 · 난이도 · 시작 · 결과)   // PICKMON BY MY SIDE: 20콤보마다 화면 좌우 아래에서 픽몬 볼이 솟아올라 「빵 빵」 (모션그래픽)
+  await load(`js/main.js?v=${V}`);
+  await load(`js/selectfx.js?v=${V}`);   // 곡 선택 화면 아케이드 연출
+  await load(`js/rank.js?v=${V}`);   // 곡별 랭킹 (곡 화면 오른쪽, MSW.Ranking)
+  await load(`js/top1.js?v=${V}`).catch(e=>console.warn('top1',e));   // 랭킹 1위 한마디 · 폭죽 (rank.js · songintro.js 가 써요)
+  await load(`js/profile.js?v=${V}`).catch(e=>console.warn('profile',e));   // 플레이어 레벨 · EXP · 업적 (곡 선택 화면 왼쪽 위 카드)
+  await load(`js/cloud.js?v=${V}`).catch(e=>console.warn('cloud',e));   // 내 기록 · 레벨을 MSW 서버(개인 저장)와 동기화
+  await load(`js/songlist.js?v=${V}`).catch(e=>console.warn('songlist',e));
+  if(window.MOB)await load(`js/mobile.js?v=${V}`).catch(e=>console.warn('mobile',e));   // 모바일 세로판 화면 배치 (곡 화면 다시 묶기 · 곡 띠 · 탭)
+  window.SONGLIST_READY=true;dispatchEvent(new Event('songlistready'));   // 곡 화면 스크립트 준비 끝 (js/main.js 가 기다려요)   // 곡 고르기 새 화면 (왼쪽 곡 목록 · ↑↓ · 휠 · CD 화면 건너뛰기)
+  await P3D;   // 3D 묶음(엔진 바로 뒤에서 따로 불러 둔 것)이 끝난 뒤에 VJ 연출 — vj_4x 등이 dancer.js 의 monsterReact 를 감싸요
+  if(!window.MOB){   // 모바일(세로)에선 VJ 연출이 안 나와요 — 안 불러요
+  await load(`js/vj.js?v=${V}`).catch(e=>console.warn('vj',e));
+  await load(`js/vj_pixel.js?v=${V}`).catch(e=>console.warn('vj_pixel',e));
+  await load(`js/vj_code.js?v=${V}`).catch(e=>console.warn('vj_code',e));
+  await load(`js/vj_4x.js?v=${V}`).catch(e=>console.warn('vj_4x',e));   // 4배의 세계 「쑥쑥 펠트 월드」 (성장 배지 · EXP 별 · 단추 비 — 캐릭터 성장은 dancer.js)   // WHICK 좌우 연출 「IDEA BUILDER」 (코드 타이핑 → CREATED! — 3D 신사 대신)
+  await load(`js/vj_logo.js?v=${V}`).catch(e=>console.warn('vj_logo',e));}   // 기리기리 메이플월드 로고 연출   // 픽몬 픽셀 연출   // 포인트 컷 (레인 좌우, 화면 아래쪽)
+}catch(e){console.error(e);document.body.insertAdjacentHTML('beforeend',`<div role="alert" style="position:fixed;left:10px;right:10px;bottom:10px;z-index:99;background:#2B0A45;color:#fff;border:3px solid #FF4FA3;border-radius:14px;padding:10px 14px;font:14px sans-serif">불러오기 실패: ${e.message}</div>`)}
+</script>
+</body>
+</html>
