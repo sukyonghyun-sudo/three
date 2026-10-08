@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-289 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-290 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-289'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-290'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6759,6 +6759,14 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
 
   /* ── 매 프레임 — 숨 · 헐떡임 · 타는 몸 · 괴물 들숨 · 판 끝 ── */
   let lastA = null, afterT = -1e9, wasRun = 0, overPrev = false, stalkT = 0;
+  // 괴물이 알아챔(2026-10-09) — 나를 쫓기 시작하는 순간(breathe.js 들킴 반응이 부른다) 괴물 입에서 낮게 끄는 그르렁 · 축축한 목울림 중 하나를 더 낮고 크게 + 짙은 입김 · 다음 어슬렁 숨은 3초 뒤로
+  R.monNotice = () => {
+    const C = G && G.monster; if (!C || !C.root || !C.root.visible) return false;
+    const ok = play(Math.random() < 0.5 ? 'mon_stalk2' : 'mon_stalk3', { pos: C.root.position, range: 40, vol: 1.15, rate: rnd(0.8, 0.88), delay: 0.12 });
+    try { if (window.__fx && window.__fx.monPuff) setTimeout(() => window.__fx.monPuff(1.4), 260); } catch { /* */ }
+    stalkT = performance.now() + 3000 + Math.random() * 1500;
+    return ok;
+  };
   /* ── 밤 소리 사건(2026-10-08 밤 · 16-5 환경 소리 층) — 22~48초마다 하나 · 멀리서 · 방향이 있다(좌우)
      먼 범종(45~60m) · 올빼미(나무 · 22~35m) · 먼 개(50~60m) · 덤불 잔가지(등 뒤 9~16m — 누가 있는 것처럼) · 먼 남자 신음(30~45m) · 신사 방울(토리이에서)
      바람: 돌풍이 일 때마다(sway.js 와 같은 바람) 바람 소리가 바람이 오는 쪽에서 · 토리이가 35m 안이면 에마가 카라카라
@@ -7294,6 +7302,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       window.__spotT = performance.now();
       const Bd = G.body; if (Cc && Cc.playOnKey && Bd) Cc.playOnKey([skinOf(Bd.main), skinOf(Bd.drag)].filter(Boolean), 'gasp');
       if (R && R.play) R.play('p_gasp', { vol: 1.2, rate: 0.97 + Math.random() * 0.06, delay: 0.03 });
+      if (R && R.monNotice) R.monNotice();                                // 괴물도 알아챈다 — 낮은 그르렁 + 입김(realsfx.js)
     } else {
       const sm = key.__sm || (key.model && skinOf(key.model));
       if (Cc && Cc.playOnKey && sm) Cc.playOnKey([sm], 'gasp');
