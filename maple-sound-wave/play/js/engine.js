@@ -71,7 +71,7 @@ const css=getComputedStyle(document.documentElement),CSSV={},C=k=>{let v=CSSV[k]
 const LC=[C('--maple'),'#FF9A42','#7DD95C','#FFFFFF'];
 const NIGHT_A=a=>{const n=parseInt(String(C('--night')||'#24104A').replace('#','').slice(0,6),16);return isNaN(n)?`rgba(36,16,74,${a})`:`rgba(${n>>16},${n>>8&255},${n&255},${a})`};   // 배경색(--night) 투명도만 바꿔서   // 레인 색: 노트 버튼에 맞춰 핑크빈 분홍 · 버섯 주황 · 슬라임 연두 · 예티 흰색
 const LANES=4,KEYS=['d','f','j','k'],LANE_NAMES=['핑크빈','버섯','슬라임','예티'];
-const PERFECT=.045,GREAT=.085,GOOD=.125;
+const PERFECT=.045,GREAT=.085,GOOD=.125,EARLY_MISS=.2;   // EARLY_MISS: 노트보다 0.125~0.2초 일찍 누르면 그 노트는 미스 — 마구 누르기로 콤보가 이어지지 않게 (2026-10-08 사용자: 「키 4개를 막 연타하면 콤보가 떠」)
 const SPX_LIST=[.5,.75,1,1.25,1.5,1.75,2],SPX_DEF=1,SPX_BASE=.8;   // 배속: 노트가 지평선에서 판정선까지 오는 시간 = 0.8초 ÷ 배속 (×1.0 = 원래 속도 0.8초가 기본 · ×0.5 1.6초 · ×2.0 0.4초)
 const DIFFS={easy:{jp:'쉬움',en:'EASY',name:'쉬움',lanes:[0,1,2,3]},normal:{jp:'보통',en:'NORMAL',name:'보통',lanes:[0,1,2,3]},hard:{jp:'어려움',en:'HARD',name:'어려움',lanes:[0,1,2,3]}};   // 채보: 쉬움 = 예전 보통 · 보통 = 예전 어려움 · 어려움 = 새로 (maple-drum-assets/chart/gen_hard.py)
 const ls=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},ss=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
@@ -299,8 +299,9 @@ function show(id){if(id==='select'){openSong(cur);return}   /* 예전 CD 케이�
 const judgeOf=d=>d<=PERFECT?'p':d<=GREAT?'gr':d<=GOOD?'g':null;
 const JT={p:['PERFECT','--gold',300,2.2,'퍼펙트!'],gr:['GREAT','--mint',200,1.4,'그레이트'],g:['GOOD','--maple',100,.5,'굿']};
 function press(l){if(paused)return;down[l]=true;flashes[l]=1;if(!playing){unlock();if(window.KIT_URLS)kitPreview(l);else if(buf)pad(l,.9);return}   /* 게임 밖: 그 레인의 드럼 키트 소리 (D 킥 · F 스네어 · J 하이햇 · K 박수) */
-  const t=now();let best=null,bd=9;for(const n of notes){if(n.hit||n.dead||n.l!==l)continue;const d=Math.abs(n.t-t);if(d<bd){bd=d;best=n}if(n.t-t>GOOD)break}
-  const k=best&&judgeOf(bd);if(!k){if(window.ADLIB&&ADLIB.tryHit(l,t))return;/* 애드리브(숨은 노트) 자리면 그 드럼 + 보너스 (js/adlib.js) */if(CHART.mode==='full')hitSound(null,l,.45);else pad(l,.85)}
+  const t=now();let best=null,bd=9;for(const n of notes){if(n.hit||n.dead||n.l!==l)continue;const d=Math.abs(n.t-t);if(d<bd){bd=d;best=n}if(n.t-t>EARLY_MISS)break}
+  const k=best&&judgeOf(bd);if(!k){if(window.ADLIB&&ADLIB.tryHit(l,t))return;/* 애드리브(숨은 노트) 자리면 그 드럼 + 보너스 (js/adlib.js) */if(CHART.mode==='full')hitSound(null,l,.45);else pad(l,.85);
+    if(best&&best.t-t>GOOD&&best.t-t<=EARLY_MISS){best.dead=true;miss(best);judge.fs='FAST'}}   /* 너무 일찍 누름(0.125~0.2초 전) = 그 노트 미스 (마구 누르기 방지) */
   if(!k)return;best.hit=true;HITLOG.push([best.t,t-best.t,k,l]);window.HMETER&&HMETER.add(t-best.t,k);if(skin!=='bar'&&window.NOTE_SPR)LANDS.push({l,n:best,t0:now()});/* 친 노트 캐릭터가 판정선에서 탁 찌그러졌다 튀어요 (보통·점프 모두). 곡 시간 기준: 일시정지하면 같이 멈춰요 */if(CHART.mode==='full')hitSound(best,l,1,k);else{restore(best.ol??l,best);pad(best.ol??l,.3,true)}const [txt,c,pts,gg,jp]=JT[k];
   combo++;maxCombo=Math.max(maxCombo,combo);cnt[k]++;score+=Math.round(pts*(1+Math.min(combo,100)/100)*(fever?2:1)*scoreMul());
   gauge=Math.min(100,gauge+gg);if(gauge>=100)setFever(true);
