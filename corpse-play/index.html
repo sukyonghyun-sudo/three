@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-288 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-289 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-288'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-289'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6254,7 +6254,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     }
     eyeM.count = k; if (k) { eyeM.instanceMatrix.needsUpdate = true; eyeM.instanceColor.needsUpdate = true; }
   }
-  // 입김 — 머리뼈 앞에서 하얀 김 몇 덩이 · 3.5초마다(달리면 1.6초)
+  // 입김 — 머리뼈 앞에서 하얀 김 몇 덩이 · 숨 박자에 맞춰 내쉴 때마다(예전: 3.5초마다 · 달리면 1.6초)
   const puffs = [], PUFF_MAX = 170;
   // 김 — 타던 몸이 물에 들어가 불이 꺼질 때(burn.js) · 입김과 같은 하얀 덩이를 더 크고 짙게 · 물 위로 솟는다(k 0~1 세기)
   X.steam = (x, y, z, k) => {
@@ -6283,10 +6283,14 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
         const hp = w.sm.__lb ? w.sm.__lb.head : lookBones(w.sm).head; if (!hp) continue;
         hp.getWorldPosition(V);
         const moving = st.last ? Math.hypot(V.x - st.last[0], V.z - st.last[1]) / Math.max(0.001, dt) > 1.2 : false; st.last = [V.x, V.z];
-        if (now < st.next) continue;
-        st.next = now + (moving ? rnd(1300, 1900) : rnd(3000, 4200));
+        // 숨 박자에 맞춰(2026-10-09 새벽) — breathe.js 숨이 내쉬기로 넘어가는 순간 · 헐떡이거나 겁날수록 크고 짙고 많게(소리 · 몸 들썩임 · 입김이 한 박자) · 숨 상태가 없으면 예전처럼 시간으로
+        const BS = window.__breath, bs = BS ? (w.key === 'hero' ? BS.hero : BS.actors.get(w.key)) : null;
+        let go = false, k2 = 0;
+        if (bs && X.on.breathe !== false && !bs.busy) { const ex = bs.ex || 0, inh = 0.4 + 0.08 * ex * ex * (3 - 2 * ex); go = st.ph !== undefined && st.ph < inh && bs.ph >= inh; st.ph = bs.ph; k2 = Math.min(1, ex + 0.5 * (bs.fear || 0)); }
+        else { go = now >= st.next; if (go) st.next = now + (moving ? rnd(1300, 1900) : rnd(3000, 4200)); }
+        if (!go) continue;
         const e = hp.matrixWorld.elements, fl = Math.hypot(e[8], e[9], e[10]) || 1, fx = e[8] / fl, fy = e[9] / fl, fz = e[10] / fl;
-        for (let i = 0; i < 4; i++) { if (puffs.length >= PUFF_MAX) puffs.shift(); puffs.push({ x: V.x + fx * 0.12, y: V.y - 0.05, z: V.z + fz * 0.12, vx: fx * rnd(0.25, 0.5) + rnd(-0.05, 0.05), vy: fy * 0.3 + rnd(0.05, 0.15), vz: fz * rnd(0.25, 0.5) + rnd(-0.05, 0.05), t: -i * 0.06, life: rnd(1.1, 1.6), s: rnd(0.07, 0.11), a: rnd(0.16, 0.26) }); }
+        for (let i = 0, n = 3 + Math.round(3 * k2); i < n; i++) { if (puffs.length >= PUFF_MAX) puffs.shift(); puffs.push({ x: V.x + fx * 0.12, y: V.y - 0.05, z: V.z + fz * 0.12, vx: fx * rnd(0.25, 0.5) + rnd(-0.05, 0.05), vy: fy * 0.3 + rnd(0.05, 0.15), vz: fz * rnd(0.25, 0.5) + rnd(-0.05, 0.05), t: -i * (0.06 - 0.02 * k2), life: rnd(1.1, 1.6), s: rnd(0.07, 0.11) * (1 + 0.4 * k2), a: rnd(0.16, 0.26) * (1 + 0.3 * k2) }); }
       }
     }
     let k = 0;
