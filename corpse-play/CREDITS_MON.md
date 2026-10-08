@@ -93,3 +93,8 @@
 | p_step_wood6.mp3 | 발소리 — 나무 바닥 — 운동화 달리기 | freesound_community · film-special-effects-footsteps-running-wood-sneakers-consistently-close-79973 | 4.230–4.420s |
 | p_step_wood7.mp3 | 발소리 — 나무 바닥 — 운동화 달리기 | freesound_community · film-special-effects-footsteps-running-wood-sneakers-consistently-close-79973 | 2.220–2.410s |
 | p_step_wood8.mp3 | 발소리 — 나무 다리 — 부츠 | freesound_community · film-special-effects-footsteps-over-wooden-bridge-104423 | 6.734–7.014s |
+| p_gasp1.mp3 | 들킴 — 젊은 남자 날카롭게 헉(174Hz) | freesound_community(bertiehs) · people-gasp-male-6780 | 0.04–0.68s |
+| p_gasp2.mp3 | 들킴 — 젊은 남자 낮게 헉(138Hz) | freesound_community(ecbhappyinc) · horror-andygasp-67846 | 19.86–20.50s |
+| p_gasp3.mp3 | 들킴 — 젊은 남자 놀라 들이켬(160Hz) | freesound_community(ecbhappyinc) · horror-andygasp-67846 | 25.16–25.82s |
+| p_gasp4.mp3 | 들킴 — 젊은 남자 짧게 헙(130Hz) | freesound_community(ecbhappyinc) · horror-andygasp-67846 | 27.27–27.74s |
+| p_gasp5.mp3 | 들킴 — 젊은 남자 겁먹은 헉(180Hz) | freesound_community(ecbhappyinc) · horror-andygasp-67846 | 29.45–29.97s |
