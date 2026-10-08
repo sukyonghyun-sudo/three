@@ -71,3 +71,25 @@
 | mon_stalk2.mp3 | 가까이 — 낮게 끄는 그르렁 | freesound_community · horror-monster-growl-6311 | 0.84–2.74s (×0.85 낮춤) |
 | mon_stalk3.mp3 | 가까이 — 축축한 목울림 | Ponjisk · horror-wet-and-slimy-creature-growls-228546 | 11.62–14.12s (×0.8 낮춤) |
 | mon_stalk4.mp3 | 가까이 — 킁킁 냄새 맡는 숨 + 꾸르륵 | freesound_community · horror-dragon-sounds-heavy-breathing-sliced-26756 + horror-gurgling-monster-65641 | 5.70–8.10s (×0.85 낮춤) + 4.45–5.65s |
+| fly_loop.mp3 | 시체 둘레 파리 떼(되풀이) | freesound_community · nature-flies-59723 | 57.00–69.80s (끝 0.8s 교차) |
+| p_bodydrop1.mp3 | 시체를 내려놓음 · 떨어뜨림 — 묵직한 단발 | freesound_community · household-bodyfall-on-carpetwav-14747 | 4.72–5.75s |
+| p_bodydrop2.mp3 | 시체를 내려놓음 · 떨어뜨림 — 몸통 → 팔다리 | freesound_community · household-bodyfall-on-carpetwav-14747 | 0.32–1.45s |
+| p_bodydrop3.mp3 | 시체를 내려놓음 · 떨어뜨림 — 깔끔한 단발 | freesound_community · household-bodyfall-on-carpetwav-14747 | 17.41–18.50s |
+| p_bodydrop4.mp3 | 시체를 내려놓음 · 떨어뜨림 — 축 늘어진 몸 · 머리가 뒤따라 부딪힘 | freesound_community · household-body-falling-to-floor-7079 | 1.09–2.65s |
+| p_bodydrop5.mp3 | 시체를 내려놓음 · 떨어뜨림 — 흙 바닥에 털썩 | imagne_impossible · horror-horror-body-fall-hitting-dirt-02-152097 | 0.00–0.86s |
+| p_step_stone1.mp3 | 발소리 — 돌바닥 — 부츠(거친) | freesound_community · film-special-effects-concrete-footsteps-6752 | 32.111–32.371s |
+| p_step_stone2.mp3 | 발소리 — 돌바닥 — 부츠(거친) | freesound_community · film-special-effects-concrete-footsteps-6752 | 32.522–32.782s |
+| p_step_stone3.mp3 | 발소리 — 돌바닥 — 부츠(거친) | freesound_community · film-special-effects-concrete-footsteps-6752 | 34.247–34.507s |
+| p_step_stone4.mp3 | 발소리 — 돌 위 한 걸음 | freesound_community · film-special-effects-073303-footsteps-on-stone-39947 | 0.715–0.975s |
+| p_step_stone5.mp3 | 발소리 — 돌 위 한 걸음 | freesound_community · film-special-effects-073303-footsteps-on-stone-39947 | 1.279–1.539s |
+| p_step_stone6.mp3 | 발소리 — 마른 콘크리트 — 달리기 | freesound_community · film-special-effects-footstep-concrete-walking-running-scuff-clean-concrete-dry-hard-001-61491 | 50.895–51.155s |
+| p_step_stone7.mp3 | 발소리 — 마른 콘크리트 — 달리기 | freesound_community · film-special-effects-footstep-concrete-walking-running-scuff-clean-concrete-dry-hard-001-61491 | 51.578–51.838s |
+| p_step_stone8.mp3 | 발소리 — 콘크리트 — 방 울림 조금 | freesound_community · film-special-effects-concretefootsteps-7093 | 8.382–8.642s |
+| p_step_wood1.mp3 | 발소리 — 속 빈 나무 마루 | freesound_community · film-special-effects-036639-footsteps-on-hollow-wood-60677 | 6.371–6.651s |
+| p_step_wood2.mp3 | 발소리 — 속 빈 나무 마루 | freesound_community · film-special-effects-036639-footsteps-on-hollow-wood-60677 | 1.517–1.797s |
+| p_step_wood3.mp3 | 발소리 — 나무 선창 — 달리기 | freesound_community · household-running-on-a-dock-29164 | 4.143–4.423s |
+| p_step_wood4.mp3 | 발소리 — 나무 선창 — 달리기 | freesound_community · household-running-on-a-dock-29164 | 4.717–4.997s |
+| p_step_wood5.mp3 | 발소리 — 나무 선창 — 달리기 | freesound_community · household-running-on-a-dock-29164 | 6.169–6.449s |
+| p_step_wood6.mp3 | 발소리 — 나무 바닥 — 운동화 달리기 | freesound_community · film-special-effects-footsteps-running-wood-sneakers-consistently-close-79973 | 4.230–4.420s |
+| p_step_wood7.mp3 | 발소리 — 나무 바닥 — 운동화 달리기 | freesound_community · film-special-effects-footsteps-running-wood-sneakers-consistently-close-79973 | 2.220–2.410s |
+| p_step_wood8.mp3 | 발소리 — 나무 다리 — 부츠 | freesound_community · film-special-effects-footsteps-over-wooden-bridge-104423 | 6.734–7.014s |
