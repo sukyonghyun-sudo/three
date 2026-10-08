@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-264 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-266 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -227,6 +227,7 @@
     // 남자 목소리 교체(2026-10-08 「우린 전부 남자 · 청년」)
     'sfx/p_breath_idle2.mp3': 'corpse/sfx/p_breath_idle2',
     'sfx/p_breath_fear.mp3': 'corpse/sfx/p_breath_fear',
+    'sfx/amb_bell1.mp3': 'corpse/sfx/amb_bell1', 'sfx/amb_bell2.mp3': 'corpse/sfx/amb_bell2', 'sfx/amb_owl1.mp3': 'corpse/sfx/amb_owl1', 'sfx/amb_owl2.mp3': 'corpse/sfx/amb_owl2', 'sfx/amb_dog1.mp3': 'corpse/sfx/amb_dog1', 'sfx/amb_dog2.mp3': 'corpse/sfx/amb_dog2', 'sfx/amb_gust1.mp3': 'corpse/sfx/amb_gust1', 'sfx/amb_gust2.mp3': 'corpse/sfx/amb_gust2', 'sfx/amb_snap1.mp3': 'corpse/sfx/amb_snap1', 'sfx/amb_snap2.mp3': 'corpse/sfx/amb_snap2', 'sfx/amb_moan1.mp3': 'corpse/sfx/amb_moan1', 'sfx/amb_moan2.mp3': 'corpse/sfx/amb_moan2', 'sfx/amb_ema1.mp3': 'corpse/sfx/amb_ema1', 'sfx/amb_ema2.mp3': 'corpse/sfx/amb_ema2', 'sfx/amb_suzu1.mp3': 'corpse/sfx/amb_suzu1',   // 밤 소리 사건(멀리서 가끔 · realsfx.js)
     'sfx/mon_stalk1.mp3': 'corpse/sfx/mon_stalk1', 'sfx/mon_stalk2.mp3': 'corpse/sfx/mon_stalk2', 'sfx/mon_stalk3.mp3': 'corpse/sfx/mon_stalk3', 'sfx/mon_stalk4.mp3': 'corpse/sfx/mon_stalk4',   // 괴물이 가까이 어슬렁거릴 때 숨 · 그르렁          // 서 있을 때 겁먹어 고르지 않게 끊기는 남자 숨(2026-10-08 · p_breath_idle2 대신)
     'sfx/p_strain1.mp3': 'corpse/sfx/p_strain1', 'sfx/p_strain2.mp3': 'corpse/sfx/p_strain2', 'sfx/p_strain3.mp3': 'corpse/sfx/p_strain3', 'sfx/p_strain4.mp3': 'corpse/sfx/p_strain4',
     'sfx/p_strain5.mp3': 'corpse/sfx/p_strain5', 'sfx/p_strain6.mp3': 'corpse/sfx/p_strain6', 'sfx/p_strain7.mp3': 'corpse/sfx/p_strain7',   // 시체 끌기 · 업기 · 들어 올릴 때 힘쓰는 남자 소리
@@ -307,7 +308,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-264'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-266'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5826,7 +5827,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     drawPools(dt);
     // 스스로 뿜기(기본 켬 — 게임 중에도) — 판 시작 20초 뒤부터 · 14~24초마다 · 괴물 앞쪽(정면 ±60°) 4~13m 안의 사람(나·봇) 중 가장 가까운 쪽으로
     //   괴물이 쓰러뜨리는 중·쉬는 중·물러나는 중엔 안 뿜는다 · 같이 하기(괴물이 서버 것)에선 아직 쉰다
-    if (F.auto && !F.active && Oa() && !window.__explore && C && C.ready && !(window.__mp && window.__mp.on)) {
+    if (F.auto && !F.active && Oa() && !window.__explore && C && C.ready && C.root && C.root.visible && window.__G.cfg.monOn !== false && !(window.__mp && window.__mp.on)) {   // 괴물을 끄면(숨겨지면) 안 뿜는다(2026-10-08 밤 찾음 — 꺼진 괴물이 계속 불을 뿜었다)
       autoT -= dt;
       if (autoT <= 0 && (C.state === 'chase' || C.state === 'idle')) {
         const fx = Math.sin(C.root.rotation.y), fz = Math.cos(C.root.rotation.y);
@@ -5913,6 +5914,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'stain', name: '옷 · 얼굴에 피 누적(stain.js — 맞으면 튀고 · 나르면 배어듦)', def: true },
     { key: 'realsfx', name: '실제 녹음 소리(realsfx.js — 끄면 예전 합성음)', def: true },
     { key: 'bloodwater', name: '물에 퍼지는 피(water.js)', def: true },
+    { key: 'ambev', name: '밤 소리 사건(realsfx.js — 22~48초마다 멀리서: 범종 · 올빼미 · 먼 개 · 등 뒤 덤불 잔가지 · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마 카라카라)', def: true },
     { key: 'sway', name: '바람(sway.js — 토리이 금줄의 종이 · 방울 · 술 · 벚나무 가지 · 잎이 일렁인다 · 가끔 돌풍)', def: true },
     { key: 'scoot', name: '불타서 뒹군 뒤 발로 밀어 뒷걸음질(roll.js — 무릎 세워 뒤꿈치 끌어당기고 · 발을 박은 채 다리를 펴 몸이 뒤로 · 두 번 · 일어날 때 미끄러짐 없음)', def: true },
     { key: 'painlive', name: '신음할 때 살아 있는 얼굴 · 몸 떨림(cast.js — 신음 소리 크기에 맞춰 찡그림이 조였다 풀리고 · 고개가 숙인 채 느리게 흔들리며 · 어깨 · 손이 잔떨림)', def: true },
@@ -6366,6 +6368,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     }
     else if (key === 'hitflash') hitFlash(1);
     else if (key === 'stain') { if (window.__stain) window.__stain.preview(); }   // 내 몸에 한 번 맞은 것처럼(앞에서)
+    else if (key === 'ambev') { if (window.__rsfx && window.__rsfx.ambEvent) window.__rsfx.ambEvent(); }   // 하나 바로(무작위)
     else if (key === 'sway') { if (window.__wind) window.__wind.boostUntil = performance.now() + 4500; }   // 큰 돌풍 한 번(4.5초)
     else if (key === 'scoot') {                                       // 내게 불 — 2초 뒤 쓰러져 구르고 · 뒷걸음질 · 일어남(옆에서 보게)
       const B = window.__burn, y = G.hero.rotation.y, h = G.hero.position;
@@ -6396,7 +6399,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -6485,6 +6488,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     p_step: 8, p_drag: 3, p_pickup: 2, p_breath_idle2: 0, p_breath_fear: 0, p_strain: 7, p_pant_run: 0, p_pant_after: 0,
     sys_danger: 0, sys_score: 0, sys_tick: 0, sys_win: 0, sys_lose: 0, sys_heart: 2, sys_creak: 4, sys_gore: 2,
     sys_fire_loop: 0, sys_fire_ign: 2, sys_fire_boom: 0,
+    amb_bell: 2, amb_owl: 2, amb_dog: 2, amb_gust: 2, amb_snap: 2, amb_moan: 2, amb_ema: 2, amb_suzu: 1,
   };
   const FILES = {};
   for (const [k, n] of Object.entries(N)) { if (n === 0) FILES[k] = 'sfx/' + k + '.mp3'; else for (let i = 1; i <= n; i++) FILES[k + i] = 'sfx/' + k + i + '.mp3'; }
@@ -6530,7 +6534,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const ctx = A.ctx, src = ctx.createBufferSource(), g = ctx.createGain();
     src.buffer = R.buf[k]; src.playbackRate.value = o.rate || 1;
     let vol = o.vol === undefined ? 1 : o.vol, pan = o.pan || 0;
-    if (o.pos) { const s = spatial(o.pos, o.range || 25); vol *= s.vol; pan = s.pan; }
+    if (o.pos) { const s = spatial(o.pos, o.range || 25); if (!o.flat) vol *= s.vol; pan = s.pan; }   // flat — 멀리서 나는 소리(크기는 정해서 · 방향만)
     if (vol < 0.01) return true;
     g.gain.value = vol;
     let node = src; node.connect(g); node = g;
@@ -6560,6 +6564,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   const GROUPS = [
     ['괴물에게 맞음', '둔탁한 쿵 + 뼈 으스러짐 — 맞는 순간(피 철퍽이 살짝 겹친다)', 'mon_hit', 3],
     ['괴물 발소리', '무거운 발 + 진흙 질척 — 거리 35m · 좌우', 'mon_step', 6],
+    ['밤 소리 사건(10-08 밤 새로)', '22~48초마다 하나 · 멀리서 · 방향 — 범종 · 올빼미 · 먼 개 · 덤불 잔가지(등 뒤) · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마', ['amb_bell1', 'amb_bell2', 'amb_owl1', 'amb_owl2', 'amb_dog1', 'amb_dog2', 'amb_snap1', 'amb_snap2', 'amb_moan1', 'amb_moan2', 'amb_suzu1', 'amb_gust1', 'amb_gust2', 'amb_ema1', 'amb_ema2']],
     ['괴물이 가까이(10-08 밤 새로)', '16m 안에서 어슬렁거리면 4.8~8.6초 · 쫓으면 3.2~5.5초마다 — 짐승 숨 · 그르렁 · 젖은 목울림 · 킁킁', 'mon_stalk', 4],
     ['괴물 휘두름', '묵직한 바람 + 그르렁 — 내리치기 직전', 'mon_swing', 3],
     ['괴물 불뿜기', '그르렁 들숨(미리 돌 때) → 화염 + 꾸르륵 목 으르렁', ['mon_inhale1', 'mon_breath1', 'mon_breath2', 'mon_breath3']],
@@ -6573,7 +6578,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     ['시체 나르며 힘쓰기(10-08 밤 새로)', '끌기 1.5~2.8초 · 업기 2.2~3.6초마다 하나 · 들어 올리는 순간 하나 · 그때 얼굴도 힘씀 · 봇도', 'p_strain', 7],
     ['꺼 둔 것', '심장 1~2(심장은 예전 녹음을 씀)', ['sys_heart1', 'sys_heart2']],
   ];
-  const LABEL = { sys_danger: '도난·쫓김', sys_score: '내 득점', sys_tick: '남 득점', sys_win: '승리', sys_lose: '패배', mon_inhale1: '들숨', p_pant_run: '헐떡임', p_pant_after: '숨 고르기', sys_fire_loop: '타는 동안', sys_fire_boom: '불덩이', p_pickup1: '들기 1', p_pickup2: '들기 2', p_breath_idle2: '예전 느린 숨', p_breath_fear: '겁먹은 숨(새)', sys_heart1: '심장 1', sys_heart2: '심장 2' };
+  const LABEL = { sys_danger: '도난·쫓김', sys_score: '내 득점', sys_tick: '남 득점', sys_win: '승리', sys_lose: '패배', mon_inhale1: '들숨', p_pant_run: '헐떡임', p_pant_after: '숨 고르기', sys_fire_loop: '타는 동안', sys_fire_boom: '불덩이', p_pickup1: '들기 1', p_pickup2: '들기 2', p_breath_idle2: '예전 느린 숨', p_breath_fear: '겁먹은 숨(새)', amb_bell1: '범종 1', amb_bell2: '범종 2', amb_owl1: '올빼미 1', amb_owl2: '올빼미 2', amb_dog1: '개 울음', amb_dog2: '개 짖음', amb_snap1: '잔가지', amb_snap2: '덤불 발소리', amb_moan1: '먼 신음 1', amb_moan2: '먼 신음 2', amb_suzu1: '신사 방울', amb_gust1: '돌풍 1', amb_gust2: '돌풍 2', amb_ema1: '에마 1', amb_ema2: '에마 2', sys_heart1: '심장 1', sys_heart2: '심장 2' };
   let pv = null;
   R.preview = (key) => {
     const A = au(); if (!A || !R.buf[key]) return false;
@@ -6663,6 +6668,46 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
 
   /* ── 매 프레임 — 숨 · 헐떡임 · 타는 몸 · 괴물 들숨 · 판 끝 ── */
   let lastA = null, afterT = -1e9, wasRun = 0, overPrev = false, stalkT = 0;
+  /* ── 밤 소리 사건(2026-10-08 밤 · 16-5 환경 소리 층) — 22~48초마다 하나 · 멀리서 · 방향이 있다(좌우)
+     먼 범종(45~60m) · 올빼미(나무 · 22~35m) · 먼 개(50~60m) · 덤불 잔가지(등 뒤 9~16m — 누가 있는 것처럼) · 먼 남자 신음(30~45m) · 신사 방울(토리이에서)
+     바람: 돌풍이 일 때마다(sway.js 와 같은 바람) 바람 소리가 바람이 오는 쪽에서 · 토리이가 35m 안이면 에마가 카라카라
+     쫓기는 중 · 불타는 중 · 판이 끝나면 쉰다 · 밤 소리(조절 「소리 → 밤 소리」) 꺼짐/크기를 따른다 · 끄기: 시연실 연출 「밤 소리 사건」 */
+  const TORII = [[3.78, 15.27], [-8.95, -6.74], [16.87, -4.85]];
+  const EVW = [['amb_bell', 0.13, 45, 60, 0.55], ['amb_owl', 0.22, 22, 35, 0.5], ['amb_dog', 0.14, 50, 60, 0.42], ['amb_snap', 0.17, 9, 16, 0.55, true], ['amb_moan', 0.11, 30, 45, 0.45], ['amb_suzu', 0.1, 0, 0, 0.4]];
+  let evT = 0, gustWas = 0;
+  const evOn = () => { const X = window.__fx, A = window.__amb; return !(X && X.on && X.on.ambev === false) && !(A && A.on === false); };
+  const ambVol = () => { const A = window.__amb; return A && isFinite(A.vol) ? Math.min(1.5, A.vol) : 1; };
+  function nearTorii(h, maxD) { let b = null, bd = maxD; for (const t of TORII) { const d = Math.hypot(t[0] - h.x, t[1] - h.z); if (d < bd) { bd = d; b = t; } } return b; }
+  function ambEvent(force) {
+    const h = G.hero.position, cam = G.cam;
+    let r = Math.random() * EVW.reduce((a, e) => a + e[1], 0), e = EVW[0];
+    for (const x of EVW) { if ((r -= x[1]) <= 0) { e = x; break; } }
+    let pos;
+    if (e[0] === 'amb_suzu') { const t = nearTorii(h, 40); if (!t) return ambEvent(force); pos = { x: t[0], y: h.y + 3, z: t[1] }; }
+    else {
+      let a = Math.random() * Math.PI * 2;
+      if (e[5] && cam) { const fx = h.x - cam.position.x, fz = h.z - cam.position.z; a = Math.atan2(-fx, -fz) + (Math.random() - 0.5) * 1.6; }   // 등 뒤(카메라 쪽) ±45°
+      const d = e[2] + Math.random() * (e[3] - e[2]);
+      pos = { x: h.x + Math.sin(a) * d, y: h.y, z: h.z + Math.cos(a) * d };
+    }
+    play(e[0], e[0] === 'amb_suzu' ? { pos, range: 40, vol: e[4] * 1.4 * ambVol() } : { pos, flat: true, vol: e[4] * ambVol() * (0.8 + 0.3 * Math.random()), rate: 0.94 + Math.random() * 0.1 });
+    return e[0];
+  }
+  R.ambEvent = () => { if (!G || !au()) return null; return ambEvent(true); };
+  function ambTick() {
+    const now = performance.now(), C = G.monster;
+    const quiet = !evOn() || (C && (C.state === 'chase' || C.state === 'attack') && C.tgt && !C.tgt.bot) || (window.__burn && window.__burn.burning && window.__burn.burning('hero'));
+    if (!evT) evT = now + 15000 + Math.random() * 15000;
+    else if (now > evT) { evT = now + 22000 + Math.random() * 26000; if (!quiet) ambEvent(false); }
+    // 돌풍 — 바람이 오는 쪽에서 · 토리이 가까우면 에마 카라카라
+    const W = window.__wind, g = W ? W.gust : 0;
+    if (W && g > 0.25 && gustWas <= 0.25 && evOn()) {
+      const h = G.hero.position, d = W.dir || [1, 0];
+      play('amb_gust', { pos: { x: h.x - d[0] * 25, y: h.y, z: h.z - d[1] * 25 }, flat: true, vol: (0.28 + 0.4 * g) * ambVol() });
+      const t = nearTorii(h, 35); if (t && Math.random() < 0.7) play('amb_ema', { pos: { x: t[0], y: h.y + 2, z: t[1] }, range: 38, vol: 0.9 * ambVol(), delay: 0.6 + Math.random() * 0.8 });
+    }
+    gustWas = g;
+  }
   function frame(dt) {
     if (!G) { if (!window.__G) return; G = window.__G; }
     const A = au(); if (!A) return;
@@ -6696,7 +6741,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const F = window.__fire, act = F && F.active ? F.active : null;
     if (act && act !== lastA && G.monster && G.monster.root) play('mon_inhale', { pos: G.monster.root.position, range: 40, vol: 0.9 });
     lastA = act;
-    if (live) strainTick();
+    if (live) { strainTick(); ambTick(); }
     // 괴물 숨 · 그르렁 — 16m 안에서 어슬렁거리거나 쫓을 때(내리치는 중 · 불 뿜는 중은 빼고) · 가까울수록 크게 · 좌우(2026-10-08 밤 — 괴물 존재감)
     const Cm = G.monster;
     if (live && Cm && Cm.ready && Cm.root && Cm.root.visible && G.cfg.monOn !== false && !act) {

@@ -59,3 +59,15 @@
 | scr_burst_m.mp3 | 맞음 · 젊은 남자 끄악(scr_hit_burst 대신) | freesound_community · people-young-man-being-hurt-95628 | 0.38–1.18s |
 | scr_cough_m1.mp3 | 기침 1 — 젊은 남자, 쿨럭쿨럭 + 쌕쌕 | freesound_community · people-065504-young-male-coughing-81733 | 1.10–2.85s |
 | scr_cough_m2.mp3 | 기침 2 — 젊은 남자, 쿨럭 + 거친 숨 | freesound_community · people-065504-young-male-coughing-81733 | 3.00–4.60s |
+| p_breath_fear.mp3 | 가만히 섰을 때 — 겁먹어 고르지 않게 끊기는 남자 숨(되풀이 · p_breath_idle2 대신) | freesound_community · people-male-breathing-84775 | 0.00–8.42s (끝 0.6s 를 처음과 교차) |
+| p_strain1.mp3 | 시체 끌기 · 업기 — 끙 — 낮게 버티는 힘주기(목소리 130Hz) | universfield · people-male-exertion-grunts-352689 | 0.10–0.98s |
+| p_strain2.mp3 | 시체 끌기 · 업기 — 흐읍 — 숨 섞인 힘주기 | universfield · people-male-exertion-grunts-02-352731 | 1.02–1.82s |
+| p_strain3.mp3 | 시체 끌기 · 업기 — 읍 — 짧게 힘주기(목소리 152Hz) | universfield · people-male-exertion-grunts-02-352731 | 0.28–0.90s |
+| p_strain4.mp3 | 시체 끌기 · 업기 — 흡 — 이 악물고 내쉬는 힘 | freesound_community · people-male-breathing-exhale-grunts-57204 | 95.40–96.30s |
+| p_strain5.mp3 | 시체 끌기 · 업기 — 흐 — 무겁게 내쉬는 힘 | freesound_community · people-male-breathing-exhale-grunts-57204 | 98.48–99.32s |
+| p_strain6.mp3 | 시체 끌기 · 업기 — 흣 — 짧게 끊는 힘 | freesound_community · people-male-breathing-exhale-grunts-57204 | 90.56–91.00s |
+| p_strain7.mp3 | 시체 끌기 · 업기 — 흐읍 — 당기며 내쉼 | freesound_community · people-male-breathing-exhale-grunts-57204 | 92.72–93.34s |
+| mon_stalk1.mp3 | 가까이 — 깊게 들이쉬고 내쉬는 짐승 숨 | freesound_community · horror-dragon-sounds-heavy-breathing-sliced-26756 | 0.10–2.80s (×0.8 낮춤) |
+| mon_stalk2.mp3 | 가까이 — 낮게 끄는 그르렁 | freesound_community · horror-monster-growl-6311 | 0.84–2.74s (×0.85 낮춤) |
+| mon_stalk3.mp3 | 가까이 — 축축한 목울림 | Ponjisk · horror-wet-and-slimy-creature-growls-228546 | 11.62–14.12s (×0.8 낮춤) |
+| mon_stalk4.mp3 | 가까이 — 킁킁 냄새 맡는 숨 + 꾸르륵 | freesound_community · horror-dragon-sounds-heavy-breathing-sliced-26756 + horror-gurgling-monster-65641 | 5.70–8.10s (×0.85 낮춤) + 4.45–5.65s |
