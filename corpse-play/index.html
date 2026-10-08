@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-302 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-303 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-302'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-303'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6007,6 +6007,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'footblood', name: '피 발자국(blood.js — 누운 시체 곁을 밟고 지나가면 다음 여섯 걸음 발밑에 핏자국 · 점점 드물게 · 물 위 없음 / 보기: 앞으로 여섯 걸음)', def: true },
     { key: 'startcard', name: '판 시작 카드(tension.js — 판이 시작되면 검은 화면에서 장면이 서서히 · 왼쪽 아래에 「신사 터 · 初日 시각 · 종료 조건」 사이렌 스테이지 카드처럼 2.6초 / 보기: 지금 한 번)', def: true },
     { key: 'lampblow', name: '돌풍에 등롱 꺼짐(sway.js — 돌풍이 일 때 가끔 12m 안 등롱 1~2개가 푸드득 꺼졌다가 15~25초 뒤 저절로 다시 켜짐 · 괴물이 25m 밖일 때만 · 90초에 한 번 / 보기: 가장 가까운 등롱 8초)', def: true },
+    { key: 'monweight', name: '괴물 무게 — 물결 · 에마(realsfx.js — 괴물 걸음마다 8m 안 연못 수면이 떨리고 · 토리이 10m 안이면 에마가 달각 / 보기: 가까운 연못 물결 셋 + 가까운 토리이 에마)', def: true },
     { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 · 12초에 한 번 / 보기: 지금 한 번)', def: true },
     { key: 'spotted', name: '들킴 반응(breathe.js — 괴물이 나를 쫓기 시작하는 순간: 괴물 쪽으로 고개 홱 · 움찔 · 「헉」 얼굴 · 남자 헉 소리 · 시야가 순간 조여듦 / 봇도 같이)', def: true },
     { key: 'othersteps', name: '남의 발소리(realsfx.js — 봇 · 같이 하기 상대가 달리고 끌 때 그 자리에서 · 걸음 박자는 그 몸의 동작 · 그 자리 바닥 · 24m 안 / 보기: 등 뒤에서 누가 달려와 옆을 스쳐 감)', def: true },
@@ -6502,6 +6503,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'footblood') { if (window.__blood && window.__blood.footDemo) window.__blood.footDemo(); }
     else if (key === 'startcard') { if (window.__startCard) window.__startCard(); }
     else if (key === 'lampblow') { if (window.__wind && window.__wind.blowDemo) window.__wind.blowDemo(); }
+    else if (key === 'monweight') { if (window.__rsfx && window.__rsfx.weightDemo) window.__rsfx.weightDemo(); }
     else if (key === 'monlost') { if (window.__rsfx && window.__rsfx.monSniff) window.__rsfx.monSniff(0); }
     else if (key === 'spotted') { if (window.__breath && window.__breath.spotDemo) window.__breath.spotDemo(); }
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
@@ -6536,7 +6538,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -6822,6 +6824,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     };
     wi.monsterStep = (pos) => {
       if (!play('mon_step', { pos, range: 35, vol: 0.95, rate: rnd(0.95, 1.04) })) { o.monsterStep(pos); return; }
+      if (pos) monWeight(pos);                                            // 괴물 무게 — 연못 떨림 · 에마 달각
       const sf = pos ? surfAt(pos, monSurf) : 'dirt';                   // 돌 · 나무를 밟으면 단단한 바닥을 짓밟는 소리를 낮게 겹친다(바닥 따라 발소리 · 2026-10-09)
       if (sf !== 'dirt') play('p_step_' + sf, { pos, range: 35, vol: 0.55, rate: rnd(0.56, 0.64) });
     };
@@ -6896,6 +6899,30 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   const evOn = () => { const X = window.__fx, A = window.__amb; return !(X && X.on && X.on.ambev === false) && !(A && A.on === false); };
   const ambVol = () => { const A = window.__amb; return A && isFinite(A.vol) ? Math.min(1.5, A.vol) : 1; };
   function nearTorii(h, maxD) { let b = null, bd = maxD; for (const t of TORII) { const d = Math.hypot(t[0] - h.x, t[1] - h.z); if (d < bd) { bd = d; b = t; } } return b; }
+  /* 괴물 무게(2026-10-09 · 케이스 스터디 — RE2 Mr.X 천장 너머 쿵쿵 · RE4R 공간 고유음) — 보이지 않아도 4m 거구의 무게가 주변으로
+     걸음마다 8m 안 연못이 있으면 가장 가까운 물가 수면에 잔물결(water.js · 멀수록 약하게) · 토리이 10m 안이면 에마가 달각(있던 녹음 · 8초에 한 번)
+     괴물이 물속이면 water.js 가 따로 · 끄기: 시연실 연출 「괴물 무게 — 물결 · 에마」 · 보기: 가까운 연못 물결 셋 + 가까운 토리이 에마 */
+  let emaT = 0;
+  function nearWater(p, maxD) {
+    const N = window.__nav; if (!N || !N.waterAt) return null;
+    if (N.waterAt(p.x, p.z)) return [p.x, p.z, 0];
+    for (let d = 2; d <= maxD; d += 2) for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + d * 0.3, x = p.x + Math.sin(a) * d, z = p.z + Math.cos(a) * d; if (N.waterAt(x, z)) return [x, z, d]; }
+    return null;
+  }
+  function monWeight(p, force) {
+    const X = window.__fx; if (!force && X && X.on && X.on.monweight === false) return;
+    const Wt = window.__water, w = nearWater(p, 8);
+    if (w && w[2] > 0 && Wt && Wt.ripple) Wt.ripple(w[0], w[1], 0.32 * (1 - w[2] / 9));
+    const now = performance.now();
+    if (now > emaT || force) { const t = TORII.find((q) => Math.hypot(q[0] - p.x, q[1] - p.z) < 10); if (t) { emaT = now + 8000; play('amb_ema', { pos: { x: t[0], y: (isFinite(p.y) ? p.y : G.hero.position.y) + 2, z: t[1] }, range: 30, vol: 0.55, rate: rnd(0.95, 1.05), delay: 0.05 }); } }
+  }
+  R.weightDemo = () => {
+    if (!G) return false; const h = G.hero.position, w = nearWater(h, 20), Wt = window.__water;
+    if (w && Wt && Wt.ripple) for (let i = 0; i < 3; i++) setTimeout(() => Wt.ripple(w[0], w[1], 0.3), i * 650);
+    let bt = null, bd = 60; for (const q of TORII) { const d = Math.hypot(q[0] - h.x, q[1] - h.z); if (d < bd) { bd = d; bt = q; } }
+    if (bt) play('amb_ema', { pos: { x: bt[0], y: h.y + 2, z: bt[1] }, range: 60, vol: 0.7 });
+    return { water: w ? Math.round(Math.hypot(w[0] - h.x, w[1] - h.z)) : null, torii: bt ? Math.round(bd) : null };
+  };
   function behindActor(h, cam, d0, d1) {
     if (!cam) return null; let fx = h.x - cam.position.x, fz = h.z - cam.position.z; const l = Math.hypot(fx, fz) || 1; fx /= l; fz /= l;
     let best = null, bd = d1;
