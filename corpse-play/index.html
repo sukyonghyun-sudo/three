@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-290 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-291 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-290'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-291'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2660,6 +2660,8 @@ var MeshoptDecoder = (function () {
    · (뺐음) 바쳐진 자리 셋 — 바닥 원 셋 · 모은 수만큼 불 — 사용자: 「본진에 도장 표시가 왜 있어 · 시체는 그냥 바닥에 내려 두면 되는 건데 이상하다」 → SLOTS = false
    · 화면 표지(tension.js) — 내 것은 「내 본진」(「陣」 도장도 뺐다)
    · 내려놓을 곳(2026-10-08 밤) — 시체를 들고 내 본진 10m 안에 들어서면 내 본진 바닥 판이 천천히 숨 쉬듯 밝아진다(최대 1.6배 · 1.6초 박자) · 안에 들어서면 가장 밝게 · 내려놓으면 0.6초에 원래대로 — 글자 없이 「여기」를 알린다
+   · 바치는 순간(2026-10-09 새벽) — 그 본진의 혼불 기둥이 확 솟는다(1.6배 넓게 · 1.25초에 가라앉음 · 가까이 있어도 그 동안은 보인다) · 내 본진이면 바닥 판도 번쩍(최대 2배)
+     남이 바쳐도 멀리서 기둥이 솟는 게 보인다(누가 바쳤는지 판세가 눈에 보인다) · 보기: 시연실 「본진 빛기둥」 — 셋 모두 한 번
    · 끄기: 시연실 「연출 → 본진 빛기둥 · 바닥 자리」 */
 (() => {
   const BF = (window.__basefx = { ready: false, list: [] });
@@ -2727,7 +2729,8 @@ var MeshoptDecoder = (function () {
         const f = z.mesh.getObjectByName('fill'), e = z.mesh.getObjectByName('edge'); if (!f || !e) continue;
         const d = Math.hypot(h.x - z.cx, h.z - z.cz), want = holding ? clamp((10 - d) / 6, 0, 1) : 0;
         BF.near = (BF.near || 0) + (want - (BF.near || 0)) * Math.min(1, dt * (want > (BF.near || 0) ? 2.5 : 1.7));
-        const k = 1 + BF.near * (0.3 + 0.3 * (0.5 + 0.5 * Math.sin(t * 3.9)));   // 최대 1.6배(2.2배는 바닥이 하얗게 떠 보였다)
+        const mine = BF.list.find((b) => b.z === z), fl = mine ? mine.flare || 0 : 0;
+        const k = Math.min(2, 1 + BF.near * (0.3 + 0.3 * (0.5 + 0.5 * Math.sin(t * 3.9))) + fl * fl);   // 최대 1.6배(2.2배는 바닥이 하얗게 떠 보였다) · 바친 순간만 2배까지 번쩍
         f.material.opacity = 0.16 * c.zoneOpacity * 3 * k; e.material.opacity = 0.55 * c.zoneOpacity * 2 * c.zoneGlow * Math.min(1.6, k);
       } }
     for (const b of BF.list) {
@@ -2736,12 +2739,14 @@ var MeshoptDecoder = (function () {
       // 기둥 — 나를 향해 돈다 · 가까우면 사라짐 · 아주 느리게 일렁임
       const d = Math.hypot(h.x - z.cx, h.z - z.cz);
       b.pillar.rotation.y = Math.atan2(cam.position.x - z.cx, cam.position.z - z.cz);
-      b.pillar.material.opacity = 0.2 * clamp((d - 8) / 8, 0, 1) * (0.85 + 0.15 * Math.sin(t * 0.7 + z.team * 2.1));
+      const fl = b.flare || 0;
+      b.pillar.material.opacity = 0.2 * clamp((d - 8) / 8, 0, 1) * (0.85 + 0.15 * Math.sin(t * 0.7 + z.team * 2.1)) + 0.42 * fl * fl;   // 바친 순간 확 솟는다(가까이 있어도)
+      b.pillar.scale.set(1 + 0.6 * fl, 1 + 0.12 * fl, 1);
       b.pillar.material.color.setHex(col);
       // 바닥 자리 — 모은 수만큼 · 새로 바치면 확 밝아졌다 가라앉음
       const n = sc[z.team] || 0;
-      if (b.n >= 0 && n > b.n) for (let k = b.n; k < n && k < 3; k++) if (b.slots[k]) b.slots[k].pulse = 1;
-      b.n = n;
+      if (b.n >= 0 && n > b.n) { for (let k = b.n; k < n && k < 3; k++) if (b.slots[k]) b.slots[k].pulse = 1; b.flare = 1; }
+      b.n = n; b.flare = Math.max(0, (b.flare || 0) - dt * 0.8);
       b.slots.forEach((s, k) => {
         const lit = k < n ? 1 : 0; s.lit += (lit - s.lit) * Math.min(1, dt * 4); s.pulse = Math.max(0, s.pulse - dt * 0.8);
         if (s.mat.map !== (lit ? texF : texS)) { s.mat.map = lit ? texF : texS; s.mat.needsUpdate = true; }
@@ -2751,6 +2756,7 @@ var MeshoptDecoder = (function () {
       });
     }
   }
+  BF.flareDemo = () => { for (const b of BF.list) b.flare = 1; return BF.list.length > 0; };
   let last = 0;
   (function wait() {
     const g = window.__G;
@@ -5942,7 +5948,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'twitch', name: '시체 경련', def: false },
     { key: 'sound', name: '불·물 소리(불줄기·폭발·타닥타닥·첨벙)', def: true },
     { key: 'scream', name: '비명 소리(불붙을 때·맞을 때 — scream.js)', def: true },
-    { key: 'basefx', name: '본진 빛기둥 · 바닥 자리(basefx.js — 멀리서 방향 · 모은 수만큼 불)', def: true },
+    { key: 'basefx', name: '본진 빛기둥 · 바닥 자리(basefx.js — 멀리서 방향 · 바치는 순간 그 본진 기둥이 확 솟고 내 본진이면 바닥 판이 번쩍 / 보기: 셋 모두 한 번)', def: true },
     { key: 'stain', name: '옷 · 얼굴에 피 누적(stain.js — 맞으면 튀고 · 나르면 배어듦)', def: true },
     { key: 'realsfx', name: '실제 녹음 소리(realsfx.js — 끄면 예전 합성음)', def: true },
     { key: 'bloodwater', name: '물에 퍼지는 피(water.js)', def: true },
@@ -6422,6 +6428,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'torchflick') { if (window.__wind && window.__wind.flicker) window.__wind.flicker(); }
     else if (key === 'muffle') { const R2 = window.__rsfx; if (R2) { R2.play('mon_hit', { vol: 0.9 }); R2.muffle(); } }   // 맞는 소리 + 먹먹
     else if (key === 'stepsurf') { if (window.__rsfx && window.__rsfx.stepDemo) window.__rsfx.stepDemo(); }
+    else if (key === 'basefx') { if (window.__basefx && window.__basefx.flareDemo) window.__basefx.flareDemo(); }
     else if (key === 'music2') { if (window.__music && window.__music.demo) window.__music.demo(); }
     else if (key === 'slam') { if (window.__slamDemo) window.__slamDemo(); }
     else if (key === 'foley2') { if (window.__rsfx && window.__rsfx.foleyDemo) window.__rsfx.foleyDemo(); }
@@ -6458,7 +6465,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
