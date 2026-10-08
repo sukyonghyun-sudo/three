@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-295 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-297 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-295'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-297'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5965,6 +5965,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'corpseglance', name: '시체 쪽 힐끗(breathe.js — 가만히 서 있을 때 3.5m 안 누운 시체를 5~9초마다 1~1.6초 내려다봄 · 괴물이 가까우면 괴물 쪽이 먼저 / 보기: 12m 안 가장 가까운 시체를 지금)', def: true },
     { key: 'occl', name: '소리 거리 · 가림(realsfx.js — 멀수록 둔탁 · 바위 · 언덕 · 건물 뒤에서 나는 소리는 먹먹하게 · 괴물이 모퉁이를 돌아 나오면 또렷 / 보기: 괴물 숨 맑게 → 가려진 소리)', def: true },
     { key: 'wetcloth', name: '젖은 옷(stain.js · burn.js — 물에 잠겼던 높이까지 옷 · 살이 어둡고 축축하게 반들 · 물 밖에서 40초에 걸쳐 마름 · 나 · 봇 / 보기: 가슴까지 젖은 채로)', def: true },
+    { key: 'dust', name: '충격 먼지(fx.js — 시체가 털썩 · 괴물 무기가 땅을 칠 때 · 맞고 날아가 처박힐 때 바닥에서 낮게 퍼지는 먼지 / 보기: 내 발밑에서 한 번)', def: true },
     { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 · 12초에 한 번 / 보기: 지금 한 번)', def: true },
     { key: 'spotted', name: '들킴 반응(breathe.js — 괴물이 나를 쫓기 시작하는 순간: 괴물 쪽으로 고개 홱 · 움찔 · 「헉」 얼굴 · 남자 헉 소리 · 시야가 순간 조여듦 / 봇도 같이)', def: true },
     { key: 'othersteps', name: '남의 발소리(realsfx.js — 봇 · 같이 하기 상대가 달리고 끌 때 그 자리에서 · 걸음 박자는 그 몸의 동작 · 그 자리 바닥 · 24m 안 / 보기: 등 뒤에서 누가 달려와 옆을 스쳐 감)', def: true },
@@ -6279,6 +6280,19 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       puffs.push({ x: x + Math.cos(a) * r, y: y + rnd(0, 0.9), z: z + Math.sin(a) * r, vx: Math.cos(a) * rnd(0.05, 0.2), vy: rnd(0.55, 1.15), vz: Math.sin(a) * rnd(0.05, 0.2), t: -i * 0.03, life: rnd(1.3, 2.3), s: rnd(0.13, 0.24), a: rnd(0.32, 0.5) });
     }
   };
+  /* 충격 먼지(2026-10-09) — 시체가 털썩 떨어질 때 · 괴물 무기가 땅을 칠 때 · 맞고 날아가 처박힐 때 바닥에서 낮게 퍼지는 먼지(입김과 같은 회백 덩이를 옅게 · 새 셰이더 없음)
+     물 위는 물보라가 대신 · 끄기: 시연실 연출 「충격 먼지」 · 보기: 내 발밑에서 한 번 */
+  X.dust = (x, y, z, k, force) => {
+    if (!X.on.dust && !force) return; k = k === undefined ? 1 : k;
+    if (window.__wetAt && window.__wetAt(x, z)) return;
+    const G = window.__G; const gy = G && G.groundAt ? G.groundAt(x, z) : y; const by = isFinite(gy) ? gy : y;
+    const n = Math.round(6 + 10 * k);
+    for (let i = 0; i < n; i++) {
+      if (puffs.length >= PUFF_MAX) puffs.shift();
+      const a = Math.random() * 6.283, sp = rnd(0.6, 1.5) * (0.6 + 0.6 * k);
+      puffs.push({ x: x + Math.cos(a) * rnd(0.05, 0.3), y: by + rnd(0.04, 0.18), z: z + Math.sin(a) * rnd(0.05, 0.3), vx: Math.cos(a) * sp, vy: rnd(0.05, 0.3), vz: Math.sin(a) * sp, t: -rnd(0, 0.06), life: rnd(0.9, 1.6), s: rnd(0.16, 0.3) * (0.8 + 0.4 * k), a: rnd(0.08, 0.16) * (0.7 + 0.5 * k) });
+    }
+  };
   // 괴물 입김 — 가까이서 숨 쉬고 그르렁댈 때(realsfx.js 가 그 소리와 함께 부른다) · 입에서 앞으로 짙고 큰 김 · 천천히 퍼지며 사라진다
   X.monPuff = (k) => {
     const G = window.__G, C = G && G.monster, F = window.__fire; if (!C || !C.root || !C.root.visible || !F || !F.mouthAt || !X.on.breath) return;
@@ -6443,6 +6457,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'corpseglance') { if (window.__breath && window.__breath.corpseGlanceDemo) window.__breath.corpseGlanceDemo(); }
     else if (key === 'occl') { if (window.__rsfx && window.__rsfx.occlDemo) window.__rsfx.occlDemo(); }
     else if (key === 'wetcloth') { if (window.__stain && window.__stain.wetDemo) window.__stain.wetDemo(); }
+    else if (key === 'dust') { const G = window.__G; if (G && G.hero) { const h = G.hero.position; X.dust(h.x + 0.8, h.y, h.z, 1, true); } }
     else if (key === 'monlost') { if (window.__rsfx && window.__rsfx.monSniff) window.__rsfx.monSniff(0); }
     else if (key === 'spotted') { if (window.__breath && window.__breath.spotDemo) window.__breath.spotDemo(); }
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
@@ -6477,7 +6492,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -6933,7 +6948,10 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
         const p = b.bones && b.bones.hips ? b.bones.hips.getWorldPosition(VF) : b.root.position;
         if (Math.hypot(p.x - was.x, p.z - was.z) > 2.5) continue;                 // 바쳐서 다른 데로 옮겨졌다 — 소리 없음
         const fall = Math.min(0.5, Math.sqrt(2 * Math.max(0, p.y - h.y - 0.25) / 9.8));   // 어깨에서 놓으면 땅에 닿을 때(끌던 몸은 바로)
-        if (!(N && N.waterAt && N.waterAt(p.x, p.z))) play('p_bodydrop', { pos: { x: p.x, y: h.y, z: p.z }, range: 26, vol: 1.15, rate: rnd(0.94, 1.04), delay: fall });
+        if (!(N && N.waterAt && N.waterAt(p.x, p.z))) {
+          play('p_bodydrop', { pos: { x: p.x, y: h.y, z: p.z }, range: 26, vol: 1.15, rate: rnd(0.94, 1.04), delay: fall });
+          const dx = p.x, dz = p.z; setTimeout(() => { try { if (window.__fx && window.__fx.dust) window.__fx.dust(dx, h.y, dz, 0.8); } catch { /* */ } }, fall * 1000);   // 털썩 — 먼지
+        }
       }
     }
   }
@@ -8952,6 +8970,7 @@ vec3 srGN(vec2 p) {
         if (G.hit && G.hit.active) return;
         const h = G.hero.position, d = Math.hypot(px - h.x, pz - h.z);
         const R = window.__rsfx; if (R && R.play) R.play('mon_step', { pos: { x: px, y: h.y, z: pz }, range: 30, vol: 1.0, rate: 0.8 + Math.random() * 0.06 });
+        if (window.__fx && window.__fx.dust) window.__fx.dust(px, h.y, pz, 1);   // 땅 친 자리 — 먼지
         if (d < 7) { let k = 0.38 * (1 - d / 7); const CC = window.__chaseCam; if (CC && CC.active) k *= Math.max(0, Math.min(2, CC.shake)); cf.push({ t0: performance.now(), k }); }
         if (d < 3.5 && window.__breath && window.__breath.flinch) window.__breath.flinch(1 - d / 5);
       } catch { /* 넘어간다 */ }
@@ -9020,7 +9039,7 @@ vec3 srGN(vec2 p) {
     const G = window.__G, H = G && G.hit; if (!H) return;
     const act = !!H.active;
     if (act && !lastAct && !H.drop) kick(1.35);                       // 불붙어 쓰러지기(H.drop)는 맞음 연출이 아니다 · 2026-10-08 「충격도 크게」
-    if (act && H.landed && !lastLand && !H.drop) kick(0.95);          // 바닥에 처박힘 — 거의 맞을 때만큼
+    if (act && H.landed && !lastLand && !H.drop) { kick(0.95); try { const h = G.hero.position; if (window.__fx && window.__fx.dust) window.__fx.dust(h.x, h.y, h.z, 1.2); } catch { /* */ } }          // 바닥에 처박힘 — 거의 맞을 때만큼 · 먼지
     lastAct = act; lastLand = act && !!H.landed;
     if (!cf.length) return;
     const now = performance.now();
