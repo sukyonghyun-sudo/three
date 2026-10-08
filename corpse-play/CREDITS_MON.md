@@ -113,3 +113,5 @@
 | p_cloth2.mp3 | 달릴 때 옷 스침 2 | freesound_community(sunnyflower) · film-special-effects-cloth-rustle-7-69378 | 10.58–10.86s |
 | p_cloth3.mp3 | 달릴 때 옷 스침 3 | freesound_community(sunnyflower) · film-special-effects-cloth-rustle-7-69378 | 12.54–12.82s |
 | p_cloth4.mp3 | 달릴 때 옷 스침 4 | freesound_community(sunnyflower) · film-special-effects-cloth-rustle-7-69378 | 17.18–17.46s |
+| mus_drone.mp3 | 긴장 음악 — 괴물이 다가오면 차오르는 저음(되풀이 27.1960s · 앞뒤 0.5s 덧댐) | freesound_community(stondi) · horror-eerie-guitar-drone-49874 | 93.301–120.497s (끝 1s 를 처음에 교차) |
+| mus_chase.mp3 | 긴장 음악 — 쫓길 때 낮은 행진 북(120BPM 7마디 · 되풀이 14.0060s · 앞뒤 0.5s 덧댐) | fidelfortune · suspense-dark-march-cinematic-192678 | 5.945–19.951s |
