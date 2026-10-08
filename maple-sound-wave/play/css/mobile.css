@@ -1,0 +1,230 @@
+/* ===== 모바일 세로판 (2026-10-06 사용자: 「모바일 버전 — 세로 화면 · 버튼 잘 눌리고 · UI 잘 · 최적화」) =====
+   html.mob: 무대 = 폭 1080 × 높이 1700~2400 (js/engine.js resize — 폰 비율대로) · html.rot: 폰이 가로라 무대를 돌린 상태
+   무대 1px ≈ 폰 화면 0.36pt — 손가락 버튼은 최소 120px · 글자는 최소 34px 쯤으로 */
+html.mob,html.mob body{overscroll-behavior:none;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+html.mob img{-webkit-user-drag:none;-webkit-touch-callout:none}
+html.mob input[type=text]{-webkit-user-select:text;user-select:text}
+
+/* ---------- 곡 화면 (#title) — 위 막대 / 굴림판 / 아래 막대 (js/mobile.js 가 다시 묶어요) ---------- */
+html.mob body.ui2 #title:not(.hidden){display:block;padding:0;overflow:hidden}
+html.mob #title #slist,html.mob #title .kguide,html.mob #title .tkeys,html.mob #title .slhint{display:none!important}
+/* 위 막대: 플레이어 카드 · 게임 방법 · 설정 */
+html.mob #title .mtop{position:absolute;left:0;right:0;top:0;height:var(--mtopH,150px);box-sizing:border-box;padding:calc(var(--sat,0px) + 24px) 30px 0;display:flex;align-items:center;gap:18px;z-index:32;pointer-events:none}
+html.mob #title .mtop>*{pointer-events:auto}
+html.mob body.ui2 #title .pcard{position:relative;left:auto;top:auto;flex:0 1 auto;width:282px;height:48px;margin:0 auto 0 0;zoom:2.1}
+html.mob body.ui2 #title .guidebtn{position:relative;top:auto;right:auto;flex:none;width:48px;height:48px;padding:0;justify-content:center;font-size:0;zoom:2.1}
+html.mob body.ui2 #title .guidebtn i{font-size:1.15rem}
+html.mob body.ui2 #title .guidebtn.new::after{font-size:.5rem;top:-9px;right:-12px}
+html.mob body.ui2 #title .setpop{position:relative;top:auto;right:auto;flex:none}
+html.mob body.ui2 #title .setpop>summary{height:101px;padding:0 38px;font-size:2.05rem;border-width:4px}
+/* 굴림판 */
+html.mob #title .mscroll{position:absolute;left:0;right:0;top:var(--mtopH,150px);bottom:0;box-sizing:border-box;padding-bottom:calc(var(--mbarH,214px) + 40px);overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;z-index:2}
+html.mob #title .mscroll::-webkit-scrollbar{display:none}
+/* 앨범 그림 + 알약 (그림 자리는 js/songlist.js layoutArt — 영역은 js/mobile.js) */
+html.mob body.ui2 #title .colA{position:relative;left:auto;top:auto;width:100%;height:var(--artH,600px);margin:0;touch-action:pan-y}
+html.mob body.ui2 #title #lgMeta{zoom:1.9;scale:none;margin-bottom:4px}
+html.mob #title #artWrap.msout{transition:transform .13s ease-in,opacity .13s ease-in;transform:translateX(calc(var(--sd,1)*170px));opacity:0}
+html.mob #title #artWrap.msin{animation:msIn .28s cubic-bezier(.2,.9,.3,1) both}
+@keyframes msIn{from{transform:translateX(calc(var(--sd,1)*-170px));opacity:0}to{transform:none;opacity:1}}
+html.mob #title .mhint{position:absolute;left:50%;top:46%;z-index:6;display:flex;align-items:center;gap:26px;padding:22px 44px;border-radius:999px;background:rgba(20,6,46,.8);border:3px solid rgba(255,255,255,.45);color:#fff;font:800 2.25rem/1 "NanumSquareRound","Pretendard Variable",sans-serif;white-space:nowrap;pointer-events:none;transform:translate(-50%,-50%);animation:mhIn .3s ease both}
+html.mob #title .mhint i{font-style:normal;font-family:"Nunito",sans-serif;font-weight:900;font-size:3.4rem;line-height:.8;color:#FF8FD0;animation:mhL .9s ease-in-out infinite}
+html.mob #title .mhint i.r{animation-name:mhR}
+html.mob #title .mhint.out{opacity:0;transition:opacity .35s}
+@keyframes mhIn{from{opacity:0;transform:translate(-50%,-40%)}to{opacity:1;transform:translate(-50%,-50%)}}
+@keyframes mhL{50%{transform:translateX(-12px)}}@keyframes mhR{50%{transform:translateX(12px)}}
+/* 곡 띠: 곡 표지 (고른 곡은 크게 · 분홍 테두리) + 난이도 램프 점 세 개 */
+html.mob #title .mstrip{display:flex;justify-content:center;gap:26px;padding:76px 36px 18px;overflow-x:auto;overflow-y:visible;scrollbar-width:none}
+html.mob #title .mstrip::-webkit-scrollbar{display:none}
+html.mob #title .mj{flex:none;display:flex;flex-direction:column;align-items:center;gap:16px;width:166px;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+html.mob #title .mjk{display:block;width:166px;height:166px;border-radius:32px;overflow:hidden;background:#2A1258;box-shadow:0 0 0 4px rgba(198,180,255,.5),0 10px 22px rgba(10,2,30,.5);transition:transform .2s cubic-bezier(.3,1.5,.5,1),box-shadow .2s,filter .2s;filter:saturate(.7) brightness(.82)}
+html.mob #title .mjk img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+html.mob #title .mj.on .mjk{transform:translateY(-6px) scale(1.13);filter:none;box-shadow:0 0 0 6px #fff,0 0 0 12px #FF4FA3,0 0 40px rgba(255,79,163,.85)}
+html.mob #title .mj:active .mjk{transform:scale(.95)}
+html.mob #title .mstrip.spin .mjk{transition:none}
+html.mob #title .mjl{display:flex;gap:10px}
+html.mob #title .mjl i{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.2);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+html.mob #title .mjl i.lp1{background:#8E7BC9}html.mob #title .mjl i.lp2{background:#3DDC97}html.mob #title .mjl i.lp3{background:#FFD23F}
+html.mob #title .mjl i.lp4{background:conic-gradient(#FF6FB5,#FFD23F,#3DDC97,#43C0F6,#B596FF,#FF6FB5)}
+/* 난이도 · 노트 옵션 판 (PC 판 모양 그대로 키우기 — zoom) */
+html.mob body.ui2 #title .colB{zoom:1!important;position:relative;left:auto;top:auto;width:auto;height:auto;max-height:none;margin:8px 34px 0;padding:0;display:block;overflow:visible}
+html.mob #title .pnl{zoom:2.2;padding:14px 14px 16px;gap:12px;border-radius:24px}
+html.mob body.gfx #title .pnl .diff,html.mob #title .pnl .diff{padding:9px 4px 9px}
+html.mob body.gfx #title .pnl .diff b,html.mob #title .pnl .diff b{margin-top:6px;font-size:2.15rem}
+html.mob #title .pnl .diff span{margin-top:3px;font-size:.74rem}
+html.mob #title .opts{gap:10px;padding:10px 12px 12px}
+html.mob #title .opts .nstyle{flex-direction:row;align-items:center;gap:8px}
+html.mob #title .opts .nlab{flex:0 0 4.6em;margin:0 0 0 2px;font-size:.92rem}
+html.mob #title .opts .chips.seg{flex:1 1 auto;height:40px}
+html.mob #title .opts .chips.seg .chip,html.mob #title .opts .chips.seg#spxs .chip{height:40px;line-height:40px;font-size:.86rem}
+html.mob #title .opts .chips.seg .chip[aria-pressed="true"],html.mob #title .opts .chips.seg#spxs .chip[aria-pressed="true"]{height:48px;line-height:43px;font-size:1rem}
+/* 탭: 랭킹 · 곡 정보 · 오늘의 미션 */
+html.mob #title .mtabs{display:flex;gap:12px;margin:36px 34px 0;padding:10px;border-radius:999px;background:rgba(20,6,46,.6);border:2px solid rgba(196,178,255,.45)}
+html.mob #title .mtab{flex:1 1 0;height:104px;border:0;border-radius:999px;background:transparent;color:#D8CCFF;font:800 2.15rem/1 "NanumSquareRound","Pretendard Variable",sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}
+html.mob #title .mtab.on{background:linear-gradient(180deg,#FF8FD0 0%,#FF4FAE 50%,#EC2B8C 100%);color:#fff;box-shadow:0 0 18px rgba(255,70,170,.55),inset 0 2px 0 rgba(255,255,255,.35)}
+html.mob #title .mpane{margin:24px 34px 0}
+html.mob #title .mpane>[data-mt]:not(.mon){display:none!important}
+html.mob body.ui2 #title .rankbox{position:relative;width:auto;height:auto;margin:0;zoom:1.95}
+html.mob body.ui2 #title .rankbox .rklist{min-height:0}
+html.mob body.ui2 #title .cinfo{position:relative;left:auto;top:auto;width:auto;height:auto;margin:0;zoom:1.6;flex-wrap:wrap;justify-content:center;gap:4px 10px;padding:14px 16px 16px}
+html.mob body.ui2 #title .cinfo .ci-act{flex:1 1 100%;flex-direction:row;gap:12px;margin:6px 0 0}
+html.mob body.ui2 #title .cinfo .ci-b{flex:1 1 0;justify-content:center;height:56px;font-size:1.05rem}
+html.mob body.ui2 #title .mpanel{position:relative;left:auto;top:auto;bottom:auto;width:auto;height:auto;margin:0;zoom:2.45;gap:4px}
+/* 아래 막대: ◀ START ▶ (엄지 자리) · 상태 글 */
+html.mob #title .mbar{position:absolute;left:0;right:0;bottom:0;height:var(--mbarH,214px);box-sizing:border-box;padding:0 24px calc(var(--sab,0px) + 22px);display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:6px;z-index:30;pointer-events:none;
+  background:linear-gradient(180deg,rgba(22,7,46,0) 0%,rgba(22,7,46,.86) 32%,rgba(22,7,46,.94) 100%)}
+html.mob #title .mbar>*{pointer-events:auto}
+html.mob body.ui2 #title #songPrev,html.mob body.ui2 #title #songNext{display:grid!important}
+html.mob #title .startrow{zoom:2;width:auto;margin:0;gap:12px}
+html.mob body.gfx #title .go.go2,html.mob #title .go.go2{width:min(70%,400px)}
+html.mob #title #loadMsg{margin:0;min-height:0;color:#FFD3EC;text-align:center;font:800 1.85rem/1.3 "NanumSquareRound","Pretendard Variable",sans-serif;text-shadow:0 2px 0 rgba(20,6,46,.8)}
+html.mob #title #loadMsg:empty{display:none}
+
+/* 곡 화면 보정 — 노트 스피드 줄은 이름 위 · 고르기 아래 (⚙ 플레이 옵션 버튼이 이름 줄 오른쪽에 · 바와 안 겹치게) */
+html.mob #title .opts .nstyle.spd{flex-direction:column;align-items:stretch;gap:7px}
+html.mob #title .opts .nstyle.spd .nlab{align-self:flex-start;flex:none}
+html.mob #title .opts .poptbtn{top:-3px;right:0;height:30px}
+html.mob #title .opts .poptpop{left:0;right:0;width:auto}
+/* 미션 진행 막대: 아주 큰 둥근 모서리 + 넘침 숨김이 확대(zoom)에서 깨져 보여서 작은 모서리로 */
+html.mob body.ui2 #title .mpanel .mrow .mbar,html.mob body.ui2 #title .mpanel .mrow .mbar u{border-radius:4px}
+/* ---------- 메인 화면 ---------- */
+html.mob #main{justify-content:flex-start;padding-top:calc(var(--sh,2340px)*.2 + var(--sat,0px));gap:36px}
+html.mob body.has-title #main .titleimg,html.mob #main .titleimg{width:940px}
+html.mob #main .mload{zoom:2.2;width:420px}
+html.mob #main #mGo.go2{zoom:1.9;margin-top:40px}
+html.mob #main .mfull{zoom:1.9;font-size:.9rem;padding:0 30px;text-align:center}
+html.mob #main .mstar{zoom:1.6}
+
+/* ---------- 플레이 화면 — 새 HUD(css/weekend.css body.hud2.land) 를 세로 위쪽에: ⏸ · 곡 카드 · 점수 카드 / 클리어 게이지 ---------- */
+html.mob body.hud2 .hud{left:64px;top:40px;right:auto;width:400px;gap:16px;padding:0}
+html.mob body.hud2 .hud .song,html.mob body.hud2 .hud .score,html.mob body.hud2 .hud .gauge2{box-sizing:border-box;width:400px;max-width:none;opacity:1;color:#fff;-webkit-text-stroke:0;text-shadow:none;
+  background:linear-gradient(180deg,rgba(66,36,128,.92) 0%,rgba(40,18,86,.94) 100%);border:2.5px solid #C6B4FF;box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 0 16px rgba(168,138,255,.34),0 0 0 4px rgba(18,5,42,.3)}
+html.mob body.hud2 .hud .song{height:64px;padding:0 18px;border-radius:20px;display:flex;flex-wrap:wrap;align-content:center;align-items:center;gap:5px 6px;font-family:var(--rf);font-size:1rem;line-height:1.2}
+html.mob body.hud2 #hudSong{flex:1 0 100%;font-weight:900;font-size:1.02rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.mob body.hud2 #hudDiff,html.mob body.hud2 .hud .song .pbadge,html.mob body.hud2 .hud .song .obadge:not(:empty){display:inline-flex;align-items:center;height:20px;margin:0;padding:0 10px;border-radius:999px;font:900 .68rem/1 "Nunito","NanumSquareRound",sans-serif;letter-spacing:.06em;opacity:1;vertical-align:middle;text-shadow:none}
+html.mob body.hud2 #hudDiff{color:#fff;background:linear-gradient(180deg,#FF86C8,#F2368F)}
+html.mob body.hud2 #hudDiff[data-d="easy"]{background:linear-gradient(180deg,#62E3A0,#1EAE62)}
+html.mob body.hud2 #hudDiff[data-d="hard"]{background:linear-gradient(180deg,#BC98FF,#7B4CF0)}
+html.mob body.hud2 .hud .score{height:116px;padding:14px 20px 12px;border-radius:24px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;font-family:"Nunito",sans-serif;line-height:1}
+html.mob body.hud2 #scoreBox{width:auto!important;height:auto!important;background-image:none!important;padding:0!important;margin:0!important;display:flex!important;align-items:baseline;justify-content:space-between}
+html.mob body.hud2 #scoreBox .slbl{display:inline;font:900 .78rem "Nunito",sans-serif;letter-spacing:.22em;color:#CFC2F5}
+html.mob body.hud2 #score{font:900 2.5rem/1 "Nunito",sans-serif!important;margin:0!important;color:#fff;letter-spacing:.03em;font-variant-numeric:tabular-nums;-webkit-text-stroke:0;text-shadow:0 2px 0 rgba(43,10,69,.45)}
+html.mob body.hud2 .hud .score small{display:flex;justify-content:space-between;align-items:baseline;margin:0;padding-top:8px;border-top:1.5px solid rgba(198,180,255,.28);font:800 .84rem "NanumSquareRound","Nunito",sans-serif;color:#CFC2F5;opacity:1;text-shadow:none;letter-spacing:0}
+html.mob body.hud2 #maxc{font:900 1.05rem "Nunito",sans-serif;color:#FFD23F}
+html.mob body.hud2 .hud .gauge2{display:block;position:relative;height:64px;border-radius:20px;line-height:1}
+html.mob body.hud2 .gauge2 .g2t{position:absolute;left:15.5px;top:16.5px;transform:translateY(-50%);font:900 12px/1 "Nunito",sans-serif;letter-spacing:.2em;color:#CFC2F5;white-space:nowrap}
+html.mob body.hud2 .gauge2 .g2f{display:none;position:absolute;left:15.5px;top:6.5px;box-sizing:border-box;width:96px;height:20px;border-radius:10px;border:2px solid #fff;background:linear-gradient(180deg,#FF73B9,#E9318A);font:900 11px/16px "Nunito",sans-serif;letter-spacing:1.5px;text-indent:1.5px;text-align:center;color:#fff;white-space:nowrap}
+html.mob body.hud2 .gauge2.fever .g2t{display:none}html.mob body.hud2 .gauge2.fever .g2f{display:block}
+html.mob body.hud2 .gauge2 .g2p{position:absolute;right:15.5px;top:16.5px;transform:translateY(-50%);font:900 15px/1 "Nunito",sans-serif;color:#fff;white-space:nowrap}
+html.mob body.hud2 .gauge2.full .g2p{color:#FFD23F}
+html.mob body.hud2 .gauge2 .g2bar{position:absolute;left:15.5px;right:15.5px;top:29.5px;height:12px;border-radius:6px;background:rgba(20,6,46,.7)}
+html.mob body.hud2 .gauge2 .g2bar i{position:absolute;inset:0;border-radius:6px;background:linear-gradient(90deg,#62E3C4 0%,#43C0F6 55%,#FF73B9 100%);clip-path:inset(0 calc(100% - max(12px,var(--p,0%))) 0 0 round 6px)}   /* 막대 색은 판 전체에 깔고 채운 만큼만 보여요 (예전 그림과 같게) */
+html.mob body.hud2 .gauge2 .g2bar i::after{content:"";position:absolute;left:3px;right:3px;top:2px;height:3px;border-radius:1.5px;background:rgba(255,255,255,.45)}
+html.mob body.hud2 .gauge2.g0 .g2bar i{visibility:hidden}
+html.mob body.hud2 .gauge2.fever .g2bar i{background:linear-gradient(90deg,#FF5FA8,#FFC83D,#62E3A0,#3DDCFF,#A77BFF,#FF5FA8);background-size:200% 100%;animation:g2Rain 1.4s linear infinite}
+html.mob body.hud2 .gauge2 .g2prog{position:absolute;left:15.5px;right:15.5px;top:50.5px;height:3px;border-radius:1.5px;background:rgba(255,255,255,.12);overflow:hidden}
+html.mob body.hud2 .gauge2 .g2prog i{position:absolute;inset:0;border-radius:1.5px;background:rgba(255,255,255,.6);transform-origin:0 50%;transform:scaleX(var(--pr,0))}
+html.mob body.hud2 .pausebtn{top:40px;right:64px;width:48px;height:48px;border:2.5px solid #C6B4FF;background:linear-gradient(180deg,#5A31A8,#3B1C7A);box-shadow:0 0 14px rgba(168,138,255,.45);color:#fff;font-size:1rem;line-height:1}
+html.mob body.hud2 .pausebtn:active{transform:translateY(2px);box-shadow:0 0 8px rgba(168,138,255,.45)}
+html.mob body.hud2 .hud{left:calc(150px/1.7);right:calc(24px/1.7);top:calc((var(--sat,0px) + 26px)/1.7);width:auto;display:grid;grid-template-columns:minmax(0,1fr) 238px;gap:10px;padding:0;zoom:1.7}
+html.mob body.hud2 .hud .song,html.mob body.hud2 .hud .score{width:auto;height:62px}
+html.mob body.hud2 .hud .song{padding:0 16px}
+html.mob body.hud2 .hud .score{padding:6px 16px;justify-content:center}
+html.mob body.hud2 .hud .score small{display:none}
+html.mob body.hud2 #score{font-size:1.86rem!important;letter-spacing:.01em}
+html.mob body.hud2 .hud .gauge2{grid-column:1/-1;width:auto;height:56px}
+html.mob .pausebtn,html.mob body.hud2 .pausebtn{top:calc(var(--sat,0px) + 26px);left:24px;right:auto;width:106px;height:106px;border:4px solid #C6B4FF;background:linear-gradient(180deg,#5A31A8,#3B1C7A);box-shadow:0 0 18px rgba(168,138,255,.5);color:#fff;font-size:2.7rem;line-height:1}
+html.mob .sync{display:none!important}
+/* 곡 영상: 플레이 중엔 위쪽 하늘에 16:9 통째로 (메뉴에선 화면 가득) — 아래 끝은 레인 쪽으로 스르르 */
+html.mob body:not(.menu) #bga{left:0;top:var(--vtop,260px);width:100%;height:608px;object-fit:cover}   /* 아래 끝 흐림은 배경 캔버스가 그려요 (마스크는 폰에서 무거워요 — engine drawBg) */
+/* 타이밍 미터: 판정선 바로 아래 — 크게 */
+html.mob #stage .hmeter{transform:scale(1.6);transform-origin:50% 0}
+/* 일시정지 */
+html.mob #pauseMenu .logo{zoom:1.9}
+html.mob #pauseMenu .pm{zoom:2.1}
+html.mob #pauseMenu .keys{display:none}
+/* 영상이 켜져 있으면 3D 신사는 숨겨요 (그리지도 않아요 — js/dancer.js) · 영상을 끄면 원래처럼 하늘 위 무대에서 춤 */
+html.mob body.von:not(.menu) #monBox{visibility:hidden!important}   /* engine applyBga 가 인라인으로 visible 을 넣어요 */
+/* ---------- 곡 시작 카드 (세로): 앨범 그림 위 · 곡 정보 가운데 정렬 아래 ---------- */
+html.mob .sintro .si-box{width:1080px;height:var(--sh,2340px)}
+html.mob .sintro .si-band{left:-30%;width:160%}
+/* 그림 칸: 화면 높이의 30% (최대 680) · 그림 + 설명 묶음(설명 약 840)을 위아래 가운데쯤 — 설명은 그림 칸 아래 80px 부터 (2026-10-07 사용자: 「앨범 아트랑 곡 설명이 겹치네」) */
+html.mob .sintro{--artH:min(680px,calc(var(--sh,2340px)*.3));--artT:calc(var(--sat,0px) + max(100px,calc((var(--sh,2340px) - var(--artH) - 920px)*.42)))}
+html.mob .sintro .si-art{left:90px;top:var(--artT);width:900px;height:var(--artH)}
+html.mob .sintro .si-art img{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain}   /* 그림이 칸보다 크게 넘치지 않게 */
+html.mob .sintro .si-band.b1{top:calc(var(--artT) + var(--artH) - 210px);height:300px}
+html.mob .sintro .si-band.b2{top:calc(var(--artT) + var(--artH) + 120px);height:30px}
+html.mob .sintro .si-info{left:50px;width:980px;top:calc(var(--artT) + var(--artH) + 80px);display:flex;flex-direction:column;align-items:center;text-align:center}
+html.mob .sintro .si-lbl{margin:0 0 16px;font-size:1.9rem;letter-spacing:.4em}
+html.mob .sintro .si-t{font-size:6.2rem}
+html.mob .sintro .si-s{margin-top:20px;font-size:2.3rem}
+html.mob .sintro .si-pills{justify-content:center;gap:16px;margin-top:40px;zoom:1.65}
+html.mob .sintro .si-top{zoom:1.45;margin-top:26px;max-width:660px}
+html.mob .sintro .si-wait{zoom:1.7;justify-content:center}
+html.mob .sintro .si-streak{display:none}
+/* ---------- 결과 화면 (세로 한 줄 · 굴림) — 곡 · 점수 · 등급 · 버튼이 첫 화면에, 판정 · 타이밍 · 흐름은 아래로 ---------- */
+html.mob #result2:not(.hidden){display:block;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;padding:calc(var(--sat,0px) + 40px) 0 calc(var(--sab,0px) + 80px)}
+html.mob #result2::-webkit-scrollbar{display:none}
+html.mob #result2 .r2-wrap{width:560px;margin:0 auto;zoom:1.84;grid-template-columns:minmax(0,1fr);grid-template-rows:none;gap:14px}
+html.mob #result2 .r2-song{grid-column:1;grid-row:1}
+html.mob #result2 .r2-score{grid-column:1;grid-row:2}
+html.mob #result2 .r2-gradebox{grid-column:1;grid-row:3;padding:36px 22px 16px}
+html.mob #result2 .r2-left .r2-btns{grid-column:1;grid-row:4}
+html.mob #result2 .r2-mid{grid-column:1;grid-row:5;grid-template-columns:minmax(0,1fr)}
+html.mob #result2 .r2-flowp{grid-column:1;grid-row:6}
+html.mob #result2 .r2-score{padding:16px 22px}
+html.mob #result2 .r2-sv{font-size:78px}
+html.mob #result2 .r2-sub{gap:10px 22px}
+html.mob #result2 .r2-left .r2-b{min-height:74px}
+/* 업적 · 미션 쪽지: 화면 위쪽 가운데 */
+html.mob #stage .achbox{left:50%;right:auto;top:calc(var(--sat,0px) + 160px);bottom:auto;transform:translateX(-50%);zoom:1.7;flex-direction:column}
+html.mob #stage .achtoast.out{transform:translateY(-30px)}
+/* ---------- 설정 창: 폰 시트 (위 머리 · 가로 탭 · 굴리는 칸) ---------- */
+html.mob #title .setpop>.set{zoom:1.75;left:calc(20px/1.75);top:calc((var(--sat,0px) + 40px)/1.75);right:auto;width:calc(1040px/1.75);height:calc((var(--sh,2340px) - var(--sat,0px) - var(--sab,0px) - 80px)/1.75);
+  grid-template-columns:minmax(0,1fr);grid-template-rows:72px auto minmax(0,1fr);border-radius:30px}
+html.mob #title .set .shead{padding:0 16px 0 24px}
+html.mob #title .set .sclose{width:52px;height:52px}
+html.mob #title .set .stabs{flex-direction:row;gap:6px;padding:10px 12px;overflow-x:auto;scrollbar-width:none;border-right:0;border-bottom:1.5px solid rgba(198,180,255,.22)}
+html.mob #title .set .stabs::-webkit-scrollbar{display:none}
+html.mob #title .set .stab{flex:none;height:52px;padding:0 14px;gap:6px;font-size:1rem;border-radius:999px}
+html.mob #title .set .stab[data-tab="keys"]{display:none}
+html.mob #title .set .spanes{padding:4px 20px 24px}
+html.mob #title .set .srow{grid-template-columns:minmax(0,1fr);gap:12px;padding:16px 2px}
+html.mob #title .set .chip{height:50px;padding:0 22px}
+html.mob #title .set #vols{grid-template-columns:minmax(0,1fr)}
+html.mob #title .set input[type=range]{height:40px}
+/* ---------- 안내 창 (게임 방법 · 프로필 · 연습 · 자동 플레이): 폰 폭에 맞춰 한 줄 · 굴림 ---------- */
+html.mob #stage .prbox,html.mob #stage .pfbox,html.mob #stage .gdbox{width:580px;max-height:calc((var(--sh,2340px) - var(--sat,0px) - var(--sab,0px) - 140px)/1.75);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;zoom:1.75;padding:20px 22px 24px;border-radius:30px}
+html.mob #stage .prbox::-webkit-scrollbar{display:none}
+html.mob #stage .prbox .prx{width:54px;height:54px}
+html.mob #stage .prbox .prrow{grid-template-columns:minmax(0,1fr);gap:8px}
+html.mob #stage .prbox .prn,html.mob #stage .prbox .prtlw{grid-column:auto}
+html.mob #stage .gdgrid{grid-template-columns:minmax(0,1fr)}
+html.mob #stage .gdgrid .gd{grid-column:auto!important}
+html.mob #stage .gdk kbd{display:none}
+/* ---------- 1위 한마디 창: 위쪽에 크게 (키보드가 아래를 가려도 보이게) ---------- */
+html.mob .t1pop{place-items:start center;padding-top:calc(var(--sh,2340px)*.13 + var(--sat,0px))}
+html.mob .t1pop .t1box{zoom:1.62;width:600px}
+/* 레인 · 건반: 손가락은 바로 두드리기 (스크롤 · 확대 제스처 없음) */
+html.mob #fx{touch-action:none}
+/* 게임 방법: 건반 소개 두 줄 */
+html.mob #stage .gdkeys{grid-template-columns:1fr 1fr}
+/* 설정 슬라이더(싱크 · 볼륨): 손가락으로 잡기 쉬운 큰 손잡이 */
+html.mob #title .set input[type=range]{-webkit-appearance:none;appearance:none;height:46px;margin:0;background:transparent}
+html.mob #title .set input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:5px;background:linear-gradient(90deg,#FF4FAE,#B596FF)}
+html.mob #title .set input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:38px;height:38px;margin-top:-14px;border-radius:50%;background:#fff;border:5px solid #FF4FAE;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+html.mob #title .set input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#fff;border:5px solid #FF4FAE}
+/* 싱크 맞추기 화면: 가운데 크게 + 박자마다 누를 큰 원 */
+html.mob #cal:not(.hidden){justify-content:center;gap:30px;padding-bottom:calc(var(--sab,0px) + 80px)}
+html.mob #cal .logo{zoom:2.1}
+html.mob #calBig{font-size:9rem;margin:20px 0}
+html.mob #cal .keys{zoom:2;max-width:480px;text-align:center}
+html.mob #cal::after{content:"TAP";display:grid;place-items:center;width:420px;height:420px;margin-top:40px;border-radius:50%;border:8px solid rgba(255,255,255,.85);background:radial-gradient(circle,rgba(255,79,174,.55),rgba(167,123,255,.25) 70%);color:#fff;font:900 6rem "Nunito",sans-serif;letter-spacing:.06em;box-shadow:0 0 60px rgba(255,79,174,.5);animation:calPulse .6s ease-in-out infinite alternate}
+@keyframes calPulse{to{transform:scale(1.06);box-shadow:0 0 90px rgba(255,79,174,.75)}}
+html.mob #cal:not(.hidden)~.hmeter{display:none}
+html.mob #mpanel{display:none!important}   /* 오늘의 미션: 모바일에선 없음 */
+html.mob #monBox{display:none!important}   /* 모바일: 3D 신사 안 씀 (js/dancer.js) */
+/* 모바일 랭킹 (곡별 통합): 줄마다 그 기록의 난이도 알약 · 곡 시작 카드의 「모바일 1위」 난이도 알약 */
+html.mob #title .rankbox .rdf{display:inline-block;margin-left:6px;padding:0 7px;border:0;border-radius:999px;font:900 .6rem/1.6 "NanumSquareRound","Nunito",sans-serif;color:#2A0F4E;vertical-align:1px}
+html.mob #title .rankbox .rdf.rk-easy{background:#7DE3A6}html.mob #title .rankbox .rdf.rk-normal{background:#FF9FCF}html.mob #title .rankbox .rdf.rk-hard{background:#C9B2FF}
+html.mob .sintro .si-top .hd .sdf{padding:2px 10px;border-radius:999px;font:900 .82rem "NanumSquareRound",sans-serif;color:#fff;background:linear-gradient(180deg,#FF86C8,#F2368F)}
+html.mob .sintro .si-top .hd .sdf.d-easy{background:linear-gradient(180deg,#62E3A0,#1EAE62)}html.mob .sintro .si-top .hd .sdf.d-hard{background:linear-gradient(180deg,#BC98FF,#7B4CF0)}
