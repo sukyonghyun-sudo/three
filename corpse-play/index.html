@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-293 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-294 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-293'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-294'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6613,7 +6613,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     }
     return cut;
   }
-  R.cutoffFor = (p) => (G ? cutoffFor(p) : 0);   // 검수용
+  R.cutoffFor = (p) => (G && occlOn() ? cutoffFor(p) : 0);   // scream.js 비명도 같은 거리 · 가림(토글을 따름)
   R.occlDemo = () => { if (!G || !au()) return false; const h = G.hero.position, p = { x: h.x + 6, y: h.y, z: h.z }; play('mon_stalk2', { pos: p, range: 26, vol: 0.9, cut: 20000 }); play('mon_stalk2', { pos: p, range: 26, vol: 0.9, cut: 650, delay: 2.4 }); return true; };   // 보기 — 맑게 → 바위 뒤처럼
   // 재생 — o: { pos, range, vol, rate, delay, pan, cut(직접 정한 고역 한계) } · 버퍼가 없으면 false(호출한 쪽이 예전 소리로)
   function play(name, o = {}) {
@@ -8410,7 +8410,10 @@ vec3 srGN(vec2 p) {
     const ctx = a.ctx, src = ctx.createBufferSource(), g = ctx.createGain(), rate = o.rate || 1, t = ctx.currentTime + (o.delay || 0);
     const off = Math.max(0, Math.min(o.offset || 0, buf[id].duration - 0.05));     // o.offset — 앞의 조용한 부분을 건너뛰고(초)
     src.buffer = buf[id]; src.playbackRate.value = rate;
-    g.gain.value = v; src.connect(g); g.connect(a.out); src.start(t, off);
+    g.gain.value = v; src.connect(g);
+    const R = window.__rsfx, cut = pos && R && R.cutoffFor ? R.cutoffFor(pos) : 0;   // 거리 · 가림(realsfx.js — 멀수록 둔탁 · 바위 · 언덕 뒤면 먹먹 · 시연실 「소리 거리 · 가림」)
+    if (cut && cut < 16000) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = cut; f.Q.value = 0.6; g.connect(f); f.connect(a.out); } else g.connect(a.out);
+    src.start(t, off);
     const vo = { src, g, ctx, id, t0: t - off / rate, rate, v0: v, until: t + (buf[id].duration - off) / rate };
     src.onended = () => voices.delete(vo); voices.add(vo);
     return vo;
