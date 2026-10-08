@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-292 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-293 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-292'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-293'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5959,6 +5959,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'slam', name: '내리친 자리 울림(knock.js — 괴물 무기가 땅을 치면 쿵 · 7m 안이면 카메라가 울리고 · 바로 옆에서 빗나가면 몸이 움찔 / 맞았으면 맞음 연출만)', def: true },
     { key: 'foley2', name: '피 방울 · 옷 스침 소리(realsfx.js — 업은 시체에서 떨어진 피가 바닥에 닿으면 톡(7m 안 · 띄엄띄엄) · 달릴 때 옷 스침 / 보기: 톡 셋 → 스침 셋)', def: true },
     { key: 'corpseglance', name: '시체 쪽 힐끗(breathe.js — 가만히 서 있을 때 3.5m 안 누운 시체를 5~9초마다 1~1.6초 내려다봄 · 괴물이 가까우면 괴물 쪽이 먼저 / 보기: 12m 안 가장 가까운 시체를 지금)', def: true },
+    { key: 'occl', name: '소리 거리 · 가림(realsfx.js — 멀수록 둔탁 · 바위 · 언덕 · 건물 뒤에서 나는 소리는 먹먹하게 · 괴물이 모퉁이를 돌아 나오면 또렷 / 보기: 괴물 숨 맑게 → 가려진 소리)', def: true },
     { key: 'spotted', name: '들킴 반응(breathe.js — 괴물이 나를 쫓기 시작하는 순간: 괴물 쪽으로 고개 홱 · 움찔 · 「헉」 얼굴 · 남자 헉 소리 · 시야가 순간 조여듦 / 봇도 같이)', def: true },
     { key: 'othersteps', name: '남의 발소리(realsfx.js — 봇 · 같이 하기 상대가 달리고 끌 때 그 자리에서 · 걸음 박자는 그 몸의 동작 · 그 자리 바닥 · 24m 안 / 보기: 등 뒤에서 누가 달려와 옆을 스쳐 감)', def: true },
     { key: 'ambev', name: '밤 소리 사건(realsfx.js — 22~48초마다 멀리서: 범종 · 올빼미 · 먼 개 · 등 뒤 덤불 잔가지 · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마 카라카라)', def: true },
@@ -6434,6 +6435,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'slam') { if (window.__slamDemo) window.__slamDemo(); }
     else if (key === 'foley2') { if (window.__rsfx && window.__rsfx.foleyDemo) window.__rsfx.foleyDemo(); }
     else if (key === 'corpseglance') { if (window.__breath && window.__breath.corpseGlanceDemo) window.__breath.corpseGlanceDemo(); }
+    else if (key === 'occl') { if (window.__rsfx && window.__rsfx.occlDemo) window.__rsfx.occlDemo(); }
     else if (key === 'spotted') { if (window.__breath && window.__breath.spotDemo) window.__breath.spotDemo(); }
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
     else if (key === 'ambev') { if (window.__rsfx && window.__rsfx.ambEvent) window.__rsfx.ambEvent(); }   // 하나 바로(무작위)
@@ -6467,7 +6469,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -6594,7 +6596,26 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const hd = Math.hypot(pos.x - h.x, pos.z - h.z);                 // 크기는 내 몸에서의 거리(카메라가 멀어도 내 발소리는 같은 크기)
     return { vol: Math.pow(clamp(1 - hd / range, 0, 1), 1.6), pan };
   }
-  // 재생 — o: { pos, range, vol, rate, delay, pan } · 버퍼가 없으면 false(호출한 쪽이 예전 소리로)
+  /* 거리 · 가림(2026-10-09) — 자리가 있는 소리만: 4m 넘으면 7m 마다 고역이 반으로(11m 10kHz · 18m 5kHz · 최저 2.2kHz — 멀수록 둔탁)
+     듣는 자리(카메라)와 소리 사이를 맵(바위 · 언덕 · 건물 — G.map.solids · BVH 레이 0.01ms)이 막으면 650Hz 아래로 먹먹하게(괴물이 모퉁이를 돌아 나오면 또렷해진다)
+     멀리서 나는 밤 소리 사건(flat)은 이미 깎아 만든 것이라 빼고 · 내 몸 소리(자리 없음)도 그대로 · 끄기: 시연실 연출 「소리 거리 · 가림」 */
+  const occlOn = () => { const X = window.__fx; return !(X && X.on && X.on.occl === false); };
+  let ORC = null, OO = null, OD = null;
+  function cutoffFor(p) {
+    const cam = G.cam, h = G.hero.position; if (!cam || !G.THREE) return 0;
+    const d = Math.hypot(p.x - h.x, p.z - h.z);
+    let cut = Math.max(2200, 20000 * Math.pow(0.5, Math.max(0, d - 4) / 7));
+    const S = G.map && G.map.solids;
+    if (d > 2.5 && S && S.length) {
+      if (!ORC) { ORC = new G.THREE.Raycaster(); OO = new G.THREE.Vector3(); OD = new G.THREE.Vector3(); }
+      OO.copy(cam.position); OD.set(p.x - OO.x, (isFinite(p.y) ? p.y : h.y) + 1.2 - OO.y, p.z - OO.z);
+      const L = OD.length(); if (L > 1) { OD.multiplyScalar(1 / L); ORC.set(OO, OD); ORC.far = L - 0.6; if (ORC.intersectObjects(S, false).length) cut = Math.min(cut, 650); }
+    }
+    return cut;
+  }
+  R.cutoffFor = (p) => (G ? cutoffFor(p) : 0);   // 검수용
+  R.occlDemo = () => { if (!G || !au()) return false; const h = G.hero.position, p = { x: h.x + 6, y: h.y, z: h.z }; play('mon_stalk2', { pos: p, range: 26, vol: 0.9, cut: 20000 }); play('mon_stalk2', { pos: p, range: 26, vol: 0.9, cut: 650, delay: 2.4 }); return true; };   // 보기 — 맑게 → 바위 뒤처럼
+  // 재생 — o: { pos, range, vol, rate, delay, pan, cut(직접 정한 고역 한계) } · 버퍼가 없으면 false(호출한 쪽이 예전 소리로)
   function play(name, o = {}) {
     if (!R.on) return false;
     const A = au(); if (!A || G.cfg.sound === false) return !!A;
@@ -6607,6 +6628,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (vol < 0.01) return true;
     g.gain.value = vol;
     let node = src; node.connect(g); node = g;
+    const cut = o.cut || (o.pos && !o.flat && occlOn() ? cutoffFor(o.pos) : 0);
+    if (cut && cut < 16000) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = cut; f.Q.value = 0.6; node.connect(f); node = f; }
     if (pan && ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; node.connect(p); node = p; }
     node.connect(A.out);
     src.start(ctx.currentTime + (o.delay || 0));
