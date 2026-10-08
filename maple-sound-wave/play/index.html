@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- GitHub 단독판 (MSW 없이): 코드 · 그림 · 소리 · 영상을 모두 GitHub sukyonghyun-sudo/three 의 maple-sound-wave/ 에서 받아요 (커밋 848b6c0 고정)
+<!-- GitHub 단독판 (MSW 없이): 코드 · 그림 · 소리 · 영상을 모두 GitHub sukyonghyun-sudo/three 의 maple-sound-wave/ 에서 받아요 (커밋 b8b52e6 고정)
      이 파일 하나만 있으면 돼요 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같아요 · 랭킹 · 기록은 이 브라우저 안에만 저장돼요 -->
-<base href="https://cdn.jsdelivr.net/gh/sukyonghyun-sudo/three@848b6c016b5b6f8be481c2f03d279d2aaa03ab38/maple-sound-wave/play/">
+<base href="https://cdn.jsdelivr.net/gh/sukyonghyun-sudo/three@b8b52e6740e5f8173d54f2dba26378009ad88c6f/maple-sound-wave/play/">
 <meta charset="utf-8">
 <meta name="screen-orientation" content="portrait"><meta name="x5-orientation" content="portrait">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css" rel="stylesheet">   <!-- 픽몬 도트 글꼴 -->
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=b20261007-258">
-<link rel="stylesheet" href="css/weekend.css?v=b20261007-258">   <!-- 주말 업데이트 (빼면 예전 모습) -->
+<link rel="stylesheet" href="css/style.css?v=b20261007-259">
+<link rel="stylesheet" href="css/weekend.css?v=b20261007-259">   <!-- 주말 업데이트 (빼면 예전 모습) -->
 <style>/* MSW 가 html, body 배경을 투명으로 덮어써서 무대에 직접 배경을 깔아요 */ #stage{background:var(--night)}</style>
 <script>/* 모바일판 (2026-10-07 사용자: 「PC 판에 심고 — 모바일에서 접속할 때만 모바일 버전」): 폰(아이폰 · 안드로이드 폰)일 때만 세로 모바일 화면, PC · 노트북 · 태블릿은 PC 판 그대로
    모바일판일 때만 css/mobile.css · js/mobile.js 를 받아요 (PC 는 안 받아요) · 모바일 코드는 전부 window.MOB 일 때만 켜져요
@@ -23,7 +23,7 @@
 (function(){const ua=navigator.userAgent||'';let f=null;try{f=localStorage.getItem('mds-mob-force')}catch(e){}
   const phone=/iPhone|iPod|Windows Phone|IEMobile|BlackBerry|Opera Mini/i.test(ua)||(/Android/i.test(ua)&&/Mobile/i.test(ua));
   window.MOB=f==='1'?true:f==='0'?false:phone;
-  if(window.MOB){document.documentElement.classList.add('mob');document.write('<link rel="stylesheet" href="css/mobile.css?v=b20261007-258">');try{window.MOB_TOUCH=localStorage.getItem('mds-mob-touch')==='1'}catch(e){}}})();
+  if(window.MOB){document.documentElement.classList.add('mob');document.write('<link rel="stylesheet" href="css/mobile.css?v=b20261007-259">');try{window.MOB_TOUCH=localStorage.getItem('mds-mob-touch')==='1'}catch(e){}}})();
 </script>
 </head>
 <body class="menu ui2">
@@ -121,12 +121,12 @@
   </section>
 </div>
 <!-- 부팅: 곡 데이터 → MSW 초기화 → 리소스 주소 → 엔진·three.js·댄서 순서로 불러와요 -->
-<script crossorigin="anonymous" src="data/songs.js?v=b20261007-258"></script>
+<script crossorigin="anonymous" src="data/songs.js?v=b20261007-259"></script>
 <script type="module">
 // ---- MSW 대체판 (GitHub 단독판) — 'msw-game-core' 대신 이 브라우저 안에서 해요 (2026-10-08) ----
 //  리소스: GitHub maple-sound-wave/res/<이름>.<확장자> (MSW 리소스와 같은 파일) · jsDelivr 가 안 되면 GitHub 원본
 //  랭킹 · 기록 저장(UserStorage · GlobalStorage): 이 브라우저 localStorage 에만 — 온라인 랭킹은 MSW 판에서
-const SA='848b6c016b5b6f8be481c2f03d279d2aaa03ab38',RES=[`https://cdn.jsdelivr.net/gh/sukyonghyun-sudo/three@${SA}/maple-sound-wave/res/`,`https://raw.githubusercontent.com/sukyonghyun-sudo/three/${SA}/maple-sound-wave/res/`];
+const SA='b8b52e6740e5f8173d54f2dba26378009ad88c6f',RES=[`https://cdn.jsdelivr.net/gh/sukyonghyun-sudo/three@${SA}/maple-sound-wave/res/`,`https://raw.githubusercontent.com/sukyonghyun-sudo/three/${SA}/maple-sound-wave/res/`];
 const RES_EXT={"art/cut_ballgirl":"webp","art/cut_cliff2":"webp","art/cut_forest":"webp","art/cut_hug":"webp","art/cut_run":"webp","art/cut_side":"webp","art/cut_sleep":"webp","art/cut_slimeq":"webp","art/cut_smile":"webp","art/leaf":"webp","art/logo_en":"webp","art/logo_jp":"webp","art/logo_yonbai3":"webp","art/pictra":"png","art/songart_maple":"webp","art/songart_pickmon":"png","art/songart_pictra":"webp","art/songart_whick":"png","fx/pickball":"png","kit2/clap":"wav","kit2/crash":"wav","kit2/hat_c":"wav","kit2/hat_o":"wav","kit2/kick_a":"wav","kit2/kick_b":"wav","kit2/kick_crash":"wav","kit2/snare_a":"wav","kit2/snare_b":"wav","kit2/tom_h":"wav","kit2/tom_l":"wav","kit2/tom_m":"wav","pix/av_black":"png","pix/av_boy":"png","pix/av_goggle":"png","pix/av_pink":"png","pix/av_purple":"png","pix/av_wink":"png","pix/boss":"png","pix/chick":"png","pix/egg":"png","pix/fox":"png","pix/ghost":"png","pix/luti":"png","pix/moss":"png","pix/rider":"png","pix/shrub":"png","song/maple/jacket":"jpg","song/pickmon/jacket":"jpg","song/pictra/jacket":"jpg","song/whick/jacket":"jpg","song/yonbai/jacket":"jpg","ui/atlas":"webp","ui/diff_easy":"png","ui/pads":"png","ui/title":"png","ui/title_parts":"webp"};let RB=RES[0];
 const LSJ={get:k=>{try{const v=localStorage.getItem(k);return v==null?null:JSON.parse(v)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const ME={userId:'local-me',nickname:'나',isGuest:false};
@@ -142,7 +142,7 @@ const MSW=window.MSW={
   Users:{me:ME,get:async uid=>uid===ME.userId?ME:{userId:uid,nickname:'플레이어'}},
   Ranking:{board},UserStorage:store('msw-local-us:'),GlobalStorage:store('msw-local-gs:'),
   Resources:{load:async name=>{const e=RES_EXT[name];if(!e)throw new Error('리소스 없음: '+name);return {defaultState:'default',states:{default:{url:RB+name+'.'+e}}}}}};
-const V='b20261007-258',BV='bga5';   // BV: 영상 조각 버전 — 영상을 바꿀 때만 올려요 (코드 버전과 따로 둬서 영상을 매번 다시 받지 않게)
+const V='b20261007-259',BV='bga5';   // BV: 영상 조각 버전 — 영상을 바꿀 때만 올려요 (코드 버전과 따로 둬서 영상을 매번 다시 받지 않게)
 const load=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.crossOrigin='anonymous';   /* GitHub 단독판: 코드도 다른 출처(jsDelivr)라 오류 내용이 보이게 늘 */s.src=src;s.onload=res;s.onerror=()=>rej(new Error(src));document.body.appendChild(s)});
 const PIX=['av_boy','av_goggle','av_pink','av_purple','av_wink','av_black','shrub','ghost','fox','boss','egg','chick','moss','luti','rider'];   // 픽몬 도트 그림 (pix/*)
 const FILES=['mix.mp3',...['kick','snare','hat','clap'].map(n=>'stem_'+n+'.mp3'),...['kick','snare','hat','clap'].map(n=>'pad_'+n+'.wav')];
