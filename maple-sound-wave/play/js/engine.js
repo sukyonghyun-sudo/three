@@ -301,7 +301,7 @@ const JT={p:['PERFECT','--gold',300,2.2,'퍼펙트!'],gr:['GREAT','--mint',200,1
 function press(l){if(paused)return;down[l]=true;flashes[l]=1;if(!playing){unlock();if(window.KIT_URLS)kitPreview(l);else if(buf)pad(l,.9);return}   /* 게임 밖: 그 레인의 드럼 키트 소리 (D 킥 · F 스네어 · J 하이햇 · K 박수) */
   const t=now();let best=null,bd=9;for(const n of notes){if(n.hit||n.dead||n.spent||n.l!==l)continue;const d=Math.abs(n.t-t);if(d<bd){bd=d;best=n}if(n.t-t>EARLY_MISS)break}
   const k=best&&judgeOf(bd);if(!k){if(window.ADLIB&&ADLIB.tryHit(l,t))return;/* 애드리브(숨은 노트) 자리면 그 드럼 + 보너스 (js/adlib.js) */if(CHART.mode==='full')hitSound(null,l,.45);else pad(l,.85);
-    if(best&&best.t-t>GOOD&&best.t-t<=EARLY_MISS){best.spent=true;miss(best);judge.fs='FAST'}}   /* 너무 일찍 누름(0.125~0.2초 전) = 그 노트 미스 (마구 누르기 방지) · 노트는 안 지우고 흐리게 레인을 끝까지 지나가요 (2026-10-08 사용자: 「미스가 떠도 노트는 그냥 레인으로 지나가는 게 맞지」) */
+    if(best&&best.t-t>GOOD&&best.t-t<=EARLY_MISS){best.spent=true;miss(best);judge.fs='FAST'}}   /* 너무 일찍 누름(0.125~0.2초 전) = 그 노트 미스 (마구 누르기 방지) · 노트는 안 지우고 다른 노트와 똑같이 레인을 끝까지 지나가요 (2026-10-08 사용자: 「미스가 떠도 노트는 그냥 레인으로 지나가는 게 맞지」 → 흐리게 했더니 「막 누르면 노트가 내려오다 사라져」 — 흐림 없앰) */
   if(!k)return;best.hit=true;HITLOG.push([best.t,t-best.t,k,l]);window.HMETER&&HMETER.add(t-best.t,k);if(skin!=='bar'&&window.NOTE_SPR)LANDS.push({l,n:best,t0:now()});/* 친 노트 캐릭터가 판정선에서 탁 찌그러졌다 튀어요 (보통·점프 모두). 곡 시간 기준: 일시정지하면 같이 멈춰요 */if(CHART.mode==='full')hitSound(best,l,1,k);else{restore(best.ol??l,best);pad(best.ol??l,.3,true)}const [txt,c,pts,gg,jp]=JT[k];
   combo++;maxCombo=Math.max(maxCombo,combo);cnt[k]++;score+=Math.round(pts*(1+Math.min(combo,100)/100)*(fever?2:1)*scoreMul());
   gauge=Math.min(100,gauge+gg);if(gauge>=100)setFever(true);
@@ -605,7 +605,7 @@ function draw(){requestAnimationFrame(draw);g.imageSmoothingQuality=bx.imageSmoo
   comboBounce*=.85;
   // 노트
   const SPR=NOTE_DRAW;if(playing){for(const n of notes){if(n.hit||n.dead)continue;const dt=n.t-t;if(dt<-GOOD){n.dead=true;if(!n.spent)miss(n);continue}const z=dt/APPROACH;if(z>1)break;
-    const s=sOf(z),y=yOf(s),c=LC[n.l],na=Math.min(1,(1-z)/.14)*(n.spent?.45:1);if(!(s>0)||y>H+300)continue;g.globalAlpha=na;   // na: 지평선에서 스르륵 나타나게 · 판정선을 지나 화면 밖으로 나간 노트는 안 그려요 — 원근 크기 1/(1+D·z)가 z<−0.205 에서 음수로 뒤집혀서 배속 ×1.5 이상에서 놓친 노트가 ellipse 오류(음수 반지름)를 내고 그 프레임 그리기가 끊겼어요 (2026-10-06 사용자 신고) · 판정은 그대로 (−0.125초까지)
+    const s=sOf(z),y=yOf(s),c=LC[n.l],na=Math.min(1,(1-z)/.14);if(!(s>0)||y>H+300)continue;g.globalAlpha=na;   // na: 지평선에서 스르륵 나타나게 · 판정선을 지나 화면 밖으로 나간 노트는 안 그려요 — 원근 크기 1/(1+D·z)가 z<−0.205 에서 음수로 뒤집혀서 배속 ×1.5 이상에서 놓친 노트가 ellipse 오류(음수 반지름)를 내고 그 프레임 그리기가 끊겼어요 (2026-10-06 사용자 신고) · 판정은 그대로 (−0.125초까지)
     if((skin==='bar'||!window.NOTE_SPR)&&atOk){const x0=xOf(n.l+.04,s),x1=xOf(n.l+.96,s),r=ATLAS.s['note'+n.l],nh=(x1-x0)*r[3]/r[2];g.drawImage(AT,r[0],r[1],r[2],r[3],x0,y-nh/2,x1-x0,nh)}
     else if(skin==='bar'||!window.NOTE_SPR){const th=Math.max(4,18*s),s0=sAtY(y+th/2),s1=sAtY(y-th/2);quad(g,n.l+.06,n.l+.94,s1,s0);
       const ng=g.createLinearGradient(0,y-th/2,0,y+th/2);ng.addColorStop(0,'#fff');ng.addColorStop(.35,c);ng.addColorStop(1,c);g.fillStyle=ng;g.shadowColor=c;g.shadowBlur=fever?18:10;g.fill();g.shadowBlur=0;
@@ -619,7 +619,7 @@ function draw(){requestAnimationFrame(draw);g.imageSmoothingQuality=bx.imageSmoo
           else{const L=landSq(-dq);sx=L[0];sy=L[1]}}   // 착지: 판정선에 닿는 순간 탁
         return {x:xq,y:yq,rw:rwq,air,sx,sy}};
       const P=at(dt),x=P.x,rw=P.rw,air=P.air;
-      const br=rw*(1-.35*air);g.globalAlpha=(noteMove==='jump'?.42*(1-.55*air):1)*(n.spent?.45:1);g.fillStyle=c;g.globalAlpha*=na;if(LITE){}else{g.shadowColor=c;g.shadowBlur=noteMove==='jump'?0:12}g.beginPath();g.ellipse(x,y,br,br*.36,0,0,7);g.fill();g.shadowBlur=0;g.globalAlpha=1;   // 레인 색 받침 (점프는 옅게, 공중에선 더 작고 옅게)
+      const br=rw*(1-.35*air);g.globalAlpha=noteMove==='jump'?.42*(1-.55*air):1;g.fillStyle=c;g.globalAlpha*=na;if(LITE){}else{g.shadowColor=c;g.shadowBlur=noteMove==='jump'?0:12}g.beginPath();g.ellipse(x,y,br,br*.36,0,0,7);g.fill();g.shadowBlur=0;g.globalAlpha=1;   // 레인 색 받침 (점프는 옅게, 공중에선 더 작고 옅게)
       const SS=window.NOTE_SPRS,mi=SS&&SS.length>1?(noteMix==='mix'?(n.mv??(n.mv=Math.floor(Math.abs(Math.sin(n.t*12.9898+n.l*78.233)*43758.5453))%SS.length)):NOTE_LANE[n.l]%SS.length):-1,
         F=(mi>=0&&SS[mi])||NOTE_SPR,N=F.length,fi=spinF(n,N),   // 빙글빙글: 노트마다 방향·빠르기·시작 각도가 판마다 무작위 (spinF)
         scl=((window.TUNE&&TUNE.notes[mi]?TUNE.notes[mi].s:NOTE_SCALE[mi])||1)*(n.s==='x'?1.35:1),
