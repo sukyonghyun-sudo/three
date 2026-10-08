@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-294 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-295 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-294'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-295'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -4637,7 +4637,7 @@ window.__NAVGRID = {"sig":"n1|corpse/samurai_arena_lite|8f27e783|-28.843|-25.541
      · 광택 없음 — 탄 자리는 거칠게(0.92), 벗겨진 살·물집도 축축한 정도(0.7)까지만 */
   const PARS = `
 uniform float uBurn, uEmb, uFireT, uBurnR; uniform vec3 uBurnO; uniform vec4 uP0, uP1;
-uniform vec4 uStain[12]; uniform float uStainK[12]; uniform float uStainN; uniform vec2 uWash;
+uniform vec4 uStain[12]; uniform float uStainK[12]; uniform float uStainN; uniform vec2 uWash; uniform vec2 uWet;
 varying vec3 vBurnP;
 float bh(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float bn(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
@@ -4744,10 +4744,14 @@ if (uStainN > 0.5) {
   vec3 bloodC = mix(vec3(0.21, 0.008, 0.006), vec3(0.075, 0.004, 0.003), smoothstep(0.4, 0.9, bn(vBurnP * 55.0)) * 0.7 + sMask * 0.3);
   diffuseColor.rgb = mix(diffuseColor.rgb, bloodC, sMask * 0.93);
 }
+// 젖음(stain.js · 2026-10-09) — 물에 잠겼던 높이(uWet.x · 바인드 높이) 아래 옷 · 살이 어둡고 축축하게(uWet.y — 물 밖에서 40초에 걸쳐 마름) · 수면선은 결 있는 그러데이션
+float wetM = 0.0;
+if (uWet.y > 0.0) { float wl2 = uWet.x + (bn(vBurnP * 14.0) - 0.5) * 0.08; wetM = uWet.y * (1.0 - smoothstep(wl2 - 0.06, wl2 + 0.06, vBurnP.z)); diffuseColor.rgb *= 1.0 - 0.36 * wetM; }
 `;
   const FRAG_ROUGH = `
 roughnessFactor = mix(mix(roughnessFactor, 0.92, bMask), 0.7, bRough);      // 광택 없음 — 벗겨진 살·물집도 축축한 정도까지만
 roughnessFactor = mix(roughnessFactor, 0.42, sMask * 0.55);                 // 피 — 젖은 곳은 살짝 반들
+roughnessFactor = mix(roughnessFactor, 0.38, wetM * 0.65);                  // 물에 젖은 곳 — 축축하게 반들
 `;
   // 울퉁불퉁 — 물집 방울 · 딱지 알갱이 · 숯 갈라짐(면 방향만 흔든다)
   const FRAG_NORMAL = `
@@ -4791,7 +4795,7 @@ if (uEmb > 0.001 && bF > -0.12) {
   // 핏자국 균일값 — stain.js 가 사람마다 하나를 만들어 재질에 걸어 둔다(mat.__stainU) · 없으면 빈 것(셰이더 모양은 같다)
   function stainU(mat) {
     if (mat.__stainU) return mat.__stainU;
-    return (mat.__stainU = { uStain: { value: new Float32Array(48) }, uStainK: { value: new Float32Array(12) }, uStainN: { value: 0 }, uWash: { value: new Float32Array([-9, 0]) } });   // vec4 12개를 한 줄로(__G.THREE 에는 Vector4 가 없을 수 있다)
+    return (mat.__stainU = { uStain: { value: new Float32Array(48) }, uStainK: { value: new Float32Array(12) }, uStainN: { value: 0 }, uWash: { value: new Float32Array([-9, 0]) }, uWet: { value: new Float32Array([-9, 0]) } });   // vec4 12개를 한 줄로(__G.THREE 에는 Vector4 가 없을 수 있다)
   }
   B.stainU = stainU;
   function prepMat(mat) {
@@ -4799,7 +4803,7 @@ if (uEmb > 0.001 && bF > -0.12) {
     let U = UM.get(mat);
     if (U) return U;
     const SU = stainU(mat);
-    U = { uBurn: { value: 0 }, uEmb: { value: 0 }, uFireT: { value: 0 }, uBurnR: { value: 1.2 }, uBurnO: { value: new window.__G.THREE.Vector3() }, uP0: { value: P0 }, uP1: { value: P1 }, uStain: SU.uStain, uStainK: SU.uStainK, uStainN: SU.uStainN, uWash: SU.uWash };
+    U = { uBurn: { value: 0 }, uEmb: { value: 0 }, uFireT: { value: 0 }, uBurnR: { value: 1.2 }, uBurnO: { value: new window.__G.THREE.Vector3() }, uP0: { value: P0 }, uP1: { value: P1 }, uStain: SU.uStain, uStainK: SU.uStainK, uStainN: SU.uStainN, uWash: SU.uWash, uWet: SU.uWet };
     UM.set(mat, U);
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, U);
@@ -4810,7 +4814,7 @@ if (uEmb > 0.001 && bF > -0.12) {
         .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + FRAG_NORMAL)
         .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n' + FRAG_EMIT);
     };
-    mat.customProgramCacheKey = () => 'burn5';
+    mat.customProgramCacheKey = () => 'burn6';
     mat.needsUpdate = true;
     return U;
   }
@@ -5960,6 +5964,8 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'foley2', name: '피 방울 · 옷 스침 소리(realsfx.js — 업은 시체에서 떨어진 피가 바닥에 닿으면 톡(7m 안 · 띄엄띄엄) · 달릴 때 옷 스침 / 보기: 톡 셋 → 스침 셋)', def: true },
     { key: 'corpseglance', name: '시체 쪽 힐끗(breathe.js — 가만히 서 있을 때 3.5m 안 누운 시체를 5~9초마다 1~1.6초 내려다봄 · 괴물이 가까우면 괴물 쪽이 먼저 / 보기: 12m 안 가장 가까운 시체를 지금)', def: true },
     { key: 'occl', name: '소리 거리 · 가림(realsfx.js — 멀수록 둔탁 · 바위 · 언덕 · 건물 뒤에서 나는 소리는 먹먹하게 · 괴물이 모퉁이를 돌아 나오면 또렷 / 보기: 괴물 숨 맑게 → 가려진 소리)', def: true },
+    { key: 'wetcloth', name: '젖은 옷(stain.js · burn.js — 물에 잠겼던 높이까지 옷 · 살이 어둡고 축축하게 반들 · 물 밖에서 40초에 걸쳐 마름 · 나 · 봇 / 보기: 가슴까지 젖은 채로)', def: true },
+    { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 · 12초에 한 번 / 보기: 지금 한 번)', def: true },
     { key: 'spotted', name: '들킴 반응(breathe.js — 괴물이 나를 쫓기 시작하는 순간: 괴물 쪽으로 고개 홱 · 움찔 · 「헉」 얼굴 · 남자 헉 소리 · 시야가 순간 조여듦 / 봇도 같이)', def: true },
     { key: 'othersteps', name: '남의 발소리(realsfx.js — 봇 · 같이 하기 상대가 달리고 끌 때 그 자리에서 · 걸음 박자는 그 몸의 동작 · 그 자리 바닥 · 24m 안 / 보기: 등 뒤에서 누가 달려와 옆을 스쳐 감)', def: true },
     { key: 'ambev', name: '밤 소리 사건(realsfx.js — 22~48초마다 멀리서: 범종 · 올빼미 · 먼 개 · 등 뒤 덤불 잔가지 · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마 카라카라)', def: true },
@@ -6436,6 +6442,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'foley2') { if (window.__rsfx && window.__rsfx.foleyDemo) window.__rsfx.foleyDemo(); }
     else if (key === 'corpseglance') { if (window.__breath && window.__breath.corpseGlanceDemo) window.__breath.corpseGlanceDemo(); }
     else if (key === 'occl') { if (window.__rsfx && window.__rsfx.occlDemo) window.__rsfx.occlDemo(); }
+    else if (key === 'wetcloth') { if (window.__stain && window.__stain.wetDemo) window.__stain.wetDemo(); }
+    else if (key === 'monlost') { if (window.__rsfx && window.__rsfx.monSniff) window.__rsfx.monSniff(0); }
     else if (key === 'spotted') { if (window.__breath && window.__breath.spotDemo) window.__breath.spotDemo(); }
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
     else if (key === 'ambev') { if (window.__rsfx && window.__rsfx.ambEvent) window.__rsfx.ambEvent(); }   // 하나 바로(무작위)
@@ -6469,7 +6477,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -6792,6 +6800,24 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   /* ── 매 프레임 — 숨 · 헐떡임 · 타는 몸 · 괴물 들숨 · 판 끝 ── */
   let lastA = null, afterT = -1e9, wasRun = 0, overPrev = false, stalkT = 0;
   // 괴물이 알아챔(2026-10-09) — 나를 쫓기 시작하는 순간(breathe.js 들킴 반응이 부른다) 괴물 입에서 낮게 끄는 그르렁 · 축축한 목울림 중 하나를 더 낮고 크게 + 짙은 입김 · 다음 어슬렁 숨은 3초 뒤로
+  /* 괴물이 놓침(2026-10-09) — 2초 넘게 나를 쫓다 놓치면 0.6~1초 뒤 그 자리에서 킁킁 냄새 맡는 숨(mon_stalk4 · 0.88~0.94배) + 입김 — 아직 근처에서 찾고 있다
+     12초에 한 번 · 괴물이 28m 안 · 판이 끝나면 없음 · 끄기: 시연실 연출 「괴물이 놓침 — 킁킁」 · 보기: 지금 한 번 */
+  let lostWas = false, lostSince = 0, lostT = -1e9;
+  function lostTick() {
+    const X = window.__fx; if (X && X.on && X.on.monlost === false) { lostWas = false; return; }
+    const C = G.monster; if (!C || !C.root || !C.root.visible || G.cfg.monOn === false) { lostWas = false; return; }
+    const h = G.hero.position, now = performance.now(), on = !!(window.__hunting && window.__hunting('hero'));
+    if (on && !lostWas) lostSince = now;
+    if (!on && lostWas && now - lostSince > 2000 && now - lostT > 12000 && Math.hypot(C.root.position.x - h.x, C.root.position.z - h.z) < 28) { lostT = now; R.monSniff(0.6 + Math.random() * 0.4); }
+    lostWas = on;
+  }
+  R.monSniff = (delay) => {
+    const C = G && G.monster; if (!C || !C.root || !C.root.visible) return false;
+    const ok = play('mon_stalk4', { pos: C.root.position, range: 34, vol: 1.0, rate: rnd(0.88, 0.94), delay: delay || 0 });
+    try { if (window.__fx && window.__fx.monPuff) setTimeout(() => window.__fx.monPuff(1), ((delay || 0) + 0.3) * 1000); } catch { /* */ }
+    stalkT = performance.now() + (delay || 0) * 1000 + 3500;
+    return ok;
+  };
   R.monNotice = () => {
     const C = G && G.monster; if (!C || !C.root || !C.root.visible) return false;
     const ok = play(Math.random() < 0.5 ? 'mon_stalk2' : 'mon_stalk3', { pos: C.root.position, range: 40, vol: 1.15, rate: rnd(0.8, 0.88), delay: 0.12 });
@@ -6961,7 +6987,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const F = window.__fire, act = F && F.active ? F.active : null;
     if (act && act !== lastA && G.monster && G.monster.root) play('mon_inhale', { pos: G.monster.root.position, range: 40, vol: 0.9 });
     lastA = act;
-    if (live) { strainTick(); ambTick(); bodyTick(); otherSteps(dt); }
+    if (live) { strainTick(); ambTick(); bodyTick(); otherSteps(dt); lostTick(); }
     else loopSet('fly_loop', 0, dt);
     // 괴물 숨 · 그르렁 — 16m 안에서 어슬렁거리거나 쫓을 때(내리치는 중 · 불 뿜는 중은 빼고) · 가까울수록 크게 · 좌우(2026-10-08 밤 — 괴물 존재감)
     const Cm = G.monster;
@@ -7088,10 +7114,10 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (!p) { p = { key, slots: [], holders: [], mesh: meshes[0], pend: [] }; P.people.set(key, p); }
     for (const m of meshes) for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
       const h = B.stainU(mat); if (p.holders.includes(h)) continue;
-      if (p.holders.length) { h.uStain.value = p.holders[0].uStain.value; h.uStainK.value = p.holders[0].uStainK.value; h.uWash.value = p.holders[0].uWash.value; }
+      if (p.holders.length) { h.uStain.value = p.holders[0].uStain.value; h.uStainK.value = p.holders[0].uStainK.value; h.uWash.value = p.holders[0].uWash.value; if (h.uWet && p.holders[0].uWet) h.uWet.value = p.holders[0].uWet.value; }
       p.holders.push(h);
     }
-    if (p.mesh !== meshes[0] && p.mesh) { p.slots.length = 0; p.dirtyN = -1; if (p.holders[0]) p.holders[0].uWash.value.set([-9, 0]); }   // 몸을 갈아입었다(둘러보기) — 모양이 달라 자국이 엉뚱한 자리에 남는다 → 지운다
+    if (p.mesh !== meshes[0] && p.mesh) { p.slots.length = 0; p.dirtyN = -1; if (p.holders[0]) { p.holders[0].uWash.value.set([-9, 0]); if (p.holders[0].uWet) p.holders[0].uWet.value.set([-9, 0]); } }   // 몸을 갈아입었다(둘러보기) — 모양이 달라 자국이 엉뚱한 자리에 남는다 → 지운다
     p.mesh = meshes[0];
     return p;
   }
@@ -7146,6 +7172,11 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else for (const v of pickVerts(p.mesh, null, 0.35, 0.72, 1, 'hand')) add(p, v[1], v[2], v[3], rnd(0.035, 0.06), rnd(0.3, 0.5), 1.0);
   }
   P.preview = () => { const G = window.__G; if (!G) return; const p = heroP(G); const f = G.hero.position, y = G.hero.rotation.y; splatHit(p, { x: f.x + Math.sin(y) * 3, z: f.z + Math.cos(y) * 3 }); };
+  P.wetDemo = () => {                                                   // 보기 — 가슴까지 젖은 채로(40초에 마름)
+    const G = window.__G; if (!G || !G.started) return false; const p = heroP(G), h0 = p && p.holders[0]; if (!h0 || !h0.uWet || !p.mesh) return false;
+    const g = p.mesh.geometry; if (!g.boundingBox) g.computeBoundingBox(); const e = p.mesh.matrixWorld.elements, zs = Math.hypot(e[8], e[9], e[10]) || 1;
+    h0.uWet.value[0] = g.boundingBox.min.z + 1.25 / zs; h0.uWet.value[1] = 1; return true;
+  };
   P.clear = () => { for (const p of P.people.values()) { p.slots.length = 0; if (p.holders[0]) p.holders[0].uWash.value.set([-9, 0]); sync(p); } };
 
   const heroP = (G) => person('hero', G.body ? [skinOf(G.body.main), skinOf(G.body.drag)] : []);
@@ -7185,6 +7216,20 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       W[0] = Math.max(W[0], zl); W[1] = Math.min(0.55, W[1] + dt * 0.11);
     };
     if (hp) wash(hp, depth(G.hero.position));
+    // 젖음(2026-10-09) — 잠긴 높이까지 옷 · 살이 어둡고 축축하게(burn.js uWet) · 물에 있는 동안 0.3초에 젖고 · 나오면 40초에 걸쳐 마른다(자국과 달리 맨몸에도) · 끄기: 시연실 연출 「젖은 옷」
+    const wetOn = !(window.__fx && window.__fx.on && window.__fx.on.wetcloth === false);
+    const wet = (p, d) => {
+      const h0 = p && p.holders[0]; if (!h0 || !h0.uWet || !p.mesh) return;
+      const W = h0.uWet.value;
+      if (!wetOn) { W[1] = 0; return; }
+      if (d > 0.08) {
+        const g = p.mesh.geometry; if (!g.boundingBox) g.computeBoundingBox();
+        const e = p.mesh.matrixWorld.elements, zs = Math.hypot(e[8], e[9], e[10]) || 1, zl = g.boundingBox.min.z + d / zs;
+        W[0] = W[1] > 0.02 ? Math.max(W[0], zl) : zl; W[1] = Math.min(1, W[1] + dt * 3);
+      } else if (W[1] > 0) W[1] = Math.max(0, W[1] - dt / 40);
+    };
+    if (hp) wet(hp, depth(G.hero.position));
+    for (const b of (G.game && G.game.bots) || []) { const p = P.people.get(b); if (p && b.hero) wet(p, depth(b.hero.position)); }
     for (const b of (G.game && G.game.bots) || []) { const p = P.people.get(b); if (p && b.hero) wash(p, depth(b.hero.position)); }
     // 번지기 — 자국이 목표 짙기까지 잠깐에 걸쳐 퍼진다
     for (const p of P.people.values()) {
