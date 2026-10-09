@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-324 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-325 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -314,7 +314,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-324'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-325'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -10454,7 +10454,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     const now = performance.now();
     q.t = now + rnd(90000, 150000); lastFlush = now;
     B.log.push([why, Math.round(q.x), Math.round(q.z), +(now / 1000).toFixed(1)]); if (B.log.length > 20) B.log.shift();
-    const h = G.hero.position; if (Math.hypot(q.x - h.x, q.z - h.z) > 70) return;
+    const h = G.hero.position, hd = Math.hypot(q.x - h.x, q.z - h.z); if (hd > 70) return;
+    if (hd < 6 && window.__breath && window.__breath.flinch) window.__breath.flinch(0.3 + 0.3 * (1 - hd / 6));   // 바로 위 나무에서 터지면 나도 움찔
     const R = window.__rsfx, pos = { x: q.x, y: q.y, z: q.z };
     if (R && R.play && ambOn()) {
       R.play('amb_flock', { pos, range: 45, vol: 1.0 * ambVol(), rate: rnd(0.95, 1.05) });
@@ -10543,7 +10544,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
 /* 시체 곁의 까마귀(2026-10-09 · 케이스 스터디 — RE4R 마을 까마귀 · Bloodborne · SIREN 시체 곁 — 버려진 죽음 · 다가가는 순간 확 날아오름)
    · 아무도(나 · 봇 · 같이 하기 상대 · 괴물) 7m 안에 오지 않고 움직이지도 않은 채 12초가 지난 시체(봇 판은 빨라 드물다 — 미리보기 2분 판에서 시체 넷이 늘 들렸거나 7m 안에 누가 있었다)(물 밖)에 까마귀 1~3마리가 하나씩 내려앉는다(10m 밖 7m 위에서 미끄러져 내려옴)
    · 앉아서: 시체 쪽을 보고 쪼고(고개를 바닥까지 · 0.8~2초마다) · 가끔 깡충(3~6초마다 시체 둘레로) · 가끔 낮게 깍(20~40초마다 35% · 가까이 · 작게)
-   · 누가 4.5m 안에 오거나 시체를 집으면(움직이면) 한꺼번에 푸드덕 날아오름(큰 새 퍼덕 녹음 + 60% 까마귀 울음) — 다가가 확인하려는 순간 놀람
+   · 누가 4.5m 안에 오거나 시체를 집으면(움직이면) 한꺼번에 푸드덕 날아오름(큰 새 퍼덕 녹음 + 60% 까마귀 울음) — 다가가 확인하려는 순간 놀람 · 내가 5.5m 안이면 나도 움찔(breathe.js 들킴 움찔)
    · 한 판에 까마귀 6마리까지 · 그림: 검은 실루엣(몸통 · 머리 두 조각 · 나는 동안은 새 떼와 같은 날갯짓) · 업은 시체 피 방울과 같은 재질 설정(새 셰이더 없음)
    · 소리는 밤 소리(켜짐 · 크기)를 따름 · 같이 하기도 각자 화면에서 같은 규칙(시체 · 사람 자리는 서버가 보낸 것)
    · 끄기: 시연실 연출 「시체 곁 까마귀」 · 보기: 화면 앞 가장 가까운 누운 시체에 바로 셋이 내려앉고 7초 뒤 내 쪽에서 놀라 날아오름 */
@@ -10588,6 +10589,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     }
     if (!n) return;
     const pos = { x: cx / n, y: G.hero.position.y + 0.5, z: cz / n };
+    { const h = G.hero.position, d = Math.hypot(pos.x - h.x, pos.z - h.z), Bh = window.__breath;   // 바로 곁(5.5m 안)에서 확 날아오르면 나도 움찔
+      if (d < 5.5 && Bh && Bh.flinch) Bh.flinch(0.35 + 0.4 * (1 - d / 5.5)); }
     C.log.push([why, n, +(performance.now() / 1000).toFixed(1)]); if (C.log.length > 20) C.log.shift();
     play('amb_flock3', { pos, range: 35, vol: 0.95 * ambVol(), rate: rnd(1.0, 1.12) });
     if (Math.random() < 0.6) setTimeout(() => play('amb_crow', { pos, range: 45, vol: 0.75 * ambVol(), rate: rnd(1.0, 1.08) }), rnd(200, 500));
