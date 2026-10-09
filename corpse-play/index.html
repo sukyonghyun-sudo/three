@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-325 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-327 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -314,7 +314,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-325'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-327'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -4145,7 +4145,8 @@ window.__NAVGRID = {"sig":"n1|corpse/samurai_arena_lite|8f27e783|-28.843|-25.541
     if ((beatT -= dt) > 0) return;
     const src = ctx.createBufferSource(), g = ctx.createGain();
     src.buffer = buf.heart; src.playbackRate.value = 0.95 + 0.15 * k;
-    g.gain.value = HEART.vol * (0.25 + 0.75 * k);
+    const Hb = window.__breath && window.__breath.hero, hk = Hb && Hb.hold ? Hb.hold : 0;
+    g.gain.value = HEART.vol * (0.25 + 0.75 * k) * (1 + 0.35 * hk);          // 숨을 참으면 내 심장 소리가 더 크게(breathe.js 숨 참기)
     src.connect(g); g.connect(out); src.start();
     window.__heartT = performance.now(); window.__heartK = k;           // camera.js — 박동에 맞춰 시야가 아주 조금 조인다
     beatT = 1.25 - 0.7 * k;   // 멀면 분당 48번, 코앞이면 110번 남짓
@@ -4322,6 +4323,7 @@ window.__NAVGRID = {"sig":"n1|corpse/samurai_arena_lite|8f27e783|-28.843|-25.541
     { key: 'gasp', name: '헉', len: 1.4, parts: [['gasp', 1, 'snap'], ['eyes_wide', 0.5, 'snap']] },
     { key: 'silent', name: '소리 없는 비명', len: 2.4, parts: [['jaw_drop', 0.9, 'slow'], ['strain_eyes', 0.8, 'slow']] },
     { key: 'wince', name: '움찔', len: 0.9, parts: [['strain_eyes', 0.7, 'snap'], ['clench', 0.6, 'snap']] },
+    { key: 'hold', name: '숨 참음 — 입 꾹 · 눈 크게(괴물이 곁에 있을 때 저절로)', len: 2.8, parts: [['clench', 0.4, 'slow'], ['eyes_wide', 0.55, 'slow'], ['fear_brows', 0.35, 'slow']] },
     { key: 'choke', name: '숨막힘', len: 2.2, parts: [['eyes_wide', 1, 'snap'], ['gasp', 0.55, 'open'], ['exhaust', 0.2, 'slow']] },
     { key: 'madness', name: '실성', len: 2.4, parts: [['clench', 0.75, 'snap'], ['eyes_wide', 1, 'snap'], ['sneer', 0.3, 'slow']] },
     { key: 'howl', name: '울부짖음', len: 2.4, parts: [['sob', 0.7, 'slow'], ['shout_mouth', 1, 'open']] },
@@ -6030,6 +6032,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 · 그동안 걸으면 카메라도 다친 쪽 발에서 더 내려앉아 전다(camera.js) / 보기: 지금 18초 + 절름 카메라 여섯 걸음)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
+    { key: 'breathhold', name: '숨 참기(breathe.js — 괴물이 11m 안인데 들키지 않고 내가 멈춰 서 있으면 저절로 숨을 멈춤 · 숨소리 사라지고 가슴 · 카메라 숨 멈춤 · 입 꾹 눈 크게 · 심장 소리 커짐 · 괴물이 멀어지거나 9초가 지나면 몰아쉼 / 보기: 지금 5초 참았다 몰아쉼)', def: true },
     { key: 'crows', name: '시체 곁 까마귀(crows.js — 12초 넘게 아무도 7m 안에 오지 않은 시체에 까마귀 1~3마리가 내려앉아 쪼고 깡충 · 가끔 낮게 깍 · 누가 4.5m 안에 오거나 시체를 집으면 푸드덕 날아오름 / 보기: 화면 앞 시체에 셋이 내려앉고 7초 뒤 날아오름)', def: true },
     { key: 'birds', name: '새 떼(birds.js — 괴물이 나무 7m 안을 걸어 지나가면 새들이 놀라 푸드덕 날아오르고 까마귀가 운다 · 검은 새 6~11마리가 괴물 반대쪽으로 흩어지고 그 가지에서 벚꽃잎이 한 줌 흩날려 떨어짐 · 그 나무엔 90~150초 새 없음 · 숲 전체 20초에 한 번까지 / 보기: 화면 앞쪽 가까운 나무의 새가 놀라 화면 안쪽으로 날아오름)', def: true },
     { key: 'moths', name: '등롱 나방(moth.js — 켜진 등롱마다 나방 3~5마리가 불 둘레를 제멋대로 맴돎 · 가끔 불에 툭 · 등롱이 꺼지면 흩어지고 괴물이 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아옴 / 보기: 가장 가까운 등롱 나방이 흩어졌다 돌아옴)', def: true },
@@ -6541,6 +6544,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); if (window.__limpCamDemo) window.__limpCamDemo(); }
     else if (key === 'stepcam') { if (window.__stepCamDemo) window.__stepCamDemo(); }
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
+    else if (key === 'breathhold') { if (window.__breath && window.__breath.holdDemo) window.__breath.holdDemo(); }
     else if (key === 'crows') { if (window.__crows && window.__crows.demo) window.__crows.demo(); }
     else if (key === 'birds') { if (window.__birds && window.__birds.demo) window.__birds.demo(); }
     else if (key === 'moths') { if (window.__moth && window.__moth.demo) window.__moth.demo(); }
@@ -6580,7 +6584,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -7154,6 +7158,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       // 달리다 멈추면 한 번 숨 고르기(12초에 한 번)
       if (wasRun > 0.6 && S.mv < 0.2 && ex > 0.5 && performance.now() - afterT > 12000) { afterT = performance.now(); play('p_pant_after', { vol: 0.42 * duck }); }
       if (performance.now() - afterT < 4300) pantV *= 0.3;
+      if (S.hold) { idleV *= 1 - S.hold; pantV *= 1 - S.hold; }           // 숨 참기(breathe.js) — 숨소리가 사라진다
       wasRun = S.mv;
     }
     // 서 있을 때 숨 — 겁먹어 고르지 않게 끊기는 젊은 남자 숨(2026-10-08 사용자: 「가만히 있을 때 숨소리 이랬었나」 — b244 의 느린 숨은 너무 차분했다)
@@ -7479,6 +7484,30 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (!s) { s = { ph: Math.random(), v: 0, rate: 0.23, ex: 0, fear: 0, seed: Math.random() * 100, lx: null, lz: null, sp: 0, mv: 0 }; S.actors.set(key, s); }
     return s;
   }
+  /* 숨 참기(2026-10-09 밤 · 케이스 스터디 — Outlast · Alien Isolation 숨 참기 · SIREN 숨죽임 — 조작 없이 몸이 알아서)
+     · 괴물이 11m 안에 있는데 나를 쫓지 않고(들키지 않음 — 괴물이 물러나 쉬는 동안 · 다른 사람을 쫓는 동안 · 아직 못 봤을 때) 내가 멈춰 서 있으면(거의) 0.5초에 걸쳐 숨을 멈춘다 — 숨소리(서 있을 때 숨 · 헐떡임)가 사라지고 · 가슴 들썩임 · 카메라 숨이 들이쉰 채 멈춤 · 「숨 참음」 얼굴(입 꾹 · 눈 크게) · 심장 소리는 35% 크게
+     · 괴물이 멀어지거나 · 내가 움직이거나 · 9초가 지나면(더는 못 참음) 참았던 숨을 몰아쉰다(숨 고르기 녹음 · 잠깐 헐떡임) — 괴물이 아직 가까우면 작게 · 들켜서 풀리면 몰아쉬지 않음(들킴 「헉」) · 다시 참으려면 4초 뒤
+     · 나만(봇 · 같이 하기 상대는 그대로) · 끄기: 시연실 연출 「숨 참기」 · 보기: 지금 5초 참았다 몰아쉼 */
+  const holdOn = () => { const X = window.__fx; return !(X && X.on && X.on.breathhold === false); };
+  function holdTick(s, md, busy, dt, G) {
+    const now = performance.now(), demo = now < (S.holdDemoUntil || 0);
+    const burning = window.__burn && window.__burn.burning && window.__burn.burning('hero');
+    const hunted = window.__hunting ? !!window.__hunting('hero') : false;
+    const want = demo || (holdOn() && md < 11 && !hunted && !busy && s.mv < 0.35 && !burning && !(G.game && G.game.over));
+    s.holdCD = Math.max(0, (s.holdCD || 0) - dt);
+    if (want && s.holdCD <= 0 && (s.holdT || 0) < 9) {
+      s.holdT = (s.holdT || 0) + dt; s.hold = Math.min(1, (s.hold || 0) + dt / 0.5);
+      if (now > (s.holdFaceT || 0)) { s.holdFaceT = now + 2400; const Cc = window.__cast, Bd = G.body; if (Cc && Cc.playOnKey && Bd && !(Cc.busy && Cc.busy([skinOf(Bd.main), skinOf(Bd.drag)].filter(Boolean)))) Cc.playOnKey([skinOf(Bd.main), skinOf(Bd.drag)].filter(Boolean), 'hold'); }
+      return;
+    }
+    if ((s.holdT || 0) > 1.5) {                                                // 참았던 숨을 몰아쉰다(들켜서 풀리면 몰아쉬지 않는다 — 들킴 「헉」이 대신)
+      const R = window.__rsfx; if (R && R.play && !hunted) R.play('p_pant_after', { vol: md < 11 ? 0.24 : 0.38, rate: 1.04 });
+      s.ex = Math.max(s.ex, 0.35); s.holdCD = 4; s.holdFaceT = 0;
+      S.holdLog = (S.holdLog || []).concat([[+s.holdT.toFixed(1), Math.round(md), +(now / 1000).toFixed(1)]]).slice(-10);
+    }
+    s.holdT = 0; s.hold = Math.max(0, (s.hold || 0) - dt / 0.35);
+  }
+  S.holdDemo = () => { const G = window.__G; if (!G || !G.started) return false; S.holdDemoUntil = performance.now() + 5000; const s = stateOf('hero'); s.holdCD = 0; s.holdT = 0; return true; };
   function tick(dt) {
     const G = window.__G; if (!G || !G.started) return;
     const C = G.monster, mOk = C && C.ready && C.root && C.root.visible && G.cfg.monOn !== false;
@@ -7501,8 +7530,10 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       s.busy = busy;
       const rate = 0.23 + 0.62 * ss(s.ex) + 0.28 * s.fear;                     // 분당 14 → 50 · 겁나면 +17
       s.rate += (rate - s.rate) * Math.min(1, dt * 1.5);
-      s.ph = (s.ph + dt * s.rate) % 1;
+      if (key === 'hero') holdTick(s, md, busy, dt, G);
+      s.ph = (s.ph + dt * s.rate * (1 - 0.92 * (s.hold || 0))) % 1;
       s.v = breathV(s.ph, ss(s.ex));
+      if (s.hold) s.v += (0.72 - s.v) * s.hold;                                  // 숨 참기 — 들이쉰 채 멈춤
       // 무게 옮김 — 4~9초마다 다른 다리로(가만히 있을 때만 · 0.5초에 툭 옮겨 머문다)
       if (s.wsT === undefined) { s.wsT = 2 + Math.random() * 4; s.wsG = Math.random() < 0.5 ? -1 : 1; s.ws = 0; }
       if ((s.wsT -= dt) <= 0) { s.wsT = 4 + Math.random() * 5; s.wsG = s.mv > 0.3 ? 0 : -Math.sign(s.wsG || 1) * (0.6 + 0.4 * Math.random()); }
