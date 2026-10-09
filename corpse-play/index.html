@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-329 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-330 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -314,7 +314,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-329'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-330'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -9797,7 +9797,10 @@ vec3 srGN(vec2 p) {
     // 목표 — 거리(휠) · 내려다봄(마우스 위아래) · 중심 높이
     const kE = ss(K.end || 0);
     let pitchG = (c.camPitch !== undefined ? c.camPitch : 0.42) + 0.1 * K.drag + 0.05 * K.chase - 0.14 * K.monF + LV.slope + LV.nod - 0.12 * kE;
-    let distG = ((c.camDist || 3.4) * (1 + 0.18 * K.chase) + 0.55 * K.drag + 0.25 * K.carry) * (1 - 0.32 * kE);
+    // 숨 참기(breathe.js) — 참는 동안 4초에 걸쳐 카메라가 8% 다가가고 시야가 3.5° 좁아진다(조여 오는 긴장) · 숨을 쉬면 0.6초에 풀림
+    { const HB = window.__breath && window.__breath.hero, hz = HB && HB.hold > 0.5 ? 1 : 0; S.holdZ = (S.holdZ || 0) + (hz - (S.holdZ || 0)) * ex(dt, hz > (S.holdZ || 0) ? 3.5 : 0.6); }
+    const kH = ss(S.holdZ || 0);
+    let distG = ((c.camDist || 3.4) * (1 + 0.18 * K.chase) + 0.55 * K.drag + 0.25 * K.carry) * (1 - 0.32 * kE) * (1 - 0.08 * kH);
     const upK = 1 - ss((pitchG + 0.15) / 0.4);                         // 올려다볼수록 1(#14 #15)
     distG *= 1 - 0.28 * upK;
     const pivH = 1.35 + 0.15 * K.drag + 0.1 * K.carry + 0.1 * K.chase;
@@ -9879,7 +9882,7 @@ vec3 srGN(vec2 p) {
     window.__camSkipClip = true;                                       // 가림은 여기서 했다 — nav.js 당김은 쉰다
 
     // 시야각(knock.js __camFx 에서 얹는다) — 올려다봄 +5° · 뒤돌아보기 +3°
-    const fovGoal = 5 * upK + 3 * lbS - 4 * ss(K.end || 0);
+    const fovGoal = 5 * upK + 3 * lbS - 4 * ss(K.end || 0) - 3.5 * kH;
     S.fovAdd += (fovGoal - S.fovAdd) * ex(dt, 0.4);
     // 심장 — 박동마다 쿵(0) · 쿵(0.2초) 조였다 풀림
     S.pulse = 0;
