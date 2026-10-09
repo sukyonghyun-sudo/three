@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-313 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-314 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-313'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-314'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6026,7 +6026,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'lampblow', name: '돌풍에 등롱 꺼짐(sway.js — 돌풍이 일 때 가끔 12m 안 등롱 1~2개가 푸드득 꺼졌다가 15~25초 뒤 저절로 다시 켜짐 · 괴물이 25m 밖일 때만 · 90초에 한 번 / 보기: 가장 가까운 등롱 8초)', def: true },
     { key: 'monweight', name: '괴물 무게 — 물결 · 에마(realsfx.js — 괴물 걸음마다 8m 안 연못 수면이 떨리고 · 토리이 10m 안이면 에마가 달각 / 보기: 가까운 연못 물결 셋 + 가까운 토리이 에마)', def: true },
     { key: 'hudhunt', name: '쫓기는 동안 표지 물러남(tension.js — 괴물이 나를 쫓는 동안 남의 본진 표지가 옅어지고 도망칠 곳(내 본진)만 또렷 · 끝나고 3초 뒤 돌아옴 / 보기: 4초)', def: true },
-    { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 / 보기: 지금 18초)', def: true },
+    { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 · 그동안 걸으면 카메라도 다친 쪽 발에서 더 내려앉아 전다(camera.js) / 보기: 지금 18초 + 절름 카메라 여섯 걸음)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
     { key: 'moths', name: '등롱 나방(moth.js — 켜진 등롱마다 나방 3~5마리가 불 둘레를 제멋대로 맴돎 · 가끔 불에 툭 · 등롱이 꺼지면 흩어지고 괴물이 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아옴 / 보기: 가장 가까운 등롱 나방이 흩어졌다 돌아옴)', def: true },
@@ -6529,7 +6529,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'lampblow') { if (window.__wind && window.__wind.blowDemo) window.__wind.blowDemo(); }
     else if (key === 'monweight') { if (window.__rsfx && window.__rsfx.weightDemo) window.__rsfx.weightDemo(); }
     else if (key === 'hudhunt') { if (window.__hudHuntDemo) window.__hudHuntDemo(); }
-    else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); }
+    else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); if (window.__limpCamDemo) window.__limpCamDemo(); }
     else if (key === 'stepcam') { if (window.__stepCamDemo) window.__stepCamDemo(); }
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
     else if (key === 'moths') { if (window.__moth && window.__moth.demo) window.__moth.demo(); }
@@ -9803,7 +9803,9 @@ vec3 srGN(vec2 p) {
     // 무게 걸음(2026-10-09) — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고(최대 2.2cm) 그 발 쪽으로 살짝 기운다(0.26°) · 맨몸은 아주 조금(0.4cm) · 걸음 박자는 realsfx 발소리
     let dip = 0; S.stepRoll = 0;
     { const sT = window.__stepT, X = window.__fx, on = !(X && X.on && X.on.stepcam === false);
-      if (life && on && sT) { const t = (performance.now() - sT) / 1000; if (t < 0.6) { const e = t < 0.07 ? t / 0.07 : Math.exp(-(t - 0.07) / 0.16), w = performance.now() < (S.stepDemoUntil || 0) ? 1 : Math.max(K.carry, 0.75 * K.drag); dip = e * (0.004 + 0.018 * w); S.stepRoll = e * 0.0045 * w * (window.__stepSide || 1); } } }
+      if (life && on && sT) { const t = (performance.now() - sT) / 1000; if (t < 0.6) { const e = t < 0.07 ? t / 0.07 : Math.exp(-(t - 0.07) / 0.16), w = performance.now() < (S.stepDemoUntil || 0) ? 1 : Math.max(K.carry, 0.75 * K.drag); const side = window.__stepSide || 1, HB = window.__breath && window.__breath.hero, inj = HB && HB.inj > 0 ? HB.inj : (performance.now() < (S.limpDemoUntil || 0) ? 1 : 0), bad = inj > 0 && side === ((HB && HB.injSide) || 1);
+        // 다친 동안(부상 자세 18초 — breathe.js) 절름: 다친 쪽 발이 닿을 때 더 깊게(1.6cm) 그 쪽으로 기울고(0.4°) · 반대 발은 거의 그대로
+        dip = e * (0.004 + 0.018 * w + inj * (bad ? 0.016 : 0.003)); S.stepRoll = e * (0.0045 * w * side + (bad ? inj * 0.007 * side : 0)); } } }
     cam.set(P0[0] + dX * L, camY + LV.by - dip, P0[2] + dZ * L);
     target.set(P0[0], P0[1] + 0.1 * lbS + LV.by * 0.6 - dip * 0.7, P0[2]);
     window.__camSkipClip = true;                                       // 가림은 여기서 했다 — nav.js 당김은 쉰다
@@ -9843,6 +9845,7 @@ vec3 srGN(vec2 p) {
   })();
   // game.js 가 시야각을 정한 뒤(knock.js __camFx 가 부른다)
   window.__endCamDemo = () => { S.endDemoUntil = performance.now() + 4500; };
+  window.__limpCamDemo = () => { S.limpDemoUntil = performance.now() + 3200; const HB = window.__breath && window.__breath.hero; const sd = (HB && HB.injSide) || 1; for (let i = 0; i < 6; i++) setTimeout(() => { window.__stepT = performance.now(); window.__stepSide = i % 2 ? sd : -sd; }, i * 480); return true; };
   window.__stepCamDemo = () => { S.stepDemoUntil = performance.now() + 3200; for (let i = 0; i < 6; i++) setTimeout(() => { window.__stepT = performance.now(); window.__stepSide = -(window.__stepSide || 1); }, i * 480); };
   window.__camBaseFx = (cam) => {
     if (S.active && S.stepRoll) cam.rotateZ(S.stepRoll);
