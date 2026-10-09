@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-303 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-304 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-303'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-304'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2280,6 +2280,21 @@ var MeshoptDecoder = (function () {
     it.label.position.set(Math.round(u.lx + u.dx), -Math.round(u.ly + u.dy), 0); it.label.scale.set(it.w * scale, it.h * scale, 1); it.label.visible = true;
     it.label.material.opacity = op;
   }
+  /* 쫓기는 동안 표지 물러남(2026-10-09 · 케이스 스터디 — Dead Space R 디제틱 UI · 「게임」 틀이 사라질 때 공포가 가장 크다)
+     괴물이 나를 쫓는 동안(16m 안 — 들킴 메시지와 같은 기준) 내 본진이 아닌 표지는 0.4초에 18% 로 옅어진다 · 도망칠 곳(내 본진)은 그대로
+     추격이 끝나고 3초 뒤 0.8초에 돌아온다 · 끄기: 시연실 연출 「쫓기는 동안 표지 물러남」 · 보기: 4초 */
+  let hFade = 0, hLast = 0, hEnd = -1e9, hDemo = -1e9;
+  function huntFade() {
+    const now = performance.now(), dt = Math.min(0.1, (now - (hLast || now)) / 1000); hLast = now;
+    const X = window.__fx, on = !(X && X.on && X.on.hudhunt === false), C = G.monster, h = G.hero.position;
+    const near = C && C.root ? Math.hypot(C.root.position.x - h.x, C.root.position.z - h.z) < 16 : false;
+    const hunted = (on && near && window.__hunting && window.__hunting('hero')) || now < hDemo;
+    if (hunted) hEnd = now;
+    const want = hunted ? 1 : now - hEnd < 3000 ? 1 : 0;
+    hFade += (want - hFade) * Math.min(1, dt / (want > hFade ? 0.4 : 0.8));
+    return hFade;
+  }
+  window.__hudHuntDemo = () => { hDemo = performance.now() + 4000; };
   function hudDraw(target) {
     if (!G || !G.started || !el) return;
     const w = want.warn, hm = want.home, bs = want.bases;
@@ -2320,15 +2335,17 @@ var MeshoptDecoder = (function () {
       HUD.vig.material.opacity = 0.675 - 0.225 * Math.cos(t * Math.PI * 2 / 1.1);   // .45 ↔ .9
     }
     if (uh) apply(uh, t, 1.0, 1);
+    const hf = huntFade();
     for (const u of ub) {
       const it = u.it, b = u.b, since = t - it.slamT;
       const slam = since < 0.6 ? Math.pow(1 - since / 0.6, 2) : 0;   // 점수를 냈다 — 쾅
       const hot = b.n >= 2;                                          // 한 판 남았다
-      apply(u, t, 1.4, hot || slam > 0 ? 1 : 0.86, 1 + 0.45 * slam);
+      const back = b.t === 0 ? 1 : 1 - 0.82 * hf;                     // 쫓기는 동안 남의 표지는 물러난다
+      apply(u, t, 1.4, (hot || slam > 0 ? 1 : 0.86) * back, 1 + 0.45 * slam);
       if (hot) {
         const gl = it.glow, pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / 0.9);
         gl.material.color.set(b.t === 0 ? hex(G.colors[0]) : '#ff2a1a');
-        gl.material.opacity = 0.35 + 0.45 * pulse;
+        gl.material.opacity = (0.35 + 0.45 * pulse) * (b.t === 0 ? 1 : 1 - 0.82 * hf);
         gl.position.copy(it.label.position); gl.scale.set(it.w * 1.45, it.h * 2.2, 1); gl.visible = true;
       }
     }
@@ -6008,6 +6025,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'startcard', name: '판 시작 카드(tension.js — 판이 시작되면 검은 화면에서 장면이 서서히 · 왼쪽 아래에 「신사 터 · 初日 시각 · 종료 조건」 사이렌 스테이지 카드처럼 2.6초 / 보기: 지금 한 번)', def: true },
     { key: 'lampblow', name: '돌풍에 등롱 꺼짐(sway.js — 돌풍이 일 때 가끔 12m 안 등롱 1~2개가 푸드득 꺼졌다가 15~25초 뒤 저절로 다시 켜짐 · 괴물이 25m 밖일 때만 · 90초에 한 번 / 보기: 가장 가까운 등롱 8초)', def: true },
     { key: 'monweight', name: '괴물 무게 — 물결 · 에마(realsfx.js — 괴물 걸음마다 8m 안 연못 수면이 떨리고 · 토리이 10m 안이면 에마가 달각 / 보기: 가까운 연못 물결 셋 + 가까운 토리이 에마)', def: true },
+    { key: 'hudhunt', name: '쫓기는 동안 표지 물러남(tension.js — 괴물이 나를 쫓는 동안 남의 본진 표지가 옅어지고 도망칠 곳(내 본진)만 또렷 · 끝나고 3초 뒤 돌아옴 / 보기: 4초)', def: true },
     { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 · 12초에 한 번 / 보기: 지금 한 번)', def: true },
     { key: 'spotted', name: '들킴 반응(breathe.js — 괴물이 나를 쫓기 시작하는 순간: 괴물 쪽으로 고개 홱 · 움찔 · 「헉」 얼굴 · 남자 헉 소리 · 시야가 순간 조여듦 / 봇도 같이)', def: true },
     { key: 'othersteps', name: '남의 발소리(realsfx.js — 봇 · 같이 하기 상대가 달리고 끌 때 그 자리에서 · 걸음 박자는 그 몸의 동작 · 그 자리 바닥 · 24m 안 / 보기: 등 뒤에서 누가 달려와 옆을 스쳐 감)', def: true },
@@ -6504,6 +6522,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'startcard') { if (window.__startCard) window.__startCard(); }
     else if (key === 'lampblow') { if (window.__wind && window.__wind.blowDemo) window.__wind.blowDemo(); }
     else if (key === 'monweight') { if (window.__rsfx && window.__rsfx.weightDemo) window.__rsfx.weightDemo(); }
+    else if (key === 'hudhunt') { if (window.__hudHuntDemo) window.__hudHuntDemo(); }
     else if (key === 'monlost') { if (window.__rsfx && window.__rsfx.monSniff) window.__rsfx.monSniff(0); }
     else if (key === 'spotted') { if (window.__breath && window.__breath.spotDemo) window.__breath.spotDemo(); }
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
@@ -6538,7 +6557,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
