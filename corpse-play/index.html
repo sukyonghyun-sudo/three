@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-337 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-338 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -315,7 +315,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-337'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-338'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6043,7 +6043,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'moths', name: '등롱 나방(moth.js — 켜진 등롱마다 나방 3~5마리가 불 둘레를 제멋대로 맴돎 · 가끔 불에 툭 · 등롱이 꺼지면 흩어지고 괴물이 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아옴 · 손전등을 켜고 4초 서 있으면 2~3마리가 빛 앞으로 꼬임 / 보기: 가장 가까운 등롱 나방이 흩어졌다 돌아옴)', def: true },
     { key: 'monblood', name: '피 묻은 손(blood.js — 괴물이 사람을 치면 30초 동안 두 손끝에서 피가 뚝뚝 · 처음엔 자주 · 점점 드물게 · 바닥 얼룩 · 톡 소리 / 보기: 지금 막 친 것처럼)', def: true },
     { key: 'lastbell', name: '마지막 하나 — 범종(realsfx.js — 어느 본진이든 이 판에 처음 시체 둘을 모으는 순간 그 본진 쪽에서 먼 범종이 한 번 · 「하나 남았다」를 소리로 / 보기: 지금 한 번)', def: true },
-    { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 · 12초에 한 번 / 보기: 지금 한 번)', def: true },
+    { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 + 머리를 아래로 세 번 까딱 · 좌우로 살핌(montwitch.js) · 12초에 한 번 / 보기: 지금 한 번)', def: true },
     { key: 'spotted', name: '들킴 반응(breathe.js — 괴물이 나를 쫓기 시작하는 순간: 괴물 쪽으로 고개 홱 · 움찔 · 「헉」 얼굴 · 남자 헉 소리 · 시야가 순간 조여듦 / 봇도 같이)', def: true },
     { key: 'othersteps', name: '남의 발소리(realsfx.js — 봇 · 같이 하기 상대가 달리고 끌 때 그 자리에서 · 걸음 박자는 그 몸의 동작 · 그 자리 바닥 · 24m 안 / 보기: 등 뒤에서 누가 달려와 옆을 스쳐 감)', def: true },
     { key: 'ambev', name: '밤 소리 사건(realsfx.js — 22~48초마다 멀리서: 범종 · 올빼미 · 먼 개 · 등 뒤 덤불 잔가지 · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마 카라카라)', def: true },
@@ -6941,6 +6941,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const C = G && G.monster; if (!C || !C.root || !C.root.visible) return false;
     const ok = play('mon_stalk4', { pos: C.root.position, range: 34, vol: 1.0, rate: rnd(0.88, 0.94), delay: delay || 0 });
     try { if (window.__fx && window.__fx.monPuff) setTimeout(() => window.__fx.monPuff(1), ((delay || 0) + 0.3) * 1000); } catch { /* */ }
+    try { if (window.__montwitch && window.__montwitch.sniff) window.__montwitch.sniff((delay || 0) + 0.05); } catch { /* */ }   // 머리도 킁킁(montwitch.js)
     stalkT = performance.now() + (delay || 0) * 1000 + 3500;
     return ok;
   };
@@ -10896,6 +10897,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
    · 그림만 바꾼다(괴물 동작 · 판정 · 같이 하기 서버 값은 그대로) — 그리기 직전 목 · 머리 뼈에 얹고 그린 뒤 되돌린다(breathe.js 와 같은 길)
    · 서 있을 때(1.5초 넘게 거의 안 움직임): 6~11초마다 고개를 한쪽으로 천천히 꺾는다(1.6초에 최대 31° · 1.5~3초 머묾 · 1초에 돌아옴 · 목이 4할)
    · 경련: 서 있으면 4~9초 · 걸으면 8~14초마다 고개가 0.06초에 확 꺾였다(옆 20° · 비틀어 12°) 0.35초에 잦아들며 떨림
+   · 냄새 맡기(b338): 나를 놓친 뒤 킁킁 소리(realsfx.js)에 맞춰 2초 동안 머리를 아래로 세 번 까딱(최대 14°) · 좌우로 살핌
    · 소리(b337): 천천히 꺾기 시작할 때 뼈 갈림 · 경련 순간 마디 크르륵(Pixabay 실제 녹음 · 0.7~0.8배 낮게 · 머리 자리에서)
    · 공격하는 동안 · 불을 뿜는 동안 · 꺼져 있으면 쉰다 · 끄기: 시연실 연출 「괴물 고개」 · 보기: 지금 천천히 꺾고 · 경련 둘 */
 (() => {
@@ -10922,6 +10924,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     return B;
   }
   const busy = (C) => { const a = C.actions && C.actions.attack, F = window.__fire; return !!((a && a.isRunning && a.isRunning() && a.getEffectiveWeight && a.getEffectiveWeight() > 0.3) || (F && F.active)); };
+  // 냄새 맡기(b338) — 놓친 뒤 킁킁 소리(realsfx.js monSniff)에 맞춰 2초 동안 머리를 아래로 세 번 까딱(최대 14°) · 좌우로 살핌(±9°)
+  M.sniff = (delay) => { st.sniff = { t0: performance.now() / 1000 + (delay || 0) }; return true; };
   M.demo = () => { const now = performance.now() / 1000; st.tilt = { t0: now, side: Math.random() < 0.5 ? -1 : 1, amp: 0.55, hold: 2.2 }; st.tw = { t0: now + 3.6, side: 1 }; st.tw2 = now + 4.4; return true; };
   function tick(now) {
     const G = window.__G, C = G && G.monster; if (!C || !C.root) return;
@@ -10962,7 +10966,19 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
       if (st.tilt && !st.tilt.snd) { st.tilt.snd = true; b.head.getWorldPosition(HP); R.play('mon_creak', { pos: { x: HP.x, y: HP.y, z: HP.z }, range: 22, vol: 0.85, rate: 0.74 + Math.random() * 0.08 }); }
       if (st.tw && !st.tw.snd && now >= st.tw.t0) { st.tw.snd = true; b.head.getWorldPosition(HP); R.play('mon_crack', { pos: { x: HP.x, y: HP.y, z: HP.z }, range: 25, vol: 1.0, rate: 0.7 + Math.random() * 0.1 }); }
     }
-    if (Math.abs(roll) < 1e-4 && Math.abs(yaw) < 1e-4) return;
+    let pitch = 0;
+    if (st.sniff) {
+      const u = now - st.sniff.t0;
+      if (u >= 0) {
+        const env = Math.min(1, u / 0.25) * Math.min(1, Math.max(0, (2.0 - u) / 0.4));
+        pitch += 0.24 * Math.pow(Math.max(0, Math.sin(u * Math.PI * 2 * 1.5)), 2) * env;
+        yaw += 0.16 * Math.sin(u * 2.3) * env;
+        if (u > 2.0) st.sniff = null;
+      }
+    }
+    if (Math.abs(roll) < 1e-4 && Math.abs(yaw) < 1e-4 && Math.abs(pitch) < 1e-4) return;
+    const lx = Math.cos(yw), lz = -Math.sin(yw);
+    rotW(b.neck, lx, 0, lz, pitch * 0.45); rotW(b.head, lx, 0, lz, pitch * 0.55);
     rotW(b.neck, fx, 0, fz, roll * 0.4); rotW(b.neck, 0, 1, 0, yaw * 0.4);
     rotW(b.head, fx, 0, fz, roll * 0.6); rotW(b.head, 0, 1, 0, yaw * 0.6);
   }
