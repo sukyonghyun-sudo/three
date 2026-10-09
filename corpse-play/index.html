@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-338 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-339 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -315,7 +315,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-338'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-339'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6035,7 +6035,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
     { key: 'soundlook', name: '소리 쪽으로 고개(breathe.js — 새 떼 · 까마귀 · 등 뒤 잔가지 · 먼 범종처럼 또렷한 소리가 나면 0.2~0.4초 뒤 그쪽으로 홱 돌아봄(최대 57° · 1.1~1.5초) · 새 떼 · 까마귀는 둘레 봇 · 같이 하기 상대도 사람마다 다른 반응으로 / 보기: 옆 뒤에서 잔가지 딱 → 돌아봄)', def: true },
     { key: 'torchshake', name: '손전등 손떨림(motes.js — 손전등을 켜면 겁만큼 빛이 잘게 떨림(괴물이 가까울수록 · 8m 앞 최대 ±10cm) · 숨을 참으면 고요해짐 · 걸음마다 빛이 쿵 내려앉고 디딘 발 쪽으로 출렁(달리면 크게) / 보기: 손전등 6초 · 겁에 질린 떨림)', def: true },
-    { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 꺾일 때 뼈 갈림 · 경련 때 마디 크르륵(실제 녹음) · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
+    { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 꺾일 때 뼈 갈림 · 경련 때 마디 크르륵(실제 녹음) · 나를 발견하는 순간 머리가 먼저 내 쪽으로 홱 · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
     { key: 'motes', name: '손전등 먼지(motes.js — 손전등(L)을 켜면 빛 원뿔 안의 공기 중 먼지가 반짝이며 떠다님 · 빛이 훑고 지나가는 자리만 · 멀수록 · 가장자리일수록 흐리게 · 깜빡이면 같이 / 보기: 손전등을 6초 켬)', def: true },
     { key: 'breathhold', name: '숨 참기(breathe.js — 괴물이 11m 안인데 들키지 않고 내가 멈춰 서 있으면 저절로 숨을 멈춤 · 숨소리 사라지고 가슴 · 카메라 숨 멈춤 · 입 꾹 눈 크게 · 심장 소리 커짐 · 괴물이 멀어지거나 9초가 지나면 몰아쉼 / 보기: 지금 5초 참았다 몰아쉼)', def: true },
     { key: 'crows', name: '시체 곁 까마귀(crows.js — 12초 넘게 아무도 7m 안에 오지 않은 시체에 까마귀 1~3마리가 내려앉아 쪼고 깡충 · 가끔 낮게 깍 · 누가 4.5m 안에 오거나 시체를 집으면 푸드덕 날아오름 / 보기: 화면 앞 시체에 셋이 내려앉고 7초 뒤 날아오름)', def: true },
@@ -7662,6 +7662,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       const Bd = G.body; if (Cc && Cc.playOnKey && Bd) Cc.playOnKey([skinOf(Bd.main), skinOf(Bd.drag)].filter(Boolean), 'gasp');
       if (R && R.play) R.play('p_gasp', { vol: 1.2, rate: 0.97 + Math.random() * 0.06, delay: 0.03 });
       if (R && R.monNotice) R.monNotice();                                // 괴물도 알아챈다 — 낮은 그르렁 + 입김(realsfx.js)
+      if (window.__montwitch && window.__montwitch.notice) window.__montwitch.notice(pos.x, pos.z);   // 머리가 먼저 나를 향해 홱(montwitch.js)
     } else {
       const sm = key.__sm || (key.model && skinOf(key.model));
       if (Cc && Cc.playOnKey && sm) Cc.playOnKey([sm], 'gasp');
@@ -10897,6 +10898,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
    · 그림만 바꾼다(괴물 동작 · 판정 · 같이 하기 서버 값은 그대로) — 그리기 직전 목 · 머리 뼈에 얹고 그린 뒤 되돌린다(breathe.js 와 같은 길)
    · 서 있을 때(1.5초 넘게 거의 안 움직임): 6~11초마다 고개를 한쪽으로 천천히 꺾는다(1.6초에 최대 31° · 1.5~3초 머묾 · 1초에 돌아옴 · 목이 4할)
    · 경련: 서 있으면 4~9초 · 걸으면 8~14초마다 고개가 0.06초에 확 꺾였다(옆 20° · 비틀어 12°) 0.35초에 잦아들며 떨림
+   · 포식자 시선(b339): 나를 발견하는 순간(들킴 · 그르렁) 몸보다 머리가 먼저 내 쪽으로 0.12초에 홱(최대 50°) · 조금 숙인 채 0.9초 노려봄
    · 냄새 맡기(b338): 나를 놓친 뒤 킁킁 소리(realsfx.js)에 맞춰 2초 동안 머리를 아래로 세 번 까딱(최대 14°) · 좌우로 살핌
    · 소리(b337): 천천히 꺾기 시작할 때 뼈 갈림 · 경련 순간 마디 크르륵(Pixabay 실제 녹음 · 0.7~0.8배 낮게 · 머리 자리에서)
    · 공격하는 동안 · 불을 뿜는 동안 · 꺼져 있으면 쉰다 · 끄기: 시연실 연출 「괴물 고개」 · 보기: 지금 천천히 꺾고 · 경련 둘 */
@@ -10926,6 +10928,9 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
   const busy = (C) => { const a = C.actions && C.actions.attack, F = window.__fire; return !!((a && a.isRunning && a.isRunning() && a.getEffectiveWeight && a.getEffectiveWeight() > 0.3) || (F && F.active)); };
   // 냄새 맡기(b338) — 놓친 뒤 킁킁 소리(realsfx.js monSniff)에 맞춰 2초 동안 머리를 아래로 세 번 까딱(최대 14°) · 좌우로 살핌(±9°)
   M.sniff = (delay) => { st.sniff = { t0: performance.now() / 1000 + (delay || 0) }; return true; };
+  // 포식자 시선(b339) — 나를 발견하는 순간(들킴 · 그르렁) 몸보다 머리가 먼저 내 쪽으로 0.12초에 홱(최대 50°) · 고개를 조금 숙인 채(7°) 0.9초 노려보고 0.45초에 풀림
+  M.notice = (x, z) => { st.nt = { t0: performance.now() / 1000, x, z }; return true; };
+  M.noticeDemo = () => { const G = window.__G; if (!G || !G.hero) return false; const h = G.hero.position; return M.notice(h.x, h.z); };
   M.demo = () => { const now = performance.now() / 1000; st.tilt = { t0: now, side: Math.random() < 0.5 ? -1 : 1, amp: 0.55, hold: 2.2 }; st.tw = { t0: now + 3.6, side: 1 }; st.tw2 = now + 4.4; return true; };
   function tick(now) {
     const G = window.__G, C = G && G.monster; if (!C || !C.root) return;
@@ -10967,6 +10972,13 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
       if (st.tw && !st.tw.snd && now >= st.tw.t0) { st.tw.snd = true; b.head.getWorldPosition(HP); R.play('mon_crack', { pos: { x: HP.x, y: HP.y, z: HP.z }, range: 25, vol: 1.0, rate: 0.7 + Math.random() * 0.1 }); }
     }
     let pitch = 0;
+    if (st.nt) {
+      const u = now - st.nt.t0, a = Math.atan2(st.nt.x - C.root.position.x, st.nt.z - C.root.position.z);
+      const rel = Math.max(-0.87, Math.min(0.87, Math.atan2(Math.sin(a - yw), Math.cos(a - yw))));
+      const k = u < 0.12 ? ss(u / 0.12) : u < 1.02 ? 1 : u < 1.47 ? 1 - ss((u - 1.02) / 0.45) : 0;
+      yaw += rel * k; pitch += 0.12 * k;
+      if (u > 1.5) st.nt = null;
+    }
     if (st.sniff) {
       const u = now - st.sniff.t0;
       if (u >= 0) {
