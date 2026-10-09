@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-333 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-335 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -314,7 +314,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-333'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-335'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6032,7 +6032,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 · 그동안 걸으면 카메라도 다친 쪽 발에서 더 내려앉아 전다(camera.js) / 보기: 지금 18초 + 절름 카메라 여섯 걸음)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
-    { key: 'soundlook', name: '소리 쪽으로 고개(breathe.js — 새 떼 · 까마귀 · 등 뒤 잔가지 · 먼 범종처럼 또렷한 소리가 나면 0.2~0.4초 뒤 그쪽으로 홱 돌아봄(최대 57° · 1.1~1.5초) · 나만 / 보기: 옆 뒤에서 잔가지 딱 → 돌아봄)', def: true },
+    { key: 'soundlook', name: '소리 쪽으로 고개(breathe.js — 새 떼 · 까마귀 · 등 뒤 잔가지 · 먼 범종처럼 또렷한 소리가 나면 0.2~0.4초 뒤 그쪽으로 홱 돌아봄(최대 57° · 1.1~1.5초) · 새 떼 · 까마귀는 둘레 봇 · 같이 하기 상대도 사람마다 다른 반응으로 / 보기: 옆 뒤에서 잔가지 딱 → 돌아봄)', def: true },
     { key: 'torchshake', name: '손전등 손떨림(motes.js — 손전등을 켜면 겁만큼 빛이 잘게 떨림(괴물이 가까울수록 · 8m 앞 최대 ±10cm) · 숨을 참으면 고요해짐 · 걸음마다 빛이 쿵 내려앉고 디딘 발 쪽으로 출렁(달리면 크게) / 보기: 손전등 6초 · 겁에 질린 떨림)', def: true },
     { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
     { key: 'motes', name: '손전등 먼지(motes.js — 손전등(L)을 켜면 빛 원뿔 안의 공기 중 먼지가 반짝이며 떠다님 · 빛이 훑고 지나가는 자리만 · 멀수록 · 가장자리일수록 흐리게 · 깜빡이면 같이 / 보기: 손전등을 6초 켬)', def: true },
@@ -7527,6 +7527,19 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (s.lookT && now < s.lookT - 300) return false;                       // 이미 다른 소리를 보는 중
     s.lookX = x; s.lookZ = z; s.lookS = now + d; s.lookT = now + d + (dur || 1.3) * 1000; return true;
   };
+  // 둘레 사람 모두(나 · 봇 · 같이 하기 상대) — 소리 난 곳 range 안이면 사람마다 다른 반응 시간(0.2~0.6초)으로
+  S.lookAll = (x, z, range, dur, delay) => {
+    const G = window.__G, X = window.__fx; if (!G || (X && X.on && X.on.soundlook === false)) return 0;
+    let n = 0; const h = G.hero.position;
+    if (Math.hypot(h.x - x, h.z - z) < range && S.lookAt(x, z, dur, delay)) n++;
+    for (const b of (G.game && G.game.bots) || []) {
+      const p = b.hero && b.hero.position; if (!p || Math.hypot(p.x - x, p.z - z) > range) continue;
+      const s = stateOf(b), now = performance.now(), d = (delay === undefined ? 200 : delay) + Math.random() * 400;
+      if (s.lookT && now < s.lookT - 300) continue;
+      s.lookX = x; s.lookZ = z; s.lookS = now + d; s.lookT = now + d + (dur || 1.3) * 1000; n++;
+    }
+    return n;
+  };
   S.lookDemo = () => { const G = window.__G; if (!G || !G.started) return false; const h = G.hero.position, yw = G.hero.rotation.y; const R = window.__rsfx; const x = h.x + Math.sin(yw + 1.9) * 9, z = h.z + Math.cos(yw + 1.9) * 9; if (R && R.play) R.play('amb_snap1', { pos: { x, y: h.y, z }, range: 26, vol: 0.9 }); stateOf('hero').lookT = 0; return S.lookAt(x, z, 1.4); };
   S.holdDemo = () => { const G = window.__G; if (!G || !G.started) return false; S.holdDemoUntil = performance.now() + 5000; const s = stateOf('hero'); s.holdCD = 0; s.holdT = 0; return true; };
   function tick(dt) {
@@ -7599,9 +7612,12 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
         glW = clamp(Math.atan2(Math.sin(a - yaw), Math.cos(a - yaw)), -1.05, 1.05);
       }
       // 소리 쪽으로 고개(2026-10-10) — 새 떼 · 까마귀 · 등 뒤 잔가지 · 범종처럼 또렷한 소리가 나면 0.2~0.4초 뒤 그쪽으로 홱(최대 57°) · 1.1~1.5초 본다 · 괴물 들킴 고개가 먼저
-      if (key === 'hero' && s.lookT && nowT < s.lookT && nowT >= (s.lookS || 0) && spt >= 1.4 && !busy) {
-        const yaw = G.hero.rotation.y, a = Math.atan2(s.lookX - pos.x, s.lookZ - pos.z);
-        glW = clamp(Math.atan2(Math.sin(a - yaw), Math.cos(a - yaw)), -1.0, 1.0);
+      if (s.lookT && nowT < s.lookT && nowT >= (s.lookS || 0) && spt >= 1.4 && !busy) {   // 나 · 봇 · 같이 하기 상대(b334)
+        const yaw = key === 'hero' ? G.hero.rotation.y : key.hero ? key.hero.rotation.y : 0, a = Math.atan2(s.lookX - pos.x, s.lookZ - pos.z);
+        let rel = Math.atan2(Math.sin(a - yaw), Math.cos(a - yaw));
+        if (Math.abs(rel) > 1.75 && Math.abs(s.gl || 0) > 0.2) rel = Math.sign(s.gl) * 1.0;      // 소리가 등 뒤로 넘어가도 돌던 쪽 그대로(좌우로 휙 넘어가지 않게)
+        if (key !== 'hero' && s.sp > 2.6) rel = 0;                                         // 빠르게 달리는 봇은 돌아보지 않는다
+        glW = clamp(rel, -1.0, 1.0);
       }
       s.gl = (s.gl || 0) + (glW - (s.gl || 0)) * Math.min(1, dt / (spt < 1.4 ? 0.07 : s.cg ? 0.3 : glW ? 0.12 : 0.35));
       return s;
@@ -10516,7 +10532,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     B.log.push([why, Math.round(q.x), Math.round(q.z), +(now / 1000).toFixed(1)]); if (B.log.length > 20) B.log.shift();
     const h = G.hero.position, hd = Math.hypot(q.x - h.x, q.z - h.z); if (hd > 70) return;
     if (hd < 6 && window.__breath && window.__breath.flinch) window.__breath.flinch(0.3 + 0.3 * (1 - hd / 6));   // 바로 위 나무에서 터지면 나도 움찔
-    if (hd < 30 && window.__breath && window.__breath.lookAt) window.__breath.lookAt(q.x, q.z, 1.4);           // 그쪽으로 고개
+    if (window.__breath && window.__breath.lookAll) window.__breath.lookAll(q.x, q.z, 30, 1.4);           // 30m 안 사람 모두 그쪽으로 고개
     const R = window.__rsfx, pos = { x: q.x, y: q.y, z: q.z };
     if (R && R.play && ambOn()) {
       R.play('amb_flock', { pos, range: 45, vol: 1.0 * ambVol(), rate: rnd(0.95, 1.05) });
@@ -10652,7 +10668,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     const pos = { x: cx / n, y: G.hero.position.y + 0.5, z: cz / n };
     { const h = G.hero.position, d = Math.hypot(pos.x - h.x, pos.z - h.z), Bh = window.__breath;   // 바로 곁(5.5m 안)에서 확 날아오르면 나도 움찔
       if (d < 5.5 && Bh && Bh.flinch) Bh.flinch(0.35 + 0.4 * (1 - d / 5.5));
-      if (d < 18 && Bh && Bh.lookAt) Bh.lookAt(pos.x, pos.z, 1.2); }
+      if (Bh && Bh.lookAll) Bh.lookAll(pos.x, pos.z, 18, 1.2); }
     C.log.push([why, n, +(performance.now() / 1000).toFixed(1)]); if (C.log.length > 20) C.log.shift();
     play('amb_flock3', { pos, range: 35, vol: 0.95 * ambVol(), rate: rnd(1.0, 1.12) });
     if (Math.random() < 0.6) setTimeout(() => play('amb_crow', { pos, range: 45, vol: 0.75 * ambVol(), rate: rnd(1.0, 1.08) }), rnd(200, 500));
