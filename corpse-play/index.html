@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-305 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-306 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-305'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-306'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6923,7 +6923,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   /* 괴물 무게(2026-10-09 · 케이스 스터디 — RE2 Mr.X 천장 너머 쿵쿵 · RE4R 공간 고유음) — 보이지 않아도 4m 거구의 무게가 주변으로
      걸음마다 8m 안 연못이 있으면 가장 가까운 물가 수면에 잔물결(water.js · 멀수록 약하게) · 토리이 10m 안이면 에마가 달각(있던 녹음 · 8초에 한 번)
      괴물이 물속이면 water.js 가 따로 · 끄기: 시연실 연출 「괴물 무게 — 물결 · 에마」 · 보기: 가까운 연못 물결 셋 + 가까운 토리이 에마 */
-  let emaT = 0;
+  let emaT = 0, suzuT = 0;
   function nearWater(p, maxD) {
     const N = window.__nav; if (!N || !N.waterAt) return null;
     if (N.waterAt(p.x, p.z)) return [p.x, p.z, 0];
@@ -6935,6 +6935,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const Wt = window.__water, w = nearWater(p, 8);
     if (w && w[2] > 0 && Wt && Wt.ripple) Wt.ripple(w[0], w[1], 0.32 * (1 - w[2] / 9));
     const now = performance.now();
+    if (now > suzuT && !force) { const t = TORII.find((q) => Math.hypot(q[0] - p.x, q[1] - p.z) < 6); if (t) { suzuT = now + 25000; play('amb_suzu', { pos: { x: t[0], y: (isFinite(p.y) ? p.y : G.hero.position.y) + 3, z: t[1] }, range: 40, vol: 0.5, rate: rnd(0.96, 1.04), delay: 0.15 }); } }   // 괴물이 토리이 바로 곁을 지나면 금줄이 스쳐 방울이
     if (now > emaT || force) { const t = TORII.find((q) => Math.hypot(q[0] - p.x, q[1] - p.z) < 10); if (t) { emaT = now + 8000; play('amb_ema', { pos: { x: t[0], y: (isFinite(p.y) ? p.y : G.hero.position.y) + 2, z: t[1] }, range: 30, vol: 0.55, rate: rnd(0.95, 1.05), delay: 0.05 }); } }
   }
   R.weightDemo = () => {
@@ -6958,7 +6959,11 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     let r = Math.random() * EVW.reduce((a, e) => a + e[1], 0), e = EVW[0];
     for (const x of EVW) { if ((r -= x[1]) <= 0) { e = x; break; } }
     let pos;
-    if (e[0] === 'amb_suzu') { const t = nearTorii(h, 40); if (!t) return ambEvent(force); pos = { x: t[0], y: h.y + 3, z: t[1] }; }
+    if (e[0] === 'amb_suzu') {                                          // 신사 방울 — 정직하게(2026-10-09): 괴물이 그 토리이 15m 안에 있을 때만 · 아니면 다른 밤 소리
+      const C = G.monster, mp = C && C.root && C.root.visible ? C.root.position : null;
+      const t = mp ? TORII.find((q) => Math.hypot(q[0] - mp.x, q[1] - mp.z) < 15 && Math.hypot(q[0] - h.x, q[1] - h.z) < 45) : null;
+      if (!t) return ambEvent(force); pos = { x: t[0], y: h.y + 3, z: t[1] };
+    }
     else if (e[5]) {
       // 등 뒤 덤불 잔가지 — 정직한 소리로(2026-10-09 케이스 스터디: 「발소리가 들리면 정말 가까이 있다」 RE2 Mr.X · 가짜 신호를 쓰면 소리를 믿지 않게 된다)
       //   봇 · 같이 하기 상대가 실제로 7~20m 뒤쪽(카메라 쪽 ±70°)에 있을 때만 그 사람 자리에서(거리 · 가림 필터를 받는다) · 없으면 다른 밤 소리
