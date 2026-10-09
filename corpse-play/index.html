@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-342 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-344 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -315,7 +315,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-342'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-344'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6033,6 +6033,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 · 그동안 걸으면 카메라도 다친 쪽 발에서 더 내려앉아 전다(camera.js) / 보기: 지금 18초 + 절름 카메라 여섯 걸음)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
+    { key: 'gustpetal', name: '돌풍 꽃잎(birds.js — 돌풍이 일 때(열에 여섯) 30m 안 벚나무에서 꽃잎 3~6장씩 바람 부는 쪽으로 흩날려 천천히 떨어짐 · 땅에 잠깐 남음 / 보기: 지금 한 번 · 돌풍 소리와 함께)', def: true },
     { key: 'soundlook', name: '소리 쪽으로 고개(breathe.js — 새 떼 · 까마귀 · 등 뒤 잔가지 · 먼 범종처럼 또렷한 소리가 나면 0.2~0.4초 뒤 그쪽으로 홱 돌아봄(최대 57° · 1.1~1.5초) · 새 떼 · 까마귀는 둘레 봇 · 같이 하기 상대도 사람마다 다른 반응으로 / 보기: 옆 뒤에서 잔가지 딱 → 돌아봄)', def: true },
     { key: 'torchshake', name: '손전등 손떨림(motes.js — 손전등을 켜면 겁만큼 빛이 잘게 떨림(괴물이 가까울수록 · 8m 앞 최대 ±10cm) · 숨을 참으면 고요해짐 · 걸음마다 빛이 쿵 내려앉고 디딘 발 쪽으로 출렁(달리면 크게) / 보기: 손전등 6초 · 겁에 질린 떨림)', def: true },
     { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 꺾일 때 뼈 갈림 · 경련 때 마디 크르륵(실제 녹음) · 나를 발견하는 순간 머리가 먼저 내 쪽으로 홱 · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
@@ -6055,7 +6056,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'breathe', name: '숨쉬기 · 살아 있는 몸(breathe.js — 숨 · 무게 옮김 · 겁먹은 떨림 · 달린 뒤 헐떡임 / 보기: 막 달린 것처럼 헐떡임)', def: true },
   ];
   // 주말에 새로 넣은 것(2026-10-08 밤 ~ 10-12) — 시연실에 날짜 표시(showcase.js)
-  const NEW = { painlive: '10-08', scoot: '10-08', pickup: '10-08', sway: '10-08', ambev: '10-08', muffle: '10-08', torchflick: '10-08', stepsurf: '10-09', othersteps: '10-09', spotted: '10-09', foley2: '10-09', slam: '10-09', music2: '10-09', basefx: '10-09', corpseglance: '10-09', occl: '10-09', monlost: '10-09', wetcloth: '10-09', dust: '10-09', footblood: '10-09', startcard: '10-09', lampblow: '10-09', monweight: '10-09', hudhunt: '10-09', injured: '10-09', stepcam: '10-09', endcam: '10-09', lastbell: '10-09', monblood: '10-09', moths: '10-09', birds: '10-09', crows: '10-09', breathhold: '10-09', motes: '10-09', montwitch: '10-09', torchshake: '10-10', soundlook: '10-10' };
+  const NEW = { painlive: '10-08', scoot: '10-08', pickup: '10-08', sway: '10-08', ambev: '10-08', muffle: '10-08', torchflick: '10-08', stepsurf: '10-09', othersteps: '10-09', spotted: '10-09', foley2: '10-09', slam: '10-09', music2: '10-09', basefx: '10-09', corpseglance: '10-09', occl: '10-09', monlost: '10-09', wetcloth: '10-09', dust: '10-09', footblood: '10-09', startcard: '10-09', lampblow: '10-09', monweight: '10-09', hudhunt: '10-09', injured: '10-09', stepcam: '10-09', endcam: '10-09', lastbell: '10-09', monblood: '10-09', moths: '10-09', birds: '10-09', crows: '10-09', breathhold: '10-09', motes: '10-09', montwitch: '10-09', torchshake: '10-10', soundlook: '10-10', gustpetal: '10-10' };
   const X = (window.__fx = { ready: false, opts: OPTS.map((o) => ({ key: o.key, name: o.name, nw: NEW[o.key] || '' })), on: {}, shake, set, flash: hitFlash });
   for (const o of OPTS) X.on[o.key] = o.def;
   function set(key, v) { X.on[key] = !!v; }                          // 이번 판에만 — 저장은 settings.js 「저장」(모두의 기본값)
@@ -6564,6 +6565,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); if (window.__limpCamDemo) window.__limpCamDemo(); }
     else if (key === 'stepcam') { if (window.__stepCamDemo) window.__stepCamDemo(); }
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
+    else if (key === 'gustpetal') { if (window.__birds && window.__birds.gustDemo) window.__birds.gustDemo(); }
     else if (key === 'soundlook') { if (window.__breath && window.__breath.lookDemo) window.__breath.lookDemo(); }
     else if (key === 'torchshake') { if (window.__motes && window.__motes.shakeDemo) window.__motes.shakeDemo(); }
     else if (key === 'montwitch') { if (window.__montwitch && window.__montwitch.demo) window.__montwitch.demo(); }
@@ -6608,7 +6610,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake', 'soundlook', 'rumble', 'look', 'flies', 'breath', 'sound', 'scream', 'realsfx', 'ragdoll', 'breathe'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake', 'soundlook', 'rumble', 'look', 'flies', 'breath', 'sound', 'scream', 'realsfx', 'ragdoll', 'breathe', 'gustpetal'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -7163,6 +7165,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (W && g > 0.25 && gustWas <= 0.25 && evOn()) {
       const h = G.hero.position, d = W.dir || [1, 0];
       play('amb_gust', { pos: { x: h.x - d[0] * 25, y: h.y, z: h.z - d[1] * 25 }, flat: true, vol: (0.28 + 0.4 * g) * ambVol() });
+      if (window.__birds && window.__birds.gustPetals && Math.random() < 0.6) window.__birds.gustPetals(d[0], d[1], 0.6 + g, true);   // 돌풍 꽃잎(birds.js · 돌풍 열에 여섯 · 나무마다 3~6장 — 눈 내리듯 잦지 않게)
       const t = nearTorii(h, 35); if (t && Math.random() < 0.7) play('amb_ema', { pos: { x: t[0], y: h.y + 2, z: t[1] }, range: 38, vol: 0.9 * ambVol(), delay: 0.6 + Math.random() * 0.8 });
     }
     gustWas = g;
@@ -10591,6 +10594,22 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
       flock.push({ x: q.x + rnd(-2, 2), y: rnd(Math.max(2, q.ym - 3), q.ym + 0.5), z: q.z + rnd(-2, 2), vx: Math.sin(a) * sp, vy: rnd(0.3, 1.3), vz: Math.cos(a) * sp, age: -rnd(0, 0.35), life: rnd(4, 5.5), fq: rnd(8, 12), ph: rnd(0, 9), size: rnd(0.26, 0.38) });
     }
   }
+  /* 돌풍 꽃잎(b343 · b344) — 돌풍이 일 때(sway.js 바람 · realsfx.js 돌풍 소리와 같은 때 · 60%) 나에게서 30m 안 나무마다 꽃잎 3~6장(보기는 6~10장)이 바람 부는 쪽으로 흩날려 천천히 떨어진다(새 떼 꽃잎과 같은 것 · 땅에 잠깐 남았다 사라짐)
+     · 끄기: 시연실 연출 「돌풍 꽃잎」 · 보기: 지금 바람 쪽으로 한 번(돌풍 소리와 함께) */
+  B.gustPetals = (dx, dz, k, few) => {
+    if (!B.ready || !G.started) return 0; const X = window.__fx; if (X && X.on && X.on.gustpetal === false) return 0;
+    const h = G.hero.position, l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l; k = k || 1; let n = 0;
+    for (const q of B.perches) {
+      if (Math.hypot(q.x - h.x, q.z - h.z) > 30) continue;
+      for (let i = 0, m = few ? 3 + ((Math.random() * 4) | 0) : 6 + ((Math.random() * 5) | 0); i < m && petals.length < PMAX; i++) {
+        const a = rnd(0, 6.28), r = rnd(0.3, 2.8), x = q.x + Math.cos(a) * r, z = q.z + Math.sin(a) * r, gy = G.groundAt ? G.groundAt(x, z) : 0, sp = rnd(0.9, 1.9) * k;
+        petals.push({ x, y: rnd(Math.max(gy + 2.4, q.ym - 1.2), q.ym + 1), z, vy: -rnd(0.35, 0.7), vx: dx * sp + rnd(-0.2, 0.2), vz: dz * sp + rnd(-0.2, 0.2), ph: rnd(0, 9), sw: rnd(1.6, 3), age: -rnd(0, 1.6), gy: gy + 0.02, size: rnd(0.045, 0.07) });
+        n++;
+      }
+    }
+    return n;
+  };
+  B.gustDemo = () => { if (!B.ready) return false; const W = window.__wind, d = (W && W.dir) || [1, 0], R = window.__rsfx, h = G.hero.position; if (R && R.play) R.play('amb_gust', { pos: { x: h.x - d[0] * 25, y: h.y, z: h.z - d[1] * 25 }, flat: true, vol: 0.6 }); return B.gustPetals(d[0], d[1], 1.2); };
   B.demo = () => {
     if (!B.ready || !B.perches.length) return false;
     const c = G.cam.position, e = G.cam.matrixWorld.elements, fx = -e[8], fz = -e[10], fl = Math.hypot(fx, fz) || 1; let best = null, bs = -1e9, bd = 0;
