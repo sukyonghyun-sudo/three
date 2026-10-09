@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-330 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-331 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -314,7 +314,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-330'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-331'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6032,6 +6032,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 · 그동안 걸으면 카메라도 다친 쪽 발에서 더 내려앉아 전다(camera.js) / 보기: 지금 18초 + 절름 카메라 여섯 걸음)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
+    { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
     { key: 'motes', name: '손전등 먼지(motes.js — 손전등(L)을 켜면 빛 원뿔 안의 공기 중 먼지가 반짝이며 떠다님 · 빛이 훑고 지나가는 자리만 · 멀수록 · 가장자리일수록 흐리게 · 깜빡이면 같이 / 보기: 손전등을 6초 켬)', def: true },
     { key: 'breathhold', name: '숨 참기(breathe.js — 괴물이 11m 안인데 들키지 않고 내가 멈춰 서 있으면 저절로 숨을 멈춤 · 숨소리 사라지고 가슴 · 카메라 숨 멈춤 · 입 꾹 눈 크게 · 심장 소리 커짐 · 괴물이 멀어지거나 9초가 지나면 몰아쉼 / 보기: 지금 5초 참았다 몰아쉼)', def: true },
     { key: 'crows', name: '시체 곁 까마귀(crows.js — 12초 넘게 아무도 7m 안에 오지 않은 시체에 까마귀 1~3마리가 내려앉아 쪼고 깡충 · 가끔 낮게 깍 · 누가 4.5m 안에 오거나 시체를 집으면 푸드덕 날아오름 / 보기: 화면 앞 시체에 셋이 내려앉고 7초 뒤 날아오름)', def: true },
@@ -6545,6 +6546,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); if (window.__limpCamDemo) window.__limpCamDemo(); }
     else if (key === 'stepcam') { if (window.__stepCamDemo) window.__stepCamDemo(); }
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
+    else if (key === 'montwitch') { if (window.__montwitch && window.__montwitch.demo) window.__montwitch.demo(); }
     else if (key === 'motes') { if (window.__motes && window.__motes.demo) window.__motes.demo(); }
     else if (key === 'breathhold') { if (window.__breath && window.__breath.holdDemo) window.__breath.holdDemo(); }
     else if (key === 'crows') { if (window.__crows && window.__crows.demo) window.__crows.demo(); }
@@ -6586,7 +6588,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -10800,6 +10802,86 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     if (k) mesh.instanceMatrix.needsUpdate = true;
   }
   requestAnimationFrame(frame);
+})();
+
+</script>
+<script>/* montwitch.js */
+/* 괴물 고개(2026-10-09 밤 · 케이스 스터디 — SIREN 시비토의 경련 · The Evil Within · Silent Hill 간호사 — 사람 같은데 사람이 아닌 움직임이 가장 불쾌하다)
+   · 그림만 바꾼다(괴물 동작 · 판정 · 같이 하기 서버 값은 그대로) — 그리기 직전 목 · 머리 뼈에 얹고 그린 뒤 되돌린다(breathe.js 와 같은 길)
+   · 서 있을 때(1.5초 넘게 거의 안 움직임): 6~11초마다 고개를 한쪽으로 천천히 꺾는다(1.6초에 최대 31° · 1.5~3초 머묾 · 1초에 돌아옴 · 목이 4할)
+   · 경련: 서 있으면 4~9초 · 걸으면 8~14초마다 고개가 0.06초에 확 꺾였다(옆 20° · 비틀어 12°) 0.35초에 잦아들며 떨림
+   · 공격하는 동안 · 불을 뿜는 동안 · 꺼져 있으면 쉰다 · 끄기: 시연실 연출 「괴물 고개」 · 보기: 지금 천천히 꺾고 · 경련 둘 */
+(() => {
+  const M = (window.__montwitch = { ready: false, log: [] });
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const ss = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+  let T = null, Qa = null, Qp = null, Qi = null, AX = null, B = null, sm0 = null;
+  const saved = [];
+  const st = { lx: null, lz: null, sp: 0, stillT: 0, tiltNext: rnd(4, 8), tilt: null, twNext: rnd(4, 9), tw: null, last: 0 };
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.montwitch === false); };
+  function rotW(b, ax, ay, az, ang) {
+    if (!b || Math.abs(ang) < 1e-5) return;
+    saved.push(b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w);
+    b.parent.getWorldQuaternion(Qp); Qi.copy(Qp).invert();
+    Qa.setFromAxisAngle(AX.set(ax, ay, az), ang);
+    b.quaternion.premultiply(Qp).premultiply(Qa).premultiply(Qi);
+    b.updateMatrixWorld(true);
+  }
+  function restore() { for (let i = saved.length - 5; i >= 0; i -= 5) saved[i].quaternion.set(saved[i + 1], saved[i + 2], saved[i + 3], saved[i + 4]); saved.length = 0; }
+  function bones(C) {
+    let sm = null; C.root.traverse((o) => { if (o.isSkinnedMesh && !sm) sm = o; });
+    if (!sm) return null;
+    if (sm !== sm0) { sm0 = sm; const f = (re) => sm.skeleton.bones.find((b) => re.test(b.name)) || null; B = { head: f(/Head$/), neck: f(/Neck$/) }; }
+    return B;
+  }
+  const busy = (C) => { const a = C.actions && C.actions.attack, F = window.__fire; return !!((a && a.isRunning && a.isRunning() && a.getEffectiveWeight && a.getEffectiveWeight() > 0.3) || (F && F.active)); };
+  M.demo = () => { const now = performance.now() / 1000; st.tilt = { t0: now, side: Math.random() < 0.5 ? -1 : 1, amp: 0.55, hold: 2.2 }; st.tw = { t0: now + 3.6, side: 1 }; st.tw2 = now + 4.4; return true; };
+  function tick(now) {
+    const G = window.__G, C = G && G.monster; if (!C || !C.root) return;
+    const dt = Math.min(0.1, Math.max(0, now - (st.last || now))); st.last = now;
+    const p = C.root.position;
+    if (st.lx !== null && dt > 0) { const v = Math.hypot(p.x - st.lx, p.z - st.lz) / dt; if (v < 20) st.sp += (v - st.sp) * Math.min(1, dt * 4); }
+    st.lx = p.x; st.lz = p.z;
+    const still = st.sp < 0.25; st.stillT = still ? st.stillT + dt : 0;
+    if (!G.started || !C.root.visible || G.cfg.monOn === false || busy(C)) return;
+    if (still && st.stillT > 1.5 && !st.tilt && (st.tiltNext -= dt) <= 0) { st.tiltNext = rnd(6, 11); st.tilt = { t0: now, side: Math.random() < 0.5 ? -1 : 1, amp: rnd(0.38, 0.55), hold: rnd(1.5, 3) }; M.log.push(['tilt', +now.toFixed(1)]); }
+    if (!st.tw && (st.twNext -= dt) <= 0) { st.twNext = still ? rnd(4, 9) : rnd(8, 14); st.tw = { t0: now, side: Math.random() < 0.5 ? -1 : 1 }; M.log.push(['twitch', +now.toFixed(1)]); }
+    if (st.tw2 && now >= st.tw2) { st.tw = { t0: now, side: -1 }; st.tw2 = 0; }
+    if (M.log.length > 20) M.log.shift();
+  }
+  function apply() {
+    const G = window.__G, C = G && G.monster; if (!C || !C.root || !C.root.visible || !G.started || !on() || busy(C)) return;
+    const now = performance.now() / 1000; tick(now);
+    const b = bones(C); if (!b || !b.head) return;
+    const yw = C.root.rotation.y, fx = Math.sin(yw), fz = Math.cos(yw);
+    let roll = 0, yaw = 0;
+    if (st.tilt) {                                                        // 천천히 꺾음 — 1.6초에 꺾고 · 머물고 · 1초에 돌아옴
+      const u = now - st.tilt.t0, a = st.tilt.amp * st.tilt.side, h = st.tilt.hold;
+      const k = u < 1.6 ? ss(u / 1.6) : u < 1.6 + h ? 1 : u < 2.6 + h ? 1 - ss((u - 1.6 - h) / 1) : 0;
+      roll += a * k + Math.sin(u * 23) * 0.012 * k;                       // 꺾인 채 아주 잘게 떤다
+      if (u > 2.6 + h) st.tilt = null;
+    }
+    if (st.tw) {                                                          // 경련 — 0.06초에 확 · 0.35초에 잦아들며 떨림
+      const u = now - st.tw.t0;
+      if (u >= 0) {
+        const k = u < 0.06 ? u / 0.06 : Math.exp(-(u - 0.06) / 0.12) * (1 + 0.25 * Math.sin(u * 60));
+        roll += 0.35 * st.tw.side * k; yaw += 0.21 * st.tw.side * k;
+        if (u > 0.5) st.tw = null;
+      }
+    }
+    if (Math.abs(roll) < 1e-4 && Math.abs(yaw) < 1e-4) return;
+    rotW(b.neck, fx, 0, fz, roll * 0.4); rotW(b.neck, 0, 1, 0, yaw * 0.4);
+    rotW(b.head, fx, 0, fz, roll * 0.6); rotW(b.head, 0, 1, 0, yaw * 0.6);
+  }
+  (function wait() {
+    const G = window.__G;
+    if (!G || !G.scene || !G.THREE) { setTimeout(wait, 300); return; }
+    T = G.THREE; Qa = G.scene.quaternion.clone(); Qp = Qa.clone(); Qi = Qa.clone(); AX = new T.Vector3();
+    const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender;
+    Sc.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { apply(); } catch (e) { restore(); if (!M.err) { M.err = true; console.warn('[montwitch]', e); } } };
+    Sc.onAfterRender = function (...a) { restore(); if (pa) pa.apply(this, a); };
+    M.ready = true;
+  })();
 })();
 
 </script>
