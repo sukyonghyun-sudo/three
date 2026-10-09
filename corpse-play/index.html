@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-340 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-342 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -315,7 +315,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-340'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-342'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6054,7 +6054,9 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'ragdoll', name: '들린 시체 팔·머리 물리(ragdoll.js — 늘어지고 끌리고 흔들림 / 보기: 들린 시체를 두 번 크게 흔듦 — 누가 들고 있을 때)', def: true },
     { key: 'breathe', name: '숨쉬기 · 살아 있는 몸(breathe.js — 숨 · 무게 옮김 · 겁먹은 떨림 · 달린 뒤 헐떡임 / 보기: 막 달린 것처럼 헐떡임)', def: true },
   ];
-  const X = (window.__fx = { ready: false, opts: OPTS.map((o) => ({ key: o.key, name: o.name })), on: {}, shake, set, flash: hitFlash });
+  // 주말에 새로 넣은 것(2026-10-08 밤 ~ 10-12) — 시연실에 날짜 표시(showcase.js)
+  const NEW = { painlive: '10-08', scoot: '10-08', pickup: '10-08', sway: '10-08', ambev: '10-08', muffle: '10-08', torchflick: '10-08', stepsurf: '10-09', othersteps: '10-09', spotted: '10-09', foley2: '10-09', slam: '10-09', music2: '10-09', basefx: '10-09', corpseglance: '10-09', occl: '10-09', monlost: '10-09', wetcloth: '10-09', dust: '10-09', footblood: '10-09', startcard: '10-09', lampblow: '10-09', monweight: '10-09', hudhunt: '10-09', injured: '10-09', stepcam: '10-09', endcam: '10-09', lastbell: '10-09', monblood: '10-09', moths: '10-09', birds: '10-09', crows: '10-09', breathhold: '10-09', motes: '10-09', montwitch: '10-09', torchshake: '10-10', soundlook: '10-10' };
+  const X = (window.__fx = { ready: false, opts: OPTS.map((o) => ({ key: o.key, name: o.name, nw: NEW[o.key] || '' })), on: {}, shake, set, flash: hitFlash });
   for (const o of OPTS) X.on[o.key] = o.def;
   function set(key, v) { X.on[key] = !!v; }                          // 이번 판에만 — 저장은 settings.js 「저장」(모두의 기본값)
   if (window.__settings) window.__settings.reg('fx', { get: () => Object.assign({}, X.on), set: (o) => { for (const k of Object.keys(X.on)) if (o && o[k] !== undefined) X.on[k] = !!o[k]; } });
@@ -11056,6 +11058,7 @@ body:not(.tz-live) #sr-show-btn { visibility: hidden; }
 body.sr-tune-open #sr-show-btn { visibility: hidden; }
 body.mp-on #sr-show-btn { display: none; }   /* 같이 하기 — 오른쪽 아래 「방 나가기」 자리 · 시연실은 N 키로 */
 #sr-show .fxr { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#sr-show .fxr .nw { display: inline-block; white-space: nowrap; margin-right: 6px; padding: 0 5px; font-size: 10px; letter-spacing: .08em; color: #e0b0a8; border: 1px solid rgba(190, 40, 30, .7); background: rgba(120, 10, 8, .35); vertical-align: 1px; }
 #sr-show .fxr button.pv { padding: 2px 9px; font-size: 11px; letter-spacing: .2em; flex: none; }
 #sr-show .cap { font: 400 11px 'UIF', 'Nanum Myeongjo',serif; color: #8c8677; letter-spacing: .04em; margin: -4px 0 8px; }`;
   let el = null, open = false;
@@ -11106,7 +11109,7 @@ body.mp-on #sr-show-btn { display: none; }   /* 같이 하기 — 오른쪽 아�
         <div class="cap">M 키 = 뿜기 · 닿으면 불이 붙는다 · 같이 하기에선 쉰다</div>
       </section>
       <section><h3>연출<small>이 브라우저에 저장</small></h3>
-        ${(X ? X.opts : []).map((o) => `<div class="fxr"><label class="tg"><input type="checkbox" data-fx="${o.key}" ${X.on[o.key] ? 'checked' : ''}> ${o.name}</label>${X.previewable && X.previewable.includes(o.key) ? `<button type="button" class="pv" data-fxpv="${o.key}">보기</button>` : ''}</div>`).join('')}
+        ${(X ? X.opts : []).map((o) => `<div class="fxr"><label class="tg"><input type="checkbox" data-fx="${o.key}" ${X.on[o.key] ? 'checked' : ''}> ${o.nw ? `<span class="nw">주말 ${o.nw}</span>` : ''}${o.name}</label>${X.previewable && X.previewable.includes(o.key) ? `<button type="button" class="pv" data-fxpv="${o.key}">보기</button>` : ''}</div>`).join('')}
       </section>
       ${window.__ui ? window.__ui.html() : ''}
       ${window.__uiFont ? window.__uiFont.html() : ''}
