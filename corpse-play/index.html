@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-308 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-309 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-308'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-309'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6029,6 +6029,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 / 보기: 지금 18초)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
+    { key: 'lastbell', name: '마지막 하나 — 범종(realsfx.js — 어느 본진이든 이 판에 처음 시체 둘을 모으는 순간 그 본진 쪽에서 먼 범종이 한 번 · 「하나 남았다」를 소리로 / 보기: 지금 한 번)', def: true },
     { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 · 12초에 한 번 / 보기: 지금 한 번)', def: true },
     { key: 'spotted', name: '들킴 반응(breathe.js — 괴물이 나를 쫓기 시작하는 순간: 괴물 쪽으로 고개 홱 · 움찔 · 「헉」 얼굴 · 남자 헉 소리 · 시야가 순간 조여듦 / 봇도 같이)', def: true },
     { key: 'othersteps', name: '남의 발소리(realsfx.js — 봇 · 같이 하기 상대가 달리고 끌 때 그 자리에서 · 걸음 박자는 그 몸의 동작 · 그 자리 바닥 · 24m 안 / 보기: 등 뒤에서 누가 달려와 옆을 스쳐 감)', def: true },
@@ -6529,6 +6530,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); }
     else if (key === 'stepcam') { if (window.__stepCamDemo) window.__stepCamDemo(); }
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
+    else if (key === 'lastbell') { if (window.__rsfx && window.__rsfx.lastBellDemo) window.__rsfx.lastBellDemo(); }
     else if (key === 'monlost') { if (window.__rsfx && window.__rsfx.monSniff) window.__rsfx.monSniff(0); }
     else if (key === 'spotted') { if (window.__breath && window.__breath.spotDemo) window.__breath.spotDemo(); }
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
@@ -6563,7 +6565,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -6950,6 +6952,23 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (bt) play('amb_ema', { pos: { x: bt[0], y: h.y + 2, z: bt[1] }, range: 60, vol: 0.7 });
     return { water: w ? Math.round(Math.hypot(w[0] - h.x, w[1] - h.z)) : null, torii: bt ? Math.round(bd) : null };
   };
+  /* 마지막 하나(2026-10-09) — 어느 본진이든 이 판에 처음 시체 둘을 모으는 순간 그 본진 쪽에서 먼 범종의 마지막 울림 한 번(amb_bell2 · 있던 녹음)
+     「이제 하나 남았다」를 글 없이 소리로 · 판마다 본진마다 한 번 · 끄기: 시연실 연출 「마지막 하나 — 범종」 · 보기: 지금 한 번 */
+  const lastRung = [false, false, false]; let lastInit = false;
+  function lastTick() {
+    const sc = G.scores ? G.scores() : null; if (!sc) return;
+    if (!lastInit) { lastInit = true; for (let t = 0; t < 3; t++) lastRung[t] = sc[t] >= 2; return; }   // 판 중간에 들어왔으면 이미 지난 것은 울리지 않는다
+    if (!sc[0] && !sc[1] && !sc[2]) { lastRung.fill(false); return; }
+    const X = window.__fx, off = X && X.on && X.on.lastbell === false;
+    for (let t = 0; t < 3; t++) if (sc[t] >= 2 && !lastRung[t]) { lastRung[t] = true; if (!off && !(G.game && G.game.over)) lastBell(t); break; }
+  }
+  function lastBell(t) {
+    const h = G.hero.position, z = G.zones && G.zones.list ? G.zones.list.find((q) => q.team === t) : null;
+    let pos = { x: h.x, y: h.y, z: h.z + 50 };
+    if (z) { const dx = z.cx - h.x, dz = z.cz - h.z, l = Math.hypot(dx, dz) || 1; pos = { x: h.x + dx / l * 50, y: h.y, z: h.z + dz / l * 50 }; }
+    return play('amb_bell2', { pos, flat: true, vol: 0.75 * ambVol(), rate: 0.94 });
+  }
+  R.lastBellDemo = () => (G ? lastBell(1) : false);
   function behindActor(h, cam, d0, d1) {
     if (!cam) return null; let fx = h.x - cam.position.x, fz = h.z - cam.position.z; const l = Math.hypot(fx, fz) || 1; fx /= l; fz /= l;
     let best = null, bd = d1;
@@ -7122,7 +7141,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const F = window.__fire, act = F && F.active ? F.active : null;
     if (act && act !== lastA && G.monster && G.monster.root) play('mon_inhale', { pos: G.monster.root.position, range: 40, vol: 0.9 });
     lastA = act;
-    if (live) { strainTick(); ambTick(); bodyTick(); otherSteps(dt); lostTick(); }
+    if (live) { strainTick(); ambTick(); bodyTick(); otherSteps(dt); lostTick(); lastTick(); }
     else loopSet('fly_loop', 0, dt);
     // 괴물 숨 · 그르렁 — 16m 안에서 어슬렁거리거나 쫓을 때(내리치는 중 · 불 뿜는 중은 빼고) · 가까울수록 크게 · 좌우(2026-10-08 밤 — 괴물 존재감)
     const Cm = G.monster;
