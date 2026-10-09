@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-336 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-337 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -232,6 +232,7 @@
     'sfx/p_gasp1.mp3': 'corpse/sfx/p_gasp1', 'sfx/p_gasp2.mp3': 'corpse/sfx/p_gasp2', 'sfx/p_gasp3.mp3': 'corpse/sfx/p_gasp3', 'sfx/p_gasp4.mp3': 'corpse/sfx/p_gasp4', 'sfx/p_gasp5.mp3': 'corpse/sfx/p_gasp5',   // 들킴 — 젊은 남자 헉
     'sfx/p_drag_stone1.mp3': 'corpse/sfx/p_drag_stone1', 'sfx/p_drag_stone2.mp3': 'corpse/sfx/p_drag_stone2', 'sfx/p_drag_stone3.mp3': 'corpse/sfx/p_drag_stone3', 'sfx/p_drag_wood1.mp3': 'corpse/sfx/p_drag_wood1', 'sfx/p_drag_wood2.mp3': 'corpse/sfx/p_drag_wood2', 'sfx/p_drag_wood3.mp3': 'corpse/sfx/p_drag_wood3', 'sfx/p_drip1.mp3': 'corpse/sfx/p_drip1', 'sfx/p_drip2.mp3': 'corpse/sfx/p_drip2', 'sfx/p_drip3.mp3': 'corpse/sfx/p_drip3', 'sfx/p_drip4.mp3': 'corpse/sfx/p_drip4', 'sfx/p_drip5.mp3': 'corpse/sfx/p_drip5', 'sfx/p_cloth1.mp3': 'corpse/sfx/p_cloth1', 'sfx/p_cloth2.mp3': 'corpse/sfx/p_cloth2', 'sfx/p_cloth3.mp3': 'corpse/sfx/p_cloth3', 'sfx/p_cloth4.mp3': 'corpse/sfx/p_cloth4',   // 끌림(돌 · 나무) · 피 방울 · 옷 스침
     'sfx/amb_flock1.mp3': 'corpse/sfx/amb_flock1', 'sfx/amb_flock2.mp3': 'corpse/sfx/amb_flock2', 'sfx/amb_flock3.mp3': 'corpse/sfx/amb_flock3', 'sfx/amb_crow1.mp3': 'corpse/sfx/amb_crow1', 'sfx/amb_crow2.mp3': 'corpse/sfx/amb_crow2', 'sfx/amb_crow3.mp3': 'corpse/sfx/amb_crow3',   // 새 떼 · 까마귀(birds.js — 괴물이 나무 곁을 지나면)
+    'sfx/mon_crack1.mp3': 'corpse/sfx/mon_crack1', 'sfx/mon_crack2.mp3': 'corpse/sfx/mon_crack2', 'sfx/mon_crack3.mp3': 'corpse/sfx/mon_crack3', 'sfx/mon_crack4.mp3': 'corpse/sfx/mon_crack4', 'sfx/mon_creak1.mp3': 'corpse/sfx/mon_creak1', 'sfx/mon_creak2.mp3': 'corpse/sfx/mon_creak2',   // 괴물 고개 — 목이 꺾이는 뼈 소리(montwitch.js)
     'sfx/mus_drone.mp3': 'corpse/sfx/mus_drone', 'sfx/mus_chase.mp3': 'corpse/sfx/mus_chase',   // 긴장 음악(music.js)
     'sfx/amb_bell1.mp3': 'corpse/sfx/amb_bell1', 'sfx/amb_bell2.mp3': 'corpse/sfx/amb_bell2', 'sfx/amb_owl1.mp3': 'corpse/sfx/amb_owl1', 'sfx/amb_owl2.mp3': 'corpse/sfx/amb_owl2', 'sfx/amb_dog1.mp3': 'corpse/sfx/amb_dog1', 'sfx/amb_dog2.mp3': 'corpse/sfx/amb_dog2', 'sfx/amb_gust1.mp3': 'corpse/sfx/amb_gust1', 'sfx/amb_gust2.mp3': 'corpse/sfx/amb_gust2', 'sfx/amb_snap1.mp3': 'corpse/sfx/amb_snap1', 'sfx/amb_snap2.mp3': 'corpse/sfx/amb_snap2', 'sfx/amb_moan1.mp3': 'corpse/sfx/amb_moan1', 'sfx/amb_moan2.mp3': 'corpse/sfx/amb_moan2', 'sfx/amb_ema1.mp3': 'corpse/sfx/amb_ema1', 'sfx/amb_ema2.mp3': 'corpse/sfx/amb_ema2', 'sfx/amb_suzu1.mp3': 'corpse/sfx/amb_suzu1',   // 밤 소리 사건(멀리서 가끔 · realsfx.js)
     'sfx/mon_stalk1.mp3': 'corpse/sfx/mon_stalk1', 'sfx/mon_stalk2.mp3': 'corpse/sfx/mon_stalk2', 'sfx/mon_stalk3.mp3': 'corpse/sfx/mon_stalk3', 'sfx/mon_stalk4.mp3': 'corpse/sfx/mon_stalk4',   // 괴물이 가까이 어슬렁거릴 때 숨 · 그르렁          // 서 있을 때 겁먹어 고르지 않게 끊기는 남자 숨(2026-10-08 · p_breath_idle2 대신)
@@ -314,7 +315,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-336'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-337'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6034,7 +6035,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
     { key: 'soundlook', name: '소리 쪽으로 고개(breathe.js — 새 떼 · 까마귀 · 등 뒤 잔가지 · 먼 범종처럼 또렷한 소리가 나면 0.2~0.4초 뒤 그쪽으로 홱 돌아봄(최대 57° · 1.1~1.5초) · 새 떼 · 까마귀는 둘레 봇 · 같이 하기 상대도 사람마다 다른 반응으로 / 보기: 옆 뒤에서 잔가지 딱 → 돌아봄)', def: true },
     { key: 'torchshake', name: '손전등 손떨림(motes.js — 손전등을 켜면 겁만큼 빛이 잘게 떨림(괴물이 가까울수록 · 8m 앞 최대 ±10cm) · 숨을 참으면 고요해짐 · 걸음마다 빛이 쿵 내려앉고 디딘 발 쪽으로 출렁(달리면 크게) / 보기: 손전등 6초 · 겁에 질린 떨림)', def: true },
-    { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
+    { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 꺾일 때 뼈 갈림 · 경련 때 마디 크르륵(실제 녹음) · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
     { key: 'motes', name: '손전등 먼지(motes.js — 손전등(L)을 켜면 빛 원뿔 안의 공기 중 먼지가 반짝이며 떠다님 · 빛이 훑고 지나가는 자리만 · 멀수록 · 가장자리일수록 흐리게 · 깜빡이면 같이 / 보기: 손전등을 6초 켬)', def: true },
     { key: 'breathhold', name: '숨 참기(breathe.js — 괴물이 11m 안인데 들키지 않고 내가 멈춰 서 있으면 저절로 숨을 멈춤 · 숨소리 사라지고 가슴 · 카메라 숨 멈춤 · 입 꾹 눈 크게 · 심장 소리 커짐 · 괴물이 멀어지거나 9초가 지나면 몰아쉼 / 보기: 지금 5초 참았다 몰아쉼)', def: true },
     { key: 'crows', name: '시체 곁 까마귀(crows.js — 12초 넘게 아무도 7m 안에 오지 않은 시체에 까마귀 1~3마리가 내려앉아 쪼고 깡충 · 가끔 낮게 깍 · 누가 4.5m 안에 오거나 시체를 집으면 푸드덕 날아오름 / 보기: 화면 앞 시체에 셋이 내려앉고 7초 뒤 날아오름)', def: true },
@@ -6682,7 +6683,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     sys_danger: 0, sys_score: 0, sys_tick: 0, sys_win: 0, sys_lose: 0, sys_heart: 2, sys_creak: 4, sys_gore: 2,
     sys_fire_loop: 0, sys_fire_ign: 2, sys_fire_boom: 0,
     fly_loop: 0, p_bodydrop: 5,
-    amb_flock: 3, amb_crow: 3, amb_bell: 2, amb_owl: 2, amb_dog: 2, amb_gust: 2, amb_snap: 2, amb_moan: 2, amb_ema: 2, amb_suzu: 1,
+    mon_crack: 4, mon_creak: 2, amb_flock: 3, amb_crow: 3, amb_bell: 2, amb_owl: 2, amb_dog: 2, amb_gust: 2, amb_snap: 2, amb_moan: 2, amb_ema: 2, amb_suzu: 1,
   };
   const FILES = {};
   for (const [k, n] of Object.entries(N)) { if (n === 0) FILES[k] = 'sfx/' + k + '.mp3'; else for (let i = 1; i <= n; i++) FILES[k + i] = 'sfx/' + k + i + '.mp3'; }
@@ -6782,6 +6783,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     ['괴물 발소리', '무거운 발 + 진흙 질척 — 거리 35m · 좌우', 'mon_step', 6],
     ['밤 소리 사건(10-08 밤 새로)', '22~48초마다 하나 · 멀리서 · 방향 — 범종 · 올빼미 · 먼 개 · 덤불 잔가지(등 뒤) · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마', ['amb_bell1', 'amb_bell2', 'amb_owl1', 'amb_owl2', 'amb_dog1', 'amb_dog2', 'amb_snap1', 'amb_snap2', 'amb_moan1', 'amb_moan2', 'amb_suzu1', 'amb_gust1', 'amb_gust2', 'amb_ema1', 'amb_ema2']],
     ['끌림 · 피 · 옷(10-09 새벽 새로)', '돌바닥에서 끌 때 1~3 · 나무 바닥에서 끌 때 1~3 · 업은 시체의 피가 바닥에 톡 1~5 · 달릴 때 옷 스침 1~4', ['p_drag_stone1', 'p_drag_stone2', 'p_drag_stone3', 'p_drag_wood1', 'p_drag_wood2', 'p_drag_wood3', 'p_drip1', 'p_drip2', 'p_drip3', 'p_drip4', 'p_drip5', 'p_cloth1', 'p_cloth2', 'p_cloth3', 'p_cloth4']],
+    ['괴물 고개(10-10 새로)', '괴물이 서서 고개를 천천히 꺾을 때 뼈 갈림 1~2 · 고개가 확 꺾이는 경련 때 마디 크르륵 1~4 — 게임에서는 0.7~0.8배 낮게(4m 괴물) · Pixabay 실제 녹음 · AI 아님', ['mon_crack1', 'mon_crack2', 'mon_crack3', 'mon_crack4', 'mon_creak1', 'mon_creak2']],
     ['새 떼(10-09 밤 새로)', '괴물이 나무 7m 안을 걸어 지나가면 그 나무의 새가 놀라 푸드덕(새 떼 1 · 2 · 큰 새) · 0.25~0.7초 뒤 까마귀 경계 울음(60%) — Pixabay 실제 녹음 · AI 아님', ['amb_flock1', 'amb_flock2', 'amb_flock3', 'amb_crow1', 'amb_crow2', 'amb_crow3']],
     ['들킴(10-09 새벽 새로)', '괴물이 나를 쫓기 시작하는 순간 젊은 남자가 놀라 「헉」(130~188Hz 남자 · 봇이 들키면 그 자리에서)', 'p_gasp', 5],
     ['바닥 발소리(10-08 밤 새로)', '발밑을 보고 고른다 — 돌(돌바닥 · 바위 · 타일) 1~8 · 나무(나무 단 · 마루) 1~8 · 그 밖은 위의 흙 · 자갈', ['p_step_stone1', 'p_step_stone2', 'p_step_stone3', 'p_step_stone4', 'p_step_stone5', 'p_step_stone6', 'p_step_stone7', 'p_step_stone8', 'p_step_wood1', 'p_step_wood2', 'p_step_wood3', 'p_step_wood4', 'p_step_wood5', 'p_step_wood6', 'p_step_wood7', 'p_step_wood8']],
@@ -6799,7 +6801,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     ['시체 나르며 힘쓰기(10-08 밤 새로)', '끌기 1.5~2.8초 · 업기 2.2~3.6초마다 하나 · 들어 올리는 순간 하나 · 그때 얼굴도 힘씀 · 봇도', 'p_strain', 7],
     ['꺼 둔 것', '심장 1~2(심장은 예전 녹음을 씀)', ['sys_heart1', 'sys_heart2']],
   ];
-  const LABEL = { sys_danger: '도난·쫓김', sys_score: '내 득점', sys_tick: '남 득점', sys_win: '승리', sys_lose: '패배', mon_inhale1: '들숨', p_pant_run: '헐떡임', p_pant_after: '숨 고르기', sys_fire_loop: '타는 동안', sys_fire_boom: '불덩이', p_pickup1: '들기 1', p_pickup2: '들기 2', p_breath_idle2: '예전 느린 숨', p_breath_fear: '겁먹은 숨(새)', fly_loop: '파리 떼', p_bodydrop1: '털썩 1', p_bodydrop2: '털썩 2', p_bodydrop3: '털썩 3', p_bodydrop4: '털썩 4', p_bodydrop5: '털썩 5', amb_flock1: '새 떼 1', amb_flock2: '새 떼 2', amb_flock3: '큰 새 퍼덕', amb_crow1: '까마귀 1', amb_crow2: '까마귀 2', amb_crow3: '까마귀 3', amb_bell1: '범종 1', amb_bell2: '범종 2', amb_owl1: '올빼미 1', amb_owl2: '올빼미 2', amb_dog1: '개 울음', amb_dog2: '개 짖음', amb_snap1: '잔가지', amb_snap2: '덤불 발소리', amb_moan1: '먼 신음 1', amb_moan2: '먼 신음 2', amb_suzu1: '신사 방울', amb_gust1: '돌풍 1', amb_gust2: '돌풍 2', amb_ema1: '에마 1', amb_ema2: '에마 2', sys_heart1: '심장 1', sys_heart2: '심장 2' };
+  const LABEL = { sys_danger: '도난·쫓김', sys_score: '내 득점', sys_tick: '남 득점', sys_win: '승리', sys_lose: '패배', mon_inhale1: '들숨', p_pant_run: '헐떡임', p_pant_after: '숨 고르기', sys_fire_loop: '타는 동안', sys_fire_boom: '불덩이', p_pickup1: '들기 1', p_pickup2: '들기 2', p_breath_idle2: '예전 느린 숨', p_breath_fear: '겁먹은 숨(새)', fly_loop: '파리 떼', p_bodydrop1: '털썩 1', p_bodydrop2: '털썩 2', p_bodydrop3: '털썩 3', p_bodydrop4: '털썩 4', p_bodydrop5: '털썩 5', mon_crack1: '목 꺾임 1', mon_crack2: '목 꺾임 2', mon_crack3: '목 꺾임 3', mon_crack4: '목 꺾임 4', mon_creak1: '뼈 갈림 1', mon_creak2: '뼈 갈림 2', amb_flock1: '새 떼 1', amb_flock2: '새 떼 2', amb_flock3: '큰 새 퍼덕', amb_crow1: '까마귀 1', amb_crow2: '까마귀 2', amb_crow3: '까마귀 3', amb_bell1: '범종 1', amb_bell2: '범종 2', amb_owl1: '올빼미 1', amb_owl2: '올빼미 2', amb_dog1: '개 울음', amb_dog2: '개 짖음', amb_snap1: '잔가지', amb_snap2: '덤불 발소리', amb_moan1: '먼 신음 1', amb_moan2: '먼 신음 2', amb_suzu1: '신사 방울', amb_gust1: '돌풍 1', amb_gust2: '돌풍 2', amb_ema1: '에마 1', amb_ema2: '에마 2', sys_heart1: '심장 1', sys_heart2: '심장 2' };
   for (let i = 1; i <= 5; i++) { LABEL['p_gasp' + i] = '헉 ' + i; LABEL['p_drip' + i] = '톡 ' + i; }
   for (let i = 1; i <= 4; i++) LABEL['p_cloth' + i] = '스침 ' + i;
   for (let i = 1; i <= 3; i++) { LABEL['p_drag_stone' + i] = '돌 끌림 ' + i; LABEL['p_drag_wood' + i] = '나무 끌림 ' + i; }
@@ -10894,12 +10896,13 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
    · 그림만 바꾼다(괴물 동작 · 판정 · 같이 하기 서버 값은 그대로) — 그리기 직전 목 · 머리 뼈에 얹고 그린 뒤 되돌린다(breathe.js 와 같은 길)
    · 서 있을 때(1.5초 넘게 거의 안 움직임): 6~11초마다 고개를 한쪽으로 천천히 꺾는다(1.6초에 최대 31° · 1.5~3초 머묾 · 1초에 돌아옴 · 목이 4할)
    · 경련: 서 있으면 4~9초 · 걸으면 8~14초마다 고개가 0.06초에 확 꺾였다(옆 20° · 비틀어 12°) 0.35초에 잦아들며 떨림
+   · 소리(b337): 천천히 꺾기 시작할 때 뼈 갈림 · 경련 순간 마디 크르륵(Pixabay 실제 녹음 · 0.7~0.8배 낮게 · 머리 자리에서)
    · 공격하는 동안 · 불을 뿜는 동안 · 꺼져 있으면 쉰다 · 끄기: 시연실 연출 「괴물 고개」 · 보기: 지금 천천히 꺾고 · 경련 둘 */
 (() => {
   const M = (window.__montwitch = { ready: false, log: [] });
   const rnd = (a, b) => a + Math.random() * (b - a);
   const ss = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
-  let T = null, Qa = null, Qp = null, Qi = null, AX = null, B = null, sm0 = null;
+  let T = null, Qa = null, Qp = null, Qi = null, AX = null, B = null, sm0 = null, HP = null;
   const saved = [];
   const st = { lx: null, lz: null, sp: 0, stillT: 0, tiltNext: rnd(4, 8), tilt: null, twNext: rnd(4, 9), tw: null, last: 0 };
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.montwitch === false); };
@@ -10953,6 +10956,12 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
         if (u > 0.5) st.tw = null;
       }
     }
+    // 뼈 소리(b337) — 천천히 꺾기 시작할 때 뼈 갈림 · 경련 순간 마디 크르륵(머리 자리 · 25m · 0.7~0.8배 낮게 · 가림 · 거리 필터)
+    const R = window.__rsfx;
+    if (R && R.play && b.head) {
+      if (st.tilt && !st.tilt.snd) { st.tilt.snd = true; b.head.getWorldPosition(HP); R.play('mon_creak', { pos: { x: HP.x, y: HP.y, z: HP.z }, range: 22, vol: 0.85, rate: 0.74 + Math.random() * 0.08 }); }
+      if (st.tw && !st.tw.snd && now >= st.tw.t0) { st.tw.snd = true; b.head.getWorldPosition(HP); R.play('mon_crack', { pos: { x: HP.x, y: HP.y, z: HP.z }, range: 25, vol: 1.0, rate: 0.7 + Math.random() * 0.1 }); }
+    }
     if (Math.abs(roll) < 1e-4 && Math.abs(yaw) < 1e-4) return;
     rotW(b.neck, fx, 0, fz, roll * 0.4); rotW(b.neck, 0, 1, 0, yaw * 0.4);
     rotW(b.head, fx, 0, fz, roll * 0.6); rotW(b.head, 0, 1, 0, yaw * 0.6);
@@ -10960,7 +10969,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
   (function wait() {
     const G = window.__G;
     if (!G || !G.scene || !G.THREE) { setTimeout(wait, 300); return; }
-    T = G.THREE; Qa = G.scene.quaternion.clone(); Qp = Qa.clone(); Qi = Qa.clone(); AX = new T.Vector3();
+    T = G.THREE; Qa = G.scene.quaternion.clone(); Qp = Qa.clone(); Qi = Qa.clone(); AX = new T.Vector3(); HP = new T.Vector3();
     const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender;
     Sc.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { apply(); } catch (e) { restore(); if (!M.err) { M.err = true; console.warn('[montwitch]', e); } } };
     Sc.onAfterRender = function (...a) { restore(); if (pa) pa.apply(this, a); };
