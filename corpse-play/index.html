@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-331 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-332 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -314,7 +314,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-331'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-332'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6032,6 +6032,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 · 그동안 걸으면 카메라도 다친 쪽 발에서 더 내려앉아 전다(camera.js) / 보기: 지금 18초 + 절름 카메라 여섯 걸음)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
+    { key: 'torchshake', name: '손전등 손떨림(motes.js — 손전등을 켜면 겁만큼 빛이 잘게 떨림(괴물이 가까울수록 · 8m 앞 최대 ±10cm) · 숨을 참으면 고요해짐 · 걸음마다 빛이 쿵 내려앉고 디딘 발 쪽으로 출렁(달리면 크게) / 보기: 손전등 6초 · 겁에 질린 떨림)', def: true },
     { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
     { key: 'motes', name: '손전등 먼지(motes.js — 손전등(L)을 켜면 빛 원뿔 안의 공기 중 먼지가 반짝이며 떠다님 · 빛이 훑고 지나가는 자리만 · 멀수록 · 가장자리일수록 흐리게 · 깜빡이면 같이 / 보기: 손전등을 6초 켬)', def: true },
     { key: 'breathhold', name: '숨 참기(breathe.js — 괴물이 11m 안인데 들키지 않고 내가 멈춰 서 있으면 저절로 숨을 멈춤 · 숨소리 사라지고 가슴 · 카메라 숨 멈춤 · 입 꾹 눈 크게 · 심장 소리 커짐 · 괴물이 멀어지거나 9초가 지나면 몰아쉼 / 보기: 지금 5초 참았다 몰아쉼)', def: true },
@@ -6546,6 +6547,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); if (window.__limpCamDemo) window.__limpCamDemo(); }
     else if (key === 'stepcam') { if (window.__stepCamDemo) window.__stepCamDemo(); }
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
+    else if (key === 'torchshake') { if (window.__motes && window.__motes.shakeDemo) window.__motes.shakeDemo(); }
     else if (key === 'montwitch') { if (window.__montwitch && window.__montwitch.demo) window.__montwitch.demo(); }
     else if (key === 'motes') { if (window.__motes && window.__motes.demo) window.__motes.demo(); }
     else if (key === 'breathhold') { if (window.__breath && window.__breath.holdDemo) window.__breath.holdDemo(); }
@@ -6588,7 +6590,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -10802,6 +10804,35 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     if (k) mesh.instanceMatrix.needsUpdate = true;
   }
   requestAnimationFrame(frame);
+
+  /* 손전등 손떨림(2026-10-10 새벽 · 케이스 스터디 — RE7 · Outlast · Alan Wake — 빛이 손에 들려 있다는 느낌 · 겁이 빛에 보인다)
+     · 그리기 직전 손전등이 비추는 자리만 옮기고 그린 뒤 되돌린다(게임이 정한 자리 · 같이 하기 값은 그대로)
+     · 겁(괴물이 가까울수록 · breathe.js)만큼 잘게 떨린다(8m 앞에서 최대 ±10cm · 7~13Hz 섞임) · 숨을 참으면 7할 고요해진다
+     · 걸음마다(발소리 박자) 빛이 쿵 내려앉고 디딘 발 쪽으로 출렁 — 달리면 크게
+     · 끄기: 시연실 연출 「손전등 손떨림」 · 보기: 손전등을 6초 켜고 겁에 질린 떨림 */
+  let shDemo = 0, saved = null;
+  const n3 = (t, a, b, c, ph) => Math.sin(t * a + ph) * 0.5 + Math.sin(t * b + ph * 1.7) * 0.3 + Math.sin(t * c + ph * 2.3) * 0.2;
+  M0.shakeDemo = () => { if (!G || !G.started) return false; shDemo = performance.now() + 6000; if (!G.cfg.torch) { pressL(); setTimeout(() => { if (G.cfg.torch) pressL(); }, 6000); } return true; };
+  function shakeApply() {
+    if (!G || !G.started || !G.cfg.torch || !torch || !torch.target) return;
+    const X = window.__fx; if (X && X.on && X.on.torchshake === false) return;
+    const now = performance.now(), t = now / 1000, HB = window.__breath && window.__breath.hero;
+    const fear = Math.max(HB ? HB.fear || 0 : 0, now < shDemo ? 0.9 : 0), hold = HB ? HB.hold || 0 : 0, sp = HB ? HB.sp || 0 : 0;
+    const amp = 0.1 * fear * (1 - 0.7 * hold);
+    let dx = amp * n3(t, 44, 63, 81, 1.3), dy = amp * n3(t, 51, 70, 89, 4.1), dz = amp * n3(t, 47, 59, 77, 2.6);
+    const sT = window.__stepT;                                              // 걸음 — 0.07초에 내려앉고 0.2초 결로
+    if (sT) { const u = (now - sT) / 1000; if (u < 0.5) { const e = u < 0.07 ? u / 0.07 : Math.exp(-(u - 0.07) / 0.2), run = Math.min(1, Math.max(0, (sp - 2) / 3)); dy -= e * (0.08 + 0.22 * run); const side = window.__stepSide || 1, yw = G.hero.rotation.y; dx += Math.cos(yw) * side * e * (0.04 + 0.1 * run); dz -= Math.sin(yw) * side * e * (0.04 + 0.1 * run); } }
+    if (Math.abs(dx) + Math.abs(dy) + Math.abs(dz) < 1e-4) return;
+    const p = torch.target.position; saved = [p.x, p.y, p.z];
+    p.set(p.x + dx, p.y + dy, p.z + dz); torch.target.updateMatrixWorld();
+  }
+  function shakeRestore() { if (!saved || !torch || !torch.target) return; torch.target.position.set(saved[0], saved[1], saved[2]); torch.target.updateMatrixWorld(); saved = null; }
+  (function hook() {
+    const g = window.__G; if (!g || !g.scene) { setTimeout(hook, 400); return; }
+    const Sc = g.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender;
+    Sc.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { shakeApply(); } catch (e) { shakeRestore(); } };
+    Sc.onAfterRender = function (...a) { shakeRestore(); if (pa) pa.apply(this, a); };
+  })();
 })();
 
 </script>
