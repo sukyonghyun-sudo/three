@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-328 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-329 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -314,7 +314,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-328'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-329'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6032,6 +6032,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 · 그동안 걸으면 카메라도 다친 쪽 발에서 더 내려앉아 전다(camera.js) / 보기: 지금 18초 + 절름 카메라 여섯 걸음)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
+    { key: 'motes', name: '손전등 먼지(motes.js — 손전등(L)을 켜면 빛 원뿔 안의 공기 중 먼지가 반짝이며 떠다님 · 빛이 훑고 지나가는 자리만 · 멀수록 · 가장자리일수록 흐리게 · 깜빡이면 같이 / 보기: 손전등을 6초 켬)', def: true },
     { key: 'breathhold', name: '숨 참기(breathe.js — 괴물이 11m 안인데 들키지 않고 내가 멈춰 서 있으면 저절로 숨을 멈춤 · 숨소리 사라지고 가슴 · 카메라 숨 멈춤 · 입 꾹 눈 크게 · 심장 소리 커짐 · 괴물이 멀어지거나 9초가 지나면 몰아쉼 / 보기: 지금 5초 참았다 몰아쉼)', def: true },
     { key: 'crows', name: '시체 곁 까마귀(crows.js — 12초 넘게 아무도 7m 안에 오지 않은 시체에 까마귀 1~3마리가 내려앉아 쪼고 깡충 · 가끔 낮게 깍 · 누가 4.5m 안에 오거나 시체를 집으면 푸드덕 날아오름 / 보기: 화면 앞 시체에 셋이 내려앉고 7초 뒤 날아오름)', def: true },
     { key: 'birds', name: '새 떼(birds.js — 괴물이 나무 7m 안을 걸어 지나가면 새들이 놀라 푸드덕 날아오르고 까마귀가 운다 · 검은 새 6~11마리가 괴물 반대쪽으로 흩어지고 그 가지에서 벚꽃잎이 한 줌 흩날려 떨어짐 · 그 나무엔 90~150초 새 없음 · 숲 전체 20초에 한 번까지 / 보기: 화면 앞쪽 가까운 나무의 새가 놀라 화면 안쪽으로 날아오름)', def: true },
@@ -6544,6 +6545,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); if (window.__limpCamDemo) window.__limpCamDemo(); }
     else if (key === 'stepcam') { if (window.__stepCamDemo) window.__stepCamDemo(); }
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
+    else if (key === 'motes') { if (window.__motes && window.__motes.demo) window.__motes.demo(); }
     else if (key === 'breathhold') { if (window.__breath && window.__breath.holdDemo) window.__breath.holdDemo(); }
     else if (key === 'crows') { if (window.__crows && window.__crows.demo) window.__crows.demo(); }
     else if (key === 'birds') { if (window.__birds && window.__birds.demo) window.__birds.demo(); }
@@ -6584,7 +6586,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -10717,6 +10719,82 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     }
     gmesh.count = gk; fmesh.count = fk; C.n = crows.length;
     if (gk) gmesh.instanceMatrix.needsUpdate = true; if (fk) fmesh.instanceMatrix.needsUpdate = true;
+  }
+  requestAnimationFrame(frame);
+})();
+
+</script>
+<script>/* motes.js */
+/* 손전등 빛 속 먼지(2026-10-09 밤 · 케이스 스터디 — Alan Wake · RE7/8 · SH2R 손전등 — 빛줄기가 공기를 드러낸다)
+   · 손전등(L)을 켜면 빛 원뿔 안의 공기 중 먼지 · 꽃가루가 반짝이며 떠다닌다(46알 · 1.2~7m 앞 · 천천히 떠돌고 · 빙글 돌며 반짝임)
+   · 먼지는 공기에 머물러 있고 빛이 그 위를 훑고 지나간다(원뿔 밖으로 나간 알은 0.25초에 사라졌다가 빛 안 다른 자리에서 다시) · 원뿔 가장자리 · 멀수록 흐리게 · 손전등이 깜빡이면 같이
+   · 업은 시체 피 방울과 같은 재질 설정(새 셰이더 없음) · 끄기: 시연실 연출 「손전등 먼지」 · 보기: 손전등을 켜고 6초 */
+(() => {
+  const MAX = 46;
+  const M0 = (window.__motes = { ready: false, n: 0, demoUntil: 0 });
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  let G = null, T = null, mesh = null, M = null, Q = null, AY = null, AX = null, P = null, S = null, LP = null, TP = null, D = null, U = null, W2 = null, failed = false, last = 0, torch = null;
+  const motes = [];
+  function make() {
+    G = window.__G; T = G.THREE;
+    M = new G.scene.matrix.constructor(); Q = G.scene.quaternion.clone(); AY = new T.Vector3(0, 1, 0); AX = new T.Vector3(1, 0, 0);
+    P = new T.Vector3(); S = new T.Vector3(); LP = new T.Vector3(); TP = new T.Vector3(); D = new T.Vector3(); U = new T.Vector3(); W2 = new T.Vector3();
+    mesh = new T.InstancedMesh(new T.CylinderGeometry(0.5, 0.5, 1, 4, 1, false), new T.MeshBasicMaterial({ color: 0xd8cdb4 }), MAX);
+    mesh.frustumCulled = false; mesh.name = 'torch-motes'; mesh.count = 0; G.scene.add(mesh);
+    for (let i = 0; i < MAX; i++) motes.push({ x: 0, y: -999, z: 0, vx: 0, vy: 0, vz: 0, k: 0, ph: rnd(0, 9), fq: rnd(1.5, 4), size: rnd(0.012, 0.02), live: false });
+    M0.ready = true;
+  }
+  // 빛 원뿔 안 아무 자리 — 축 거리 d · 축에서 r(원뿔 반지름의 85% 안)
+  function spawn(m, ang) {
+    const d = 1.2 + Math.pow(Math.random(), 0.7) * 5.8, rr = Math.tan(ang) * d * 0.85 * Math.sqrt(Math.random()), a = rnd(0, 6.283);
+    U.set(D.z, 0, -D.x); if (U.lengthSq() < 1e-6) U.set(1, 0, 0); U.normalize(); W2.crossVectors(D, U).normalize();
+    m.x = LP.x + D.x * d + (U.x * Math.cos(a) + W2.x * Math.sin(a)) * rr;
+    m.y = LP.y + D.y * d + (U.y * Math.cos(a) + W2.y * Math.sin(a)) * rr;
+    m.z = LP.z + D.z * d + (U.z * Math.cos(a) + W2.z * Math.sin(a)) * rr;
+    m.vx = rnd(-0.05, 0.05); m.vy = rnd(-0.03, 0.03); m.vz = rnd(-0.05, 0.05); m.k = 0; m.live = true;
+  }
+  // 보기 — 손전등이 꺼져 있으면 6초 켰다 끈다(L 키와 같은 길 · 설정 저장 아님)
+  const pressL = () => { window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyL', key: 'l' })); window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyL', key: 'l' })); };
+  M0.demo = () => {
+    if (!G || !G.started) return false; M0.demoUntil = performance.now() + 6000;
+    if (!G.cfg.torch) { pressL(); setTimeout(() => { if (G.cfg.torch) pressL(); }, 6000); }
+    return true;
+  };
+  function frame(now) {
+    requestAnimationFrame(frame);
+    const g = window.__G; if (!g || !g.scene || !g.THREE || failed) return;
+    if (!mesh) { try { make(); } catch (e) { failed = true; console.warn('[motes] 준비', e); return; } }
+    const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; if (!dt) return;
+    if (!torch) G.scene.traverse((o) => { if (o.isSpotLight && !torch) torch = o; });
+    const X = window.__fx, on = !(X && X.on && X.on.motes === false);
+    const lit = torch && G.started && on && G.cfg.torch && torch.intensity > 0.5;
+    if (!lit) { if (mesh.count) mesh.count = 0; M0.n = 0; for (const m of motes) m.live = false; return; }
+    torch.updateMatrixWorld(); torch.getWorldPosition(LP);
+    if (torch.target) { torch.target.updateMatrixWorld(); torch.target.getWorldPosition(TP); } else TP.set(LP.x, LP.y, LP.z - 1);
+    D.subVectors(TP, LP); if (D.lengthSq() < 1e-6) D.set(0, 0, -1); D.normalize();
+    const ang = Math.min(1.0, Math.max(0.15, torch.angle || 0.5)), cosA = Math.cos(ang), base = G.cfg.torch ? (G.cfg.torchInt || 45) : 45;
+    const flick = Math.min(1, torch.intensity / Math.max(1, base)), t = now / 1000;
+    let k = 0;
+    for (const m of motes) {
+      if (!m.live) spawn(m, ang);
+      // 떠돌기 — 아주 느린 흐름 + 흔들림
+      m.vx += Math.sin(t * 0.7 + m.ph) * 0.02 * dt; m.vy += Math.cos(t * 0.5 + m.ph * 1.3) * 0.015 * dt; m.vz += Math.cos(t * 0.6 + m.ph * 0.7) * 0.02 * dt;
+      m.x += m.vx * dt; m.y += m.vy * dt; m.z += m.vz * dt;
+      // 빛 원뿔 안인가 — 축 거리 · 축과의 각
+      const rx = m.x - LP.x, ry = m.y - LP.y, rz = m.z - LP.z, dist = Math.hypot(rx, ry, rz) || 1, c = (rx * D.x + ry * D.y + rz * D.z) / dist;
+      const inside = c > cosA && dist > 0.9 && dist < 7.5;
+      const edge = inside ? Math.min(1, (c - cosA) / (1 - cosA) * 2.5) : 0, far = Math.max(0, 1 - (dist - 1.2) / 6.3);
+      const tk = inside ? edge * (0.35 + 0.65 * far) : 0;
+      m.k += (tk - m.k) * Math.min(1, dt / (tk > m.k ? 0.4 : 0.25));
+      if (!inside && m.k < 0.02) { m.live = false; continue; }
+      const tw = 0.35 + 0.65 * Math.abs(Math.sin(t * m.fq + m.ph)), s = m.size * m.k * tw * flick;
+      if (s < 0.0015) continue;
+      Q.setFromAxisAngle(AY, t * m.fq * 0.7 + m.ph);
+      M.compose(P.set(m.x, m.y, m.z), Q, S.set(s, s * 0.6, s));
+      mesh.setMatrixAt(k++, M);
+    }
+    mesh.count = k; M0.n = k;
+    if (k) mesh.instanceMatrix.needsUpdate = true;
   }
   requestAnimationFrame(frame);
 })();
