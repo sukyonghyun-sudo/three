@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-335 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-336 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -314,7 +314,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-335'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-336'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6039,7 +6039,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'breathhold', name: '숨 참기(breathe.js — 괴물이 11m 안인데 들키지 않고 내가 멈춰 서 있으면 저절로 숨을 멈춤 · 숨소리 사라지고 가슴 · 카메라 숨 멈춤 · 입 꾹 눈 크게 · 심장 소리 커짐 · 괴물이 멀어지거나 9초가 지나면 몰아쉼 / 보기: 지금 5초 참았다 몰아쉼)', def: true },
     { key: 'crows', name: '시체 곁 까마귀(crows.js — 12초 넘게 아무도 7m 안에 오지 않은 시체에 까마귀 1~3마리가 내려앉아 쪼고 깡충 · 가끔 낮게 깍 · 누가 4.5m 안에 오거나 시체를 집으면 푸드덕 날아오름 / 보기: 화면 앞 시체에 셋이 내려앉고 7초 뒤 날아오름)', def: true },
     { key: 'birds', name: '새 떼(birds.js — 괴물이 나무 7m 안을 걸어 지나가면 새들이 놀라 푸드덕 날아오르고 까마귀가 운다 · 검은 새 6~11마리가 괴물 반대쪽으로 흩어지고 그 가지에서 벚꽃잎이 한 줌 흩날려 떨어짐 · 그 나무엔 90~150초 새 없음 · 숲 전체 20초에 한 번까지 / 보기: 화면 앞쪽 가까운 나무의 새가 놀라 화면 안쪽으로 날아오름)', def: true },
-    { key: 'moths', name: '등롱 나방(moth.js — 켜진 등롱마다 나방 3~5마리가 불 둘레를 제멋대로 맴돎 · 가끔 불에 툭 · 등롱이 꺼지면 흩어지고 괴물이 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아옴 / 보기: 가장 가까운 등롱 나방이 흩어졌다 돌아옴)', def: true },
+    { key: 'moths', name: '등롱 나방(moth.js — 켜진 등롱마다 나방 3~5마리가 불 둘레를 제멋대로 맴돎 · 가끔 불에 툭 · 등롱이 꺼지면 흩어지고 괴물이 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아옴 · 손전등을 켜고 4초 서 있으면 2~3마리가 빛 앞으로 꼬임 / 보기: 가장 가까운 등롱 나방이 흩어졌다 돌아옴)', def: true },
     { key: 'monblood', name: '피 묻은 손(blood.js — 괴물이 사람을 치면 30초 동안 두 손끝에서 피가 뚝뚝 · 처음엔 자주 · 점점 드물게 · 바닥 얼룩 · 톡 소리 / 보기: 지금 막 친 것처럼)', def: true },
     { key: 'lastbell', name: '마지막 하나 — 범종(realsfx.js — 어느 본진이든 이 판에 처음 시체 둘을 모으는 순간 그 본진 쪽에서 먼 범종이 한 번 · 「하나 남았다」를 소리로 / 보기: 지금 한 번)', def: true },
     { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 · 12초에 한 번 / 보기: 지금 한 번)', def: true },
@@ -10405,6 +10405,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
 /* 등롱 나방(2026-10-09 · 케이스 스터디 — TLOU2 · RE 빌리지 「불빛 곁의 작은 생명」 · 살아 있는 밤이 괴물 앞에서 숨죽인다)
    · 켜진 등롱마다 나방 3~5마리가 불집 둘레(불집 반지름의 1.6~3배)를 제멋대로 맴돈다 — 방향을 홱 바꾸고 · 가끔 불 쪽으로 툭 부딪쳤다 튕겨 나옴 · 날개짓(초당 16~24번 접혔다 폄)
    · 등롱이 꺼지면(돌풍 — sway.js) 흩어져 사라지고 · 다시 켜지면 하나씩 돌아온다 · 괴물이 그 등롱 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아온다(정직한 신호)
+   · 손전등(L)을 켜고 뛰지 않은 채 4초가 지나면 2~3마리가 손전등 빛 1.4m 앞으로 날아와 맴돈다(끄거나 뛰면 흩어짐)
    · 카메라 22m 안 등롱만 · 업은 시체 피 방울과 같은 재질 설정(색만 다름 — 새 셰이더 없음) · 끄기: 시연실 연출 「등롱 나방」 · 보기: 가장 가까운 등롱의 나방이 흩어졌다 돌아옴 */
 (() => {
   const MAX = 64, NEAR = 22;
@@ -10419,10 +10420,27 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     mesh = new T.InstancedMesh(geo, new T.MeshBasicMaterial({ color: 0xa8936c }), MAX);
     mesh.frustumCulled = false; mesh.name = 'lamp-moths'; mesh.count = 0;
     G.scene.add(mesh);
+    TREC.r.light.matrixWorld = new G.scene.matrix.constructor();
     N.ready = true;
   }
+  // 손전등에 꼬이는 나방(2026-10-10) — 손전등을 켜고 뛰지 않은 채 4초가 지나면 2~3마리가 빛 1.4m 앞으로 날아와 맴돈다(빛 안이라 잘 보인다) · 끄거나 뛰면 흩어짐 · 괴물이 4m 안이면 흩어짐
+  let torch = null, torchOnT = 0; const TREC = { r: { light: { matrixWorld: null } }, U: { uLampR: { value: 0.3 } }, torch: true };
+  function torchTick(now) {
+    if (!torch) G.scene.traverse((o) => { if (o.isSpotLight && !torch) torch = o; });
+    if (!torch || !TREC.r.light.matrixWorld) return false;
+    const on = !!(G.cfg.torch && torch.intensity > 0.5);
+    if (!on) { torchOnT = 0; return TREC.lit = false, true; }
+    if (!torchOnT) torchOnT = now;
+    torch.updateMatrixWorld(); const a = torch.matrixWorld.elements, lx = a[12], ly = a[13], lz = a[14];
+    let tx = lx, ty = ly, tz = lz - 1; if (torch.target) { torch.target.updateMatrixWorld(); const b = torch.target.matrixWorld.elements; tx = b[12]; ty = b[13]; tz = b[14]; }
+    const dx = tx - lx, dy = ty - ly, dz = tz - lz, l = Math.hypot(dx, dy, dz) || 1, e = TREC.r.light.matrixWorld.elements;
+    e[12] = lx + dx / l * 1.4; e[13] = ly + dy / l * 1.4; e[14] = lz + dz / l * 1.4;
+    const HB = window.__breath && window.__breath.hero;
+    TREC.lit = now - torchOnT > 4000 && !(HB && HB.sp > 2.5);
+    return true;
+  }
   function birth(rec) {
-    const n = 3 + ((Math.random() * 3) | 0), moths = [];
+    const n = rec.torch ? 2 + ((Math.random() * 2) | 0) : 3 + ((Math.random() * 3) | 0), moths = [];
     for (let i = 0; i < n; i++) moths.push({ a: rnd(0, 6.28), w: rnd(1.6, 3.2) * (Math.random() < 0.5 ? -1 : 1), rk: rnd(1.6, 3), y: rnd(-0.6, 0.9), ph: rnd(0, 9), fq: rnd(16, 24), next: rnd(0.5, 3), bump: -1, out: 1, size: rnd(0.036, 0.052), back: i * rnd(0.6, 1.4) });
     const f = { moths, scatT: -1e9, quiet: 0 }; flock.set(rec, f); return f;
   }
@@ -10442,13 +10460,14 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     if (!L || !L.list || !G.started || (X && X.on && X.on.moths === false) || !(G.cfg.lampInt === undefined || G.cfg.lampInt > 0.05)) { if (mesh.count) mesh.count = 0; return; }
     const cam = G.cam.position, C = G.monster, mon = C && C.root && C.root.visible && G.cfg.monOn !== false ? C.root.position : null, t = now / 1000;
     let k = 0;
-    for (const rec of L.list) {
-      const li = rec.r && rec.r.light; if (!li) continue;
+    const withTorch = torchTick(now);
+    for (const rec of withTorch ? L.list.concat([TREC]) : L.list) {
+      const li = rec.r && rec.r.light; if (!li || !li.matrixWorld) continue;
       const m = li.matrixWorld.elements, lx = m[12], ly = m[13], lz = m[14];
       if (Math.hypot(lx - cam.x, lz - cam.z) > NEAR) continue;
       const f = flock.get(rec) || birth(rec);
       const R = rec.U && rec.U.uLampR ? rec.U.uLampR.value : 0.27;
-      const lit = L.on !== false && !(rec.blowT0 && now >= rec.blowT0);       // 돌풍에 꺼진 동안(다시 켜지는 1.2초 포함) — 없음
+      const lit = rec.torch ? !!rec.lit : L.on !== false && !(rec.blowT0 && now >= rec.blowT0);       // 돌풍에 꺼진 동안(다시 켜지는 1.2초 포함) — 없음
       if (mon && Math.hypot(mon.x - lx, mon.z - lz) < 4 && now - f.scatT > 3000) { f.scatT = now; f.quiet = rnd(9, 15); }
       const quiet = (now - f.scatT) / 1000 < f.quiet;
       for (const q of f.moths) {
