@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-314 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-315 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-314'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-315'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6024,7 +6024,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'footblood', name: '피 발자국(blood.js — 누운 시체 곁을 밟고 지나가면 다음 여섯 걸음 발밑에 핏자국 · 점점 드물게 · 물 위 없음 / 보기: 앞으로 여섯 걸음)', def: true },
     { key: 'startcard', name: '판 시작 카드(tension.js — 판이 시작되면 검은 화면에서 장면이 서서히 · 왼쪽 아래에 「신사 터 · 初日 시각 · 종료 조건」 사이렌 스테이지 카드처럼 2.6초 / 보기: 지금 한 번)', def: true },
     { key: 'lampblow', name: '돌풍에 등롱 꺼짐(sway.js — 돌풍이 일 때 가끔 12m 안 등롱 1~2개가 푸드득 꺼졌다가 15~25초 뒤 저절로 다시 켜짐 · 괴물이 25m 밖일 때만 · 90초에 한 번 / 보기: 가장 가까운 등롱 8초)', def: true },
-    { key: 'monweight', name: '괴물 무게 — 물결 · 에마(realsfx.js — 괴물 걸음마다 8m 안 연못 수면이 떨리고 · 토리이 10m 안이면 에마가 달각 / 보기: 가까운 연못 물결 셋 + 가까운 토리이 에마)', def: true },
+    { key: 'monweight', name: '괴물 무게 — 물결 · 에마(realsfx.js — 괴물 걸음마다 8m 안 연못 수면이 떨리고 · 토리이 10m 안이면 에마가 달각 · 괴물이 연못을 걸으면 걸음마다 묵직하게 첨벙(물보라 · 낮은 소리 · 큰 물결 — water.js) / 보기: 가까운 연못 물결 셋 + 가까운 토리이 에마 + 2초 뒤 물속 괴물 걸음 넷)', def: true },
     { key: 'hudhunt', name: '쫓기는 동안 표지 물러남(tension.js — 괴물이 나를 쫓는 동안 남의 본진 표지가 옅어지고 도망칠 곳(내 본진)만 또렷 · 끝나고 3초 뒤 돌아옴 / 보기: 4초)', def: true },
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 · 그동안 걸으면 카메라도 다친 쪽 발에서 더 내려앉아 전다(camera.js) / 보기: 지금 18초 + 절름 카메라 여섯 걸음)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
@@ -6184,7 +6184,13 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     src.connect(bp); bp.connect(g); g.connect(a.out); src.start(t, Math.random()); src.stop(t + 0.45);
     if (Math.random() < 0.6) { const tt = t + 0.1 + Math.random() * 0.2, f0 = 300 + Math.random() * 300, b = ctx.createOscillator(), bg = ctx.createGain(); b.frequency.setValueAtTime(f0, tt); b.frequency.exponentialRampToValueAtTime(f0 * 1.8, tt + 0.04); bg.gain.setValueAtTime(0.0001, tt); bg.gain.exponentialRampToValueAtTime(v * 0.15, tt + 0.005); bg.gain.exponentialRampToValueAtTime(0.0001, tt + 0.045); b.connect(bg); bg.connect(a.out); b.start(tt); b.stop(tt + 0.05); }
   }
-  X.sfx = { whoosh, boom, crackle, sizzle, splash, slosh };
+  // 괴물 발이 물에 — 같은 실제 녹음(첨벙 + 깊은 물 걸음)을 0.7배 낮게 겹쳐 묵직하게(water.js monStep)
+  function heavySplash(vol, p) {
+    const a = wplay('splash', Math.min(1, vol), p, 0.7 + Math.random() * 0.06);
+    wplay('deep', Math.min(1, vol * 0.9), p, 0.72 + Math.random() * 0.06);
+    if (!a) splashSynth(vol, p);
+  }
+  X.sfx = { whoosh, boom, crackle, sizzle, splash, slosh, heavySplash };
 
   /* ── 화면 흔들림 ── */
   const shakes = [];
@@ -6943,7 +6949,9 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   }
   function monWeight(p, force) {
     const X = window.__fx; if (!force && X && X.on && X.on.monweight === false) return;
-    const Wt = window.__water, w = nearWater(p, 8);
+    const Wt = window.__water;
+    if (!force && Wt && Wt.monStep && Wt.monStep(p)) return;                // 괴물 발이 물속 — 첨벙(water.js) · 떨림 물결은 그 안에
+    const w = nearWater(p, 8);
     if (w && w[2] > 0 && Wt && Wt.ripple) Wt.ripple(w[0], w[1], 0.32 * (1 - w[2] / 9));
     const now = performance.now();
     if (now > suzuT && !force) { const t = TORII.find((q) => Math.hypot(q[0] - p.x, q[1] - p.z) < 6); if (t) { suzuT = now + 25000; play('amb_suzu', { pos: { x: t[0], y: (isFinite(p.y) ? p.y : G.hero.position.y) + 3, z: t[1] }, range: 40, vol: 0.5, rate: rnd(0.96, 1.04), delay: 0.15 }); } }   // 괴물이 토리이 바로 곁을 지나면 금줄이 스쳐 방울이
@@ -6952,6 +6960,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   R.weightDemo = () => {
     if (!G) return false; const h = G.hero.position, w = nearWater(h, 20), Wt = window.__water;
     if (w && Wt && Wt.ripple) for (let i = 0; i < 3; i++) setTimeout(() => Wt.ripple(w[0], w[1], 0.3), i * 650);
+    if (w && Wt && Wt.monStep) for (let i = 0; i < 4; i++) setTimeout(() => { play('mon_step', { pos: { x: w[0], y: h.y, z: w[1] }, range: 35, vol: 0.95 }); Wt.monStep({ x: w[0], y: h.y, z: w[1] }); }, 2200 + i * 720);   // 괴물이 물을 걷는 소리 · 물보라 네 걸음
     let bt = null, bd = 60; for (const q of TORII) { const d = Math.hypot(q[0] - h.x, q[1] - h.z); if (d < bd) { bd = d; bt = q; } }
     if (bt) play('amb_ema', { pos: { x: bt[0], y: h.y + 2, z: bt[1] }, range: 60, vol: 0.7 });
     return { water: w ? Math.round(Math.hypot(w[0] - h.x, w[1] - h.z)) : null, torii: bt ? Math.round(bd) : null };
@@ -8406,6 +8415,22 @@ vec3 srGN(vec2 p) {
     if (X && X.sfx && X.sfx.splash) X.sfx.splash(Math.min(1, 0.45 + 0.5 * k), { x, y: wa.wy, z });
     ripple(x, z, Math.min(1.2, 0.35 + 0.7 * k));
   }
+
+  /* ── 괴물이 연못을 걸을 때(2026-10-09) — 예전엔 괴물(4m)이 물을 지나가도 조용했다(첨벙은 사람 · 시체만) ──
+     괴물 발이 물에 닿을 때마다(괴물 걸음 소리 박자 — realsfx.js monWeight) 묵직하게 첨벙(물보라 크게 + 작게) · 같은 녹음을 0.7배 낮게 · 큰 물결
+     발은 몸 가운데에서 좌우 0.45m 번갈아 · 끄기: 시연실 연출 「괴물 무게」(같은 토글) */
+  let monSide = 1;
+  W.monStep = (pos) => {
+    if (!G || !N || !pos) return false;
+    const C = G.monster, yw = C && C.root ? C.root.rotation.y : 0; monSide = -monSide;
+    const x = pos.x + Math.cos(yw) * 0.45 * monSide, z = pos.z - Math.sin(yw) * 0.45 * monSide;
+    const wa = N.waterAt(x, z) || N.waterAt(pos.x, pos.z); if (!wa) return false;
+    const X = window.__fx;
+    if (X && X.splash) { X.splash(x, wa.wy, z, 1.2); X.splash(x + rnd(-0.25, 0.25), wa.wy, z + rnd(-0.25, 0.25), 0.45); }
+    if (X && X.sfx && X.sfx.heavySplash) X.sfx.heavySplash(0.75, { x, y: wa.wy, z });
+    ripple(x, z, 1.2);
+    return true;
+  };
 
   /* ── 나만 — 깊은 곳으로 빠질 때 몸이 한 번 더 쑥 잠겼다 떠오른다(그리는 동안만 높이를 내린다) ── */
   let dipT = -1, dipA = 0, saveY = null;
