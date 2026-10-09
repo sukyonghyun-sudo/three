@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-310 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-313 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -313,7 +313,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-310'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-313'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6029,6 +6029,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'injured', name: '부상 자세(breathe.js — 맞거나 구른 뒤 일어나면 18초 동안 맞은 쪽으로 기울고 등을 굽히고 고개를 떨군 채 숨이 차다 · 나 · 봇 / 보기: 지금 18초)', def: true },
     { key: 'stepcam', name: '무게 걸음(camera.js — 업거나 끌고 걸으면 발이 닿을 때마다 카메라가 쿵 내려앉고 그 발 쪽으로 살짝 기운다 · 맨몸은 아주 조금 / 보기: 무겁게 여섯 걸음)', def: true },
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
+    { key: 'moths', name: '등롱 나방(moth.js — 켜진 등롱마다 나방 3~5마리가 불 둘레를 제멋대로 맴돎 · 가끔 불에 툭 · 등롱이 꺼지면 흩어지고 괴물이 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아옴 / 보기: 가장 가까운 등롱 나방이 흩어졌다 돌아옴)', def: true },
     { key: 'monblood', name: '피 묻은 손(blood.js — 괴물이 사람을 치면 30초 동안 두 손끝에서 피가 뚝뚝 · 처음엔 자주 · 점점 드물게 · 바닥 얼룩 · 톡 소리 / 보기: 지금 막 친 것처럼)', def: true },
     { key: 'lastbell', name: '마지막 하나 — 범종(realsfx.js — 어느 본진이든 이 판에 처음 시체 둘을 모으는 순간 그 본진 쪽에서 먼 범종이 한 번 · 「하나 남았다」를 소리로 / 보기: 지금 한 번)', def: true },
     { key: 'monlost', name: '괴물이 놓침 — 킁킁(realsfx.js — 2초 넘게 쫓다 놓치면 괴물이 그 자리에서 냄새 맡는 숨 + 입김 · 12초에 한 번 / 보기: 지금 한 번)', def: true },
@@ -6531,6 +6532,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'injured') { if (window.__breath && window.__breath.injDemo) window.__breath.injDemo(); }
     else if (key === 'stepcam') { if (window.__stepCamDemo) window.__stepCamDemo(); }
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
+    else if (key === 'moths') { if (window.__moth && window.__moth.demo) window.__moth.demo(); }
     else if (key === 'monblood') { if (window.__blood && window.__blood.monDemo) window.__blood.monDemo(); }
     else if (key === 'lastbell') { if (window.__rsfx && window.__rsfx.lastBellDemo) window.__rsfx.lastBellDemo(); }
     else if (key === 'monlost') { if (window.__rsfx && window.__rsfx.monSniff) window.__rsfx.monSniff(0); }
@@ -6567,7 +6569,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -10286,6 +10288,81 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
   requestAnimationFrame(frame);
   const prevR = window.__onRestart;
   window.__onRestart = function () { if (prevR) prevR.apply(this, arguments); parts.length = 0; monT = 0; };
+})();
+
+</script>
+<script>/* moth.js */
+/* 등롱 나방(2026-10-09 · 케이스 스터디 — TLOU2 · RE 빌리지 「불빛 곁의 작은 생명」 · 살아 있는 밤이 괴물 앞에서 숨죽인다)
+   · 켜진 등롱마다 나방 3~5마리가 불집 둘레(불집 반지름의 1.6~3배)를 제멋대로 맴돈다 — 방향을 홱 바꾸고 · 가끔 불 쪽으로 툭 부딪쳤다 튕겨 나옴 · 날개짓(초당 16~24번 접혔다 폄)
+   · 등롱이 꺼지면(돌풍 — sway.js) 흩어져 사라지고 · 다시 켜지면 하나씩 돌아온다 · 괴물이 그 등롱 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아온다(정직한 신호)
+   · 카메라 22m 안 등롱만 · 업은 시체 피 방울과 같은 재질 설정(색만 다름 — 새 셰이더 없음) · 끄기: 시연실 연출 「등롱 나방」 · 보기: 가장 가까운 등롱의 나방이 흩어졌다 돌아옴 */
+(() => {
+  const MAX = 64, NEAR = 22;
+  const N = (window.__moth = { ready: false, n: 0 });
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  let G = null, T = null, mesh = null, M = null, Q = null, Q2 = null, AY = null, AX = null, P = null, S = null, failed = false, last = 0;
+  const flock = new Map();                                    // 등롱 기록 → { moths, scatT, back }
+  function make() {
+    G = window.__G; T = G.THREE;
+    M = new G.scene.matrix.constructor(); Q = G.scene.quaternion.clone(); Q2 = G.scene.quaternion.clone(); AY = new T.Vector3(0, 1, 0); AX = new T.Vector3(1, 0, 0); P = new T.Vector3(); S = new T.Vector3();   // (__G.THREE 에 Euler 가 없다)
+    const geo = new T.CylinderGeometry(0.5, 0.5, 1, 4, 1, false);   // 닫힌 납작한 조각(어느 쪽에서 봐도 보인다 · 앞면만 그리는 재질 그대로)
+    mesh = new T.InstancedMesh(geo, new T.MeshBasicMaterial({ color: 0xa8936c }), MAX);
+    mesh.frustumCulled = false; mesh.name = 'lamp-moths'; mesh.count = 0;
+    G.scene.add(mesh);
+    N.ready = true;
+  }
+  function birth(rec) {
+    const n = 3 + ((Math.random() * 3) | 0), moths = [];
+    for (let i = 0; i < n; i++) moths.push({ a: rnd(0, 6.28), w: rnd(1.6, 3.2) * (Math.random() < 0.5 ? -1 : 1), rk: rnd(1.6, 3), y: rnd(-0.6, 0.9), ph: rnd(0, 9), fq: rnd(16, 24), next: rnd(0.5, 3), bump: -1, out: 1, size: rnd(0.036, 0.052), back: i * rnd(0.6, 1.4) });
+    const f = { moths, scatT: -1e9, quiet: 0 }; flock.set(rec, f); return f;
+  }
+  N.demo = () => {
+    if (!G || !window.__lamp) return false;
+    const c = G.cam.position; let best = null, bd = 1e9;
+    for (const rec of window.__lamp.list) { const li = rec.r && rec.r.light; if (!li) continue; const m = li.matrixWorld.elements, d = Math.hypot(m[12] - c.x, m[14] - c.z); if (d < bd) { bd = d; best = rec; } }
+    const f = best && (flock.get(best) || birth(best)); if (!f) return false;
+    f.scatT = performance.now(); f.quiet = 4; return true;
+  };
+  function frame(now) {
+    requestAnimationFrame(frame);
+    const g = window.__G; if (!g || !g.scene || !g.THREE || failed) return;
+    if (!mesh) { try { make(); } catch (e) { failed = true; console.warn('[moth] 준비', e); return; } }
+    const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; if (!dt) return;
+    const L = window.__lamp, X = window.__fx;
+    if (!L || !L.list || !G.started || (X && X.on && X.on.moths === false) || !(G.cfg.lampInt === undefined || G.cfg.lampInt > 0.05)) { if (mesh.count) mesh.count = 0; return; }
+    const cam = G.cam.position, C = G.monster, mon = C && C.root && C.root.visible && G.cfg.monOn !== false ? C.root.position : null, t = now / 1000;
+    let k = 0;
+    for (const rec of L.list) {
+      const li = rec.r && rec.r.light; if (!li) continue;
+      const m = li.matrixWorld.elements, lx = m[12], ly = m[13], lz = m[14];
+      if (Math.hypot(lx - cam.x, lz - cam.z) > NEAR) continue;
+      const f = flock.get(rec) || birth(rec);
+      const R = rec.U && rec.U.uLampR ? rec.U.uLampR.value : 0.27;
+      const lit = L.on !== false && !(rec.blowT0 && now >= rec.blowT0);       // 돌풍에 꺼진 동안(다시 켜지는 1.2초 포함) — 없음
+      if (mon && Math.hypot(mon.x - lx, mon.z - lz) < 4 && now - f.scatT > 3000) { f.scatT = now; f.quiet = rnd(9, 15); }
+      const quiet = (now - f.scatT) / 1000 < f.quiet;
+      for (const q of f.moths) {
+        const want = lit && !quiet ? 0 : 1;                                   // 0 = 불 곁 · 1 = 흩어져 없음
+        if (want < q.out) { q.back -= dt; if (q.back <= 0) q.out = Math.max(0, q.out - dt / 1.6); }   // 하나씩 천천히 돌아온다
+        else if (want > q.out) { q.out = Math.min(1, q.out + dt / 0.5); q.back = rnd(0.3, 2.5); }   // 확 흩어짐
+        if (q.out >= 1 || k >= MAX) continue;
+        q.next -= dt;
+        if (q.next <= 0) { q.next = rnd(0.6, 3.2); if (Math.random() < 0.35) q.bump = 0; else { q.w = -q.w * rnd(0.8, 1.2); q.y = Math.max(-0.6, Math.min(0.9, q.y + rnd(-0.3, 0.3))); } }
+        let rk = q.rk + 0.35 * Math.sin(t * 2.3 + q.ph) + 0.2 * Math.sin(t * 5.1 + q.ph * 2);
+        if (q.bump >= 0) { q.bump += dt; const u = q.bump / 0.45; if (u >= 1) q.bump = -1; else rk = rk + (1.05 - rk) * Math.sin(u * Math.PI); }   // 불집 쪽으로 툭
+        q.a += q.w * dt * (1 + 0.5 * Math.sin(t * 3.7 + q.ph));
+        const o = q.out * q.out, r = R * rk + o * 3.5, hy = (q.y + 0.18 * Math.sin(t * 3.1 + q.ph)) * R + o * 2.2;
+        const x = lx + Math.cos(q.a) * r, y = ly + hy, z = lz + Math.sin(q.a) * r;
+        const flap = 0.25 + 0.75 * Math.abs(Math.sin(t * q.fq * Math.PI + q.ph)), s = q.size * (1 - o);
+        Q.setFromAxisAngle(AY, -q.a + (q.w > 0 ? 0 : Math.PI)).multiply(Q2.setFromAxisAngle(AX, 0.3 * Math.sin(t * 7 + q.ph)));
+        M.compose(P.set(x, y, z), Q, S.set(s * flap, s * 0.12, s * 0.55));
+        mesh.setMatrixAt(k++, M);
+      }
+    }
+    mesh.count = k; N.n = k;
+    if (k) mesh.instanceMatrix.needsUpdate = true;
+  }
+  requestAnimationFrame(frame);
 })();
 
 </script>
