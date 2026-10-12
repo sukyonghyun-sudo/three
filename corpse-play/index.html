@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-441 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-442 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-441'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-442'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1648,7 +1648,7 @@ var MeshoptDecoder = (function () {
     try {
       document.fonts.load(`800 13px ${MJ}`, 'P1P2P3 본진屍歸奪이(가) 시체를 가져간다 내0123456789m').then(() => {
         buildArt(col); for (const q of plq) if (q) q.dirty = true;
-        if (HUD.scene) for (const it of [HUD.home, HUD.warn, ...HUD.base]) it.key = '';   // 표찰도 새 글꼴로 다시
+        if (HUD.scene) for (const it of [HUD.home, HUD.warn, HUD.water, ...HUD.base].filter(Boolean)) it.key = '';   // 표찰도 새 글꼴로 다시
       }).catch(() => {});
     } catch { /* 글꼴 API 없음 */ }
   }
@@ -2059,6 +2059,22 @@ var MeshoptDecoder = (function () {
     const h = G.hero.position;
     want.home = z && G.zoneAt(h.x, h.z) !== 0 ? z : null;
     document.body.classList.toggle('tz-home', !!want.home);
+    pickWater(game);
+  }
+  // 불붙었을 때 가장 가까운 연못 칸(0.25m 격자 · 0.4초마다) — 물속이면 끈다
+  let wC = null, wT = 0;
+  function pickWater(game) {
+    const B = window.__burn, N = window.__nav, X = window.__fx;
+    if (game.over || !B || !B.burning || !B.burning('hero') || !N || !N.waterGrid || (X && X.on && X.on.waterguide === false)) { want.water = null; return; }
+    const h = G.hero.position, now = performance.now();
+    if (N.waterAt && N.waterAt(h.x, h.z)) { want.water = null; return; }
+    if (!wC || now - wT > 400) {
+      wT = now; const g = N.waterGrid(); if (!g) { want.water = null; return; }
+      let best = null, bd = 1e9;
+      for (let k = 0; k < g.nz; k += 2) for (let i = 0; i < g.nx; i += 2) { const y = g.wy[k * g.nx + i]; if (!isFinite(y)) continue; const x = g.x0 + (i + 0.5) * g.cs, z = g.z0 + (k + 0.5) * g.cs, d = (x - h.x) ** 2 + (z - h.z) ** 2; if (d < bd) { bd = d; best = { x, y, z }; } }
+      wC = best;
+    }
+    want.water = wC;
   }
 
   /* ── 화면 표지(HUD) — 본진 표지 셋 · 내 본진 길잡이 · 도난 경고 ─────────────────────
@@ -2071,8 +2087,8 @@ var MeshoptDecoder = (function () {
        본진이 화면 안 가까이 있으면 숨긴다(월드의 에마 판이 대신 보인다). 내가 시체를 들면 내 것은 큰 歸 길잡이로 바뀐다
      · 내 본진 길잡이 = 큰 나무 표찰 + 내 색 歸 인장 · 도난 = 옻칠 표찰 + 핏빛 奪 인장 + 가장자리 핏빛 번짐(깜빡)
      표지끼리 겹치면 본진 표지를 옆으로 밀어낸다(길잡이·경고는 제자리) */
-  const want = { warn: null, home: null, bases: [] };
-  const HUD = { scene: null, cam: null, W: 0, H: 0, home: null, warn: null, vig: null, base: [] };
+  const want = { warn: null, home: null, bases: [], water: null };
+  const HUD = { scene: null, cam: null, W: 0, H: 0, home: null, warn: null, vig: null, base: [], water: null };
   // 장면 버퍼는 화면의 55%(lowres)로 그려져 필터가 번지게 늘인다 → 표지는 크고 굵게, 글에는 먹 테를 둘러야 필터를 먹어도 읽힌다
   const HDPR = 2, AR = 76, BAR = 46, NEAR = 14;   // 그림 해상도 배율 · 큰 화살 · 본진 표지 화살(px) · 이 안이면 본진 표지를 숨김(m)
   function hcanvas(w, h, dpr = HDPR) { const c = document.createElement('canvas'); c.width = Math.ceil(w * dpr); c.height = Math.ceil(h * dpr); const g = c.getContext('2d'); g.scale(dpr, dpr); return [c, g]; }
@@ -2208,6 +2224,7 @@ var MeshoptDecoder = (function () {
     HUD.base = [0, 1, 2].map((t) => ({ t, arrow: quad(tex(arrowArt(hex(G.colors[t]), 91 + t)), 4), label: quad(blank(), 5), glow: quad(glow, 3), key: '', w: 0, h: 0, slamT: -9 }));
     HUD.warn = { arrow: quad(tex(arrowArt(red, 71)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: red, glyph: '奪', seed: 301 };
     HUD.home = { arrow: quad(tex(arrowArt(mine, 53)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'wood', color: mine, glyph: '歸', seed: 211 };
+    HUD.water = { arrow: quad(tex(arrowArt('#6fb6e6', 41)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: '#6fb6e6', glyph: '水', seed: 401 };   // 불붙었을 때 가장 가까운 연못(b442)
     // 본진 표지 셋은 시작하자마자 뜬다 — 지금(준비 중) 그려 둬서 시작 첫 프레임에 캔버스를 그리고 올리지 않게
     try {
       const sc = G.scores(), me = G.hero.position;
@@ -2306,8 +2323,8 @@ var MeshoptDecoder = (function () {
   window.__hudHuntDemo = () => { hDemo = performance.now() + 4000; };
   function hudDraw(target) {
     if (!G || !G.started || !el) return;
-    const w = want.warn, hm = want.home, bs = want.bases;
-    if (!w && !hm && !bs.length) return;
+    const w = want.warn, hm = want.home, bs = want.bases, wt = want.water;
+    if (!w && !hm && !bs.length && !wt) return;
     if (!HUD.scene) hudSetup();
     const W = innerWidth, H = innerHeight;
     if (HUD.W !== W || HUD.H !== H) { HUD.W = W; HUD.H = H; HUD.cam.left = 0; HUD.cam.right = W; HUD.cam.top = 0; HUD.cam.bottom = -H; HUD.cam.updateProjectionMatrix(); }
@@ -2325,6 +2342,11 @@ var MeshoptDecoder = (function () {
       { const n0 = (G.scores && G.scores()[0]) || 0, dd = dStep(Math.hypot(hm.cx - me.x, hm.cz - me.z)), key = 'b' + n0 + '|' + dd;
         if (HUD.home.key !== key) { HUD.home.key = key; swapTex(HUD.home, baseTagArt(0, n0, `${dd}m`)); } }
       us.push(uh = layout(HUD.home, aim(hm.cx, G.groundAt(hm.cx, hm.cz) + 2.2, hm.cz), AR, true, hs));
+    }
+    let uwt = null;
+    if (wt && HUD.water) {   // 2026-10-12 사용자: 「불탈 때 물웅덩이 위치를 알려주게」 — 타는 동안만 가장 가까운 연못 쪽 · 水 표찰 + 거리
+      setLabel(HUD.water, '물에 뛰어들어라', `${dStep(Math.hypot(wt.x - me.x, wt.z - me.z))}m`);
+      us.push(uwt = layout(HUD.water, aim(wt.x, wt.y + 1.2, wt.z), AR, true, hs));
     }
     const ub = [];
     for (const b of bs) {
@@ -2344,6 +2366,7 @@ var MeshoptDecoder = (function () {
       HUD.vig.material.opacity = 0.675 - 0.225 * Math.cos(t * Math.PI * 2 / 1.1);   // .45 ↔ .9
     }
     if (uh) apply(uh, t, 1.0, 1);
+    if (uwt) apply(uwt, t, 0.8, 0.75 + 0.25 * Math.sin(t * Math.PI * 2 / 0.7));
     const hf = huntFade();
     for (const u of ub) {
       const it = u.it, b = u.b, since = t - it.slamT;
@@ -6605,6 +6628,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'nomousecam', name: '마우스 카메라 막기(controls.js — 화면을 끌어도 시점이 안 돈다 · 휠 거리는 그대로)', def: true },
     { key: 'monsleep', name: '괴물 시작 잠(controls.js · 서버 — 판 시작 6초 동안 서 있기만)', def: true },
     { key: 'lookback', name: 'Space 뒤돌아보기(camera.js — 10-12 사용자 요청으로 뺌)', def: false },
+    { key: 'waterguide', name: '불붙으면 가장 가까운 연못 길잡이(tension.js — 10-12 · 水 표찰 + 거리 · 타는 동안만)', def: true },
     { key: 'eyelight', name: '눈 앞 시야(eyelight.js — 10-12 사용자: 손전등 없이 내 앞이 자연스럽게 보이게 · 손전등이 꺼져 있을 때 그 빛을 아주 넓고 부드럽고 약한 차가운 밤빛으로 빌려 · 머리 높이에서 보는 쪽 땅을)', def: true },
     { key: 'zonefence', name: '본진 바닥 표시 — 바닥 모델링을 따라(zonefence.js — 10-12 사용자: 뿌옇다 · 바닥 모델링을 따라 자연스럽게 · 맵 바닥 · 바위 윗면 삼각형을 본진 네모로 잘라 덮는 데칼 · 칠한 것처럼(번짐 없음) · 떠 있던 판은 숨김)', def: true },
     { key: 'monsmooth', name: '괴물 막힘 떨림 없애기(montwitch.js — 10-12 사용자: 막힌 곳에서 부들부들 · 그릴 때만 몸 자리 · 방향을 부드럽게 따라가게 · 실제 움직임 · 판정은 그대로)', def: true },
