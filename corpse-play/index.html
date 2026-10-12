@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-414 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-416 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-414'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-416'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -10093,11 +10093,38 @@ vec3 srGN(vec2 p) {
      → 그 꼬리 동안: 배를 움켜쥐듯 상체를 숙이고(가슴 · 목 · 머리 · 최대 약 38°) 고개를 떨군 채 조금 비틀 · 아픔에 떨림 · 다 끝날 무렵 펴며 움직일 수 있게 · 「으윽」 신음 하나
      그리기 직전 뼈에 얹고 그린 뒤 되돌린다 · 끄기: 시연실 연출 「일어난 뒤 아파서 주춤」 */
   const HS = { g0: 0, said: false };
+  // 입에서 땅까지 흘러내리는 핏줄기(b416 — 사용자 「입에서 왈칵 쏟는 게 보일 정도로 · 주륵 하고 흘리게」) — 포물선을 따라 이은 가는 원기둥 8토막
+  //   재질은 괴물 둘레 붉은 고리(MeshBasic · 그림 없음)를 복제해 검붉게 — 같은 프로그램(새 셰이더 없음)
+  const ST = { segs: null, mat: null, tmp: null };
+  function streamInit(G) {
+    if (ST.segs) return true;
+    const T = G.THREE; let src = null;
+    G.scene.traverse((o) => { if (!src && o.isMesh && o.geometry && o.geometry.type === 'RingGeometry' && o.material && o.material.isMeshBasicMaterial && !o.material.map) src = o; });
+    if (!src) return false;
+    ST.mat = src.material.clone(); ST.mat.color.setHex(0x4a0004); ST.mat.opacity = 0.97; ST.mat.transparent = true; ST.mat.depthWrite = true; ST.mat.side = 2;
+    ST.segs = [];
+    for (let i = 0; i < 8; i++) { const m = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 6, 1, true), ST.mat); m.frustumCulled = false; m.visible = false; m.renderOrder = 2; G.scene.add(m); ST.segs.push(m); }
+    ST.tmp = { a: new T.Vector3(), b: new T.Vector3(), d: new T.Vector3(), y: new T.Vector3(0, 1, 0), q: G.scene.quaternion.clone() };
+    return true;
+  }
+  function streamHide() { if (ST.segs) for (const m of ST.segs) m.visible = false; }
+  function streamDraw(G, mouth, fx, fz, s, t) {
+    if (!streamInit(G)) return;
+    const gy = (G.groundAt && G.groundAt(mouth.x, mouth.z)) || 0, v0 = 0.35 + 0.9 * s, r0 = 0.008 + 0.022 * s;
+    const pts = []; for (let i = 0; i <= 8; i++) { const tt = i * 0.045, wob = Math.sin(t * 31 + i * 1.7) * 0.006 * (i / 8); pts.push([mouth.x + fx * v0 * tt + fz * wob, Math.max(gy + 0.01, mouth.y - 0.6 * tt - 4.9 * tt * tt), mouth.z + fz * v0 * tt - fx * wob]); }
+    const { a, b, d, y, q } = ST.tmp;
+    for (let i = 0; i < 8; i++) {
+      const m = ST.segs[i]; a.set(...pts[i]); b.set(...pts[i + 1]); d.copy(b).sub(a); const L = d.length();
+      if (L < 0.003 || (pts[i][1] <= gy + 0.011 && i > 0)) { m.visible = false; continue; }
+      const r = r0 * (1 - i * 0.06);
+      m.position.copy(a).add(b).multiplyScalar(0.5); q.setFromUnitVectors(y, d.normalize()); m.quaternion.copy(q); m.scale.set(r, L, r); m.updateMatrixWorld(true); m.visible = true;
+    }
+  }
   const hsSave = [];
   function hsApply() {
-    const G = window.__G; if (!G || !G.started || !G.hit) return;
+    const G = window.__G; streamHide(); if (!G || !G.started || !G.hit) return;
     const H = G.hit, now = performance.now() / 1000;
-    if (!(H.active && H.phase === 'getup' && !H.drop) || !fxOn('hurtstagger')) { HS.g0 = 0; HS.said = false; return; }
+    if (!(H.active && H.phase === 'getup' && !H.drop) || !fxOn('hurtstagger')) { HS.g0 = 0; HS.said = false; HS.v1 = HS.v2 = HS.v3 = false; return; }
     if (!HS.g0) HS.g0 = now;
     const sp = Math.max(0.1, G.cfg.hitGetupSpeed || 0.6), stand = 1.75 / sp, tail = 1.25;   // 다 서는 때 · 꼬리 길이(끝은 게임이 정한다)
     HS.vdt = HS.lt ? Math.min(0.1, now - HS.lt) : 0.016; HS.lt = now;
@@ -10116,14 +10143,31 @@ vec3 srGN(vec2 p) {
     rot(bones.LeftUpLeg, ax, -k * 0.12); rot(bones.RightUpLeg, ax, -k * 0.12); rot(bones.LeftLeg, ax, k * 0.2); rot(bones.RightLeg, ax, k * 0.2);   // 무릎도 살짝 굽혀 주저앉을 듯
     // 피를 토한다(2026-10-12 사용자: 「맞은 다음 일어나서 몸을 움츠리는 데서 입에 피 토하게」) — 숙인 뒤(꼬리 10~55%) 입에서 앞 · 아래로 피 줄기 · 두 번 왈칵(25% · 45%) · 땅에 떨어지면 방울 자국(gore.drop)
     //   소리는 「일어남」 신음 대신 젊은 남자 기침(컥) · 끄기: 시연실 연출 「일어난 뒤 피를 토함」
-    if (fxOn('bloodvomit') && u > 0.1 && u < 0.55) {
+    if (fxOn('bloodvomit') && u > 0.05 && u < 0.8) {
+      // b415 — 잘 보이게(사용자 「입에서 피 안 쏟는 것 같다」 — 카메라가 등 뒤라 앞 · 아래로 떨어지는 작은 방울은 몸에 가려 안 보였다)
+      //   · 왈칵 세 번(20% · 40% · 60%) — 그때마다 굵은 줄기(방울 8~10개) + 발 앞 · 옆으로 번지는 핏물 자국(땅에 남는다 · 끌린 핏자국과 같은 그림)
+      //   · 사이에는 입가에서 가늘게 흘러내림 · 고개는 살짝 옆으로 틀어 등 뒤 카메라에도 입이 보이게
       const gore = G.gore || (G.mpApi && G.mpApi.gore), hd = bones.Head;
+      const surge = Math.exp(-Math.pow((u - 0.2) / 0.045, 2)) + Math.exp(-Math.pow((u - 0.4) / 0.045, 2)) * 0.9 + Math.exp(-Math.pow((u - 0.6) / 0.04, 2)) * 0.7;
+      const side = new T.Vector3(Math.cos(y), 0, -Math.sin(y));
+      rot(bones.Head, up, k * 0.35 * (0.4 + 0.6 * Math.min(1, surge + 0.3)));   // 고개를 옆으로(카메라 쪽에서 입이 보이게)
       if (gore && gore.drop && hd && (HS.vt = (HS.vt || 0) - (HS.vdt || 0.016)) <= 0) {
-        HS.vt = 0.03;
+        HS.vt = 0.016;
         const p = hd.getWorldPosition(new T.Vector3()), fx = Math.sin(y), fz = Math.cos(y);
-        p.x += fx * 0.13; p.z += fz * 0.13; p.y -= 0.1;                               // 입(머리 뼈 앞 · 아래)
-        const surge = Math.exp(-Math.pow((u - 0.25) / 0.05, 2)) + Math.exp(-Math.pow((u - 0.45) / 0.04, 2)) * 0.8, n = 1 + Math.round(3 * surge);
-        for (let i = 0; i < n; i++) { const sp = 0.5 + Math.random() * 0.9 + surge * 1.2, sd = (Math.random() - 0.5) * 0.5; gore.drop(p.clone(), new T.Vector3(fx * sp + fz * sd, -0.2 + Math.random() * 0.6 + surge * 0.3, fz * sp - fx * sd)); }
+        p.x += fx * 0.12 + side.x * 0.05; p.z += fz * 0.12 + side.z * 0.05; p.y -= 0.1;   // 입(머리 뼈 앞 · 아래)
+        const n = 2 + Math.round(14 * Math.min(1, surge));
+        for (let i = 0; i < n; i++) { const sp = 0.4 + Math.random() * 0.8 + surge * 1.6, sd = (Math.random() - 0.5) * (0.4 + surge * 0.8); gore.drop(p.clone(), new T.Vector3(fx * sp + side.x * sd, -0.4 + Math.random() * 0.5 + surge * 0.5, fz * sp + side.z * sd)); }
+      }
+      // 주륵 — 입에서 땅까지 이어진 핏줄기(사이에는 가늘게 · 왈칵 때 굵게)
+      if (hd && u > 0.12 && u < 0.75) { const mp = hd.getWorldPosition(new T.Vector3()); mp.x += Math.sin(y) * 0.12 + side.x * 0.05; mp.z += Math.cos(y) * 0.12 + side.z * 0.05; mp.y -= 0.1; streamDraw(G, mp, Math.sin(y), Math.cos(y), Math.min(1, 0.25 + surge * 1.1) * Math.min(1, (u - 0.12) / 0.05, (0.75 - u) / 0.08), now); }
+      // 땅 — 왈칵마다 한 번 발 앞에 핏물(0.3~0.45m 너비로 번진 자국 · 20초 남음)
+      for (const [c, key] of [[0.2, 'v1'], [0.4, 'v2'], [0.6, 'v3']]) {
+        if (u >= c + 0.03 && !HS[key] && window.__smear) {
+          HS[key] = true;
+          const h = G.hero.position, fx = Math.sin(y), fz = Math.cos(y), d = 0.45 + Math.random() * 0.2, o = (Math.random() - 0.5) * 0.3;
+          const x0 = h.x + fx * (d - 0.15) + side.x * o, z0 = h.z + fz * (d - 0.15) + side.z * o;
+          window.__smear(x0, z0, x0 + fx * 0.35 + side.x * (Math.random() - 0.5) * 0.3, z0 + fz * 0.35 + side.z * (Math.random() - 0.5) * 0.3, 0.3 + Math.random() * 0.15, 20);
+        }
       }
     }
   }
@@ -10783,6 +10827,16 @@ vec3 srGN(vec2 p) {
     try { occTick(G); } catch (e) { if (!OCC.err) { OCC.err = true; console.warn('[camera] 가림 비추기', e); } OCC.ready = true; }
     if (S.save) { G.cam.position.copy(S.save); S.save = null; }
     if (S.fovApplied) { G.cam.fov -= S.fovApplied; S.fovApplied = 0; G.cam.updateProjectionMatrix(); }
+  })();
+  // 기본 내려다봄 0.42 → 0.14(2026-10-12 사용자 사진 각도) — 브라우저에 남은 예전 설정(game.js lab_settings_v41)이 0.42 를 다시 덮어써 「요청한 각도가 풀렸다」
+  //   → 이 브라우저에서 한 번만 0.14 로 맞춘다(그 뒤 사용자가 바꾼 값은 그대로 둔다)
+  (function pitchFix() {
+    const G = window.__G; if (!G || !G.set || !G.cfg) { setTimeout(pitchFix, 300); return; }
+    let done = false; try { done = localStorage.getItem('corpse_campitch_v2') === '1'; } catch { /* 저장소 없음 — 매번 맞춘다 */ }
+    if (!done) {
+      if (G.cfg.camPitch !== 0.14) G.set('camPitch', 0.14);
+      try { const o = JSON.parse(localStorage.getItem('lab_settings_v41') || 'null'); if (o && typeof o === 'object') { o.camPitch = 0.14; localStorage.setItem('lab_settings_v41', JSON.stringify(o)); } localStorage.setItem('corpse_campitch_v2', '1'); } catch { /* */ }   // 남은 설정에도 고쳐 써서 다음에 켤 때 다시 0.42 로 돌아가지 않게
+    }
   })();
 })();
 
