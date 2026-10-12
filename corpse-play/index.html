@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-372 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-373 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -319,7 +319,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-372'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-373'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6073,8 +6073,8 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 꺾일 때 뼈 갈림 · 경련 때 마디 크르륵(실제 녹음) · 나를 발견하는 순간 머리가 먼저 내 쪽으로 홱 · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
     { key: 'motes', name: '손전등 먼지(motes.js — 손전등(L)을 켜면 빛 원뿔 안의 공기 중 먼지가 반짝이며 떠다님 · 빛이 훑고 지나가는 자리만 · 멀수록 · 가장자리일수록 흐리게 · 깜빡이면 같이 / 보기: 손전등을 6초 켬)', def: true },
     { key: 'breathhold', name: '숨 참기(breathe.js — 괴물이 11m 안인데 들키지 않고 내가 멈춰 서 있으면 저절로 숨을 멈춤 · 숨소리 사라지고 가슴 · 카메라 숨 멈춤 · 입 꾹 눈 크게 · 심장 소리 커짐 · 괴물이 멀어지거나 9초가 지나면 몰아쉼 / 보기: 지금 5초 참았다 몰아쉼)', def: true },
-    { key: 'crows', name: '시체 곁 까마귀(crows.js — 12초 넘게 아무도 7m 안에 오지 않은 시체에 까마귀 1~3마리가 내려앉아 쪼고 깡충 · 가끔 낮게 깍 · 누가 4.5m 안에 오거나 시체를 집으면 푸드덕 날아오름 / 보기: 화면 앞 시체에 셋이 내려앉고 7초 뒤 날아오름)', def: true },
-    { key: 'birds', name: '새 떼(birds.js — 괴물이 나무 7m 안을 걸어 지나가면 새들이 놀라 푸드덕 날아오르고 까마귀가 운다 · 검은 새 6~11마리가 괴물 반대쪽으로 흩어지고 그 가지에서 벚꽃잎이 한 줌 흩날려 떨어짐 · 그 나무엔 90~150초 새 없음 · 숲 전체 20초에 한 번까지 / 보기: 화면 앞쪽 가까운 나무의 새가 놀라 화면 안쪽으로 날아오름)', def: true },
+    { key: 'crows', tour: false, name: '시체 곁 까마귀(crows.js — 기본 끔 · 10-12 사용자: 까마귀 모델이 구림 — 켜면 예전처럼 · 12초 넘게 아무도 7m 안에 오지 않은 시체에 까마귀 1~3마리가 내려앉아 쪼고 깡충 · 가끔 낮게 깍 · 누가 4.5m 안에 오거나 시체를 집으면 푸드덕 날아오름 / 보기: 화면 앞 시체에 셋이 내려앉고 7초 뒤 날아오름)', def: false },
+    { key: 'birds', tour: false, name: '새 떼(birds.js — 기본 끔 · 10-12 사용자: 새 모델이 구림 — 켜면 예전처럼(돌풍 꽃잎은 따로) · 괴물이 나무 7m 안을 걸어 지나가면 새들이 놀라 푸드덕 날아오르고 까마귀가 운다 · 검은 새 6~11마리가 괴물 반대쪽으로 흩어지고 그 가지에서 벚꽃잎이 한 줌 흩날려 떨어짐 · 그 나무엔 90~150초 새 없음 · 숲 전체 20초에 한 번까지 / 보기: 화면 앞쪽 가까운 나무의 새가 놀라 화면 안쪽으로 날아오름)', def: false },
     { key: 'moths', name: '등롱 나방(moth.js — 켜진 등롱마다 나방 3~5마리가 불 둘레를 제멋대로 맴돎 · 가끔 불에 툭 · 등롱이 꺼지면 흩어지고 괴물이 4m 안을 지나가면 확 흩어졌다 9~15초 뒤 돌아옴 · 손전등을 켜고 4초 서 있으면 2~3마리가 빛 앞으로 꼬임 / 보기: 가장 가까운 등롱 나방이 흩어졌다 돌아옴)', def: true },
     { key: 'monblood', name: '피 묻은 손(blood.js — 괴물이 사람을 치면 30초 동안 두 손끝에서 피가 뚝뚝 · 처음엔 자주 · 점점 드물게 · 바닥 얼룩 · 톡 소리 / 보기: 지금 막 친 것처럼)', def: true },
     { key: 'lastbell', name: '마지막 하나 — 범종(realsfx.js — 어느 본진이든 이 판에 처음 시체 둘을 모으는 순간 그 본진 쪽에서 먼 범종이 한 번 · 「하나 남았다」를 소리로 / 보기: 지금 한 번)', def: true },
@@ -6091,7 +6091,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
   ];
   // 주말에 새로 넣은 것(2026-10-08 밤 ~ 10-12) — 시연실에 날짜 표시(showcase.js)
   const NEW = { painlive: '10-08', scoot: '10-08', pickup: '10-08', sway: '10-08', ambev: '10-08', muffle: '10-08', torchflick: '10-08', stepsurf: '10-09', othersteps: '10-09', spotted: '10-09', foley2: '10-09', slam: '10-09', music2: '10-09', basefx: '10-09', corpseglance: '10-09', occl: '10-09', monlost: '10-09', wetcloth: '10-09', dust: '10-09', footblood: '10-09', startcard: '10-09', lampblow: '10-09', monweight: '10-09', hudhunt: '10-09', injured: '10-09', stepcam: '10-09', endcam: '10-09', lastbell: '10-09', monblood: '10-09', moths: '10-09', birds: '10-09', crows: '10-09', breathhold: '10-09', motes: '10-09', montwitch: '10-09', torchshake: '10-10', soundlook: '10-10', gustpetal: '10-10', lampgutter: '10-10', flies: '10-10', wetprint: '10-10', nightdeep: '10-10', squelch: '10-10', pond: '10-10', postmood: '10-10', corpsepool: '10-10', clouds: '10-10', recoil: '10-10', mist: '10-10', reveal: '10-10', roundstats: '10-10', mixduck: '10-10', hintfade: '10-11', titleclean: '10-11', redmoon: '10-11', lastdrone: '10-11', hudsharp: '10-11', quietbtns: '10-11' };
-  const X = (window.__fx = { ready: false, opts: OPTS.map((o) => ({ key: o.key, name: o.name, nw: NEW[o.key] || '' })), on: {}, shake, set, flash: hitFlash });
+  const X = (window.__fx = { ready: false, opts: OPTS.map((o) => ({ key: o.key, name: o.name, nw: NEW[o.key] || '', tour: o.tour })), on: {}, shake, set, flash: hitFlash });
   for (const o of OPTS) X.on[o.key] = o.def;
   function set(key, v) { X.on[key] = !!v; }                          // 이번 판에만 — 저장은 settings.js 「저장」(모두의 기본값)
   if (window.__settings) window.__settings.reg('fx', { get: () => Object.assign({}, X.on), set: (o) => { for (const k of Object.keys(X.on)) if (o && o[k] !== undefined) X.on[k] = !!o[k]; } });
@@ -11956,7 +11956,8 @@ body.mp-on #sr-show-btn { display: none; }   /* 같이 하기 — 오른쪽 아�
   const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   function tourList() {
     const X = window.__fx; if (!X || !X.opts || !X.previewable) return [];
-    return X.opts.filter((o) => o.nw && X.previewable.includes(o.key)).map((o, k) => ({ o, k })).sort((a, b) => (a.o.nw < b.o.nw ? -1 : a.o.nw > b.o.nw ? 1 : a.k - b.k)).map((a) => a.o);
+    return X.opts.filter((o) => o.nw && o.tour !== false && X.previewable.includes(o.key))   // tour:false — 사용자가 뺀 것(10-12 까마귀 · 새 떼)
+      .map((o, k) => ({ o, k })).sort((a, b) => (a.o.nw < b.o.nw ? -1 : a.o.nw > b.o.nw ? 1 : a.k - b.k)).map((a) => a.o);
   }
   function tourCap() {
     if (tour.cap) return tour.cap;
