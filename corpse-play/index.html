@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-429 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-430 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-429'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-430'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2950,7 +2950,7 @@ var MeshoptDecoder = (function () {
   function region(z, top, y0) {
     const { H, nu, nv, C } = top, W = (G.cfg.zoneWidth || 7) / 2, D = (G.cfg.zoneDepth || 6) / 2, W0 = top.W, D0 = top.D;
     const M = new Float32Array(nu * nv);
-    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const u = -W0 + i * C, v = -D0 + j * C, h = H[j * nu + i]; M[j * nu + i] = (Math.abs(u) <= W - 0.15 && v >= -D - 0.25 && v <= D - 0.15 && isFinite(h) && Math.abs(h - y0) <= 0.4) ? 1 : 0; }   // b427 — 평평한 바닥만(바위 위는 빼 선이 바위 높낮이에 끊기지 않게) · 토리이 쪽(앞)은 끝까지
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const u = -W0 + i * C, v = -D0 + j * C, h = H[j * nu + i]; M[j * nu + i] = (Math.abs(u) <= W - 0.1 && Math.abs(v) <= D - 0.1) ? 1 : 0; }   // b430 — 세 본진 같은 크기(실제 인정 범위 7×6m 네모 · 땅 모양과 상관없이) · 흐림으로 모서리만 둥글게   // b427 — 평평한 바닥만(바위 위는 빼 선이 바위 높낮이에 끊기지 않게) · 토리이 쪽(앞)은 끝까지
     // 가운데와 이어진 덩어리만
     const keep = new Uint8Array(nu * nv), ci = Math.round(W0 / C), cj = Math.round(D0 / C); let seed = -1, bd = 1e9;
     for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) if (M[j * nu + i]) { const d = (i - ci) ** 2 + (j - cj) ** 2; if (d < bd) { bd = d; seed = j * nu + i; } }
@@ -2989,7 +2989,7 @@ var MeshoptDecoder = (function () {
     const w = 0.13, pos = [], uvs = [], idx = [];
     for (const lp of loops) {
       const closed = key(lp[0]) === key(lp[lp.length - 1]), n = lp.length, W3 = lp.map(([u, v]) => P(u, v));
-      let ys = W3.map(([x, zz]) => { const y = top.exact(x, zz); return isFinite(y) ? Math.min(Math.max(y, R.y0 - 0.4), R.y0 + 0.4) : R.y0; });
+      let ys = W3.map(([x, zz]) => { const y = top.exact(x, zz); return isFinite(y) ? Math.min(Math.max(y, R.y0 - 0.3), R.y0 + 1.6) : R.y0; });   // 바위 위는 올라타고 · 절벽 아래로는 안 내려감
       for (let it = 0; it < 3; it++) ys = ys.map((y, i) => { let s0 = 0, c = 0; for (let k = -3; k <= 3; k++) { let j = i + k; if (closed) j = (j + n) % n; else if (j < 0 || j >= n) continue; s0 += Math.max(ys[j], y - 0.05); c++; } return s0 / c; });
       const base = pos.length / 3;
       for (let i = 0; i < n; i++) {
@@ -3093,7 +3093,7 @@ var MeshoptDecoder = (function () {
           if (L > 0.35 && depth < 7) { const m = (a, b) => a.map((v, i) => (v + b[i]) / 2), pq = m(p, q), qr = m(q, r), rp = m(r, p); put(p, pq, rp, depth + 1); put(pq, q, qr, depth + 1); put(rp, qr, r, depth + 1); put(pq, qr, rp, depth + 1); return; }
           const mx = (p[0] + q[0] + r[0]) / 3, my = (p[1] + q[1] + r[1]) / 3, mz = (p[2] + q[2] + r[2]) / 3;
           const h = top.at(mx, mz);   // 맨 윗면만(b413 — 설 수 있는 곳만 고르니 바위 자리가 비어 영역이 군데군데 끊겨 보였다 · 사용자 「한 줄로 연결되게 · 왜 끊어져 있고 영역마다 옅고」)
-          if (!isFinite(h) || Math.abs(my - h) > 0.2 || my < y0b - DROP || (RG && RG.at(mx, mz) < RG.LV)) return;   // 맨 윗면 · 둥근 영역 안만
+          if (!isFinite(h) || Math.abs(my - h) > 0.2 || my < y0b - 0.4 || (RG && RG.at(mx, mz) < RG.LV)) return;   // 맨 윗면 · 둥근 영역 안만
           for (const v of flip ? [p, r, q] : [p, q, r]) { out.push(v[0], v[1] + 0.01, v[2]); uvs.push(v[3] / (2 * W) + 0.5, v[4] / (2 * D) + 0.5); }
         };
         for (let k = 1; k < poly.length - 1; k++) put(poly[0], poly[k], poly[k + 1], 0);
