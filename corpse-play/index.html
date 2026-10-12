@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-439 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-440 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-439'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-440'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -8872,7 +8872,10 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const W = e.warp, k = ss(u / 0.3);
     if (W.ro) {
       // ① 봇 · 같이 하기 남 — 그리기에서만: 숙이며 시체 곁으로(0~30%) · 잡고(30~45%) · 일어서며 게임이 정한 제자리로(45~100%) — 그린 뒤 되돌린다(걷기 · 자리는 게임 그대로)
-      const ho = W.hero, kk = u < 0.45 ? k : 1 - ss((u - 0.45) / 0.55);
+      const ho = W.hero;
+      // b440 — 혼자 하기 봇은 실제로 그 자리로 옮긴다(사용자 「봇이 정면을 본 채 뒤로 달린다」 — 일어서며 제자리로 미끄러져 돌아가던 것이 뒷걸음질로 보였다) · 같이 하기의 남(서버가 자리를 정함)만 예전처럼 돌아간다
+      if (!mpOn() && !W.moved && u >= 0.3) { W.moved = true; ho.position.x = W.tx; ho.position.z = W.tz; { const N = window.__nav, gy = N && N.okAt ? N.okAt(W.tx, W.tz) : null; if (gy !== null && isFinite(gy)) ho.position.y = gy; } ho.rotation.y = W.tyaw; if (e.who && e.who.yaw !== undefined) e.who.yaw = W.tyaw; ho.updateMatrixWorld(true); }
+      const kk = W.moved ? 0 : (u < 0.45 ? k : 1 - ss((u - 0.45) / 0.55));
       saved.push(ho, ho.quaternion.x, ho.quaternion.y, ho.quaternion.z, ho.quaternion.w, ho.position.x, ho.position.y, ho.position.z, ho.scale.x, ho.scale.y, ho.scale.z);
       const px = ho.position.x, pz = ho.position.z, py = ho.rotation.y, x = px + (W.tx - px) * kk, z = pz + (W.tz - pz) * kk;
       ho.position.x = x; ho.position.z = z;
