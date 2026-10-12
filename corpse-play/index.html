@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-345 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-372 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -232,6 +232,10 @@
     'sfx/p_gasp1.mp3': 'corpse/sfx/p_gasp1', 'sfx/p_gasp2.mp3': 'corpse/sfx/p_gasp2', 'sfx/p_gasp3.mp3': 'corpse/sfx/p_gasp3', 'sfx/p_gasp4.mp3': 'corpse/sfx/p_gasp4', 'sfx/p_gasp5.mp3': 'corpse/sfx/p_gasp5',   // 들킴 — 젊은 남자 헉
     'sfx/p_drag_stone1.mp3': 'corpse/sfx/p_drag_stone1', 'sfx/p_drag_stone2.mp3': 'corpse/sfx/p_drag_stone2', 'sfx/p_drag_stone3.mp3': 'corpse/sfx/p_drag_stone3', 'sfx/p_drag_wood1.mp3': 'corpse/sfx/p_drag_wood1', 'sfx/p_drag_wood2.mp3': 'corpse/sfx/p_drag_wood2', 'sfx/p_drag_wood3.mp3': 'corpse/sfx/p_drag_wood3', 'sfx/p_drip1.mp3': 'corpse/sfx/p_drip1', 'sfx/p_drip2.mp3': 'corpse/sfx/p_drip2', 'sfx/p_drip3.mp3': 'corpse/sfx/p_drip3', 'sfx/p_drip4.mp3': 'corpse/sfx/p_drip4', 'sfx/p_drip5.mp3': 'corpse/sfx/p_drip5', 'sfx/p_cloth1.mp3': 'corpse/sfx/p_cloth1', 'sfx/p_cloth2.mp3': 'corpse/sfx/p_cloth2', 'sfx/p_cloth3.mp3': 'corpse/sfx/p_cloth3', 'sfx/p_cloth4.mp3': 'corpse/sfx/p_cloth4',   // 끌림(돌 · 나무) · 피 방울 · 옷 스침
     'sfx/amb_flock1.mp3': 'corpse/sfx/amb_flock1', 'sfx/amb_flock2.mp3': 'corpse/sfx/amb_flock2', 'sfx/amb_flock3.mp3': 'corpse/sfx/amb_flock3', 'sfx/amb_crow1.mp3': 'corpse/sfx/amb_crow1', 'sfx/amb_crow2.mp3': 'corpse/sfx/amb_crow2', 'sfx/amb_crow3.mp3': 'corpse/sfx/amb_crow3',   // 새 떼 · 까마귀(birds.js — 괴물이 나무 곁을 지나면)
+    'sfx/mus_reveal1.mp3': 'corpse/sfx/mus_reveal1', 'sfx/mus_reveal2.mp3': 'corpse/sfx/mus_reveal2', 'sfx/mus_reveal3.mp3': 'corpse/sfx/mus_reveal3',   // 괴물이 눈에 들어올 때 — 낮은 악기 한 번(reveal.js · b360)
+    'sfx/p_gag1.mp3': 'corpse/sfx/p_gag1', 'sfx/p_gag2.mp3': 'corpse/sfx/p_gag2',   // 시체 앞 역겨움 — 젊은 남자 헛구역질 · 못마땅한 신음(recoil.js · b357)
+    'sfx/amb_pond.mp3': 'corpse/sfx/amb_pond',   // 연못가 물결 — 가장 가까운 연못가에서 잔잔한 찰랑임 고리(realsfx.js pondTick · b351)
+    'sfx/p_squelch1.mp3': 'corpse/sfx/p_squelch1', 'sfx/p_squelch2.mp3': 'corpse/sfx/p_squelch2', 'sfx/p_squelch3.mp3': 'corpse/sfx/p_squelch3', 'sfx/p_squelch4.mp3': 'corpse/sfx/p_squelch4', 'sfx/p_squelch5.mp3': 'corpse/sfx/p_squelch5', 'sfx/p_squelch6.mp3': 'corpse/sfx/p_squelch6', 'sfx/p_squelch7.mp3': 'corpse/sfx/p_squelch7', 'sfx/p_squelch8.mp3': 'corpse/sfx/p_squelch8',   // 젖은 신발 — 연못에서 나온 뒤 걸음마다 질척(realsfx.js · wetfeet.js · b350)
     'sfx/mon_crack1.mp3': 'corpse/sfx/mon_crack1', 'sfx/mon_crack2.mp3': 'corpse/sfx/mon_crack2', 'sfx/mon_crack3.mp3': 'corpse/sfx/mon_crack3', 'sfx/mon_crack4.mp3': 'corpse/sfx/mon_crack4', 'sfx/mon_creak1.mp3': 'corpse/sfx/mon_creak1', 'sfx/mon_creak2.mp3': 'corpse/sfx/mon_creak2',   // 괴물 고개 — 목이 꺾이는 뼈 소리(montwitch.js)
     'sfx/mus_drone.mp3': 'corpse/sfx/mus_drone', 'sfx/mus_chase.mp3': 'corpse/sfx/mus_chase',   // 긴장 음악(music.js)
     'sfx/amb_bell1.mp3': 'corpse/sfx/amb_bell1', 'sfx/amb_bell2.mp3': 'corpse/sfx/amb_bell2', 'sfx/amb_owl1.mp3': 'corpse/sfx/amb_owl1', 'sfx/amb_owl2.mp3': 'corpse/sfx/amb_owl2', 'sfx/amb_dog1.mp3': 'corpse/sfx/amb_dog1', 'sfx/amb_dog2.mp3': 'corpse/sfx/amb_dog2', 'sfx/amb_gust1.mp3': 'corpse/sfx/amb_gust1', 'sfx/amb_gust2.mp3': 'corpse/sfx/amb_gust2', 'sfx/amb_snap1.mp3': 'corpse/sfx/amb_snap1', 'sfx/amb_snap2.mp3': 'corpse/sfx/amb_snap2', 'sfx/amb_moan1.mp3': 'corpse/sfx/amb_moan1', 'sfx/amb_moan2.mp3': 'corpse/sfx/amb_moan2', 'sfx/amb_ema1.mp3': 'corpse/sfx/amb_ema1', 'sfx/amb_ema2.mp3': 'corpse/sfx/amb_ema2', 'sfx/amb_suzu1.mp3': 'corpse/sfx/amb_suzu1',   // 밤 소리 사건(멀리서 가끔 · realsfx.js)
@@ -315,7 +319,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-345'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-372'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1913,9 +1917,11 @@ var MeshoptDecoder = (function () {
     G.renderer.render(fx.scene, fx.cam);
   }
   // 장면을 그린 직후·VHS 필터 앞 — 시체 빛을 더하고, 그 위에 화면 표지(HUD)를 그린다. 둘 다 필터를 함께 먹는다
+  // 표지 글자 또렷하게(b369 · 아트 리뷰 · 기본 끔 — 사용자 결정): 켜면 표지를 필터 앞이 아니라 필터를 다 그린 뒤 화면 위에 그린다(VHS 번짐 · 그레인을 안 먹음) · 끄기: 시연실 연출 「표지 글자 또렷하게」
+  const hudSharp = () => { const X = window.__fx; return !!(X && X.on && X.on.hudsharp) || performance.now() < (window.__hudSharpDemo || 0); };
   window.__preFx = (target) => {
     glowFx(target);
-    hudDraw(target);
+    if (!hudSharp()) hudDraw(target);
   };
   // 빛을 레이어 1(실루엣)에도 켜 둔다 — 가림 그리기에서 빛이 빠지면 빛 수가 매 프레임 N→0→N 으로 바뀌어
   // three 가 장면의 모든 재질마다 셰이더 설정(프로그램 확인·빛 uniform)을 다시 맞췄다. 새로 생기는 빛(등롱·손전등)도 2초마다 챙긴다
@@ -2416,6 +2422,7 @@ var MeshoptDecoder = (function () {
 
   window.__onFrame = (dt) => {
     tickClock(dt || 0.016);
+    if (G && hudSharp()) { try { hudDraw(null); } catch (e) { /* 넘어간다 */ } }   // 필터 뒤 — 화면 위에 바로(표지 글자 또렷하게)
     if (!G) { if (!window.__G || !window.__G.game.bodies.length) return; const a = performance.now(); setup(); if (window.__ph) window.__ph('tz', performance.now() - a); }
     const game = G.game;
     drawPlaques(G.scores());
@@ -2473,7 +2480,9 @@ var MeshoptDecoder = (function () {
       HUD.W = W; HUD.H = H; HUD.cam.left = 0; HUD.cam.right = W; HUD.cam.top = 0; HUD.cam.bottom = -H; HUD.cam.updateProjectionMatrix();
       for (const m of HUD.scene.children) { m.visible = true; m.position.set(W / 2, -H / 2, 0); m.scale.set(64, 32, 1); m.material.opacity = 0.01; }
       const r = G.renderer, ac = r.autoClear, prev = r.getRenderTarget();
-      r.setRenderTarget(target); r.autoClear = false; r.render(HUD.scene, HUD.cam); r.autoClear = ac; r.setRenderTarget(prev);
+      r.setRenderTarget(target); r.autoClear = false; r.render(HUD.scene, HUD.cam);
+      r.setRenderTarget(null); r.render(HUD.scene, HUD.cam);                  // 화면에 바로 그리는 변형도 미리 굽는다(「표지 글자 또렷하게」를 켜도 판 중에 새로 굽지 않게 · 준비 중이라 캔버스는 숨어 있다)
+      r.autoClear = ac; r.setRenderTarget(prev);
       for (const m of HUD.scene.children) m.visible = false;
     },
   };
@@ -3698,6 +3707,12 @@ window.__NAVGRID = {"sig":"n1|corpse/samurai_arena_lite|8f27e783|-28.843|-25.541
   const BLOCK = /^(KeyH|KeyI|KeyU|KeyO|KeyC|KeyP|KeyK|KeyT|KeyX|Digit[0-9]|Numpad[0-9])$/;
   window.addEventListener('keydown', (e) => {
     if (e.target && e.target.closest && e.target.closest('input[type="text"], textarea')) return;   // 대화칸(같이 하기)에 쓰는 글자
+    if (e.code === 'Escape' && !open && window.__tour && window.__tour.state().i >= 0) {   // 주말 둘러보기(showcase.js) 멈춤 — 아래에서 Esc 를 막기 전에
+      e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) window.__tour.end(); return;
+    }
+    if (e.code === 'Escape' && !open && document.body.classList.contains('sr-show-open') && window.__showcase) {   // 시연실(N) 닫기 — 머리말의 「N · Esc」(예전엔 아래에서 막혀 닫히지 않았다)
+      e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) window.__showcase.toggle(false); return;
+    }
     if (e.code === 'Escape' && !open && window.__motionFx && window.__motionFx.isOpen) {   // 동작 연출실(motion.js) 나가기
       e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) window.__motionFx.close(); return;
     }
@@ -6003,7 +6018,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
   const OPTS = [
     { key: 'rumble', name: '괴물 발 구름(흔들림 / 보기: 가까이서 네 걸음)', def: true },
     { key: 'look', name: '괴물 쳐다보기(괴물이 6.5m 안이면 사람들이 괴물 쪽을 봄 / 보기: 4초 동안 모두 괴물을 봄)', def: true },
-    { key: 'flies', name: '시체 파리(누운 시체 둘레 파리 떼 · 6m 안이면 윙윙 / 보기: 4초 동안 내 몸에 파리 떼)', def: true },
+    { key: 'flies', name: '시체 파리(누운 시체 둘레 파리 떼 · 6m 안이면 윙윙 · 시체를 들어 올리면 확 흩어졌다 25초에 걸쳐 다시 모임 / 보기: 가장 가까운 누운 시체에서 흩어짐)', def: true },
     { key: 'breath', name: '입김(숨 박자에 맞춘 하얀 김 / 보기: 4초 동안 0.8초마다)', def: true },
     { key: 'hitflash', name: '피격 붉은 번쩍임', def: true },
     { key: 'lightning', name: '번개', def: false },
@@ -6035,6 +6050,24 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'endcam', name: '끝 장면 카메라(camera.js — 판이 끝나면 3초에 걸쳐 카메라가 천천히 다가가 낮아진다 · 다음 판이면 바로 돌아옴 / 보기: 4.5초)', def: true },
     { key: 'lampgutter', name: '괴물 곁 등롱(sway.js — 괴물이 등롱 6.5m 안을 지나가면 그 불꽃이 가까울수록 움츠러들며 불규칙하게 떪(최대 7할 어두워짐) · 정직한 신호 / 보기: 가장 가까운 등롱 4초)', def: true },
     { key: 'gustpetal', name: '돌풍 꽃잎(birds.js — 돌풍이 일 때(열에 여섯) 30m 안 벚나무에서 꽃잎 3~6장씩 바람 부는 쪽으로 흩날려 천천히 떨어짐 · 땅에 잠깐 남음 / 보기: 지금 한 번 · 돌풍 소리와 함께)', def: true },
+    { key: 'quietbtns', name: '단추 물러남(hintfade.js — 기본 끔 · 아트 리뷰 제안: 켜면 플레이 중 「시연」 · 「조절」 · 「시점」 단추가 사라지고 마우스를 움직이거나 Tab · N · V 를 누르면 3초 보임 / 보기: 4초 숨김)', def: false },
+    { key: 'hudsharp', name: '표지 글자 또렷하게(tension.js — 기본 끔 · 아트 리뷰 제안: 켜면 「P2 봇 □□□ 30m」 같은 표지를 VHS 필터 뒤에 그려 번짐 · 그레인 없이 또렷 · 필터의 색 보정을 안 거쳐 조금 더 밝게 보임 / 보기: 6초 동안 또렷하게)', def: false },
+    { key: 'lastdrone', name: '마지막 하나 — 저음이 깔림(music.js — 어느 본진이든 시체 둘이면 괴물이 멀어도 긴장 음악 저음이 3할5푼 깔림 · 범종 · 붉은 달과 같은 때 · 「긴장 음악」을 끄면 같이 꺼짐 / 보기: 저음 3초 → 추격 5초(긴장 음악 보기))', def: true },
+    { key: 'redmoon', name: '붉은 달(redmoon.js — 어느 본진이든 시체 둘(마지막 하나)이 되면 8초에 걸쳐 달빛 · 안개 · 하늘이 검붉게 물듦 · 새 판이면 원래대로 · 등롱 · 손전등 색은 그대로 / 보기: 3초에 물들어 4초)', def: true },
+    { key: 'titleclean', name: '타이틀 화면 정리(hintfade.js — 판 시작 전에는 시체 잡기 윤곽선(흰 테두리)을 그리지 않음 · 예전엔 제목 글자 위로 겹쳐 보였다 · 판 시작 카드 · 둘러보기 자막이 뜬 동안 왼쪽 아래 기록 줄 숨김 / 보기: 판 안에서 3초 윤곽선 숨김)', def: true },
+    { key: 'hintfade', name: '조작 안내 줄 물러남(hintfade.js — 화면 아래 조작 안내 줄이 처음 판 45초 뒤 사라짐 · 15초 넘게 아무 키도 안 누르면 다시 떠오름 / 보기: 지금 3초 사라졌다 다시)', def: true },
+    { key: 'mixduck', name: '밤 소리가 숨을 죽인다(realsfx.js — 내가 맞을 때 · 들킬 때 · 괴물을 먼저 봤을 때 풀벌레 · 밤 공기 · 연못 · 파리 소리가 0.15초에 반 남짓 줄었다 1~2초에 돌아옴 · 그 소리가 박힌다 / 보기: 2.5초 동안 크게)', def: true },
+    { key: 'roundstats', name: '판 기록 한 줄(roundstats.js — 종료 카드 본진 수 아래에 「들킴 · 맞음 · 괴물이 가장 가까이 · 나른 거리」 / 보기: 지금까지 센 것을 4초)', def: true },
+    { key: 'reveal', name: '괴물이 눈에 들어올 때(reveal.js — 30초 넘게 안 보이던 괴물이 화면 안 18m 안에 가리지 않고 보이면 · 쫓기는 중이 아니면 낮은 악기 한 번 · 아주 작게 움찔 · 40초 쉼 / 보기: 지금 한 번)', def: true },
+    { key: 'mist', name: '연못 안개(fx.js — 카메라 22m 안 연못 위 · 둘레에 넓고 낮은 옅은 안개 덩이가 바람 따라 천천히 흐름 · 밤이 깊을수록 많이 · 입김과 같은 그림 / 보기: 내 둘레에 12초 동안 여섯 덩이)', def: true },
+    { key: 'recoil', name: '시체 앞 역겨움(recoil.js — 누운 시체에 처음 다가가면 고개를 반대로 돌리고 「역겨움」 얼굴 · 젊은 남자 헛구역질 · 판의 첫 시체는 늘 · 그 뒤 열에 넷 · 쫓기거나 나르는 중엔 안 함 / 보기: 지금 한 번)', def: true },
+    { key: 'clouds', name: '구름이 달을 가린다(clouds.js — 50~110초마다 구름이 달을 지나 달빛이 3~4할 줄었다 돌아옴(5~10초) · 그동안 등롱 · 손전등만 또렷 / 보기: 지금 한 덩이 6초)', def: true },
+    { key: 'corpsepool', name: '시체 밑 피(pool.js — 판 시작 때 누운 시체 밑에 검게 마른 피 · 들었다 내려놓으면 엉덩이 밑으로 새 피가 20초에 걸쳐 번짐 · 옮기면 옅어짐 · 물 위 없음 / 보기: 가장 가까운 누운 시체 밑에 4초에 걸쳐)', def: true },
+    { key: 'postmood', name: '화면이 몸을 따른다(postmood.js — 다친 동안 화면 색이 3할까지 빠지고 테두리가 짙어짐 · 숨 참으면 시야가 좁아짐 · 밤이 깊을수록 색이 더 빠짐 · 노이즈 · 흔들림은 안 씀 / 보기: 4초 다친 화면 → 3초 숨 참은 화면)', def: true },
+    { key: 'pond', name: '연못가 물결(realsfx.js — 가장 가까운 연못가(14m 안)에서 돌에 닿는 잔잔한 찰랑임이 들림 · 가까울수록 크게 · 연못이 소리로도 거기 있게 · Pixabay 실제 녹음 / 보기: 5초 — 연못이 5m 넘게 멀면 내 앞 5m 에서)', def: true },
+    { key: 'squelch', name: '젖은 신발 소리(realsfx.js — 연못에서 나온 뒤 젖은 발자국이 남는 동안 걸음마다 신발에서 물이 짜이는 질척 · 걸음마다 작아짐 · 나 · 봇 · Pixabay 실제 녹음 / 보기: 돌바닥 여덟 걸음)', def: true },
+    { key: 'nightdeep', name: '밤이 깊어진다(nightdeep.js — 판이 흐를수록(3분 30초 · 바친 수 · 마지막 하나) 달빛 · 하늘빛이 최대 2할 어두워지고 안개가 짙어지고 풀벌레가 잦아들고 괴물 경련이 잦아짐 · 등롱 · 손전등은 그대로 / 보기: 3초에 걸쳐 가장 깊은 밤 → 4초 → 돌아옴)', def: true },
+    { key: 'wetprint', name: '젖은 발자국(wetfeet.js — 연못에 들어갔다 나오면 다음 8~16걸음 발밑에 젖은 발자국 · 걸음마다 옅어짐 · 땅이 어둡고 살짝 반들(손전등에 번들) · 30초 뒤 마름 · 나 · 봇 · 괴물이 연못을 지나 나오면 맨발 큰 발자국 / 보기: 1.4m 앞을 가로질러 간 여덟 걸음 + 그 뒤 괴물 맨발 넷)', def: true },
     { key: 'soundlook', name: '소리 쪽으로 고개(breathe.js — 새 떼 · 까마귀 · 등 뒤 잔가지 · 먼 범종처럼 또렷한 소리가 나면 0.2~0.4초 뒤 그쪽으로 홱 돌아봄(최대 57° · 1.1~1.5초) · 새 떼 · 까마귀는 둘레 봇 · 같이 하기 상대도 사람마다 다른 반응으로 / 보기: 옆 뒤에서 잔가지 딱 → 돌아봄)', def: true },
     { key: 'torchshake', name: '손전등 손떨림(motes.js — 손전등을 켜면 겁만큼 빛이 잘게 떨림(괴물이 가까울수록 · 8m 앞 최대 ±10cm) · 숨을 참으면 고요해짐 · 걸음마다 빛이 쿵 내려앉고 디딘 발 쪽으로 출렁(달리면 크게) / 보기: 손전등 6초 · 겁에 질린 떨림)', def: true },
     { key: 'montwitch', name: '괴물 고개(montwitch.js — 그림만: 서 있을 때 6~11초마다 고개를 사람답지 않게 천천히 꺾고(최대 31°) · 4~14초마다 고개가 확 꺾였다 떨며 돌아오는 경련 · 꺾일 때 뼈 갈림 · 경련 때 마디 크르륵(실제 녹음) · 나를 발견하는 순간 머리가 먼저 내 쪽으로 홱 · 공격 · 불뿜기 중엔 쉼 · 괴물 동작 · 판정은 그대로 / 보기: 천천히 꺾고 · 경련 둘)', def: true },
@@ -6057,7 +6090,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'breathe', name: '숨쉬기 · 살아 있는 몸(breathe.js — 숨 · 무게 옮김 · 겁먹은 떨림 · 달린 뒤 헐떡임 / 보기: 막 달린 것처럼 헐떡임)', def: true },
   ];
   // 주말에 새로 넣은 것(2026-10-08 밤 ~ 10-12) — 시연실에 날짜 표시(showcase.js)
-  const NEW = { painlive: '10-08', scoot: '10-08', pickup: '10-08', sway: '10-08', ambev: '10-08', muffle: '10-08', torchflick: '10-08', stepsurf: '10-09', othersteps: '10-09', spotted: '10-09', foley2: '10-09', slam: '10-09', music2: '10-09', basefx: '10-09', corpseglance: '10-09', occl: '10-09', monlost: '10-09', wetcloth: '10-09', dust: '10-09', footblood: '10-09', startcard: '10-09', lampblow: '10-09', monweight: '10-09', hudhunt: '10-09', injured: '10-09', stepcam: '10-09', endcam: '10-09', lastbell: '10-09', monblood: '10-09', moths: '10-09', birds: '10-09', crows: '10-09', breathhold: '10-09', motes: '10-09', montwitch: '10-09', torchshake: '10-10', soundlook: '10-10', gustpetal: '10-10', lampgutter: '10-10' };
+  const NEW = { painlive: '10-08', scoot: '10-08', pickup: '10-08', sway: '10-08', ambev: '10-08', muffle: '10-08', torchflick: '10-08', stepsurf: '10-09', othersteps: '10-09', spotted: '10-09', foley2: '10-09', slam: '10-09', music2: '10-09', basefx: '10-09', corpseglance: '10-09', occl: '10-09', monlost: '10-09', wetcloth: '10-09', dust: '10-09', footblood: '10-09', startcard: '10-09', lampblow: '10-09', monweight: '10-09', hudhunt: '10-09', injured: '10-09', stepcam: '10-09', endcam: '10-09', lastbell: '10-09', monblood: '10-09', moths: '10-09', birds: '10-09', crows: '10-09', breathhold: '10-09', motes: '10-09', montwitch: '10-09', torchshake: '10-10', soundlook: '10-10', gustpetal: '10-10', lampgutter: '10-10', flies: '10-10', wetprint: '10-10', nightdeep: '10-10', squelch: '10-10', pond: '10-10', postmood: '10-10', corpsepool: '10-10', clouds: '10-10', recoil: '10-10', mist: '10-10', reveal: '10-10', roundstats: '10-10', mixduck: '10-10', hintfade: '10-11', titleclean: '10-11', redmoon: '10-11', lastdrone: '10-11', hudsharp: '10-11', quietbtns: '10-11' };
   const X = (window.__fx = { ready: false, opts: OPTS.map((o) => ({ key: o.key, name: o.name, nw: NEW[o.key] || '' })), on: {}, shake, set, flash: hitFlash });
   for (const o of OPTS) X.on[o.key] = o.def;
   function set(key, v) { X.on[key] = !!v; }                          // 이번 판에만 — 저장은 settings.js 「저장」(모두의 기본값)
@@ -6278,7 +6311,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
   function restoreBones() { for (let i = savedQ.length - 5; i >= 0; i -= 5) savedQ[i].quaternion.set(savedQ[i + 1], savedQ[i + 2], savedQ[i + 3], savedQ[i + 4]); savedQ.length = 0; }
 
   /* ── 입자 — 파리 · 괴물 눈 · 입김 · 재 ── */
-  let M = null, COL = null, V = null, flyM = null, eyeM = null, puffM = null, ashM = null, dropM = null;
+  let M = null, COL = null, V = null, flyM = null, eyeM = null, puffM = null, ashM = null, dropM = null, mistM = null;
   const VS = `
 varying vec2 vUv; varying vec3 vCol;
 void main(){
@@ -6312,20 +6345,53 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     eyeM = mk(2, FS_GLOW, T.AdditiveBlending, 34, 'fx-eyes', VS_EYE);
     puffM = mk(PUFF_MAX, FS_PUFF, 1, 29, 'fx-breath');
     ashM = mk(220, FS_DOT, 1, 28, 'fx-ash');
+    mistM = mk(MIST_MAX, FS_PUFF, 1, 27, 'fx-mist');   // 연못 안개 — 입김과 같은 셰이더(새로 굽지 않는다)
     dropM = mk(DROP_INST, FS_DOT, 1, 30, 'fx-drops');     // 물방울 — 파리·재와 같은 셰이더(새로 굽지 않는다) · 꼬리 그림까지 한 번에
   }
   // 파리 — 시체마다 열넷 · 엉덩이 위 맴돌기
   const flySeeds = Array.from({ length: 160 }, () => ({ a: rnd(0, 6.28), b: rnd(0, 6.28), r: rnd(0.12, 0.42), f1: rnd(1.6, 3.2), f2: rnd(2.1, 4.4), h: rnd(0.08, 0.45), s: rnd(0.009, 0.014), dart: rnd(0, 10) }));
+  /* 파리 흩어짐(b346 · 케이스 스터디 — 시체를 건드리면 세상이 반응한다) — 누운 시체를 들어 올리는 순간 그 위 파리 떼가 사방 · 위로 확 흩어지며 윙윙(1.6초 · 짧게 커졌다 빠짐)
+     · 들린 동안은 두세 마리만 따라다니고 · 내려놓으면 25초에 걸쳐 다시 모여든다 · 끄기: 「시체 파리」 · 보기: 가장 가까운 누운 시체에서 흩어짐 */
+  const flySt = new WeakMap(); let flyLast = 0;
+  const flyBurst = (st, p) => {
+    st.burstT = performance.now(); st.bx = p.x; st.by = p.y; st.bz = p.z; st.k = 0.15;
+    const Rs = window.__rsfx; if (Rs && Rs.play) Rs.play('fly_loop', { pos: { x: p.x, y: p.y, z: p.z }, range: 14, vol: 0.75, rate: 1.12, dur: 1.6, offset: Math.random() * 8 });
+  };
+  X.flyScatterDemo = (maxD) => {
+    const G = window.__G; if (!G) return false; const h = G.hero.position; let best = null, bd = 1e9;
+    for (const b of (G.game && G.game.bodies) || []) { if (b.held || !b.root.visible || !b.bones || !b.bones.hips) continue; b.bones.hips.getWorldPosition(V); const d = Math.hypot(V.x - h.x, V.z - h.z); if (d < bd) { bd = d; best = b; } }
+    if (!best || (maxD && bd > maxD)) return false; X.fliesPvUntil = performance.now() + 4500; best.bones.hips.getWorldPosition(V); const st = flySt.get(best) || { k: 1, held: false }; flySt.set(best, st); flyBurst(st, V); st.demoBack = performance.now() + 2500; return Math.max(1, Math.round(bd));
+  };
   function drawFlies(now) {
     const G = window.__G; let k = 0;
-    if (X.on.flies) {
+    const fdt = Math.min(0.1, Math.max(0, (now - (flyLast || now)) / 1000)); flyLast = now;
+    if (X.on.flies || performance.now() < (X.fliesPvUntil || 0)) {        // 꺼져 있어도 보기는 한 번(리뷰 b355 — 예전엔 소리만 났다)
+      for (const bd of (G.game && G.game.bodies) || []) {               // 들어 올리는 순간을 찾는다 · 밀도 되살림
+        if (!bd.bones || !bd.bones.hips) continue;
+        let st = flySt.get(bd); if (!st) { st = { k: 1, held: !!bd.held }; flySt.set(bd, st); }
+        if (bd.held && !st.held) { bd.bones.hips.getWorldPosition(V); flyBurst(st, V); }
+        st.held = !!bd.held;
+        if (st.demoBack && performance.now() > st.demoBack) { st.demoBack = 0; st.k = Math.max(st.k, 0.15); }
+        if (!bd.held) st.k = Math.min(1, st.k + fdt / 25);
+        if (st.burstT && performance.now() - st.burstT < 1600) {             // 흩어지는 떼
+          const u = (performance.now() - st.burstT) / 1600;
+          for (let j = 0; j < 14 && k < 160; j++) {
+            const sd = flySeeds[(j * 11) % 160], a = sd.a + j * 0.45, sp = 1.6 + sd.r * 5;
+            const x = st.bx + Math.cos(a) * sp * u, z = st.bz + Math.sin(a) * sp * u, y = st.by + sd.h + u * (0.8 + sd.r * 2) + Math.sin(now / 1000 * 9 + j) * 0.05;
+            const s = sd.s * (1 - u * 0.7);
+            M.makeScale(s, s, 1); M.setPosition(x, y, z); COL.setRGB(0.02, 0.02, 0.018);
+            flyM.setMatrixAt(k, M); flyM.setColorAt(k, COL); k++;
+          }
+        }
+      }
       const bodies = (G.game && G.game.bodies) || [], t = now / 1000;
       const demo = performance.now() < (X.fliesDemoUntil || 0);
       const src = demo ? [{ bones: { hips: { getWorldPosition: (v) => v.set(G.hero.position.x, G.hero.position.y + 0.9, G.hero.position.z) } }, root: { visible: true } }].concat(bodies) : bodies;   // 보기: 4초 동안 내 몸에 파리 떼
       src.forEach((bd, bi) => {
         if (!bd.bones || !bd.bones.hips || !bd.root.visible) return;
         bd.bones.hips.getWorldPosition(V);
-        for (let j = 0; j < 14 && k < 160; j++) {
+        const st = flySt.get(bd), nF = st ? Math.round(14 * st.k) : 14;
+        for (let j = 0; j < nF && k < 160; j++) {
           const sd = flySeeds[bi * 14 + j], dart = Math.sin(t * 0.7 + sd.dart) > 0.85 ? 1.8 : 1;
           const x = V.x + Math.cos(t * sd.f1 * dart + sd.a) * sd.r + Math.sin(t * 7.3 + j) * 0.02, z = V.z + Math.sin(t * sd.f2 * dart + sd.b) * sd.r * 0.8 + Math.cos(t * 6.1 + j) * 0.02, y = V.y + sd.h + Math.sin(t * 3.1 + sd.a) * 0.06;
           M.makeScale(sd.s, sd.s, 1); M.setPosition(x, y, z); COL.setRGB(0.02, 0.02, 0.018);
@@ -6516,6 +6582,49 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     }
     ashM.count = k; if (k) { ashM.instanceMatrix.needsUpdate = true; ashM.instanceColor.needsUpdate = true; }
   }
+  /* ── 연못 안개(2026-10-10 · 케이스 스터디 — Silent Hill · SIREN 의 물가 안개 · Alan Wake — 땅 위를 기는 안개가 물가를 낯설게) ──
+       · 카메라 22m 안 연못 위 · 둘레(±2m)에 넓고 낮은 안개 덩이(가로 2.6~4.5m · 세로 0.55~0.9m · 수면 위 0.5m 남짓 · 아주 옅게 5~8.5%)가 바람 따라 천천히 흐름
+       · 20~36초 살며 5초에 나타나 7초에 사라짐 · 10덩이 안팎 · 밤이 깊을수록 더 많이(nightdeep · 최대 16) · 카메라 4m 안은 옅게(화면을 덮지 않게)
+       · 입김과 같은 그림(셰이더 그대로) · 끄기: 시연실 연출 「연못 안개」 · 보기: 12초 동안 여섯 덩이 — 둘레에 물이 있으면 그 위 · 없으면 내 둘레에 띄워 */
+  const mists = [], MIST_MAX = 16, mistCells = []; let mistT = 0, mistScanT = 0;
+  X.mistState = () => ({ n: mists.length, t: +mistT.toFixed(2), last: mists.length ? [+mists[0].t.toFixed(1), +mists[0].a.toFixed(3)] : null });   // 검수용
+  X.mistDemo = () => {                                                  // 보기
+    X.mistDemoUntil = performance.now() + 13000; mistScanT = 0;           // — 둘레 22m 에 물이 있으면 그 위에 · 없으면 내 둘레 3~8m 에 조금 띄워(땅에 박혀 경계가 보이지 않게)
+    const G = window.__G; if (!G || !G.hero) return false; const h = G.hero.position;
+    for (let i = 0; i < 6; i++) {
+      if (mistCells.length) { const q = mistCells[(Math.random() * mistCells.length) | 0]; mistAdd(q[0] + rnd(-1, 1), q[1] + rnd(0.5, 0.65), q[2] + rnd(-1, 1), 12, 1.3); continue; }
+      const a = rnd(0, 6.28), r = rnd(3, 8), gy = G.groundAt ? G.groundAt(h.x + Math.cos(a) * r, h.z + Math.sin(a) * r) : h.y; mistAdd(h.x + Math.cos(a) * r, (isFinite(gy) ? gy : h.y) + 0.9, h.z + Math.sin(a) * r, 12, 1.3);
+    }
+    return true;
+  };
+  function mistAdd(x, y, z, life, boost) {
+    if (mists.length >= MIST_MAX) mists.shift();
+    mists.push({ x, y, z, t: 0, life: life || rnd(20, 36), w: rnd(2.6, 4.5), h: rnd(0.55, 0.9), a: rnd(0.05, 0.085) * (boost || 1), ph: rnd(0, 6.28) });
+  }
+  function drawMist(dt, now) {
+    const G = window.__G, N = window.__nav, c = G.cam.position; let k = 0;
+    for (let i = mists.length - 1; i >= 0; i--) { const m = mists[i]; m.t += dt; if (m.t >= m.life) mists.splice(i, 1); }
+    const nk = (window.__night && window.__night.kNow) || 0, want = X.on.mist && G.started ? Math.round(10 * (1 + 0.6 * nk)) : 0;
+    if (!X.on.mist && performance.now() > (X.mistDemoUntil || 0)) { mists.length = 0; mistCells.length = 0; mistM.count = 0; return; }   // 끄면 떠 있던 덩이도 · 물 칸 훑기도 멈춤(리뷰 b363)
+    if ((mistScanT -= dt) <= 0 && N && N.waterAt) {                       // 3초마다 둘레 22m 의 물 칸(1m)을 모은다 — 작은 연못도 놓치지 않게
+      mistScanT = 3; mistCells.length = 0;
+      for (let dx = -22; dx <= 22; dx += 1) for (let dz = -22; dz <= 22; dz += 1) { if (dx * dx + dz * dz > 484) continue; const w = N.waterAt(c.x + dx, c.z + dz); if (w) mistCells.push([c.x + dx, w.wy, c.z + dz]); }
+    }
+    if ((mistT -= dt) <= 0) {
+      mistT = 1.2;
+      if (mists.length < want && mistCells.length) { const q = mistCells[(Math.random() * mistCells.length) | 0]; mistAdd(q[0] + rnd(-1, 1), q[1] + rnd(0.5, 0.65), q[2] + rnd(-1, 1)); }   // 수면 위 0.5m 남짓 — 둑에 박혀 경계가 보이지 않게
+    }
+    const W = window.__wind, wd = W && W.dir ? W.dir : [1, 0], t = now / 1000;
+    for (const m of mists) {
+      m.x += (wd[0] * 0.12 + Math.sin(t * 0.07 + m.ph) * 0.05) * dt; m.z += (wd[1] * 0.12 + Math.cos(t * 0.06 + m.ph) * 0.05) * dt; m.y += 0.01 * dt;
+      const env = Math.min(1, m.t / 5) * Math.min(1, (m.life - m.t) / 7), near = Math.min(1, Math.max(0, (Math.hypot(m.x - c.x, m.y - c.y, m.z - c.z) - 1.5) / 3));
+      const al = m.a * env * near; if (al < 0.003) continue;
+      const g = 1 + 0.15 * (m.t / m.life);
+      M.makeScale(m.w * g, m.h * g, 1); M.setPosition(m.x, m.y, m.z); COL.setRGB(al, 0, 0);
+      mistM.setMatrixAt(k, M); mistM.setColorAt(k, COL); k++;
+    }
+    mistM.count = k; if (k) { mistM.instanceMatrix.needsUpdate = true; mistM.instanceColor.needsUpdate = true; }
+  }
   /* ── 시체 경련 — 30~60초마다 누운 시체 하나의 팔이나 다리가 움찔 ── */
   const twitches = []; let twitchT = 20;
   // 한 번 움찔(bd 시체 · 없으면 누운 것 중 무작위) — 미리보기는 내 앞 가장 가까운 시체를 세 번
@@ -6533,7 +6642,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     // 보기가 없던 토글 9개(2026-10-10 · 「모든 선택지에 보기」)
     else if (key === 'rumble') { const Rs = window.__rsfx; for (let i = 0; i < 4; i++) setTimeout(() => { shake(0.028, 0.35, 16); if (Rs && Rs.play) Rs.play('mon_step', { vol: 0.7, rate: 0.95 }); }, i * 620); }
     else if (key === 'look') X.lookDemoUntil = performance.now() + 4000;
-    else if (key === 'flies') { X.fliesDemoUntil = performance.now() + 4500; const Rs = window.__rsfx; if (Rs && Rs.play) Rs.play('fly_loop', { pos: G.hero.position, range: 10, vol: 0.7 }); }
+    else if (key === 'flies') { if (!(X.flyScatterDemo && X.flyScatterDemo(9))) { X.fliesDemoUntil = X.fliesPvUntil = performance.now() + 4500; const Rs = window.__rsfx; if (Rs && Rs.play) Rs.play('fly_loop', { pos: G.hero.position, range: 10, vol: 0.7 }); } }   // 9m 안에 누운 시체가 없으면 예전 보기(4초 동안 내 몸에 파리 떼)
     else if (key === 'breath') X.breathDemoUntil = performance.now() + 4000;
     else if (key === 'sound') { const p = G.hero.position; splash(0.9, p); setTimeout(() => boom(0.8, p), 900); setTimeout(() => sizzle(0.7, p), 1900); }
     else if (key === 'scream') { const S = window.__scream; if (S && S.play && S.list && S.list.length) { const c = S.list.find((x) => /scream|비명/.test((x.cat || '') + (x.name || ''))) || S.list[0]; S.play(c.key, G.hero.position, { vol: 0.7 }); } }
@@ -6568,6 +6677,24 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'endcam') { if (window.__endCamDemo) window.__endCamDemo(); }
     else if (key === 'lampgutter') { if (window.__wind && window.__wind.gutterDemo) window.__wind.gutterDemo(); }
     else if (key === 'gustpetal') { if (window.__birds && window.__birds.gustDemo) window.__birds.gustDemo(); }
+    else if (key === 'quietbtns') { if (window.__hintFade && window.__hintFade.quietDemo) window.__hintFade.quietDemo(); }
+    else if (key === 'hudsharp') { window.__hudSharpDemo = performance.now() + 6000; }
+    else if (key === 'lastdrone') { if (window.__music && window.__music.demo) window.__music.demo(); }
+    else if (key === 'redmoon') { if (window.__redmoon && window.__redmoon.demo) window.__redmoon.demo(); }
+    else if (key === 'titleclean') { if (window.__hintFade && window.__hintFade.titleDemo) window.__hintFade.titleDemo(); }
+    else if (key === 'hintfade') { if (window.__hintFade && window.__hintFade.demo) window.__hintFade.demo(); }
+    else if (key === 'mixduck') { if (window.__rsfx && window.__rsfx.duckDemo) window.__rsfx.duckDemo(); }
+    else if (key === 'roundstats') { if (window.__roundStats && window.__roundStats.demo) window.__roundStats.demo(); }
+    else if (key === 'reveal') { if (window.__reveal && window.__reveal.demo) window.__reveal.demo(); }
+    else if (key === 'mist') { X.mistDemo && X.mistDemo(); }
+    else if (key === 'recoil') { if (window.__recoil && window.__recoil.demo) window.__recoil.demo(); }
+    else if (key === 'clouds') { if (window.__clouds && window.__clouds.demo) window.__clouds.demo(); }
+    else if (key === 'corpsepool') { if (window.__pool && window.__pool.demo) window.__pool.demo(); }
+    else if (key === 'postmood') { if (window.__postmood && window.__postmood.demo) window.__postmood.demo(); }
+    else if (key === 'pond') { if (window.__rsfx && window.__rsfx.pondDemo) window.__rsfx.pondDemo(); }
+    else if (key === 'squelch') { if (window.__rsfx && window.__rsfx.squelchDemo) window.__rsfx.squelchDemo(); }
+    else if (key === 'nightdeep') { if (window.__night && window.__night.demo) window.__night.demo(); }
+    else if (key === 'wetprint') { if (window.__wetfeet && window.__wetfeet.demo) window.__wetfeet.demo(); }
     else if (key === 'soundlook') { if (window.__breath && window.__breath.lookDemo) window.__breath.lookDemo(); }
     else if (key === 'torchshake') { if (window.__motes && window.__motes.shakeDemo) window.__motes.shakeDemo(); }
     else if (key === 'montwitch') { if (window.__montwitch && window.__montwitch.demo) window.__montwitch.demo(); }
@@ -6612,7 +6739,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake', 'soundlook', 'rumble', 'look', 'flies', 'breath', 'sound', 'scream', 'realsfx', 'ragdoll', 'breathe', 'gustpetal', 'lampgutter'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake', 'soundlook', 'rumble', 'look', 'flies', 'breath', 'sound', 'scream', 'realsfx', 'ragdoll', 'breathe', 'gustpetal', 'lampgutter', 'wetprint', 'nightdeep', 'squelch', 'pond', 'postmood', 'corpsepool', 'clouds', 'recoil', 'mist', 'reveal', 'roundstats', 'mixduck', 'hintfade', 'titleclean', 'redmoon', 'lastdrone', 'hudsharp', 'quietbtns'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -6677,7 +6804,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       if (hit && !lastHit && X.on.hitflash) hitFlash(1);
       lastHit = hit;
       tickRumble(dt); tickTwitch(dt); tickLightning(dt);
-      drawFlies(now); drawEyes(now); breathPuffs(dt, now); drawAsh(dt, now); drawDrops(dt);
+      drawFlies(now); drawEyes(now); breathPuffs(dt, now); drawAsh(dt, now); drawDrops(dt); drawMist(dt, now);
       if (!wLoading) { const a0 = AU(); if (a0) wload(a0.ctx); }   // 물소리는 미리 받아 둔다(처음 첨벙부터 녹음으로)
     } catch (e) { console.warn('[fx]', e); }
   }
@@ -6702,7 +6829,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     sys_danger: 0, sys_score: 0, sys_tick: 0, sys_win: 0, sys_lose: 0, sys_heart: 2, sys_creak: 4, sys_gore: 2,
     sys_fire_loop: 0, sys_fire_ign: 2, sys_fire_boom: 0,
     fly_loop: 0, p_bodydrop: 5,
-    mon_crack: 4, mon_creak: 2, amb_flock: 3, amb_crow: 3, amb_bell: 2, amb_owl: 2, amb_dog: 2, amb_gust: 2, amb_snap: 2, amb_moan: 2, amb_ema: 2, amb_suzu: 1,
+    mon_crack: 4, mon_creak: 2, p_squelch: 8, amb_pond: 0, p_gag: 2, mus_reveal: 3, amb_flock: 3, amb_crow: 3, amb_bell: 2, amb_owl: 2, amb_dog: 2, amb_gust: 2, amb_snap: 2, amb_moan: 2, amb_ema: 2, amb_suzu: 1,
   };
   const FILES = {};
   for (const [k, n] of Object.entries(N)) { if (n === 0) FILES[k] = 'sfx/' + k + '.mp3'; else for (let i = 1; i <= n; i++) FILES[k + i] = 'sfx/' + k + i + '.mp3'; }
@@ -6759,7 +6886,21 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   R.cutoffFor = (p) => (G && occlOn() ? cutoffFor(p) : 0);   // scream.js 비명도 같은 거리 · 가림(토글을 따름)
   R.occlDemo = () => { if (!G || !au()) return false; const h = G.hero.position, p = { x: h.x + 6, y: h.y, z: h.z }; play('mon_stalk2', { pos: p, range: 26, vol: 0.9, cut: 20000 }); play('mon_stalk2', { pos: p, range: 26, vol: 0.9, cut: 650, delay: 2.4 }); return true; };   // 보기 — 맑게 → 바위 뒤처럼
   // 재생 — o: { pos, range, vol, rate, delay, pan, cut(직접 정한 고역 한계) } · 버퍼가 없으면 false(호출한 쪽이 예전 소리로)
+  /* 밤 소리가 숨을 죽인다(b362 · 케이스 스터디 — 영화 · AAA 믹싱의 「사이드체인」 · 큰 순간 바로 앞뒤로 세상이 조용해져 그 소리가 박힌다)
+     · 내가 맞을 때 · 들킬 때(내 「헉」) · 괴물을 먼저 봤을 때(낮은 악기) — 풀벌레 · 밤 공기(ambience.js) · 연못 물결 · 파리(고리) 가 0.15초에 반 남짓 줄었다 1~2초에 돌아옴
+     · window.__mixDuck() 이 곱할 값(0.35~1)을 준다 · 끄기: 시연실 연출 「밤 소리가 숨을 죽인다」 · 보기: 2.5초 동안 크게 */
+  const DUCK = { mon_hit: [0.65, 1.6], mus_reveal: [0.55, 2.2], p_gasp: [0.5, 1.3] };
+  let duck = { t0: -1e9, amt: 0, dur: 1 };
+  R.duck = (amt, dur) => { const cur = 1 - (window.__mixDuck ? window.__mixDuck() : 1); if (cur > amt) return; duck = { t0: performance.now() / 1000 - (cur > 0 ? 0.12 * cur / amt : 0), amt, dur }; };   // 이미 더 깊이 줄어 있으면 그대로 · 겹치면 올라갔다 내려가지 않게(리뷰 b363)
+  window.__mixDuck = () => {
+    const X = window.__fx, u = performance.now() / 1000 - duck.t0;
+    if (u < 0 || u > duck.dur || (X && X.on && X.on.mixduck === false && !duck.demo)) return 1;
+    const env = u < 0.12 ? u / 0.12 : u < 0.5 ? 1 : 1 - (u - 0.5) / Math.max(0.1, duck.dur - 0.5);
+    return 1 - duck.amt * Math.max(0, Math.min(1, env));
+  };
+  R.duckDemo = () => { duck = { t0: performance.now() / 1000, amt: 0.8, dur: 2.5, demo: true }; return true; };
   function play(name, o = {}) {
+    { const dk = DUCK[name]; if (dk && !o.pos) R.duck(dk[0], dk[1]); }   // 내 쪽(자리 없는) 큰 소리만 · 실제 녹음을 꺼도(합성음이어도) 줄임은 건다
     if (!R.on) return false;
     const A = au(); if (!A || G.cfg.sound === false) return !!A;
     const k = pick(name); if (!k) return false;
@@ -6775,7 +6916,12 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (cut && cut < 16000) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = cut; f.Q.value = 0.6; node.connect(f); node = f; }
     if (pan && ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; node.connect(p); node = p; }
     node.connect(A.out);
-    src.start(ctx.currentTime + (o.delay || 0));
+    const t0 = ctx.currentTime + (o.delay || 0);
+    if (o.dur) {                                                         // 길이만큼만(b346 — 긴 되풀이 녹음을 한 번 짧게: 0.12초에 차올라 끝 0.6초에 빠짐)
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), t0 + 0.12);
+      g.gain.setValueAtTime(Math.max(0.0002, vol), t0 + Math.max(0.15, o.dur - 0.6)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + o.dur);
+      src.start(t0, o.offset || 0); src.stop(t0 + o.dur + 0.05);
+    } else src.start(t0);
     return true;
   }
   // 되풀이(숨 · 헐떡임 · 타는 몸) — 이름마다 하나 · 크기는 목표로 천천히
@@ -6785,6 +6931,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const A = au(); let L = loops[name];
     if (!A || !R.on || !R.buf[name] || G.cfg.sound === false) { if (L) { L.g.gain.setTargetAtTime(0, L.ctx.currentTime, 0.2); } return; }
     if (pos) { const s = spatial(pos, range || 25); vol *= s.vol; }
+    if (name === 'fly_loop' || name === 'amb_pond') vol *= window.__mixDuck ? window.__mixDuck() : 1;   // 큰 순간엔 환경 고리(파리 · 연못)만 숨을 죽인다 — 내 숨 · 헐떡임 · 타는 소리는 그대로(리뷰 b363)
     if (!L) {
       if (vol < 0.005) return;
       const ctx = A.ctx, src = ctx.createBufferSource(), g = ctx.createGain();
@@ -6802,6 +6949,10 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     ['괴물 발소리', '무거운 발 + 진흙 질척 — 거리 35m · 좌우', 'mon_step', 6],
     ['밤 소리 사건(10-08 밤 새로)', '22~48초마다 하나 · 멀리서 · 방향 — 범종 · 올빼미 · 먼 개 · 덤불 잔가지(등 뒤) · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마', ['amb_bell1', 'amb_bell2', 'amb_owl1', 'amb_owl2', 'amb_dog1', 'amb_dog2', 'amb_snap1', 'amb_snap2', 'amb_moan1', 'amb_moan2', 'amb_suzu1', 'amb_gust1', 'amb_gust2', 'amb_ema1', 'amb_ema2']],
     ['끌림 · 피 · 옷(10-09 새벽 새로)', '돌바닥에서 끌 때 1~3 · 나무 바닥에서 끌 때 1~3 · 업은 시체의 피가 바닥에 톡 1~5 · 달릴 때 옷 스침 1~4', ['p_drag_stone1', 'p_drag_stone2', 'p_drag_stone3', 'p_drag_wood1', 'p_drag_wood2', 'p_drag_wood3', 'p_drip1', 'p_drip2', 'p_drip3', 'p_drip4', 'p_drip5', 'p_cloth1', 'p_cloth2', 'p_cloth3', 'p_cloth4']],
+    ['괴물이 눈에 들어올 때(10-10 새로)', '30초 넘게 안 보이던 괴물을 먼저 봤을 때 낮은 악기 한 번 — 콘트라베이스 활 1 · 첼로 저음 튕김 2 · 피아노 최저음 클러스터 3 · Pixabay 실제 악기 녹음 · AI 아님', 'mus_reveal', 3],
+    ['시체 앞 역겨움(10-10 새로)', '누운 시체에 처음 다가갈 때 젊은 남자 — 헛구역질 1(제목 「Man Vomiting」의 목소리 부분만 · 액체 없음) · 못마땅한 신음 「음—」 2(제목 「male grunt」) · Pixabay 실제 녹음 · AI 아님', 'p_gag', 2],
+    ['연못가 물결(10-10 새로)', '가장 가까운 연못가(14m 안)에서 잔잔한 찰랑임 — 돌에 닿는 물결 · 먼 시점 20초 고리 · 가까울수록 크게 · 내가 물속이면 내 자리에서 · Pixabay 실제 녹음 · AI 아님', ['amb_pond']],
+    ['젖은 신발(10-10 새로)', '연못에서 나온 뒤 젖은 발자국이 남는 동안(8~16걸음) 걸음마다 신발에서 물이 짜이는 질척 — 기포 질척 1~4 · 진흙 속 작업화 5~7 · 장화 웅덩이 8 · 걸음마다 작아짐 · Pixabay 실제 녹음 · AI 아님', 'p_squelch', 8],
     ['괴물 고개(10-10 새로)', '괴물이 서서 고개를 천천히 꺾을 때 뼈 갈림 1~2 · 고개가 확 꺾이는 경련 때 마디 크르륵 1~4 — 게임에서는 0.7~0.8배 낮게(4m 괴물) · Pixabay 실제 녹음 · AI 아님', ['mon_crack1', 'mon_crack2', 'mon_crack3', 'mon_crack4', 'mon_creak1', 'mon_creak2']],
     ['새 떼(10-09 밤 새로)', '괴물이 나무 7m 안을 걸어 지나가면 그 나무의 새가 놀라 푸드덕(새 떼 1 · 2 · 큰 새) · 0.25~0.7초 뒤 까마귀 경계 울음(60%) — Pixabay 실제 녹음 · AI 아님', ['amb_flock1', 'amb_flock2', 'amb_flock3', 'amb_crow1', 'amb_crow2', 'amb_crow3']],
     ['들킴(10-09 새벽 새로)', '괴물이 나를 쫓기 시작하는 순간 젊은 남자가 놀라 「헉」(130~188Hz 남자 · 봇이 들키면 그 자리에서)', 'p_gasp', 5],
@@ -6820,7 +6971,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     ['시체 나르며 힘쓰기(10-08 밤 새로)', '끌기 1.5~2.8초 · 업기 2.2~3.6초마다 하나 · 들어 올리는 순간 하나 · 그때 얼굴도 힘씀 · 봇도', 'p_strain', 7],
     ['꺼 둔 것', '심장 1~2(심장은 예전 녹음을 씀)', ['sys_heart1', 'sys_heart2']],
   ];
-  const LABEL = { sys_danger: '도난·쫓김', sys_score: '내 득점', sys_tick: '남 득점', sys_win: '승리', sys_lose: '패배', mon_inhale1: '들숨', p_pant_run: '헐떡임', p_pant_after: '숨 고르기', sys_fire_loop: '타는 동안', sys_fire_boom: '불덩이', p_pickup1: '들기 1', p_pickup2: '들기 2', p_breath_idle2: '예전 느린 숨', p_breath_fear: '겁먹은 숨(새)', fly_loop: '파리 떼', p_bodydrop1: '털썩 1', p_bodydrop2: '털썩 2', p_bodydrop3: '털썩 3', p_bodydrop4: '털썩 4', p_bodydrop5: '털썩 5', mon_crack1: '목 꺾임 1', mon_crack2: '목 꺾임 2', mon_crack3: '목 꺾임 3', mon_crack4: '목 꺾임 4', mon_creak1: '뼈 갈림 1', mon_creak2: '뼈 갈림 2', amb_flock1: '새 떼 1', amb_flock2: '새 떼 2', amb_flock3: '큰 새 퍼덕', amb_crow1: '까마귀 1', amb_crow2: '까마귀 2', amb_crow3: '까마귀 3', amb_bell1: '범종 1', amb_bell2: '범종 2', amb_owl1: '올빼미 1', amb_owl2: '올빼미 2', amb_dog1: '개 울음', amb_dog2: '개 짖음', amb_snap1: '잔가지', amb_snap2: '덤불 발소리', amb_moan1: '먼 신음 1', amb_moan2: '먼 신음 2', amb_suzu1: '신사 방울', amb_gust1: '돌풍 1', amb_gust2: '돌풍 2', amb_ema1: '에마 1', amb_ema2: '에마 2', sys_heart1: '심장 1', sys_heart2: '심장 2' };
+  const LABEL = { p_squelch: '젖은 신발', amb_pond: '연못가 물결', p_gag: '역겨움', mus_reveal: '괴물 보임', sys_danger: '도난·쫓김', sys_score: '내 득점', sys_tick: '남 득점', sys_win: '승리', sys_lose: '패배', mon_inhale1: '들숨', p_pant_run: '헐떡임', p_pant_after: '숨 고르기', sys_fire_loop: '타는 동안', sys_fire_boom: '불덩이', p_pickup1: '들기 1', p_pickup2: '들기 2', p_breath_idle2: '예전 느린 숨', p_breath_fear: '겁먹은 숨(새)', fly_loop: '파리 떼', p_bodydrop1: '털썩 1', p_bodydrop2: '털썩 2', p_bodydrop3: '털썩 3', p_bodydrop4: '털썩 4', p_bodydrop5: '털썩 5', mon_crack1: '목 꺾임 1', mon_crack2: '목 꺾임 2', mon_crack3: '목 꺾임 3', mon_crack4: '목 꺾임 4', mon_creak1: '뼈 갈림 1', mon_creak2: '뼈 갈림 2', amb_flock1: '새 떼 1', amb_flock2: '새 떼 2', amb_flock3: '큰 새 퍼덕', amb_crow1: '까마귀 1', amb_crow2: '까마귀 2', amb_crow3: '까마귀 3', amb_bell1: '범종 1', amb_bell2: '범종 2', amb_owl1: '올빼미 1', amb_owl2: '올빼미 2', amb_dog1: '개 울음', amb_dog2: '개 짖음', amb_snap1: '잔가지', amb_snap2: '덤불 발소리', amb_moan1: '먼 신음 1', amb_moan2: '먼 신음 2', amb_suzu1: '신사 방울', amb_gust1: '돌풍 1', amb_gust2: '돌풍 2', amb_ema1: '에마 1', amb_ema2: '에마 2', sys_heart1: '심장 1', sys_heart2: '심장 2' };
   for (let i = 1; i <= 5; i++) { LABEL['p_gasp' + i] = '헉 ' + i; LABEL['p_drip' + i] = '톡 ' + i; }
   for (let i = 1; i <= 4; i++) LABEL['p_cloth' + i] = '스침 ' + i;
   for (let i = 1; i <= 3; i++) { LABEL['p_drag_stone' + i] = '돌 끌림 ' + i; LABEL['p_drag_wood' + i] = '나무 끌림 ' + i; }
@@ -6892,6 +7043,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     wi.step = (run) => {
       try { if (window.__blood && window.__blood.footStep) window.__blood.footStep(); } catch { /* */ }   // 피 발자국(blood.js)
       window.__stepT = performance.now(); window.__stepSide = -(window.__stepSide || 1);                 // 무게 걸음(camera.js)
+      { const Wf = window.__wetfeet, wk = Wf && Wf.wetK ? Wf.wetK('hero') : 0;                         // 젖은 신발(b350) — 연못에서 나온 뒤 젖은 발자국이 남는 동안 걸음마다 물이 짜이는 질척 소리(걸음마다 작아짐)
+        if (wk > 0 && squelchOn()) play('p_squelch', { vol: 0.14 + 0.22 * wk, rate: rnd(0.92, 1.08), delay: rnd(0.01, 0.04) }); }
       const s = surfUnder(), v = run ? 0.42 : 0.34;
       const Bh = window.__breath && window.__breath.hero, fast = run || !!(Bh && Bh.sp > 3.2 && !(G.carry && G.carry.heldBody));   // 게임의 run 은 다른 뜻 — 실제 빠르기로(나르는 중엔 없음)
       if (fast && foleyOn() && Math.random() < 0.45) play('p_cloth', { vol: 0.09, rate: rnd(0.9, 1.1), delay: rnd(0.02, 0.07) });   // 달릴 때 옷 스침(걸음 절반쯤)
@@ -7084,6 +7237,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   /* ── 피 방울 · 옷 스침(2026-10-09 새벽) — 업은 시체에서 떨어진 피가 바닥에 닿으면 톡(blood.js onLand · 7m 안 · 0.25~0.6초에 하나만 · 물 위는 없음 · 낮게 · 나와 봇 모두)
        달릴 때 걸음의 절반쯤 옷이 스치는 소리 · 끄기: 시연실 연출 「피 방울 · 옷 스침 소리」 · 보기: 톡 셋 → 스침 셋 ── */
   const foleyOn = () => { const X = window.__fx; return !(X && X.on && X.on.foley2 === false); };
+  function squelchOn() { const X = window.__fx; return !(X && X.on && X.on.squelch === false); }
   let dripT = 0;
   function onDrip(x, y, z) {
     if (!G || !foleyOn() || !(G.started && !(G.game && G.game.over))) return;
@@ -7111,6 +7265,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       if (s.ph !== -1 && ph !== s.ph && !(N && N.waterAt && N.waterAt(p.x, p.z))) {
         const sf = surfAt(p, s.c), v = a === A.drag ? 0.34 : 0.42;
         if (!(sf !== 'dirt' && play('p_step_' + sf, { pos: p, range: 24, vol: v * 0.9, rate: rnd(0.93, 1.05) }))) play('p_step', { pos: p, range: 24, vol: v, rate: rnd(0.91, 1.05) });
+        { const Wf = window.__wetfeet, wk = Wf && Wf.wetK ? Wf.wetK(b) : 0; if (wk > 0 && squelchOn()) play('p_squelch', { pos: p, range: 16, vol: 0.12 + 0.2 * wk, rate: rnd(0.9, 1.08), delay: rnd(0.01, 0.04) }); }   // 젖은 신발(b350) — 봇 · 같이 하기 상대
       }
       s.ph = ph;
       // (봇이 끌 때 긁히는 소리는 넣지 않는다 — 사용자 요청으로 뺀 것 · sound.js 머리말)
@@ -7125,6 +7280,29 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     return true;
   };
   R.surf = () => (G ? surfUnder() : null);
+  /* ── 연못가 물결(b351) — 가장 가까운 연못가(14m 안)에서 잔잔한 물결 · 돌에 닿는 찰랑임(Pixabay 실제 녹음 고리) — 연못이 소리로도 거기 있게
+       · 0.5초마다 1m 칸으로 가장 가까운 물 칸을 찾는다 · 내가 물속이면 내 자리에서 · 밤 소리(조절창 「소리」)를 끄면 같이 꺼짐 · 끄기: 시연실 연출 「연못가 물결」 ── */
+  const pondP = { x: 0, y: 0, z: 0 }; let pondT = 0, pondHas = false;
+  function pondTick(dt) {
+    const X = window.__fx, Am = window.__amb, N = window.__nav, h = G.hero.position;
+    const demo = performance.now() < (R.pondDemoUntil || 0);              // 보기 — 꺼져 있어도 5초 · 둘레에 연못이 없으면 내 앞 5m 에서
+    if ((!demo && ((X && X.on && X.on.pond === false) || (Am && Am.on === false))) || !N || !N.waterAt) { loopSet('amb_pond', 0, dt); return; }
+    if ((pondT -= dt) <= 0) {
+      pondT = 0.5; pondHas = false; let bd = 1e9;
+      const here = N.waterAt(h.x, h.z);
+      if (here && here.wy - h.y > 0.12) { pondP.x = h.x; pondP.y = here.wy; pondP.z = h.z; pondHas = true; }
+      else for (let dx = -14; dx <= 14; dx += 1) for (let dz = -14; dz <= 14; dz += 1) {
+        const d = dx * dx + dz * dz; if (d > 196 || d >= bd) continue;
+        const w = N.waterAt(h.x + dx, h.z + dz); if (w) { bd = d; pondP.x = h.x + dx; pondP.y = w.wy; pondP.z = h.z + dz; pondHas = true; }
+      }
+    }
+    if (demo && (!pondHas || Math.hypot(pondP.x - h.x, pondP.z - h.z) > 5)) { const y = G.hero.rotation.y;   // 보기 — 연못이 5m 넘게 멀면 내 앞 5m 에서(잘 들리게)
+      pondP.x = h.x + Math.sin(y) * 5; pondP.y = h.y; pondP.z = h.z + Math.cos(y) * 5; pondHas = true; }
+    loopSet('amb_pond', pondHas ? 0.32 * ambVol() : 0, dt, pondHas ? pondP : null, 14);   // 밤 소리 크기를 따른다(0 이면 0 — 리뷰 b355)
+  }
+  R.pondDemo = () => { pondT = 0; R.pondDemoUntil = performance.now() + 5000; return true; };
+  R.pondInfo = () => ({ has: pondHas, x: +pondP.x.toFixed(1), z: +pondP.z.toFixed(1), gain: loops.amb_pond ? +loops.amb_pond.g.gain.value.toFixed(3) : -1 });   // 검수용
+  R.squelchDemo = () => { if (!G || !au()) return false; for (let i = 0; i < 8; i++) { const k = 1 - i / 8; play('p_step_stone', { vol: 0.4, rate: rnd(0.95, 1.05), delay: i * 0.42 }); play('p_squelch', { vol: 0.14 + 0.22 * k, rate: rnd(0.92, 1.08), delay: i * 0.42 + 0.02 }); } return true; };   // 보기 — 돌바닥 여덟 걸음 · 질척이 점점 작게
   R.stepDemo = () => { if (!G || !au()) return false; ['p_step_stone', 'p_step_wood', 'p_step'].forEach((k, j) => { for (let i = 0; i < 3; i++) play(k, { vol: 0.42, rate: rnd(0.95, 1.05), delay: j * 1.25 + i * 0.32 }); }); return true; };
   /* ── 시체(2026-10-08 밤) — 누운 시체 둘레 6m 안에 들어서면 파리 떼 윙윙(가까울수록 · 좌우 · 화면의 파리와 같이 켜고 끔)
        · 내려놓거나 떨어뜨리면(나 · 봇 · 맞아서 놓침) 그 자리에서 몸이 바닥에 털썩 — 물에 떨어지면 첨벙(water.js)이 대신 ── */
@@ -7207,8 +7385,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const F = window.__fire, act = F && F.active ? F.active : null;
     if (act && act !== lastA && G.monster && G.monster.root) play('mon_inhale', { pos: G.monster.root.position, range: 40, vol: 0.9 });
     lastA = act;
-    if (live) { strainTick(); ambTick(); bodyTick(); otherSteps(dt); lostTick(); lastTick(); }
-    else loopSet('fly_loop', 0, dt);
+    if (live) { strainTick(); ambTick(); bodyTick(); otherSteps(dt); lostTick(); lastTick(); pondTick(dt); }
+    else { loopSet('fly_loop', 0, dt); loopSet('amb_pond', 0, dt); }   // 판 밖(끝 · 로비)에서는 연못 소리도 내림(리뷰 b355)
     // 괴물 숨 · 그르렁 — 16m 안에서 어슬렁거리거나 쫓을 때(내리치는 중 · 불 뿜는 중은 빼고) · 가까울수록 크게 · 좌우(2026-10-08 밤 — 괴물 존재감)
     const Cm = G.monster;
     if (live && Cm && Cm.ready && Cm.root && Cm.root.visible && G.cfg.monOn !== false && !act) {
@@ -7295,6 +7473,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
         if (hunted) holdT = 2.5; else holdT -= dt;
         if (holdT > 0) { tc = 1; td = 1; }
       }
+      // 마지막 하나(b367 · 2026-10-11) — 어느 본진이든 둘이면 괴물이 멀어도 저음이 3할5푼 깔린다(범종 · 붉은 달과 같은 때 · 끝이 가까운 판 내내 숨이 막히게)
+      { const X = window.__fx, sc = (G.scores && G.scores()) || []; if (!(X && X.on && X.on.lastdrone === false) && Math.max(0, ...sc.map((x) => +x || 0)) >= 2) td = Math.max(td, 0.4); }   // ss(0.4) ≈ 0.35 — 실제 크기 3할5푼(리뷰 b371) · 「긴장 음악」을 끄면 같이 꺼진다
       if (over) { td *= 1 - endT / 4; tc *= 1 - endT / 4; }
     }
     const u = (now - M.demoT) / 1000;                                   // 보기 — 저음 3초 → 추격 5초 → 빠짐
@@ -7544,10 +7724,10 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     }
     s.holdT = 0; s.hold = Math.max(0, (s.hold || 0) - dt / 0.35);
   }
-  S.lookAt = (x, z, dur, delay) => {                                         // 소리 쪽 고개 — birds.js · crows.js · realsfx.js 가 부른다
-    const X = window.__fx; if (X && X.on && X.on.soundlook === false) return false;
+  S.lookAt = (x, z, dur, delay, force) => {                                  // 소리 쪽 고개 — birds.js · crows.js · realsfx.js 가 부른다 · force: 「소리 쪽 고개」 토글 · 보는 중과 상관없이(recoil.js 역겨움)
+    const X = window.__fx; if (!force && X && X.on && X.on.soundlook === false) return false;
     const s = stateOf('hero'), now = performance.now(), d = (delay === undefined ? 200 + Math.random() * 200 : delay);
-    if (s.lookT && now < s.lookT - 300) return false;                       // 이미 다른 소리를 보는 중
+    if (!force && s.lookT && now < s.lookT - 300) return false;             // 이미 다른 소리를 보는 중
     s.lookX = x; s.lookZ = z; s.lookS = now + d; s.lookT = now + d + (dur || 1.3) * 1000; return true;
   };
   // 둘레 사람 모두(나 · 봇 · 같이 하기 상대) — 소리 난 곳 range 안이면 사람마다 다른 반응 시간(0.2~0.6초)으로
@@ -10962,6 +11142,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
   const saved = [];
   const st = { lx: null, lz: null, sp: 0, stillT: 0, tiltNext: rnd(4, 8), tilt: null, twNext: rnd(4, 9), tw: null, last: 0 };
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.montwitch === false); };
+  const nightF = () => 1 + 0.5 * ((window.__night && window.__night.kNow) || 0);   // 밤이 깊어질수록 잦아진다(nightdeep.js · 최대 1.5배)
   function rotW(b, ax, ay, az, ang) {
     if (!b || Math.abs(ang) < 1e-5) return;
     saved.push(b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w);
@@ -10992,8 +11173,8 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
     st.lx = p.x; st.lz = p.z;
     const still = st.sp < 0.25; st.stillT = still ? st.stillT + dt : 0;
     if (!G.started || !C.root.visible || G.cfg.monOn === false || busy(C)) return;
-    if (still && st.stillT > 1.5 && !st.tilt && (st.tiltNext -= dt) <= 0) { st.tiltNext = rnd(6, 11); st.tilt = { t0: now, side: Math.random() < 0.5 ? -1 : 1, amp: rnd(0.38, 0.55), hold: rnd(1.5, 3) }; M.log.push(['tilt', +now.toFixed(1)]); }
-    if (!st.tw && (st.twNext -= dt) <= 0) { st.twNext = still ? rnd(4, 9) : rnd(8, 14); st.tw = { t0: now, side: Math.random() < 0.5 ? -1 : 1 }; M.log.push(['twitch', +now.toFixed(1)]); }
+    if (still && st.stillT > 1.5 && !st.tilt && (st.tiltNext -= dt) <= 0) { st.tiltNext = rnd(6, 11) / nightF(); st.tilt = { t0: now, side: Math.random() < 0.5 ? -1 : 1, amp: rnd(0.38, 0.55), hold: rnd(1.5, 3) }; M.log.push(['tilt', +now.toFixed(1)]); }
+    if (!st.tw && (st.twNext -= dt) <= 0) { st.twNext = (still ? rnd(4, 9) : rnd(8, 14)) / nightF(); st.tw = { t0: now, side: Math.random() < 0.5 ? -1 : 1 }; M.log.push(['twitch', +now.toFixed(1)]); }
     if (st.tw2 && now >= st.tw2) { st.tw = { t0: now, side: -1 }; st.tw2 = 0; }
     if (M.log.length > 20) M.log.shift();
   }
@@ -11058,6 +11239,665 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = exp(-r * r * 7.0) * 0.
 })();
 
 </script>
+<script>/* wetfeet.js */
+/* 젖은 발자국(2026-10-10 · 케이스 스터디 — TLOU2 · Hitman · RE2R — 세상에 내 흔적이 남는다 · 누가 어디서 물을 건너왔는지 땅이 말해 준다)
+   · 연못에(발목 넘게) 들어갔다 나오면 다음 몇 걸음(얕으면 8 · 무릎 12 · 허리 16) 발밑에 젖은 발자국 — 앞꿈치 · 뒤꿈치 둘(신발 바닥) · 걸음마다 옅어지고 뒤꿈치만 남기도
+   · 땅이 젖어 어둡고 살짝 반들(손전등에 번들) · 30초 머물다 12초에 걸쳐 마름 · 물 위 · 다리 위 없음 · 나 · 봇 · 같이 하기 상대 모두(그림만 · 판정 없음)
+   · 내 걸음 박자는 realsfx.js 걸음 소리(__stepT · __stepSide) · 봇은 0.62m 마다 좌우 번갈아
+   · 게임 바닥 핏자국 웅덩이(game.js 피 웅덩이 재질)와 같은 재질 설정 — 새 셰이더 없음 · 판 다시 하면 지움
+   · 괴물(b348): 연못을 지나 나오면 맨발 큰 발자국 6~10걸음(아래 bare)
+   · 끄기: 시연실 연출 「젖은 발자국」 · 보기: 1.4m 앞을 가로질러 간 여덟 걸음 + 3.4m 앞 괴물 맨발 넷 */
+(() => {
+  const W = (window.__wetfeet = { ready: false, n: 0, log: [], demoUntil: 0 });
+  const MAX = 96, HOLD = 30, FADE = 12, OP = 0.62;
+  let G = null, T = null, geo = null, mat0 = null, failed = false, lastStepT = 0, lastStepAt = 0, last = 0, pruneT = 10;
+  const prints = [], st = new Map();
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.wetprint === false); };
+  function make() {
+    G = window.__G; T = G.THREE;
+    // 피 웅덩이(game.js)와 같은 재질 · 같은 설정 — 색 · 거칠기 · 짙기만 다르다(셰이더는 같은 것) · 표준 재질은 장면에서 빌린다(판이 시작된 뒤)
+    let Std = null; G.scene.traverse((o) => { if (!Std && o.material && o.material.type === 'MeshStandardMaterial') Std = o.material.constructor; });
+    if (!Std) return;
+    // 납작한 원 — 게임이 내놓은 THREE 에 원판이 없어 높이 0 인 원기둥(옆면은 넓이 0 · 아랫면은 아래를 봐 안 그려짐 → 윗면 원판만)
+    geo = new T.CylinderGeometry(1, 1, 0, 14, 1, false);
+    mat0 = new Std({ color: 0x050607, emissive: 0x0e1418, roughness: 0.2, metalness: 0, transparent: true, opacity: OP, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+    W.ready = true;
+  }
+  const kill = (p) => { G.scene.remove(p.m); p.m.material.dispose(); };
+  function spot(x, z, y0, yaw, sx, sl, op) {
+    const N = window.__nav, wa = N && N.waterAt ? N.waterAt(x, z) : null;
+    // 밟는 면 높이 — 길찾기 격자(nav.js · 돌 단 · 다리 위도 그 면) · 없으면 게임 땅 높이(돌 단 아래 흙을 줄 때가 있다) · 발과 너무 다르면 발 높이
+    const nh = N && N.heightAt ? N.heightAt(x, z) : null;
+    let gy = nh != null && isFinite(nh) ? nh : G.groundAt ? G.groundAt(x, z) : y0; if (!isFinite(gy) || Math.abs(gy - y0) > 0.45) gy = y0;
+    if (wa) return;                                                     // 물 칸 위(물가 얕은 데 · 다리 위 포함)는 없다(리뷰 b355 — 다리 윗면 높이로 찍히던 것)
+    const m = new T.Mesh(geo, mat0.clone());
+    m.material.opacity = op; m.rotation.y = yaw; m.scale.set(sx, 1, sl);
+    m.position.set(x, gy + 0.006 + (prints.length % 8) * 0.0004, z); m.renderOrder = 2; m.name = 'wet-print';
+    G.scene.add(m); prints.push({ m, t0: performance.now() / 1000, op });
+    while (prints.length > MAX) kill(prints.shift());
+  }
+  // 발자국 하나 — 신발 바닥: 앞꿈치(타원) · 뒤꿈치(작은 타원) · 옅어질수록 뒤꿈치만 남기도
+  function print(x, z, y, yaw, side, k) {
+    const fx = Math.sin(yaw), fz = Math.cos(yaw), cx = x + fz * 0.1 * side, cz = z - fx * 0.1 * side;
+    const op = OP * (0.3 + 0.7 * k) * (0.85 + Math.random() * 0.3);
+    if (Math.random() < 0.55 + 0.45 * k) spot(cx + fx * 0.06, cz + fz * 0.06, y, yaw, 0.052, 0.085, op);
+    spot(cx - fx * 0.095, cz - fz * 0.095, y, yaw, 0.042, 0.05, op * 0.9);
+    W.n++;
+  }
+  /* 괴물(b348) — 연못을 지나 나오면 다음 몇 걸음(6~10) 맨발 큰 발자국 — 사람 발의 2.3배(길이 약 60cm) · 뒤꿈치 · 앞볼 · 발가락 셋(엄지가 안쪽)
+     · 걸음 박자는 괴물 걸음 소리(realsfx.js wi.monsterStep) · 디딘 자리는 흙먼지와 같은 곳(몸 가운데에서 좌우 0.45m · 앞 0.3m) · 사람 것보다 조금 짙게 */
+  let mSide = 1;
+  function bare(x, z, y, yaw, side, k, sc) {
+    const fx = Math.sin(yaw), fz = Math.cos(yaw), cx = x + fz * 0.45 * side + fx * 0.3, cz = z - fx * 0.45 * side + fz * 0.3;
+    const op = Math.min(0.8, OP * 1.15) * (0.3 + 0.7 * k) * (0.85 + Math.random() * 0.3), lx = fz * -side, lz = -fx * -side;   // 안쪽(몸 가운데 쪽)
+    spot(cx - fx * 0.09 * sc, cz - fz * 0.09 * sc, y, yaw, 0.034 * sc, 0.044 * sc, op);                   // 뒤꿈치
+    if (Math.random() < 0.6 + 0.4 * k) spot(cx + fx * 0.05 * sc, cz + fz * 0.05 * sc, y, yaw, 0.045 * sc, 0.034 * sc, op * 0.95);   // 앞볼
+    if (k > 0.35) [[0.028, 0.013], [0.0, 0.0095], [-0.026, 0.0085]].forEach(([o, r], j) => {   // 발가락 — 엄지(안쪽) · 둘째 · 바깥
+      const a = 0.112 - j * 0.008; spot(cx + (fx * a + lx * o) * sc, cz + (fz * a + lz * o) * sc, y, yaw, r * sc, r * 1.15 * sc, op * 0.9);
+    });
+    W.n++;
+  }
+  // 괴물 걸음은 frame 에서 움직인 거리로(소리를 꺼도 · 쫓는 동안 달려도 — 리뷰 b355: 예전엔 걸음 소리가 나야만 찍혔다)
+  function monTick() {
+    const C = G.monster; if (!C || !C.root || !C.root.visible) return;
+    const p = C.root.position, s = wetTick('mon', p), mv = Math.hypot(p.x - s.lx, p.z - s.lz); s.lx = p.x; s.lz = p.z;
+    if (mv > 2 || s.inW || s.n <= 0) { s.acc = 0; return; }
+    s.acc += mv; if (s.acc < 1.1) return;
+    s.acc = 0; mSide = -mSide;
+    if (on()) bare(p.x, p.z, p.y, C.root.rotation.y, mSide, s.n / s.n0, 2.3);
+    s.n--;
+  }
+  W.monStep = () => {};                                                  // 예전 고리(realsfx.js) — 이제 안 쓴다
+  // 젖음 — 물에서 나오는 순간 걸음 수를 정한다(가장 깊이 잠겼던 만큼)
+  function wetTick(key, p) {
+    const N = window.__nav, wa = N && N.waterAt ? N.waterAt(p.x, p.z) : null, d = wa ? wa.wy - p.y : 0;
+    let s = st.get(key); if (!s) { s = { inW: false, maxD: 0, n: 0, n0: 1, side: 1, lx: p.x, lz: p.z, acc: 0 }; st.set(key, s); }
+    if (d > 0.12) { s.inW = true; s.maxD = Math.max(s.maxD, d); s.n = 0; }
+    else if (s.inW) { s.inW = false; s.n = s.n0 = key === 'mon' ? (s.maxD > 0.6 ? 10 : s.maxD > 0.3 ? 8 : 6) : s.maxD > 0.6 ? 16 : s.maxD > 0.3 ? 12 : 8; s.maxD = 0; W.log.push(['out', typeof key === 'string' ? key : 'bot', s.n]); if (W.log.length > 20) W.log.shift(); }
+    return s;
+  }
+  W.demo = () => {
+    if (!G || !G.started || !geo) return false;
+    W.demoUntil = performance.now() / 1000 + 8;
+    const h = G.hero.position, c = G.cam ? G.cam.position : null; let fx = Math.sin(G.hero.rotation.y), fz = Math.cos(G.hero.rotation.y);
+    if (c) { const l = Math.hypot(h.x - c.x, h.z - c.z) || 1; fx = (h.x - c.x) / l; fz = (h.z - c.z) / l; }   // 카메라가 보는 쪽 앞으로
+    // 내 몸에 가리지 않게 — 1.4m 앞을 오른쪽에서 왼쪽으로 가로질러 간 발자국(누가 막 물에서 나와 지나간 듯 · 오른쪽이 가장 젖음)
+    const rx = fz, rz = -fx, yaw = Math.atan2(-rx, -rz);
+    for (let i = 0; i < 8; i++) { const u = 1.9 - i * 0.42; print(h.x + fx * 1.4 + rx * u, h.z + fz * 1.4 + rz * u, h.y, yaw, i % 2 ? 1 : -1, 1 - i / 8); }
+    // 그 뒤(3.4m 앞)로 괴물 맨발 넷 — 왼쪽에서 오른쪽으로(크기 비교 · 괴물 걸음은 1.1m)
+    const myaw = Math.atan2(rx, rz);
+    for (let i = 0; i < 4; i++) { const u = -1.6 + i * 1.1, sd = i % 2 ? 1 : -1; bare(h.x + fx * 3.4 + rx * u - (Math.cos(myaw) * 0.45 * sd + Math.sin(myaw) * 0.3), h.z + fz * 3.4 + rz * u - (-Math.sin(myaw) * 0.45 * sd + Math.cos(myaw) * 0.3), h.y, myaw, sd, 1 - i / 6, 2.3); }
+    return true;
+  };
+  W.wetK = (key) => { const s = st.get(key); return s && !s.inW && s.n > 0 ? s.n / s.n0 : 0; };   // 젖은 신발 소리(realsfx.js)가 쓴다 — 남은 젖은 걸음 비율
+  W.clear = () => { while (prints.length) kill(prints.pop()); st.clear(); };
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    const g = window.__G; if (!g || !g.scene || !g.THREE || !g.hero || failed) return;
+    if (!geo) { if (!g.started) return; try { make(); } catch (e) { failed = true; console.warn('[wetfeet] 준비', e); } if (!geo) return; }
+    const dt = Math.min(0.1, Math.max(0, (ts - last) / 1000)); last = ts; if (!dt) return;
+    const now = performance.now() / 1000;
+    // 마름 — 30초 머물다 12초에 걸쳐 옅어져 사라짐
+    for (let i = prints.length - 1; i >= 0; i--) {
+      const p = prints[i], u = now - p.t0;
+      if (u > HOLD + FADE) { kill(p); prints.splice(i, 1); continue; }
+      if (u > HOLD) p.m.material.opacity = p.op * (1 - (u - HOLD) / FADE);
+    }
+    if (!G.started) return;
+    const live = on();
+    // 나 — 걸음 소리 박자(realsfx.js)
+    const hp = G.hero.position, hs = wetTick('hero', hp), sT = window.__stepT || 0, hmv = Math.hypot(hp.x - hs.lx, hp.z - hs.lz); hs.lx = hp.x; hs.lz = hp.z;
+    if (hmv < 1.5) hs.acc += hmv;
+    let step = 0;
+    if (sT !== lastStepT) { lastStepT = sT; lastStepAt = now; step = window.__stepSide || 1; }
+    else if (now - lastStepAt > 0.8 && hs.acc >= 0.62) { hs.side = -hs.side; step = hs.side; }   // 걸음 소리가 안 온다(게임 소리 끔 · 녹음 없음) — 봇처럼 거리로
+    if (step) { hs.acc = 0; if (hs.n > 0 && !hs.inW) { if (live) print(hp.x, hp.z, hp.y, G.hero.rotation.y, step, hs.n / hs.n0); hs.n--; } }
+    // 괴물
+    monTick();
+    // 끄면 남은 자국은 2초에 걸쳐 빨리 마름(리뷰 b355)
+    if (!live && now > W.demoUntil) for (const p of prints) if (now - p.t0 < HOLD + FADE - 2) p.t0 = now - (HOLD + FADE - 2);   // 보기는 꺼져 있어도 8초 남김
+    // 사라진 봇 · 상대(다시 만들어진 몸)의 젖음은 지운다 — 10초마다
+    if ((pruneT -= dt) <= 0) { pruneT = 10; const live2 = new Set((G.game && G.game.bots) || []); for (const k of [...st.keys()]) if (typeof k !== 'string' && !live2.has(k)) st.delete(k); }
+    // 봇 · 같이 하기 상대 — 0.62m 마다(움직인 쪽으로)
+    for (const b of (G.game && G.game.bots) || []) {
+      const r = b.hero; if (!r) continue;
+      const p = r.position, s = wetTick(b, p), mv = Math.hypot(p.x - s.lx, p.z - s.lz), mx = p.x - s.lx, mz = p.z - s.lz; s.lx = p.x; s.lz = p.z;
+      if (!r.visible || mv > 1.5 || s.inW || s.n <= 0) { s.acc = 0; continue; }
+      s.acc += mv;
+      if (s.acc < 0.62) continue;
+      s.acc = 0; s.side = -s.side;
+      if (live) { print(p.x, p.z, p.y, Math.atan2(mx, mz), s.side, s.n / s.n0); } s.n--;
+    }
+  }
+  requestAnimationFrame(frame);
+  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); try { W.clear(); } catch (e) { /* */ } })(window.__onRestart);
+})();
+
+</script>
+<script>/* nightdeep.js */
+/* 밤이 깊어진다(2026-10-10 · 케이스 스터디 — Alien: Isolation · Left 4 Dead 「AI 디렉터」의 분위기 쪽만 · SIREN 시각이 흐를수록 — 판이 흐를수록 어둠이 조여 온다)
+   · 판의 흐름 k(0~1) = 시작 30초 뒤부터 3분 30초에 걸쳐 차오름 · 바친 시체 수(모두 합해 5면 가득) 중 큰 쪽 · 「마지막 하나」(어느 본진이 둘)면 0.8 넘게 · 8초에 걸쳐 천천히 따라감
+   · 달빛 · 하늘빛 · 바탕빛이 최대 2할 어두워진다(등롱 · 손전등은 그대로 — 어둠이 좁혀 와 불빛만 남는다) · 안개가 최대 2할5푼 짙어진다
+     풀벌레가 최대 절반 잦아든다(ambience.js) · 괴물 고개 경련 · 꺾음이 최대 1.5배 잦아진다(montwitch.js)
+   · 빛 세기 · 안개는 그리는 순간만 바꾸고 되돌린다(게임 값 · 저장 값 그대로) · 다시 하기 · 판이 끝나면 처음으로 · 같이 하기: 점수는 모두 같고 시각은 각자 판이 시작된 때부터(늦게 들어오면 조금 밝을 수 있다 — 그림만)
+   · 그림만 · 판정 · 괴물 동작 그대로 · 끄기: 시연실 연출 「밤이 깊어진다」 · 보기: 3초에 걸쳐 가장 깊은 밤 → 4초 머묾 → 2초에 돌아옴 */
+(() => {
+  const N = (window.__night = { k: 0, target: 0, insectK: 1, ready: false, demoT: 0 });
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const ss = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+  let lights = null, t0 = 0, wasStarted = false, last = 0;
+  const saved = [];
+  let fogSaved = -1;
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.nightdeep === false); };
+  N.demo = () => { N.demoT = performance.now(); return true; };
+  function demoK(now) {                                                    // 보기 — 0 → 1(3초) · 머묾(4초) · → 0(2초)
+    const u = (now - N.demoT) / 1000; if (!N.demoT || u > 9) return -1;
+    return u < 3 ? ss(u / 3) : u < 7 ? 1 : 1 - ss((u - 7) / 2);
+  }
+  function tick() {
+    const G = window.__G, now = performance.now(); if (!G || !G.cfg) return;
+    const dt = Math.min(0.1, Math.max(0, (now - (last || now)) / 1000)); last = now;
+    if (G.started && !wasStarted) t0 = now; wasStarted = !!G.started;
+    let tg = 0;
+    if (G.started && !(G.game && G.game.over)) {
+      const el = (now - t0) / 1000, sc = (G.scores && G.scores()) || [], sum = sc.reduce((a, b) => a + (+b || 0), 0), top = Math.max(0, ...sc.map((x) => +x || 0));
+      tg = Math.max(clamp((el - 30) / 210, 0, 1), clamp(sum / 5, 0, 1), top >= 2 ? 0.8 : 0);
+    }
+    N.target = tg;
+    N.k += (tg - N.k) * (1 - Math.exp(-dt / (tg < N.k ? 1.2 : 8)));       // 깊어질 때는 8초 · 새 판이면 빨리 돌아옴
+    const d = demoK(now), k = d >= 0 ? Math.max(N.k, d) : N.k, live = on() || d >= 0;
+    N.kNow = live ? k : 0;
+    N.insectK = 1 - 0.5 * N.kNow;
+  }
+  function apply() {
+    const G = window.__G; if (!G || !G.scene) return;
+    tick();
+    if (saved.length) restore();                                         // 그린 뒤 되돌리기가 빠졌으면(그리기 중 예외) 먼저 — 곱셈이 쌓이지 않게(리뷰 b355)
+    const k = N.kNow || 0; if (k < 0.002) return;
+    if (!lights) { lights = []; G.scene.traverse((o) => { if (o.isAmbientLight || o.isHemisphereLight || o.isDirectionalLight) lights.push(o); }); }
+    const f = 1 - 0.2 * k;
+    for (const L of lights) { saved.push(L, L.intensity); L.intensity *= f; }
+    if (G.scene.fog) { fogSaved = G.scene.fog.density; G.scene.fog.density *= 1 + 0.25 * k; }
+  }
+  function restore() {
+    for (let i = saved.length - 2; i >= 0; i -= 2) saved[i].intensity = saved[i + 1];   // 뒤에서부터
+    saved.length = 0;
+    const G = window.__G; if (fogSaved >= 0 && G && G.scene && G.scene.fog) G.scene.fog.density = fogSaved; fogSaved = -1;
+  }
+  (function hook() {
+    const G = window.__G; if (!G || !G.scene) { setTimeout(hook, 400); return; }
+    const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender;
+    Sc.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { apply(); } catch (e) { restore(); if (!N.err) { N.err = true; console.warn('[nightdeep]', e); } } };
+    Sc.onAfterRender = function (...a) { restore(); if (pa) pa.apply(this, a); };
+    N.ready = true;
+  })();
+  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); t0 = performance.now(); N.k = 0; })(window.__onRestart);
+})();
+
+</script>
+<script>/* postmood.js */
+/* 화면이 몸을 따른다(2026-10-10 · 케이스 스터디 — RE2R 「위험」 상태의 빛바랜 화면 · TLOU2 다친 뒤 · Outlast 숨죽임의 좁아진 시야 — 체력바 대신 화면 색으로)
+   · 다친 동안(부상 자세 18초 — breathe.js inj): 색이 최대 3할 빠지고(빛바램) 테두리 어둠이 2할5푼 짙어짐 · 12초 뒤 6초에 걸쳐 돌아옴
+   · 숨 참는 동안(breathe.js hold): 테두리 어둠 최대 1할8푼 — 시야가 좁아진다
+   · 밤이 깊어질수록(nightdeep.js): 색이 최대 1할2푼 더 빠짐
+   · 노이즈 · 번짐 · 흔들림은 건드리지 않는다(사용자: TV 잡음 같은 것은 우리 게임이 아니다) — 채도 · 테두리만
+   · 후처리 사각형이 그려지기 직전에만 곱한다(게임이 매 프레임 조절 값을 다시 넣는다 — 저장 값은 그대로) · 끄기: 시연실 연출 「화면이 몸을 따른다」 · 보기: 4초 다친 화면 → 3초 숨 참은 화면 */
+(() => {
+  const M = (window.__postmood = { ready: false, sat: 1, vig: 1, demoT: 0 });
+  const ss = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.postmood === false); };
+  M.demo = () => { M.demoT = performance.now(); return true; };
+  function amounts() {
+    const now = performance.now(), u = (now - M.demoT) / 1000, demo = M.demoT && u < 7.6;
+    const HB = window.__breath && window.__breath.hero, N = window.__night;
+    let inj = HB ? HB.inj || 0 : 0, hold = HB ? HB.hold || 0 : 0;
+    const night = N ? N.kNow || 0 : 0;
+    if (demo) { const a = u < 0.6 ? ss(u / 0.6) : u < 3.6 ? 1 : u < 4.2 ? 1 - ss((u - 3.6) / 0.6) : 0, b = u < 4 ? 0 : u < 4.6 ? ss((u - 4) / 0.6) : u < 7 ? 1 : 1 - ss((u - 7) / 0.6); inj = Math.max(inj, a); hold = Math.max(hold, b); }
+    if (!on() && !demo) return [1, 1];
+    return [(1 - 0.3 * inj) * (1 - 0.12 * night), (1 + 0.25 * inj) * (1 + 0.18 * hold)];
+  }
+  (function hook() {
+    const G = window.__G, P = G && G.post && G.post.scene;
+    const q = P && P.children.find((o) => o.material && o.material.uniforms && o.material.uniforms.uSat && o.material.uniforms.uVignette);
+    if (!q) { setTimeout(hook, 500); return; }
+    const pb = q.onBeforeRender;
+    q.onBeforeRender = function (...a) {
+      if (pb) pb.apply(this, a);
+      try {
+        if (!(window.__G && window.__G.started)) return;
+        const [s, v] = amounts(); M.sat = s; M.vig = v;
+        const U = this.material.uniforms;
+        if (s !== 1) U.uSat.value *= s;
+        if (v !== 1) U.uVignette.value *= v;
+      } catch (e) { if (!M.err) { M.err = true; console.warn('[postmood]', e); } }
+    };
+    M.ready = true;
+  })();
+})();
+
+</script>
+<script>/* pool.js */
+/* 시체 밑 피(2026-10-10 · 케이스 스터디 — TLOU2 · RE4R 「버려진 몸은 바닥을 적신다」 · 시체가 땅에 놓여 있다는 무게)
+   · 판이 시작될 때 누워 있는 시체 밑: 오래돼 검게 마른 피(반지름 0.3~0.45m · 거칠고 윤기 없음)
+   · 들었다 내려놓으면: 엉덩이 밑으로 새 피가 20초에 걸쳐 번짐(0.35~0.55m · 젖은 윤기) — 어디에 시체가 막 놓였는지 땅이 말해 준다
+   · 시체를 다른 데로 옮기면(0.7m 넘게) 그 자리 피는 더 번지지 않고 30초 뒤 15초에 걸쳐 옅어짐 · 물 위 · 다리 위(발 높이와 크게 다름) 없음
+   · 원 다섯(가운데 타원 · 번진 둘 · 작은 방울 둘)을 겹쳐 모양이 고르지 않게 · 피 웅덩이(game.js)와 같은 재질 설정(새 셰이더 없음) · 조절 「피」를 끄면 없음 · 같이 하기도 같다(들림 · 놓임은 모두 보인다)
+   · 끄기: 시연실 연출 「시체 밑 피」 · 보기: 가장 가까운 누운 시체(9m 안 · 없으면 내 앞 1.4m) 밑에 4초에 걸쳐 번짐 */
+(() => {
+  const P = (window.__pool = { ready: false, n: 0, shown: true });
+  const MAXP = 12;
+  let G = null, T = null, geo = null, Std = null, failed = false, wasStarted = false, last = 0, V = null;
+  const pools = [], seen = new WeakMap();
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.corpsepool === false) && !(G && G.cfg && G.cfg.bloodOn === false); };
+  function make() {
+    G = window.__G; T = G.THREE;
+    G.scene.traverse((o) => { if (!Std && o.material && o.material.type === 'MeshStandardMaterial') Std = o.material.constructor; });
+    if (!Std) return;
+    geo = new T.CylinderGeometry(1, 1, 0, 16, 1, false);                       // 납작한 원(윗면만 보인다 — wetfeet.js 와 같은 길)
+    V = new T.Vector3();
+    P.ready = true;
+  }
+  const kill = (p) => { for (const m of p.ms) { G.scene.remove(m); m.material.dispose(); } };
+  function groundY(x, z, y0) {
+    const N = window.__nav, wa = N && N.waterAt ? N.waterAt(x, z) : null;
+    const nh = N && N.heightAt ? N.heightAt(x, z) : null;
+    let gy = nh != null && isFinite(nh) ? nh : G.groundAt ? G.groundAt(x, z) : y0;
+    if (!isFinite(gy) || Math.abs(gy - y0) > 0.5) gy = y0;
+    if (wa && wa.wy > gy - 0.03) return null;                                // 물 위 · 물가 얕은 데는 없다
+    return gy;
+  }
+  // 웅덩이 하나 — 원 셋(가운데 하나 + 옆으로 비킨 둘) · old: 검게 마른 것
+  function add(body, x, z, y0, old, fast) {
+    const gy = groundY(x, z, y0); if (gy === null) return null;
+    const R = old ? rnd(0.3, 0.45) : rnd(0.35, 0.55), a0 = rnd(0, 6.28), ms = [], parts = [];
+    for (let i = 0; i < 5; i++) {                                         // 가운데 타원 + 옆으로 번진 둘 + 작은 방울 둘 — 원 하나로는 구멍처럼 보였다
+      const m = new T.Mesh(geo, new Std({ color: old ? 0x2a0604 : 0x4f0304, roughness: old ? 1 : 0.6, metalness: 0, transparent: true, opacity: old ? 0.7 : 0.82, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));   // 게임 피 웅덩이 색(goreBlood 바탕 × 0.55)
+      const off = i === 0 ? 0 : i < 3 ? R * rnd(0.5, 0.75) : R * rnd(0.95, 1.3), a = a0 + i * rnd(1.2, 2.2), sc = i === 0 ? 1 : i < 3 ? rnd(0.4, 0.62) : rnd(0.1, 0.18);
+      m.position.set(x + Math.cos(a) * off, gy + 0.004 + i * 0.0006 + (pools.length % 6) * 0.0003, z + Math.sin(a) * off);
+      m.rotation.y = rnd(0, 6.28); m.renderOrder = 2; m.name = 'corpse-pool';
+      parts.push({ sc, ax: i === 0 ? rnd(0.62, 1) : rnd(0.7, 1), az: i === 0 ? rnd(0.62, 1) : rnd(0.7, 1) });
+      ms.push(m); G.scene.add(m);
+    }
+    const p = { body, x, z, R, ms, parts, t0: performance.now() / 1000, grow: old ? 0 : fast ? 4 : 20, old, left: 0, op: old ? 0.72 : 0.8 };
+    setK(p, old ? 1 : 0.15);
+    pools.push(p); P.n++;
+    while (pools.length > MAXP) { let j = pools.findIndex((q) => q.left); if (j < 0) j = 0; const q = pools.splice(j, 1)[0]; kill(q); }   // 넘치면 옅어지는 것부터(리뷰 b363 — 누운 시체 밑 마른 피가 툭 사라지지 않게)
+    return p;
+  }
+  function setK(p, k) { p.ms.forEach((m, i) => { const q = p.parts[i], r = p.R * q.sc * k; m.scale.set(Math.max(0.01, r * q.ax), 1, Math.max(0.01, r * q.az)); }); }
+  function hips(b) { if (!b || !b.bones || !b.bones.hips) return null; b.bones.hips.getWorldPosition(V); return V; }
+  P.demo = () => {
+    if (!G || !geo || !G.started) return false;
+    const h = G.hero.position; let best = null, bd = 9;
+    for (const b of (G.game && G.game.bodies) || []) { if (b.held || !b.root || !b.root.visible) continue; const v = hips(b); if (!v) continue; const d = Math.hypot(v.x - h.x, v.z - h.z); if (d < bd) { bd = d; best = b; } }
+    if (best) { const v = hips(best); return !!add(best, v.x, v.z, v.y - 0.1, false, true); }
+    const y = G.hero.rotation.y; return !!add(null, h.x + Math.sin(y) * 1.4, h.z + Math.cos(y) * 1.4, h.y, false, true);
+  };
+  P.clear = () => { while (pools.length) kill(pools.pop()); };
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    const g = window.__G; if (!g || !g.scene || !g.THREE || failed) return;
+    if (!geo) { if (!g.started) return; try { make(); } catch (e) { failed = true; console.warn('[pool] 준비', e); } if (!geo) return; }
+    const dt = Math.min(0.1, Math.max(0, (ts - last) / 1000)); last = ts; if (!dt) return;
+    const now = performance.now() / 1000, live = on();
+    // 판이 시작되는 순간 — 누워 있는 시체 밑에 오래된 피
+    const fresh = G.started && !wasStarted;
+    if (fresh) for (const b of (G.game && G.game.bodies) || []) { seen.set(b, !!b.held); if (!live || b.held || !b.root || !b.root.visible) continue; const v = hips(b); if (v) add(b, v.x, v.z, v.y - 0.1, true); }
+    wasStarted = !!G.started;
+    // 내려놓는 순간 — 새 피(새 판 첫 그림은 빼고 — 다시 하기가 들고 있던 시체를 같은 순간에 내려놓는다 · 리뷰 b363)
+    for (const b of (G.game && G.game.bodies) || []) {
+      const held = !!b.held, was = seen.get(b); seen.set(b, held);
+      if (!fresh && was === true && !held && live && b.root && b.root.visible) { const v = hips(b); if (v) add(b, v.x, v.z, v.y - 0.1, false); }
+    }
+    // 끄면(「시체 밑 피」 · 조절 「피」) 깔린 피도 숨김 · 켜면 다시(리뷰 b363)
+    if (live !== P.shown) { P.shown = live; for (const p of pools) for (const m of p.ms) m.visible = live; }
+    // 번짐 · 옮겨지면 멈추고 옅어짐
+    for (let i = pools.length - 1; i >= 0; i--) {
+      const p = pools[i];
+      if (!p.left) {
+        const v = p.body ? hips(p.body) : null;
+        if (p.body && (p.body.held || !v || Math.hypot(v.x - p.x, v.z - p.z) > 0.7)) p.left = now;
+        else if (!p.body && now - p.t0 > 8) p.left = now;
+      }
+      if (p.grow && (!p.left || p.left - p.t0 < p.grow)) { const u = Math.min(1, ((p.left || now) - p.t0) / p.grow); setK(p, 0.15 + 0.85 * (1 - Math.pow(1 - u, 2.2))); }
+      if (p.left) {
+        const u = now - p.left - (p.body ? 30 : 0);
+        if (u > 15) { kill(p); pools.splice(i, 1); continue; }
+        if (u > 0) for (const m of p.ms) m.material.opacity = p.op * (1 - u / 15);
+      }
+    }
+  }
+  requestAnimationFrame(frame);
+  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); try { P.clear(); } catch (e) { /* */ } wasStarted = false; })(window.__onRestart);
+})();
+
+</script>
+<script>/* clouds.js */
+/* 구름이 달을 가린다(2026-10-10 · 케이스 스터디 — Alan Wake 의 구름 · SIREN 의 흐린 밤 · 익숙한 길이 잠깐 낯설어지는 순간)
+   · 50~110초마다 구름 한 덩이가 달을 지난다 — 2.5~4초에 걸쳐 달빛이 3~4할 줄고 · 5~10초 머물다 · 3~5초에 걸쳐 돌아온다(하늘빛도 조금)
+   · 등롱 · 손전등은 그대로 — 그동안 불빛만 또렷해진다 · 그리는 순간만 빛 세기를 바꾸고 되돌린다(게임 · 저장 값 그대로 · nightdeep.js 와 겹쳐도 차례대로 되돌림)
+   · 같이 하기: 사람마다 따로 지나간다(그림만 · 판정 없음) · 끄기: 시연실 연출 「구름이 달을 가린다」 · 보기: 지금 한 덩이(짧게 — 6초) */
+(() => {
+  const C = (window.__clouds = { ready: false, k: 0, next: 0, cur: null });
+  const ss = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.clouds === false); };
+  let moon = null, hemi = null, saved = [];
+  C.demo = () => { C.cur = { t0: performance.now() / 1000, a: 1.2, h: 3, b: 1.8, d: 0.4, demo: true }; return true; };
+  function kNow(now) {
+    if (!C.next) C.next = now + rnd(25, 60);
+    if (!C.cur && now >= C.next) { C.cur = { t0: now, a: rnd(2.5, 4), h: rnd(5, 10), b: rnd(3, 5), d: rnd(0.3, 0.4) }; C.next = now + rnd(50, 110); }
+    const c = C.cur; if (!c) return 0;
+    const u = now - c.t0, k = u < c.a ? ss(u / c.a) : u < c.a + c.h ? 1 : 1 - ss((u - c.a - c.h) / c.b);
+    if (u > c.a + c.h + c.b) { C.cur = null; return 0; }
+    return k * c.d;
+  }
+  function apply() {
+    const G = window.__G; if (!G || !G.scene || !G.started) return;
+    const now = performance.now() / 1000, d = kNow(now);
+    if (!(C.cur && C.cur.demo) && !on()) { C.k = 0; return; }
+    C.k = d; if (d < 0.002) return;
+    if (!moon) G.scene.traverse((o) => { if (o.isDirectionalLight && !moon) moon = o; if (o.isHemisphereLight && !hemi) hemi = o; });
+    if (moon) { saved.push(moon, moon.intensity); moon.intensity *= 1 - d; }
+    if (hemi) { saved.push(hemi, hemi.intensity); hemi.intensity *= 1 - d * 0.35; }
+  }
+  function restore() { for (let i = saved.length - 2; i >= 0; i -= 2) saved[i].intensity = saved[i + 1]; saved.length = 0; }
+  (function hook() {
+    const G = window.__G; if (!G || !G.scene) { setTimeout(hook, 400); return; }
+    const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender;
+    Sc.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { apply(); } catch (e) { restore(); if (!C.err) { C.err = true; console.warn('[clouds]', e); } } };
+    Sc.onAfterRender = function (...a) { restore(); if (pa) pa.apply(this, a); };
+    C.ready = true;
+  })();
+})();
+
+</script>
+<script>/* recoil.js */
+/* 시체 앞 역겨움(2026-10-10 · 케이스 스터디 — TLOU · RE7 「주인공이 시체에 반응한다」 · 썩는 냄새가 화면 밖에서도 느껴지게)
+   · 누운 시체에 처음 다가가면(1.7m 안 · 그 시체는 이 판에 처음) 고개를 시체 반대쪽으로 0.9초 돌리고 「역겨움」 얼굴 · 젊은 남자 헛구역질(녹음이 있으면 · realsfx p_gag)
+   · 판의 첫 시체는 늘 · 그 뒤로는 열에 넷 · 한 번 하면 18초 쉼 · 괴물에게 쫓기는 중 · 업거나 끄는 중 · 불붙은 중 · 물속 · 맞는 중이면 안 함
+   · 나만(봇 · 같이 하기 상대는 안 함) · 그림 · 소리만 · 끄기: 시연실 연출 「시체 앞 역겨움」 · 보기: 지금 한 번(가장 가까운 시체 반대쪽으로) */
+(() => {
+  const R0 = (window.__recoil = { ready: false, n: 0, log: [] });
+  let seen = new WeakSet(), firstDone = false, cd = 0, last = 0, wasStarted = false;
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.recoil === false); };
+  const skinOf = (o) => { let s = null; if (o) o.traverse((x) => { if (x.isSkinnedMesh && !s) s = x; }); return s; };
+  function react(G, cx, cz, why) {
+    const h = G.hero.position, B = window.__breath, Cc = window.__cast, Rs = window.__rsfx;
+    if (B && B.lookAt) B.lookAt(h.x - (cx - h.x), h.z - (cz - h.z), 0.9, 120, true);    // 시체 반대쪽으로 고개(「소리 쪽 고개」를 꺼도 · 리뷰 b363)
+    const Bd = G.body; if (Cc && Cc.playOnKey && Bd) Cc.playOnKey([skinOf(Bd.main), skinOf(Bd.drag)].filter(Boolean), 'disgust');
+    if (Rs && Rs.play) Rs.play(Math.random() < 0.65 ? 'p_gag2' : 'p_gag1', { vol: 0.5, rate: 0.96 + Math.random() * 0.08, delay: 0.12 });   // 못마땅한 신음이 더 자주 · 헛구역질은 가끔
+    R0.n++; R0.log.push([why, +(performance.now() / 1000).toFixed(1)]); if (R0.log.length > 10) R0.log.shift();
+  }
+  R0.demo = () => {
+    const G = window.__G; if (!G || !G.started) return false;
+    const h = G.hero.position; let best = null, bd = 1e9;
+    for (const b of (G.game && G.game.bodies) || []) { if (b.held || !b.root || !b.root.visible) continue; const d = Math.hypot(b.x - h.x, b.z - h.z); if (d < bd) { bd = d; best = b; } }
+    const y = G.hero.rotation.y, cx = best ? best.x : h.x + Math.sin(y), cz = best ? best.z : h.z + Math.cos(y);
+    react(G, cx, cz, 'demo'); return true;
+  };
+  function busy(G) {
+    const H = window.__breath && window.__breath.hero, C = G.monster, N = window.__nav, h = G.hero.position;
+    const hunted = window.__hunting ? !!window.__hunting('hero') : !!(C && (C.state === 'chase' || C.state === 'attack') && C.tgt && !C.tgt.bot);   // breathe.js 와 같은 판단
+    const carrying = !!(G.carry && G.carry.heldBody);
+    const burning = !!(window.__burn && window.__burn.burning && window.__burn.burning('hero'));
+    const wa = N && N.waterAt ? N.waterAt(h.x, h.z) : null, wet = wa && wa.wy - h.y > 0.12;
+    return hunted || carrying || burning || wet || !!(G.hit && G.hit.active) || !!(H && H.busy);
+  }
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    const G = window.__G; if (!G || !G.started || !G.hero) { wasStarted = false; return; }
+    const dt = Math.min(0.1, Math.max(0, (ts - last) / 1000)); last = ts;
+    if (!wasStarted) { wasStarted = true; seen = new WeakSet(); firstDone = false; cd = 2; }
+    if (G.game && G.game.over) return;
+    cd -= dt; if (!on()) return;
+    const h = G.hero.position;
+    for (const b of (G.game && G.game.bodies) || []) {
+      if (b.held) { seen.add(b); continue; }                               // 들었던 시체는 본 것 — 발 쪽에서 집어 엉덩이 1.7m 안에 안 들어갔어도(리뷰 b363 — 내려놓는 순간 역겨움이 나오던 것)
+      if (!b.root || !b.root.visible || seen.has(b)) continue;
+      if (Math.hypot(b.x - h.x, b.z - h.z) > 1.7) continue;
+      seen.add(b);                                                          // 이 판에 이 시체는 한 번만(하든 안 하든)
+      if (cd > 0 || busy(G)) continue;
+      if (firstDone && Math.random() > 0.4) continue;
+      firstDone = true; cd = 18; react(G, b.x, b.z, 'near');
+    }
+  }
+  requestAnimationFrame(frame);
+  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); wasStarted = false; })(window.__onRestart);
+  R0.ready = true;
+})();
+
+</script>
+<script>/* reveal.js */
+/* 괴물이 눈에 들어올 때(2026-10-10 · 케이스 스터디 — RE7 · Alien: Isolation · TLOU 「먼저 본 쪽이 산다」 — 괴물이 나를 보기 전에 내가 먼저 봤을 때 낮은 악기 한 번)
+   · 괴물 몸(1m · 2.2m 높이) 하나라도 화면 안 · 카메라에서 18m 안 · 바위 · 벽 · 건물에 가리지 않음(광선 · 0.3초마다) · 30초 넘게 안 보였다가 다시 보일 때 · 나를 쫓는 중이 아닐 때
+     → 낮은 현 긁힘 · 저음 한 번(realsfx mus_reveal · 실제 악기 녹음 — 있을 때) · 아주 작게 움찔(breathe.js flinch 0.25)
+   · 한 번 울리면 40초 쉼 · 판 시작 6초 동안은 안 함(판 시작 카드) · 그림 · 소리만 · 끄기: 시연실 연출 「괴물이 눈에 들어올 때」 · 보기: 지금 한 번 */
+(() => {
+  const R0 = (window.__reveal = { ready: false, n: 0, log: [], seenAt: 0, vis: false });
+  let rc = null, V = null, D = null, meshes = null, sig = '', checkT = 0, cd = 0, startAt = 0, wasStarted = false, last = 0;
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.reveal === false); };
+  function solids(G) {                                                     // camera.js 와 같은 막는 것 — 맵의 바위 · 벽 · 건물 + 불투명 소품
+    const pg = G.props && G.props.group, s = ((G.map && G.map.solids) ? G.map.solids.length : 0) + ':' + (pg ? pg.children.length : 0);
+    if (meshes && s === sig) return meshes;
+    sig = s; meshes = ((G.map && G.map.solids) || []).slice();
+    if (pg) pg.traverse((o) => { if (o.isMesh && !o.isSkinnedMesh && o.material && !(o.material.alphaTest > 0) && !o.material.transparent) meshes.push(o); });
+    return meshes;
+  }
+  function visible(G) {                                                     // 괴물 몸 두 곳(1m · 2.2m 높이) 중 하나라도 화면 안에 가리지 않고 보이면 — 카메라가 내려다봐 머리는 화면 위로 잘리기 쉽다
+    const C = G.monster; if (!C || !C.root || !C.root.visible || G.cfg.monOn === false) return false;
+    const cam = G.cam, p = C.root.position, sc = ((G.cfg && G.cfg.monHeight) || 4) / 4;
+    for (const hy of [1.0 * sc, 2.2 * sc]) {
+      V.set(p.x, p.y + hy, p.z);
+      const dist = V.distanceTo(cam.position); if (dist > 18) return false;
+      D.copy(V).project(cam); if (D.z > 1 || Math.abs(D.x) > 0.85 || Math.abs(D.y) > 0.95) continue;
+      D.copy(V).sub(cam.position).normalize();
+      rc.set(cam.position, D); rc.far = dist - 0.5; rc.firstHitOnly = true;
+      const hit = rc.intersectObjects(solids(G), false)[0]; rc.firstHitOnly = false;
+      if (!hit) return true;
+    }
+    return false;
+  }
+  function sting(G, why) {
+    const Rs = window.__rsfx, B = window.__breath;
+    if (Rs && Rs.play) Rs.play('mus_reveal', { vol: 0.55, rate: 0.97 + Math.random() * 0.06 });
+    if (B && B.flinch) B.flinch(0.25);
+    R0.n++; R0.log.push([why, +(performance.now() / 1000).toFixed(1)]); if (R0.log.length > 10) R0.log.shift();
+  }
+  R0.demo = () => { const G = window.__G; if (!G || !G.started) return false; sting(G, 'demo'); return true; };
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    const G = window.__G; if (!G || !G.scene || !G.THREE || !G.cam) return;
+    if (!rc) { rc = new G.THREE.Raycaster(); V = new G.THREE.Vector3(); D = new G.THREE.Vector3(); R0.ready = true; }
+    const now = performance.now() / 1000, dt = Math.min(0.1, Math.max(0, (ts - last) / 1000)); last = ts; cd -= dt;
+    if (!G.started) { wasStarted = false; return; }
+    if (!wasStarted) { wasStarted = true; startAt = now; R0.seenAt = now; }
+    if ((checkT -= dt) > 0) return; checkT = 0.3;
+    let vis = false; try { vis = visible(G); } catch (e) { if (!R0.err) { R0.err = true; console.warn('[reveal]', e); } }
+    R0.vis = vis;
+    if (!vis) return;
+    const gap = now - R0.seenAt; R0.seenAt = now;
+    if (gap < 30 || cd > 0 || now - startAt < 6 || !on() || (G.game && G.game.over)) return;
+    const hunted = window.__hunting ? !!window.__hunting('hero') : false;
+    if (hunted) return;
+    cd = 40; sting(G, 'seen');
+  }
+  requestAnimationFrame(frame);
+  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); wasStarted = false; })(window.__onRestart);   // 다시 하기 — 시작 6초 쉼 · 마지막 본 때를 새로(리뷰 b363)
+})();
+
+</script>
+<script>/* roundstats.js */
+/* 판 기록 한 줄(2026-10-10 · 케이스 스터디 — SIREN 종료 카드의 기록 · RE 결과 화면의 숫자 · 무엇을 겪었는지 남는다)
+   · 종료 카드(tension.js) 본진 수 아래에 조용히 한 줄: 「들킴 2 · 맞음 1 · 괴물이 가장 가까이 1.8m · 옮긴 거리 46m」
+   · 이 판 동안 센다 — 들킴(괴물이 나를 쫓기 시작한 횟수 · breathe.js 와 같은 판단) · 맞음(맞고 날아간 횟수) · 괴물과 가장 가까웠던 거리(수평) · 시체를 업거나 끌고 걸은 거리
+   · 새 판이면 처음부터 · 같이 하기도 내 것만 · 끄기: 시연실 연출 「판 기록 한 줄」 · 보기: 지금까지 센 것을 화면에 4초 */
+(() => {
+  const S = (window.__roundStats = { spotted: 0, hits: 0, minMon: Infinity, carried: 0 });
+  let lastSpot = -99, wasHunt = false, wasHit = false, wasOver = false, wasStarted = false, lx = null, lz = null, line = null, demoEl = null, frozen = '';
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.roundstats === false); };
+  const reset = () => { lastSpot = -99; wasHunt = false; wasHit = false; S.spotted = 0; S.hits = 0; S.minMon = Infinity; S.carried = 0; lx = lz = null; };
+  S.text = () => `들킴 ${S.spotted} · 맞음 ${S.hits} · 괴물이 가장 가까이 ${isFinite(S.minMon) ? S.minMon.toFixed(1) + 'm' : '—'} · 옮긴 거리 ${Math.round(S.carried)}m`;   // 「나른」은 「나른하다」로 읽힐 수 있다(아트 리뷰 b368)
+  S.demo = () => {
+    if (!demoEl) { demoEl = document.createElement('div'); demoEl.style.cssText = 'position:fixed;left:50%;top:62%;transform:translateX(-50%);z-index:54;pointer-events:none;font:700 12px var(--serif, serif);letter-spacing:.3em;color:#a39c8c;text-shadow:0 0 6px #000;transition:opacity .4s;opacity:0;white-space:nowrap'; (document.getElementById('game-root') || document.body).appendChild(demoEl); }
+    demoEl.textContent = S.text(); demoEl.style.opacity = '1'; clearTimeout(S._dt); S._dt = setTimeout(() => { demoEl.style.opacity = '0'; }, 4000); return true;
+  };
+  function tick() {
+    const G = window.__G; if (!G || !G.hero) return;
+    if (!G.started) { wasStarted = false; return; }
+    const over = !!(G.game && G.game.over);
+    if (!wasStarted || (wasOver && !over)) reset();                         // 새 판
+    wasStarted = true;
+    if (!over) {
+      const C0 = G.monster, md = C0 && C0.root ? Math.hypot(C0.root.position.x - G.hero.position.x, C0.root.position.z - G.hero.position.z) : 99;
+      const hunt = md < 16 && (window.__hunting ? !!window.__hunting('hero') : false), nowS = performance.now() / 1000;   // breathe.js 들킴 반응과 같은 16m · 12초 쉼(리뷰 b363 — 감지 끝에서 들락날락하면 부풀었다)
+      if (hunt && !wasHunt && nowS - lastSpot > 12) { S.spotted++; lastSpot = nowS; } wasHunt = hunt;
+      const hit = !!(G.hit && G.hit.active && !G.hit.drop); if (hit && !wasHit) S.hits++; wasHit = hit;   // 불붙어 구른 것(drop)은 맞음이 아니다(리뷰 b363)
+      const C = G.monster, h = G.hero.position;
+      if (C && C.root && C.root.visible && G.cfg.monOn !== false) S.minMon = Math.min(S.minMon, Math.hypot(C.root.position.x - h.x, C.root.position.z - h.z));
+      if (lx !== null && G.carry && G.carry.heldBody) { const d = Math.hypot(h.x - lx, h.z - lz); if (d < 1.5) S.carried += d; }
+      lx = h.x; lz = h.z;
+    }
+    // 종료 카드가 떠 있으면 본진 수 아래에 한 줄
+    if (over && !wasOver) frozen = S.text();
+    const end = document.getElementById('sr-end');
+    if (end && over && end.className.indexOf('on') >= 0 && on()) {
+      if (!line || !end.contains(line)) { line = document.createElement('div'); line.className = 'rec rs-line'; line.style.marginTop = '10px'; line.style.letterSpacing = '.22em'; line.style.fontWeight = '400'; const t = end.querySelector('.tally'); if (t && t.parentNode) t.parentNode.insertBefore(line, t.nextSibling); else end.appendChild(line); }
+      line.textContent = frozen;                                             // 끝나는 순간 값으로 고정
+      line.style.display = '';
+    } else if (line) line.style.display = 'none';
+    wasOver = over;
+  }
+  setInterval(() => { try { tick(); } catch (e) { if (!S.err) { S.err = true; console.warn('[roundstats]', e); } } }, 100);
+  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); reset(); })(window.__onRestart);
+})();
+
+</script>
+<script>/* hintfade.js */
+/* 조작 안내 줄 물러남(2026-10-11 · 케이스 스터디 — SIREN · TLOU2 · RE 의 절제된 화면 — 익숙해지면 안내는 사라지고 세상만 남는다)
+   · 화면 아래 「WASD 이동 · Space 뒤돌아보기 · …」 줄이 판 시작 45초 뒤 2초에 걸쳐 사라짐 (처음 판만) · 15초 넘게 아무 키도 안 누르면 다시 떠오름(잊었을 때) · 키를 누르면 다시 사라짐
+   · 같이 하기 · 대기실 · 시연실과 상관없이 이 줄만 · 끄기: 시연실 연출 「조작 안내 줄 물러남」(늘 보임) · 보기: 지금 사라졌다 3초 뒤 다시 */
+(() => {
+  const H = (window.__hintFade = { ready: false, shown: true });
+  let el = null, t0 = 0, lastKey = performance.now(), wasStarted = false, demoT = 0, lp = null;
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.hintfade === false); };
+  addEventListener('keydown', () => { lastKey = performance.now(); }, true);
+  addEventListener('pointerdown', () => { lastKey = performance.now(); }, true);
+  addEventListener('keyup', () => { lastKey = performance.now(); }, true);
+  H.demo = () => { demoT = performance.now(); return true; };
+  setInterval(() => {
+    if (!el) { el = document.querySelector('#hud .hint'); if (!el) return; el.style.transition = 'opacity 2s ease'; H.ready = true; }
+    const G = window.__G, now = performance.now();
+    if (!G || !G.started) { wasStarted = false; el.style.opacity = ''; H.shown = true; return; }
+    if (!wasStarted) { wasStarted = true; if (!t0) t0 = now; }          // 45초는 처음 판에만(다음 판부터는 이미 안다)
+    const hp = G.hero && G.hero.position;                                   // 움직이면 그것도 「손이 가 있다」 — 조절창(tune.js)이 일부 키를 먼저 삼켜 키만으로는 모자란다
+    if (hp) { if (lp && Math.hypot(hp.x - lp[0], hp.z - lp[1]) > 0.05) lastKey = now; lp = [hp.x, hp.z]; }
+    let show = true;
+    if (now - demoT < 3000) show = false;                                    // 보기 — 3초 사라짐
+    else if (on()) show = now - t0 < 45000 || now - lastKey > 15000;
+    if (show !== H.shown) { H.shown = show; el.style.opacity = show ? '' : '0'; }
+  }, 250);
+
+  /* 타이틀 화면 정리(2026-10-11) — 판 시작 전(타이틀 · 같이 하기 대기실 뒤 장면)에는 시체 잡기 윤곽선(흰 테두리 · game.js glow)을 그리지 않는다
+     · 예전: 시작 지점 곁 시체 넷의 윤곽선이 제목 「시체쟁탈」 글자 위로 겹쳐 보였다(사진) · 판이 시작되면 그대로
+     · 그리는 순간만 숨기고 되돌린다 · 끄기: 시연실 연출 「타이틀 화면 정리」 · 보기: 판 안에서 3초 윤곽선을 숨김(차이 보기) */
+  let tcDemo = 0; const tcSaved = [];
+  // 판 시작 카드 · 주말 둘러보기 자막이 떠 있는 동안 왼쪽 아래 기록 줄(경기장 · 初日 시각)을 숨김 — 같은 시각이 두 번 보이고 겹쳤다(아트 리뷰 b368)
+  { const st = document.createElement('style'); st.textContent = 'body.sr-tc #sr-start.on ~ #sr-stamp, body.sr-tc.sr-touring #sr-stamp { opacity: 0 !important; } #sr-stamp { transition: opacity .4s; }'; document.head.appendChild(st); }
+  setInterval(() => { document.body.classList.toggle('sr-tc', tcOn()); }, 500);
+  const tcOn = () => { const X = window.__fx; return !(X && X.on && X.on.titleclean === false); };
+  H.titleDemo = () => { tcDemo = performance.now() + 3000; return true; };
+  (function hook() {
+    const G = window.__G; if (!G || !G.scene) { setTimeout(hook, 400); return; }
+    const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender;
+    Sc.onBeforeRender = function (...a) {
+      if (pb) pb.apply(this, a);
+      try {
+        if (document.documentElement.classList.contains('sr-hold')) return;   // 준비 중(캔버스 숨음)에는 그대로 그려 첫 그리기 비용을 준비 단계에서 치른다(리뷰 b371)
+        if (!((!G.started && tcOn()) || performance.now() < tcDemo)) return;
+        for (const b of (G.game && G.game.bodies) || []) for (const m of b.glow || []) if (m.visible) { tcSaved.push(m); m.visible = false; }
+      } catch (e) { /* 넘어간다 */ }
+    };
+    Sc.onAfterRender = function (...a) { for (const m of tcSaved) m.visible = true; tcSaved.length = 0; if (pa) pa.apply(this, a); };
+  })();
+
+  /* 단추 물러남(2026-10-11 · 아트 리뷰 제안 · 기본 끔 — 사용자 결정) — 켜면 플레이 중 오른쪽 아래 「시연」 · 「조절」 · 위 「시점」 단추가 사라지고
+     마우스를 움직이거나 Tab · N 을 누르면 3초 동안 다시 보인다(패널이 열려 있으면 늘 보임) · 끄기: 시연실 연출 「단추 물러남」 · 보기: 지금 4초 숨겼다 보임 */
+  { const st = document.createElement('style'); st.textContent = '#sr-show-btn, #sr-tune-btn, #btn-view { transition: opacity .5s; } body.sr-quiet:not(.sr-show-open):not(.sr-tune-open) #sr-show-btn, body.sr-quiet:not(.sr-show-open):not(.sr-tune-open) #sr-tune-btn, body.sr-quiet:not(.sr-show-open):not(.sr-tune-open) #btn-view, body.sr-quietdemo #sr-show-btn, body.sr-quietdemo #sr-tune-btn, body.sr-quietdemo #btn-view { opacity: 0; pointer-events: none; }'; document.head.appendChild(st); }   // 숨은 단추는 안 눌리게 · 보기는 시연실이 열려 있어도(리뷰 b371)
+  let qbSeen = 0, qbDemo = 0;
+  addEventListener('pointermove', () => { qbSeen = performance.now(); document.body.classList.remove('sr-quiet'); }, true);   // 움직이는 순간 바로(200ms 틈 없이)
+  addEventListener('keyup', (e) => { if (e.code === 'Tab' || e.code === 'KeyN' || e.code === 'KeyV') qbSeen = performance.now(); }, true);   // keyup — Tab keydown 은 조절창(tune.js)이 먼저 삼킨다
+  H.quietDemo = () => { qbDemo = performance.now(); return true; };
+  setInterval(() => {
+    const X = window.__fx, G = window.__G, now = performance.now();
+    const on2 = !!(X && X.on && X.on.quietbtns) && G && G.started && now - qbSeen > 3000;
+    const quiet = on2 || now - qbDemo < 4000;
+    document.body.classList.toggle('sr-quiet', on2);
+    document.body.classList.toggle('sr-quietdemo', now - qbDemo < 4000);
+  }, 200);
+})();
+
+</script>
+<script>/* redmoon.js */
+/* 붉은 달(2026-10-11 · 케이스 스터디 — SIREN 의 붉은 하늘 · 붉은 물 · 흑/백/붉은 포인트 · 끝이 가까워지면 세상이 물든다)
+   · 어느 본진이든 시체 둘(「마지막 하나」 — 범종과 같은 때)이 되면 8초에 걸쳐: 안개 · 하늘 바탕이 붉게(60% · 55% — 멀리 있는 것이 붉은 공기에 잠김) · 달빛 · 하늘빛 · 바탕빛은 조금만(35 · 25 · 15%)
+   · 캔버스 위에 곱하기 막(DOM · 가운데 옅게 가장자리 조금 짙게 · 최대 5할)으로 화면 전체에 검붉은 기운 — DOM 글자(시각 · 메시지 · 카드)는 그 위라 그대로 · 캔버스 안에 그리는 표지 · 시체 빛은 조금 함께 물든다
+   · 새 판이면 3초에 걸쳐 원래대로 · 판이 끝나도 그대로(끝 장면은 붉은 채) · 등롱 · 손전등 색은 그대로
+   · 그리는 순간만 색을 바꾸고 되돌린다(nightdeep · clouds 와 겹쳐도 차례대로 — 세기가 아니라 색만) · 같이 하기도 같다(점수는 모두 같다)
+   · 끄기: 시연실 연출 「붉은 달」 · 보기: 3초에 물들어 4초 머물다 돌아옴 */
+(() => {
+  const R0 = (window.__redmoon = { ready: false, k: 0, demoT: 0 });
+  const ss = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.redmoon === false); };
+  let moon = null, hemi = null, amb = null, last = 0, C0 = null, C1 = null, C2 = null, C3 = null;
+  const saved = [];
+  R0.demo = () => { R0.demoT = performance.now(); return true; };
+  function kNow(now) {
+    const G = window.__G; let tg = 0;
+    if (G && G.started) { const sc = (G.scores && G.scores()) || []; if (Math.max(0, ...sc.map((x) => +x || 0)) >= 2) tg = 1; }
+    const dt = Math.min(0.1, Math.max(0, (now - (last || now)) / 1000)); last = now;
+    R0.k += (tg - R0.k) * (1 - Math.exp(-dt / (tg > R0.k ? 3 : 1)));     // 물들 때 8초쯤 · 돌아올 때 3초쯤
+    const u = (now - R0.demoT) / 1000, d = R0.demoT && u < 9 ? (u < 3 ? ss(u / 3) : u < 7 ? 1 : 1 - ss((u - 7) / 2)) : 0;
+    return Math.max(on() ? R0.k : 0, d);
+  }
+  function apply() {
+    const G = window.__G; if (!G || !G.scene) return;
+    if (saved.length) restore();
+    const k = kNow(performance.now()); R0.kNow = k; if (k < 0.003) return;
+    const T = G.THREE;
+    if (!C0) { C0 = new T.Color(0.62, 0.16, 0.13); C1 = new T.Color(0.36, 0.1, 0.09); C2 = new T.Color(0.17, 0.05, 0.05); C3 = new T.Color(); }
+    if (!moon) G.scene.traverse((o) => { if (o.isDirectionalLight && !moon) moon = o; if (o.isHemisphereLight && !hemi) hemi = o; if (o.isAmbientLight && !amb) amb = o; });
+    const tint = (col, to, a) => { saved.push(col, col.r, col.g, col.b); col.lerp(to, a); };
+    if (moon) tint(moon.color, C0, 0.35 * k);
+    if (hemi) tint(hemi.color, C1, 0.25 * k);
+    if (amb) tint(amb.color, C1, 0.15 * k);                               // 바위 · 땅을 비추는 바탕빛이 커서 이것도(달빛만으로는 거의 안 보였다)
+    if (G.scene.fog && G.scene.fog.color) tint(G.scene.fog.color, C3.setRGB(0.3, 0.06, 0.05), 0.6 * k);   // 붉은 공기 — 멀리 있는 것이 붉은 안개에 잠긴다(아트 리뷰 b368: 빛을 물들이면 갈색으로 어두워지기만 했다)
+    if (G.scene.background && G.scene.background.isColor) tint(G.scene.background, C3, 0.55 * k);
+  }
+  // 붉은 막(b368 · b371 약하게) — 캔버스 바로 위 · DOM 화면 글자보다 아래에 곱하기 막: 가운데는 옅게 · 가장자리는 조금 짙게 검붉은 기운(테 없이) · 빛 색만으로는 갈색으로 어두워지기만 했다(아트 리뷰)
+  let veil = null;
+  function veilTick() {
+    const k = R0.kNow || 0, cv = document.querySelector('#game-root canvas') || document.querySelector('canvas');
+    if (!veil && cv && cv.parentNode) {
+      veil = document.createElement('div'); veil.id = 'sr-redveil';
+      veil.style.cssText = 'position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:0;display:none;background:radial-gradient(ellipse at 50% 45%, rgb(255,214,206) 0%, rgb(214,140,132) 70%, rgb(170,90,84) 100%);';   // 리뷰 b371: 캔버스 안 표지 · 시체 빛(주인 색)도 함께 곱해지므로 약하게 · 가장자리 덜 짙게(표지가 화면 가장자리에 놓인다)
+      cv.parentNode.insertBefore(veil, cv.nextSibling);
+    }
+    if (veil) { const o = Math.round(0.5 * k * 1000) / 1000; if (o !== veil.__o) { veil.__o = o; veil.style.opacity = String(o); veil.style.display = o > 0.003 ? '' : 'none'; } }   // 꺼져 있으면 합성 비용 0
+  }
+  setInterval(veilTick, 50);
+  function restore() { for (let i = saved.length - 4; i >= 0; i -= 4) saved[i].setRGB(saved[i + 1], saved[i + 2], saved[i + 3]); saved.length = 0; }
+  (function hook() {
+    const G = window.__G; if (!G || !G.scene) { setTimeout(hook, 400); return; }
+    const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender;
+    Sc.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { apply(); } catch (e) { restore(); if (!R0.err) { R0.err = true; console.warn('[redmoon]', e); } } };
+    Sc.onAfterRender = function (...a) { restore(); if (pa) pa.apply(this, a); };
+    R0.ready = true;
+  })();
+})();
+
+</script>
 <script>/* showcase.js */
 /* 시연실 — 밤사이 만든 것들을 골라 보는 패널(왼쪽에서 열림 · N 키 또는 우하단 「시연」)
    · 표정 열아홉 — 누르면 나·옆의 비교용 둘이 그 표정 · 「상황 표정」(맞음·나르기·일어남 때 저절로) 켜고 끄기
@@ -11075,9 +11915,9 @@ body.sr-show-open #sr-show { transform: none; }
 #sr-show .hd b { font: 800 17px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .5em; }
 #sr-show .hd span { font: 700 11px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .16em; color: #8c8677; }
 #sr-show section { margin-top: 18px; }
-#sr-show h3 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; font: 800 13px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .38em; }
+#sr-show h3 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; font: 800 13px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .38em; white-space: nowrap; }
 #sr-show h3::before { content: ''; width: 14px; height: 1px; align-self: center; background: #c4261b; box-shadow: 0 0 6px #c4261b; }
-#sr-show h3 small { font: 400 11px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .06em; color: #8c8677; }
+#sr-show h3 small { font: 400 11px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .06em; color: #8c8677; white-space: normal; }   /* 제목은 한 줄 · 작은 글씨만 줄바꿈(예전엔 「둘러보 / 기」처럼 제목이 꺾였다) */
 #sr-show .grid { display: flex; flex-wrap: wrap; gap: 6px; }
 #sr-show button { background: rgba(255,255,255,.03); border: 1px solid rgba(231,226,212,.2); color: #d8d2c2; font: 700 12px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .06em; padding: 5px 9px; cursor: pointer; }
 #sr-show button:hover { border-color: #c4261b; color: #fff; }
@@ -11095,9 +11935,58 @@ body.mp-on #sr-show-btn { display: none; }   /* 같이 하기 — 오른쪽 아�
 #sr-show .fxr { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 #sr-show .fxr .nw { display: inline-block; white-space: nowrap; margin-right: 6px; padding: 0 5px; font-size: 10px; letter-spacing: .08em; color: #e0b0a8; border: 1px solid rgba(190, 40, 30, .7); background: rgba(120, 10, 8, .35); vertical-align: 1px; }
 #sr-show .fxr button.pv { padding: 2px 9px; font-size: 11px; letter-spacing: .2em; flex: none; }
-#sr-show .cap { font: 400 11px 'UIF', 'Nanum Myeongjo',serif; color: #8c8677; letter-spacing: .04em; margin: -4px 0 8px; }`;
-  let el = null, open = false;
+#sr-show .cap { font: 400 11px 'UIF', 'Nanum Myeongjo',serif; color: #8c8677; letter-spacing: .04em; margin: -4px 0 8px; }
+#sr-show.nwonly .fxr:not(.isnw) { display: none; }
+#sr-show { word-break: keep-all; }   /* 낱말 중간에서 줄이 꺾이지 않게(아트 리뷰 b368) */
+#sr-tour { position: fixed; left: 26px; bottom: 58px; z-index: 54; max-width: min(640px, 72vw); pointer-events: none; color: #e7e2d4; font: 800 16px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .14em; text-shadow: 0 0 8px #000, 0 0 2px #000; opacity: 0; transform: translateY(4px); transition: opacity .35s, transform .35s; }
+#sr-tour.on { opacity: 1; transform: none; }
+#sr-tour::before { content: ''; position: absolute; left: -60px; right: -120px; top: -40px; bottom: -30px; z-index: -1; background: radial-gradient(ellipse at 25% 60%, rgba(0,0,0,.62), rgba(0,0,0,0) 70%); }   /* 테 없이 뒤만 살짝 어둡게 — 밝은 풀 위에서도 읽히게(아트 리뷰 b368) */
+#sr-tour.hi { bottom: auto; top: 64px; }
+#sr-tour .n { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font: 700 11px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .32em; color: #d8392b; }
+#sr-tour .n::before { content: ''; width: 22px; height: 1px; background: #c4261b; box-shadow: 0 0 6px #c4261b; }
+#sr-tour .d { margin-top: 5px; font: 400 12px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .04em; line-height: 1.65; color: #b3ad9c; }
+#sr-tour .k { margin-top: 6px; font: 400 11px 'UIF', 'Nanum Myeongjo',serif; letter-spacing: .2em; color: #8f897a; }`;
+  let el = null, open = false, nwOnly = false;
   const G = () => window.__G;
+  /* 주말 둘러보기(2026-10-10 · 월요일 확인용) — 주말에 새로 넣은 연출(「주말」 표 · 보기가 있는 것)을 날짜 차례로 하나씩 7초씩 저절로 보기
+     · 시연실을 닫고 화면 왼쪽 아래(기록 줄 위)에 테 없이: 붉은 선 · 날짜 · 몇 번째 / 이름 / 무엇인지 한 줄 · ] 다음 · [ 앞 · Esc 멈춤
+     · 각 연출의 「보기」를 그대로 부른다(꺼져 있어도 한 번 · 켜고 끈 값 · 저장 값은 건드리지 않음) · 같이 하기에서는 쉰다(보기가 서버 판을 건드릴 수 있어서) */
+  const tour = { i: -1, list: [], t: 0, pv: 0, cap: null };
+  const DUR = { scoot: 12000, nightdeep: 9500, redmoon: 9500, postmood: 8000, pickup: 9500, breathhold: 10000, injured: 9000, crows: 9000, birds: 8000, montwitch: 7500, motes: 7000, torchshake: 7000, startcard: 6500, endcam: 7500 };
+  const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  function tourList() {
+    const X = window.__fx; if (!X || !X.opts || !X.previewable) return [];
+    return X.opts.filter((o) => o.nw && X.previewable.includes(o.key)).map((o, k) => ({ o, k })).sort((a, b) => (a.o.nw < b.o.nw ? -1 : a.o.nw > b.o.nw ? 1 : a.k - b.k)).map((a) => a.o);
+  }
+  function tourCap() {
+    if (tour.cap) return tour.cap;
+    const d = document.createElement('div'); d.id = 'sr-tour';
+    (document.getElementById('game-root') || document.body).appendChild(d);
+    return (tour.cap = d);
+  }
+  function tourShow(manual) {
+    clearTimeout(tour.t); clearTimeout(tour.pv);
+    const g0 = G(); if (!g0 || !g0.started || document.body.classList.contains('mp-on')) { tourEnd(); return; }   // 둘러보기 중 같이 하기에 들어가거나 판 밖이면 멈춤(리뷰 b355)
+    const o = tour.list[tour.i], cap = tourCap();
+    if (!o) { document.body.classList.remove('sr-touring'); cap.innerHTML = '<div class="n">주말 둘러보기 끝</div><div>마음에 안 드는 것은 시연실 「연출」에서 끄면 된다</div><div class="k">N 시연실</div>'; cap.classList.add('on'); tour.i = -1; tour.t = setTimeout(() => cap.classList.remove('on'), 5000); return; }
+    const m = /^([^(]+)\((.*)\)\s*$/.exec(o.name), title = (m ? m[1] : o.name).trim();
+    let what = m ? m[2] : ''; what = what.replace(/^[\w.]+(\s*·\s*[\w.]+)*\s*—\s*/, '').split(' / 보기')[0];
+    if (what.length > 96) what = what.slice(0, 95) + '…';
+    cap.innerHTML = `<div class="n">주말 ${esc(o.nw)} · ${tour.i + 1} / ${tour.list.length}</div><div>${esc(title)}</div>${what ? `<div class="d">${esc(what)}</div>` : ''}<div class="k">] 다음 · [ 앞 · Esc 멈춤</div>`;
+    cap.classList.remove('on'); cap.classList.toggle('hi', o.key === 'startcard'); void cap.offsetWidth; cap.classList.add('on');   // 판 시작 카드 보기는 왼쪽 아래를 쓰니 자막을 위로
+    const g = G();                                                       // 둘러보기 중 봇이 셋을 모아 판이 끝났으면 조용히 새 판(R 과 같은 길) — 판 시작 카드가 지나간 뒤(4.6초) 이어서
+    if (g && g.game && g.game.over && o.key !== 'endcam' && g.mpApi && g.mpApi.restart) { try { g.mpApi.restart(); } catch (e) { /* */ } cap.classList.remove('on'); tour.t = setTimeout(() => { if (tour.i >= 0) tourShow(); }, 4600); return; }
+    const go = () => { if (tour.list[tour.i] !== o) return; try { window.__fx.preview(o.key); } catch (e) { console.warn('[showcase] 둘러보기', o.key, e); } };
+    if (manual) tour.pv = setTimeout(go, 700); else go();               // ] [ 로 넘길 때는 0.7초 머문 것만 보기(빨리 넘기면 지나간 보기가 한꺼번에 터지지 않게)
+    tour.t = setTimeout(() => { if (tour.i < 0) return; tour.i++; tourShow(); }, (DUR[o.key] || 7000) + (manual ? 700 : 0));
+  }
+  function tourStart() {
+    const g = G(), cap = tourCap();
+    if (!g || !g.started || document.body.classList.contains('mp-on')) { cap.innerHTML = `<div class="n">주말 둘러보기</div><div>${!g || !g.started ? '판을 시작한 뒤에' : '같이 하기에서는 쉰다 — 혼자 하기에서'}</div>`; cap.classList.add('on'); clearTimeout(tour.t); tour.t = setTimeout(() => cap.classList.remove('on'), 3500); return; }
+    tour.list = tourList(); tour.i = 0; toggle(false); document.body.classList.add('sr-touring'); tourShow();
+  }
+  function tourEnd() { clearTimeout(tour.t); clearTimeout(tour.pv); tour.i = -1; document.body.classList.remove('sr-touring'); if (tour.cap) tour.cap.classList.remove('on'); }
+  window.__tour = { start: () => tourStart(), end: () => tourEnd(), state: () => ({ i: tour.i, n: tour.list.length, key: tour.list[tour.i] && tour.list[tour.i].key }), list: () => tourList().map((o) => o.key) };
   function toggle(v) { open = v === undefined ? !open : v; document.body.classList.toggle('sr-show-open', open); if (open) sync(); }
   window.__showcase = { toggle };
   function build() {
@@ -11118,6 +12007,11 @@ body.mp-on #sr-show-btn { display: none; }   /* 같이 하기 — 오른쪽 아�
     el.innerHTML = `
       <div class="hd"><b>시연실</b><span>N · Esc</span></div>
       <div class="svslot"></div>
+      ${tourList().length ? `<section><h3>주말 새로<small>10-08 ~ 10-11 · 보기 ${tourList().length}개</small></h3>
+        <div class="row"><button type="button" class="go" data-tour>차례로 모두 보기</button><button type="button" data-tourend>멈춤</button></div>
+        <div class="cap" style="margin-top:8px">시연실이 닫히고 하나씩 7초 — 왼쪽 아래에 이름 · ] 다음 · [ 앞 · Esc 멈춤 · 켜고 끈 값은 그대로</div>
+        <label class="tg"><input type="checkbox" data-nwonly ${nwOnly ? 'checked' : ''}> 아래 「연출」 목록에서 주말 것만 보이기</label>
+      </section>` : ''}
       <section><h3>둘러보기<small>게임·괴물·봇 멈춤 · 캐릭터 골라 걷기</small></h3>
         <div class="row"><button type="button" class="go" data-look>둘러보기 시작</button><button type="button" data-lookend>둘러보기 끝</button></div>
         <div class="cap" style="margin-top:8px">들어가면 아래 이름 줄 · Q / E 로 캐릭터를 바꾼다</div>
@@ -11144,12 +12038,13 @@ body.mp-on #sr-show-btn { display: none; }   /* 같이 하기 — 오른쪽 아�
         <div class="cap">M 키 = 뿜기 · 닿으면 불이 붙는다 · 같이 하기에선 쉰다</div>
       </section>
       <section><h3>연출<small>이 브라우저에 저장</small></h3>
-        ${(X ? X.opts : []).map((o) => `<div class="fxr"><label class="tg"><input type="checkbox" data-fx="${o.key}" ${X.on[o.key] ? 'checked' : ''}> ${o.nw ? `<span class="nw">주말 ${o.nw}</span>` : ''}${o.name}</label>${X.previewable && X.previewable.includes(o.key) ? `<button type="button" class="pv" data-fxpv="${o.key}">보기</button>` : ''}</div>`).join('')}
+        ${(X ? X.opts : []).map((o) => `<div class="fxr${o.nw ? ' isnw' : ''}"><label class="tg"><input type="checkbox" data-fx="${o.key}" ${X.on[o.key] ? 'checked' : ''}> ${o.nw ? `<span class="nw">주말 ${o.nw}</span>` : ''}${o.name}</label>${X.previewable && X.previewable.includes(o.key) ? `<button type="button" class="pv" data-fxpv="${o.key}">보기</button>` : ''}</div>`).join('')}
       </section>
       ${window.__ui ? window.__ui.html() : ''}
       ${window.__uiFont ? window.__uiFont.html() : ''}
       ${window.__rsfx && window.__rsfx.html ? window.__rsfx.html() : ''}
       <div class="ft">고르면 바로 바뀌고 이번 판에만 — 위 「저장」을 눌러야 다음에 켤 때도(모두의 기본값) · 조절창(Tab)의 「저장」과 같다<br>2026-10-08 아침 확인용 · 마음에 안 드는 것은 여기서 끄면 된다<br>시체 셋(0·2·4번)은 model (18) 몸 — 늘 켜짐</div>`;
+    el.classList.toggle('nwonly', nwOnly);
     const sv = el.querySelector('.svslot'); if (sv && window.__settings) sv.appendChild(window.__settings.button());
     sync();
   }
@@ -11165,7 +12060,9 @@ body.mp-on #sr-show-btn { display: none; }   /* 같이 하기 — 오른쪽 아�
   function onClick(e) {
     const t = e.target.closest('button'); if (!t) return;
     const C = window.__cast, B = window.__burn, Fi = window.__fire, g = G();
-    if (t.dataset.look !== undefined && window.__exploreApi) { window.__exploreApi.enter(); toggle(false); }
+    if (t.dataset.tour !== undefined) { tourStart(); return; }
+    else if (t.dataset.tourend !== undefined) tourEnd();
+    else if (t.dataset.look !== undefined && window.__exploreApi) { window.__exploreApi.enter(); toggle(false); }
     else if (t.dataset.motion !== undefined && window.__motionFx) { toggle(false); window.__motionFx.open(); }
     else if (t.dataset.lookend !== undefined && window.__exploreApi) window.__exploreApi.exit();
     else if (t.dataset.ex && C && C.express) C.express(t.dataset.ex);
@@ -11188,10 +12085,15 @@ body.mp-on #sr-show-btn { display: none; }   /* 같이 하기 — 오른쪽 아�
     if (t.dataset.auto !== undefined && C) C.auto = t.checked;          // 저장은 「저장」(settings.js)
     if (t.dataset.fauto !== undefined && Fi) { Fi.auto = t.checked; Fi.save(); }
     if (t.dataset.fx && X) X.set(t.dataset.fx, t.checked);
+    if (t.dataset.nwonly !== undefined) { nwOnly = t.checked; el.classList.toggle('nwonly', nwOnly); }   // 이 화면에서만(저장 안 함)
     if (t.blur) t.blur();
   }
   addEventListener('keydown', (e) => {
     const tg = e.target && e.target.tagName; if (tg === 'INPUT' && e.target.type === 'text' || tg === 'TEXTAREA') return;
+    if (tour.i >= 0 && !e.repeat && (e.code === 'BracketRight' || e.code === 'BracketLeft' || e.code === 'Escape')) {   // 둘러보기 중 — 다음 · 앞 · 멈춤
+      if (e.code === 'Escape') tourEnd(); else { tour.i = Math.max(0, tour.i + (e.code === 'BracketRight' ? 1 : -1)); tourShow(true); }
+      return;
+    }
     if (e.code === 'KeyN' && !e.repeat) { const g = G(); if (!g || !g.started || !el) return; toggle(); }
     else if (e.code === 'Escape' && open) { toggle(false); }
   });
@@ -11929,7 +12831,9 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     duckK += (k - duckK) * (1 - Math.exp(-dt / (k < duckK ? 0.6 : 2.5)));   // 다가오면 빨리 멎고, 멀어지면 천천히 다시 운다
     for (const L of LAYERS) {
       if (!buf[L.k] || !L.gain) continue;
-      L.gain.gain.setTargetAtTime(L.vol * (1 - L.duck * (1 - duckK)), t, 0.15);
+      const nk = L.k === 'insects' && window.__night ? window.__night.insectK : 1;   // 밤이 깊어질수록 풀벌레가 잦아든다(nightdeep.js · 최대 절반)
+      const md = window.__mixDuck ? window.__mixDuck() : 1;               // 큰 순간 — 밤 소리가 숨을 죽인다(realsfx.js · b362)
+      L.gain.gain.setTargetAtTime(L.vol * (1 - L.duck * (1 - duckK)) * nk * md, t, md < 0.999 ? 0.05 : 0.15);
       if (!want) { if (live[L.k]) { stopAll(ctx); } continue; }
       const v = live[L.k];
       if (!v) live[L.k] = voice(L, ctx, t + 0.05, 3);
