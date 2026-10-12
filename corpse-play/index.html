@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-471 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-473 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -321,7 +321,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-471'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-473'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3759,7 +3759,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const DEF = {
     titleT: 2.6, aerial: 1.6, closeA: 1.0, closeB: 1.0, trackA: 0.8, trackB: 0.8, wide: 0.55, slowLen: 0, slowRate: 1, burst: 0.6, burstRate: 0.3, after: 2.8, winT: 5.0,
     accel: 3.4, jerk: 0.5, floatH: 0.3, lean: 0.3, writhe: 1.0, wSpd: 1.0, armR: 1, legK: 1,
-    mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', winBright: 1, endBright: 1,
+    mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', speed: 1, gap: 0.2, squashT: 0.12, squash: 0.35, spurt: 1, winBright: 1, endBright: 1,
     closeD: 1.1, closeFov: 40, trackD: 2.4, trackFov: 56, wideD: 4.2, wideFov: 52, kick: 0.6, fovPunch: 4, shake: 1, winD: 0.7, winFov: 30, bars: 1,
     parts: 1, partF: 1, partSpin: 1, chunks: 45, cloth: 0, skin: 0, bones: 0, chunkSize: 0.55, chunkF: 1, roll: 1, drops: 1400, dropSize: 1, dropF: 1, mist: 1,
     flash: 0, ring: 0, sound: 1, light: 2.2,
@@ -3767,6 +3767,8 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const CF = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('corpse_end_v4') || '{}'); } catch (e) { /* */ } return Object.assign({}, DEF, o); })();
   const saveCF = () => { try { localStorage.setItem('corpse_end_v4', JSON.stringify(CF)); } catch (e) { /* */ } };
   D.cf = CF;
+  // 모두의 기본값 — 조절창(Tab)의 「저장」(settings.js · MSW 글로벌 저장소)에 함께 실린다 · 저장된 값이 있으면 켤 때 그 값으로
+  (function regSet() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regSet, 300); return; } St.reg('endFx', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; saveCF(); if (lab && lab.show) { const c = lab.cur; lab.cur = null; lab.show(c || 'title'); } } } }); })();
   // 시간표(u = 화면 시간) — 슬로모션 구간에서는 사건 시간 τ 가 느리게 흐른다
   const TL = () => {
     const u0 = CF.titleT, uF = u0 + CF.aerial, cA = uF, cB = cA + CF.closeA, tA = cB + CF.closeB, tB = tA + CF.trackA, w0 = tB + CF.trackB, uS = w0 + CF.wide, uH = uS + CF.slowLen, uB = uH + CF.burst, uW = uB + CF.after, end = uW + CF.winT;
@@ -3826,7 +3828,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     const [a, b] = S.L; if (a && b) { const ax = a.dir[0] - b.dir[0], az = a.dir[1] - b.dir[1], l = Math.hypot(ax, az) || 1; S.axis = [ax / l, az / l]; } else S.axis = [1, 0];
     S.perp = [-S.axis[1], S.axis[0]];
     // 끝에서 가운데에 닿는 자리 — 축 위 양쪽 0.32m
-    if (a) { a.hx = cx - S.axis[0] * 0.32; a.hz = cz - S.axis[1] * 0.32; } if (b) { b.hx = cx + S.axis[0] * 0.32; b.hz = cz + S.axis[1] * 0.32; }
+    const gp = CF.gap; if (a) { a.hx = cx - S.axis[0] * gp; a.hz = cz - S.axis[1] * gp; } if (b) { b.hx = cx + S.axis[0] * gp; b.hz = cz + S.axis[1] * gp; }
     const w = S.W; if (w) { w.yaw0 = w.obj.rotation.y; }
     S.title = (window.__teamName ? window.__teamName(winner) : `P${winner + 1}`) + ' 승리';
     S.genKey = '';
@@ -4122,7 +4124,16 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     for (let i = 0; i < S.L.length; i++) {
       const A = S.L[i], o = A.obj; keep(o);
       const k = cl((tau - t.uF) / (t.tauH - t.uF)), f = Math.pow(k, CF.accel), jk = tau > t.uF ? CF.jerk * (1 - Math.exp(-(tau - t.uF) * 7)) * (1 - k) : 0;
-      if (tau >= t.tauH) { if (!S.bp) { const kk = 1, ff = 1; o.position.set(A.hx, S.cy + CF.floatH, A.hz); o.quaternion.setFromEuler(E.set(CF.lean, A.yaw, 0, 'YXZ')); o.visible = true; o.updateMatrixWorld(true); const sm0 = A.sm(); if (sm0) struggle(sm0, t.tauH + i * 0.37, CF.writhe, i * 1.9, i ? CF.motionB : CF.motionA); A.bakeReady = true; } else o.visible = false; A.head = V(S.cx, S.cy + 1.4, S.cz); continue; }
+      if (tau >= t.tauH) { if (!S.bp) {
+          // b472 — 팍 맞닿음: 등과 등이 부딪혀 짓눌리고(squashT 동안 · 부딪힌 쪽으로 납작 · 옆으로 불룩 · 떨림) 그다음 터진다
+          const q = cl((tau - t.tauH) / Math.max(0.01, CF.squashT)), sq = Math.sin(Math.PI * Math.min(1, q * 1.4)) * 0.4 + 0.6 * q, push = 0.12 * q;
+          o.position.set(A.hx + A.dir[0] * push, S.cy + CF.floatH + Math.sin(tau * 90 + i) * 0.015 * q, A.hz + A.dir[1] * push);
+          o.quaternion.setFromEuler(E.set(CF.lean * (1 - 0.6 * q) - 0.25 * q, A.yaw, Math.sin(tau * 70 + i) * 0.06 * q, 'YXZ'));
+          o.scale.set(o.scale.x * (1 + CF.squash * 0.7 * sq), o.scale.y * (1 - CF.squash * 0.25 * sq), o.scale.z * (1 - CF.squash * sq));
+          o.visible = true; o.updateMatrixWorld(true);
+          const sm0 = A.sm(); if (sm0) { struggle(sm0, t.tauH + i * 0.37, CF.writhe * (1 - q), i * 1.9, i ? CF.motionB : CF.motionA); face(sm0, Object.assign(exprVals(i ? CF.faceB : CF.faceA, CF.faceK, tau, i), { strain_eyes: q, jaw_drop: q })); }
+          A.bakeReady = tau >= t.tauH + CF.squashT;
+        } else o.visible = false; A.head = V(S.cx, S.cy + 1.4, S.cz); continue; }
       const x = lerp(A.bx, A.hx, f) + A.dir[0] * jk, z = lerp(A.bz, A.hz, f) + A.dir[1] * jk;
       const fl = CF.floatH * ss(k * 4) + Math.sin(tau * 9 + i) * 0.05 * k, y = lerp(A.by, S.cy, f) + fl;
       const lean = tau > t.uF ? CF.lean * (0.6 + 0.4 * Math.sin(tau * 3 + i)) : 0;
@@ -4183,9 +4194,9 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     if (Math.abs(fov - cam.fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
     cam.updateMatrixWorld(true);
     let hs = null; { const v = C.clone().add(V(0, 1.2, 0)).project(cam); if (v.z < 1) hs = [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }
-    if (tau >= t.tauH && !S.bp && S.L.every((A) => A.bakeReady)) { try { bakeAll(); } catch (e) { console.warn('[end] 몸 조각', e); S.bp = []; } for (const A of S.L) A.obj.visible = false; }   // 부딪힌 순간의 몸을 굳혀 조각으로
-    if (tau < t.tauH && S.bp) freeParts();
-    gen(); placeParts(u >= t.uH ? tau - t.tauH : -1); placeBody(u >= t.uH ? tau - t.tauH : -1); overlays(u, t, hs);
+    if (tau >= t.tauH + CF.squashT && !S.bp && S.L.every((A) => A.bakeReady)) { try { bakeAll(); } catch (e) { console.warn('[end] 몸 조각', e); S.bp = []; } for (const A of S.L) A.obj.visible = false; }   // 부딪힌 순간의 몸을 굳혀 조각으로
+    if (tau < t.tauH + CF.squashT && S.bp) freeParts();
+    const tbB = tau - t.tauH - CF.squashT; gen(); placeParts(u >= t.uH && tbB >= -0.02 * CF.spurt ? tbB : -1); placeBody(tbB >= 0 ? tbB : -1); overlays(u, t, hs);
     if (window.__charlit && S.k0 != null) window.__charlit.k = S.k0 * CF.light;   // 사람이 밤에 묻히지 않게(연출 동안만)
     { const R = G.renderer, kw = u >= t.uW ? lerp(1, CF.winBright, ss((u - t.uW) / 0.4)) : 1; expo0 = R.toneMappingExposure; R.toneMappingExposure = expo0 * CF.endBright * kw; }   // 결말 · 이긴 사람 장면 화면 밝기(그린 뒤 되돌림)
   }
@@ -4210,7 +4221,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     const t = now(), dt = Math.min(0.1, t - (lastT || t)); lastT = t;
     if (!S) return;
     const u0 = S.u, e = TL().end;
-    if (S.playing) { S.u += dt * S.rate; if (S.u >= e) { if (S.mode === 'studio' && S.loop) S.u = 0; else { S.u = e; if (S.mode === 'studio') S.playing = false; } } }
+    if (S.playing) { S.u += dt * S.rate * (CF.speed || 1); if (S.u >= e) { if (S.mode === 'studio' && S.loop) S.u = 0; else { S.u = e; if (S.mode === 'studio') S.playing = false; } } }
     if (S.playing) sounds(u0, S.u);
     if (S.mode === 'real') { const hide = S.u < e - 0.6; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = hide ? 'hidden' : ''; }   // 판 끝 카드는 연출이 끝날 때
     if (D.onTick) D.onTick();
@@ -4243,10 +4254,10 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     { k: 'faceA', name: '① 얼굴', at: (t) => t.cA, rows: [['closeA', '길이', 0.3, 3, 0.05, 's'], ['faceA', '표정', 'sel', FACE_OPT], ['motionA', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'faceB', name: '② 얼굴', at: (t) => t.cB, rows: [['closeB', '길이', 0.3, 3, 0.05, 's'], ['faceB', '표정', 'sel', FACE_OPT], ['motionB', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'track', name: '끌려감', at: (t) => t.tA, rows: [['trackA', '① 따라가는 길이', 0.2, 3, 0.05, 's'], ['trackB', '② 따라가는 길이', 0.2, 3, 0.05, 's'], ['motionA', '① 동작', 'sel', () => MOTIONS], ['motionB', '② 동작', 'sel', () => MOTIONS], ['writhe', '버둥 세기', 0, 2, 0.05, '%'], ['wSpd', '버둥 빠르기', 0.2, 2.5, 0.05, '×'], ['armR', '팔', 0, 2, 0.05, '%'], ['legK', '다리', 0, 2, 0.05, '%'], ['accel', '점점 빨라짐', 1, 6, 0.05, ''], ['jerk', '처음 확 낚아채임', 0, 2, 0.05, 'm'], ['floatH', '떠서 끌려가는 높이', 0, 1.5, 0.02, 'm'], ['lean', '버티며 숙임', 0, 0.9, 0.02, ''], ['trackD', '카메라 거리', 1, 6, 0.1, 'm'], ['trackFov', '화각', 30, 90, 1, '°']] },
-    { k: 'hit', name: '부딪힘', at: (t) => t.w0, rows: [['wide', '옆에서 보는 길이', 0.2, 3, 0.05, 's'], ['burst', '부딪힌 순간 느리게', 0, 2, 0.05, 's'], ['burstRate', '그 느리기', 0.05, 1, 0.01, '×'], ['wideD', '카메라 거리', 2, 16, 0.1, 'm'], ['wideFov', '화각', 20, 80, 1, '°'], ['kick', '퍽 — 카메라 뒤로 밀림', 0, 3, 0.05, 'm'], ['fovPunch', '퍽 — 화각 출렁', 0, 30, 1, '°'], ['shake', '흔들림', 0, 3, 0.05, '%']] },
+    { k: 'hit', name: '부딪힘', at: (t) => t.w0, rows: [['wide', '옆에서 보는 길이', 0.2, 3, 0.05, 's'], ['gap', '맞닿는 거리(가운데에서)', 0, 0.5, 0.01, 'm'], ['squashT', '맞닿아 짓눌리는 시간', 0, 0.5, 0.01, 's'], ['squash', '짓눌림 세기', 0, 0.8, 0.02, '%'], ['burst', '부딪힌 순간 느리게', 0, 2, 0.05, 's'], ['burstRate', '그 느리기', 0.05, 1, 0.01, '×'], ['wideD', '카메라 거리', 2, 16, 0.1, 'm'], ['wideFov', '화각', 20, 80, 1, '°'], ['kick', '퍽 — 카메라 뒤로 밀림', 0, 3, 0.05, 'm'], ['fovPunch', '퍽 — 화각 출렁', 0, 30, 1, '°'], ['shake', '흔들림', 0, 3, 0.05, '%']] },
     { k: 'gore', name: '조각', at: (t) => t.uH, rows: [['after', '길이', 0.5, 6, 0.1, 's'], ['parts', '팔 · 다리 · 머리 · 몸통 조각', 0, 1, 1, ''], ['partF', '조각 날아가는 힘', 0.2, 3, 0.05, '×'], ['partSpin', '조각 도는 빠르기', 0, 3, 0.05, '×'], ['roll', '땅에서 굴러감', 0, 3, 0.05, '×'], ['chunks', '잔 살점', 0, 200, 1, ''], ['chunkSize', '살점 크기', 0.3, 3, 0.05, '×'], ['drops', '핏방울', 0, 2200, 10, ''], ['dropSize', '핏방울 크기', 0.3, 3, 0.05, '×'], ['dropF', '피 튀는 힘', 0.2, 3, 0.05, '×'], ['mist', '피 안개', 0, 2, 0.05, '%']] },
     { k: 'win', name: '이긴 사람', at: (t) => t.uW, rows: [['winT', '길이', 1, 10, 0.1, 's'], ['reliefT', '안도의 숨(미소 전까지)', 0, 3, 0.05, 's'], ['relief', '안도 표정', 0, 1, 0.02, '%'], ['sneer', '씨익 미소', 0, 1, 0.02, '%'], ['laughId', '웃음소리 종류', 'sel', () => [['1', '크크크 — 낮게 킥킥'], ['2', '키킥 — 짧게 비웃음']]], ['laugh', '웃음소리 크기', 0, 1.5, 0.05, '%'], ['winBright', '이 장면 화면 밝기', 0.3, 4, 0.05, '×'], ['winD', '얼굴 거리', 0.35, 2, 0.05, 'm'], ['winFov', '화각', 15, 60, 1, '°']] },
-    { k: 'all', name: '전체', at: null, rows: [['endBright', '결말 전체 화면 밝기', 0.3, 4, 0.05, '×'], ['light', '사람 밝기', 1, 5, 0.05, '×'], ['sound', '소리', 0, 1.5, 0.05, '%'], ['shake', '흔들림', 0, 3, 0.05, '%']] },
+    { k: 'all', name: '전체', at: null, rows: [['speed', '결말 전체 빠르기', 0.3, 2, 0.05, '×'], ['endBright', '결말 전체 화면 밝기', 0.3, 4, 0.05, '×'], ['light', '사람 밝기', 1, 5, 0.05, '×'], ['sound', '소리', 0, 1.5, 0.05, '%'], ['shake', '흔들림', 0, 3, 0.05, '%']] },
   ];
   const sceneAt = (u, t) => u < t.u0 ? 'title' : u < t.uF ? 'aerial' : u < t.cB ? 'faceA' : u < t.tA ? 'faceB' : u < t.w0 ? 'track' : u < t.uH ? 'hit' : u < t.uW ? 'gore' : 'win';
   const R = [];
@@ -4269,22 +4280,22 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     const st = document.createElement('style');
     st.textContent = `#dl{position:fixed;inset:0;z-index:70;pointer-events:none;display:none;font:12px "UIF","Noto Serif KR",serif;color:#e9e1d0}
 #dl .pn{pointer-events:auto;background:rgba(12,9,7,.9);border:1px solid #6b2a20}
-#dl .side{position:absolute;right:10px;top:10px;bottom:118px;width:300px;overflow-y:auto;padding:10px 12px}
+#dl .side{position:absolute;right:10px;top:10px;bottom:150px;width:300px;overflow-y:auto;padding:10px 12px}
 #dl .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:8px 0} #dl .tabs button{padding:6px 2px} #dl .tabs button.cur{outline:2px solid #e8b04a} #dl select.v{width:100%;margin-top:3px;padding:3px}
 #dl h4{margin:0 0 6px;font-size:14px;letter-spacing:.25em;color:#d23a26} #dl h5{margin:10px 0 2px;font-size:12px;color:#d9a07a;border-top:1px solid #3a2a20;padding-top:7px;letter-spacing:.1em}
 #dl label{display:flex;justify-content:space-between;margin-top:5px;color:#c9bfae} #dl label b{color:#f2e6d6;font-weight:600} #dl input[type=range]{width:100%}
-#dl .bar{position:absolute;left:10px;right:10px;bottom:10px;height:96px;padding:8px 12px;box-sizing:border-box}
+#dl .bar{position:absolute;left:10px;right:10px;bottom:40px;padding:8px 12px 10px;box-sizing:border-box}
 #dl .seg{position:relative;height:18px;margin:4px 0 2px;display:flex;border:1px solid #3a2a20} #dl .seg i{display:block;height:100%;font:10px serif;color:#120a07;text-align:center;line-height:18px;overflow:hidden;white-space:nowrap;font-style:normal}
 #dl .tl{width:100%;margin:0} #dl .row{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
 #dl button{padding:4px 9px;background:#2a0f0b;color:#f2e6d6;border:1px solid #8a2a1c;font:700 12px "UIF","Noto Serif KR",serif;cursor:pointer} #dl button.on{background:#7a1c10}
-#dl .tm{font:600 12px monospace;color:#f2e6d6;min-width:200px} #dl select{background:#2a0f0b;color:#f2e6d6;border:1px solid #8a2a1c}
+#dl .tm{font:600 12px monospace;color:#f2e6d6;min-width:200px} #dl select{background:#2a0f0b;color:#f2e6d6;border:1px solid #8a2a1c} #dl .bar select{width:64px!important;flex:0 0 auto} #dl .bar .row{flex-wrap:nowrap}
 #dl .title{position:absolute;left:12px;top:10px;padding:6px 12px;font:700 14px "UIF",serif;letter-spacing:.3em;color:#d23a26}
-#dl .view{position:absolute;left:0;top:0;right:322px;bottom:118px;pointer-events:none;cursor:grab} #dl.free .view{pointer-events:auto}
+#dl .view{position:absolute;left:0;top:0;right:322px;bottom:150px;pointer-events:none;cursor:grab} #dl.free .view{pointer-events:auto}
 body.dl-on #cin-btn,body.dl-on #cin-p,body.dl-on #hud,body.dl-on #prompt,body.dl-on #btn-view,body.dl-on #sr-stamp{visibility:hidden!important}`;
     document.head.appendChild(st);
     const root = document.createElement('div'); root.id = 'dl';
     root.innerHTML = `<div class="view"></div><div class="title pn">終 · 연출실 — 결말</div>
-<div class="side pn"><div class="row"><span>이긴 사람</span><button data-w="0" class="on">나</button><button data-w="1">P2</button><button data-w="2">P3</button></div><div class="tabs"></div><h4 class="scn"></h4><div class="vals"></div><div class="row" style="margin-top:10px"><button data-a="def">기본값</button><button data-a="seed">조각 새로 섞기</button></div>
+<div class="side pn"><div class="row"><span>이긴 사람</span><button data-w="0" class="on">나</button><button data-w="1">P2</button><button data-w="2">P3</button></div><div class="tabs"></div><h4 class="scn"></h4><div class="vals"></div><div class="row" style="margin-top:10px"><button data-a="def">기본값</button><button data-a="seed">조각 새로 섞기</button><button data-a="gsave">모두의 기본값으로 저장</button></div><div class="gs" style="font-size:11px;color:#d9a07a;margin-top:4px"></div>
 <div style="font-size:11px;color:#8d877a;margin-top:8px;line-height:1.5">값은 지금 프레임에도 바로 · 이 브라우저에만 저장 · 판은 그대로 — 닫으면 원래대로 · Space 재생 · ← → 한 프레임 · Esc 닫기</div></div>
 <div class="bar pn"><div class="seg"></div><input class="tl" type="range" min="0" max="10" step="0.001" value="0">
 <div class="row"><button data-a="first">⏮</button><button data-a="back">◀ 1프레임</button><button data-a="play">▶ 재생</button><button data-a="fwd">1프레임 ▶</button><button data-a="hit">부딪히기 직전</button><button data-a="last">⏭</button>
@@ -4326,6 +4337,7 @@ body.dl-on #cin-btn,body.dl-on #cin-p,body.dl-on #hud,body.dl-on #prompt,body.dl
       if (a === 'free') { S.free = S.free ? null : { yaw: Math.atan2(S.perp[0], S.perp[1]), pitch: 0.35, d: 9 }; root.classList.toggle('free', !!S.free); e.target.classList.toggle('on', !!S.free); }
       if (a === 'seed') { S.seed = (Math.random() * 1e9) | 0; freeParts(); }
       if (a === 'def') { Object.assign(CF, DEF); saveCF(); const c = lab.cur; lab.cur = null; show(c || 'title'); }
+      if (a === 'gsave') { const St = window.__settings, el2 = root.querySelector('.gs'); if (!St || !St.save) el2.textContent = '저장 기능 없음'; else if (!St.canSave) el2.textContent = '스튜디오 미리보기에서만 저장됩니다'; else { el2.textContent = '저장 중…'; Promise.resolve(St.save()).then(() => { el2.textContent = '저장됨 — 다음에 켤 때 모두 이 값'; }, (er) => { el2.textContent = '저장 실패 ' + ((er && er.message) || ''); }); } }
       if (a === 'close') closeLab();
       e.target.blur(); sync();
     });
