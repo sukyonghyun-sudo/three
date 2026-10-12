@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-434 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-435 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-434'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-435'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2909,18 +2909,13 @@ var MeshoptDecoder = (function () {
 (() => {
   const ZF = (window.__zonefence = { ready: false, list: [] });
   let G = null, T = null, texF = null, texE = null;
-  const K = 0.75, KF = 1.5;   // 보통 섞기 투명도 배율 — 테두리 0.39 → 0.96 · 바닥 판 0.17 그대로(2.5배는 파란 판이 덮은 듯 진했다)
+  const K = 0.75, KF = 1.0;   // 보통 섞기 투명도 배율 — 테두리 0.39 → 0.96 · 바닥 판 0.17 그대로(2.5배는 파란 판이 덮은 듯 진했다)
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.zonefence === false); };
   const canvasTex = (draw) => { const S = 512, c = document.createElement('canvas'); c.width = c.height = S; draw(c.getContext('2d'), S); const t = new T.CanvasTexture(c); t.anisotropy = Math.min(8, (G.renderer && G.renderer.capabilities.getMaxAnisotropy()) || 4); return t; };
   // 바닥 판 — 고른 칠 + 가운데 인장(game.js __zfill 에서 번짐 띠만 뺐다)
   // b433 — 은은한 격자(사용자 「본진 영역 표시가 너무 뚜렷 · 은은하게 격자 느낌으로 자연스럽게」) — 아주 옅은 칠 + 0.5m 간격 가는 선(가장자리로 갈수록 조금 더 옅게) · 인장은 뺐다
-  const fillTex = () => canvasTex((g, S) => {
-    const c = G.cfg, nx = Math.round((c.zoneWidth || 7) / 0.5), ny = Math.round((c.zoneDepth || 6) / 0.5);
-    g.fillStyle = 'rgba(255,255,255,.16)'; g.fillRect(0, 0, S, S);
-    g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 2.2;
-    for (let i = 1; i < nx; i++) { const x = (i / nx) * S; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, S); g.stroke(); }
-    for (let j = 1; j < ny; j++) { const y = (j / ny) * S; g.beginPath(); g.moveTo(0, y); g.lineTo(S, y); g.stroke(); }
-  });
+  // b435 — 격자 뺌 · 고른 은은한 팀 색 칠(사용자 「격자 말고 바닥이 은은하게 테두리 색처럼 · 튀지 않게 · 자연스럽게 여기가 진영이구나」)
+  const fillTex = () => canvasTex((g, S) => { g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(0, 0, S, S); });
   // 테두리 — 바깥 실선 · 안쪽 가는 선 · 꺾쇠 · 눈금(game.js qy(1) 에서 번짐 띠만 뺐다)
   const edgeTex = () => canvasTex((n, S) => {
     // 바깥 실선 한 줄만(2026-10-12 사용자: 「왜 삐뚤한 두 줄인 거야 · 한 줄로」 — 안쪽 가는 선 · 꺾쇠 · 눈금은 뺐다)
@@ -2996,7 +2991,7 @@ var MeshoptDecoder = (function () {
       for (let guard = 0; guard < 5000; guard++) { const tail = key(pts[pts.length - 1]), nx = (adj.get(tail) || []).find((k) => !used[k]); if (nx === undefined) break; used[nx] = 1; const sg = segs[nx]; pts.push(key(sg[0]) === tail ? sg[1] : sg[0]); }
       if (pts.length > 6) loops.push(pts);
     }
-    const w = 0.07, pos = [], uvs = [], idx = [];
+    const w = 0.045, pos = [], uvs = [], idx = [];
     for (const lp of loops) {
       const closed = key(lp[0]) === key(lp[lp.length - 1]), n = lp.length, W3 = lp.map(([u, v]) => P(u, v));
       let ys = W3.map(([x, zz]) => { const y = top.exact(x, zz); return isFinite(y) ? Math.min(Math.max(y, R.y0 - 0.3), R.y0 + 1.6) : R.y0; });   // 바위 위는 올라타고 · 절벽 아래로는 안 내려감
@@ -4081,6 +4076,8 @@ window.__NAVGRID = {"sig":"n4|corpse/samurai_arena_lite|8f27e783|-28.843|-25.541
     { title: '밝기·조명', sub: '테두리 = 화면 가장자리 어둠 · 손전등은 L', manual: true, rows: [
       // masterBright 4 = 100% (그리기 노출 = sceneExposure 1.5 × masterBright)
       { k: 'masterBright', label: '밝기', min: 1, max: 9, step: 0.1, def: 4, fmt: (v) => pct(v / 4) },
+      { k: 'charlit.k', label: '사람·시체·괴물', min: 0, max: 1.5, step: 0.02, def: 0.42, fmt: (v) => pct(v / 0.42),   // 배경 밝기와 따로(charlit.js — 제 그림이 스스로 빛나는 정도)
+        get: () => (window.__charlit ? window.__charlit.k : 0.42), set: (v) => { if (window.__charlit) window.__charlit.k = v; } },
       { k: 'contrast', label: '대비', min: 0.6, max: 1.6, step: 0.01, def: 1.08, fmt: (v) => v.toFixed(2) },
       { k: 'gamma', label: '감마', min: 0.6, max: 1.6, step: 0.01, def: 1, fmt: (v) => v.toFixed(2) },
       { k: 'vignette', label: '테두리', min: 0, max: 2, step: 0.05, def: 1, fmt: pct },
