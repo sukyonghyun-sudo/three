@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-430 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-431 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-430'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-431'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2949,21 +2949,27 @@ var MeshoptDecoder = (function () {
   //   본진 네모 안 · 바닥 높이 띠 안 칸 → 가운데와 이어진 덩어리 하나 → 두 번 흐리게(0.6m) → 0.55 등고선 = 둥근 모양 · 칠과 선이 같은 모양
   function region(z, top, y0) {
     const { H, nu, nv, C } = top, W = (G.cfg.zoneWidth || 7) / 2, D = (G.cfg.zoneDepth || 6) / 2, W0 = top.W, D0 = top.D;
-    const M = new Float32Array(nu * nv);
-    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const u = -W0 + i * C, v = -D0 + j * C, h = H[j * nu + i]; M[j * nu + i] = (Math.abs(u) <= W - 0.1 && Math.abs(v) <= D - 0.1) ? 1 : 0; }   // b430 — 세 본진 같은 크기(실제 인정 범위 7×6m 네모 · 땅 모양과 상관없이) · 흐림으로 모서리만 둥글게   // b427 — 평평한 바닥만(바위 위는 빼 선이 바위 높낮이에 끊기지 않게) · 토리이 쪽(앞)은 끝까지
-    // 가운데와 이어진 덩어리만
-    const keep = new Uint8Array(nu * nv), ci = Math.round(W0 / C), cj = Math.round(D0 / C); let seed = -1, bd = 1e9;
-    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) if (M[j * nu + i]) { const d = (i - ci) ** 2 + (j - cj) ** 2; if (d < bd) { bd = d; seed = j * nu + i; } }
-    if (seed >= 0) { const q = [seed]; keep[seed] = 1; while (q.length) { const c = q.pop(), i = c % nu, j = (c / nu) | 0; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = i + di, b = j + dj; if (a < 0 || b < 0 || a >= nu || b >= nv) continue; const n = b * nu + a; if (!keep[n] && M[n]) { keep[n] = 1; q.push(n); } } } }
+    // b431 — 갈 수 있는 땅만(길찾기 okAt) · 토리이 쪽에서 이어진 덩어리 · 세 본진 같은 넓이(가장 좁은 본진에 맞춰 · 가운데에서 가까운 칸부터)
+    //   (사용자 「실제로 이동 못 하는 영역까지 늘리면 어떡해 · 토리이 기준으로 이동 가능한 영역까지 자연스럽고 부드럽게 · 모두 거의 비슷한 사이즈」)
+    const N = window.__nav, okc = new Uint8Array(nu * nv);
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const u = -W0 + i * C, v = -D0 + j * C; if (Math.abs(u) > W || Math.abs(v) > D) continue; const x = z.cx + top.sx * u + top.fx * v, zz = z.cz + top.sz * u + top.fz * v, h = N && N.okAt ? N.okAt(x, zz) : H[j * nu + i]; okc[j * nu + i] = h !== null && h !== undefined && isFinite(h) && Math.abs(h - y0) < 1.2 ? 1 : 0; }
+    const keep = new Uint8Array(nu * nv), ci = Math.round(W0 / C), cj = Math.round((D0 - D + 0.8) / C); let seed = -1, bd = 1e9;   // 씨앗: 토리이 쪽 앞 0.8m
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) if (okc[j * nu + i]) { const d = (i - ci) ** 2 + (j - cj) ** 2; if (d < bd) { bd = d; seed = j * nu + i; } }
+    const comp = [];
+    if (seed >= 0) { const q = [seed], seen = new Uint8Array(nu * nv); seen[seed] = 1; while (q.length) { const c = q.pop(); comp.push(c); const i = c % nu, j = (c / nu) | 0; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = i + di, b = j + dj; if (a < 0 || b < 0 || a >= nu || b >= nv) continue; const n = b * nu + a; if (!seen[n] && okc[n]) { seen[n] = 1; q.push(n); } } } }
+    const dist = (c) => { const u = -W0 + (c % nu) * C, v = -D0 + ((c / nu) | 0) * C; return (u / W) ** 2 + ((v + 0.4) / D) ** 2; };
+    comp.sort((a, b) => dist(a) - dist(b));
+    const want = Math.min(comp.length, ZF.target || comp.length); for (let k = 0; k < want; k++) keep[comp[k]] = 1;
+    ZF.counts = ZF.counts || {}; ZF.counts[z.team] = comp.length;
     let F = Float32Array.from(keep);
     const blur = (A, r) => { const B = new Float32Array(A.length), Cc = new Float32Array(A.length);
       for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { let s0 = 0, n = 0; for (let k = -r; k <= r; k++) { const a = i + k; if (a < 0 || a >= nu) continue; s0 += A[j * nu + a]; n++; } B[j * nu + i] = s0 / n; }
       for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { let s0 = 0, n = 0; for (let k = -r; k <= r; k++) { const b = j + k; if (b < 0 || b >= nv) continue; s0 += B[b * nu + i]; n++; } Cc[j * nu + i] = s0 / n; }
       return Cc; };
-    F = blur(blur(F, 3), 3);
+    F = blur(blur(F, 2), 2);
     for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) if (i === 0 || j === 0 || i === nu - 1 || j === nv - 1) F[j * nu + i] = 0;   // 가장자리 0 — 토리이 쪽도 닫힌 고리로
     const at = (x, zz) => { const u = (x - z.cx) * top.sx + (zz - z.cz) * top.sz, v = (x - z.cx) * top.fx + (zz - z.cz) * top.fz, fi = (u + W0) / C, fj = (v + D0) / C, i = Math.floor(fi), j = Math.floor(fj); if (i < 0 || j < 0 || i >= nu - 1 || j >= nv - 1) return 0; const a = fi - i, b = fj - j; return (F[j * nu + i] * (1 - a) + F[j * nu + i + 1] * a) * (1 - b) + (F[(j + 1) * nu + i] * (1 - a) + F[(j + 1) * nu + i + 1] * a) * b; };
-    return { F, at, LV: 0.55, y0 };
+    return { F, at, LV: 0.5, y0 };
   }
   // 경계선 — 둥근 영역의 가장자리 한 줄(마칭 스퀘어) · 높이는 그 자리 맨 윗면(양 끝 높이가 0.35m 넘게 다르면 그리지 않는다 — 절벽에 늘어지던 줄)
   function contour2(z, mat, top, uv, R) {
@@ -3135,6 +3141,8 @@ var MeshoptDecoder = (function () {
     const N = window.__nav; if (N && !N.settled) return;                 // 길찾기 높이가 맞은 뒤
     if (!texF) { texF = fillTex(); texE = edgeTex(); }
     if (G.cfg.zoneShape === 0) return;                                    // 둥근 본진(조절값)은 원래대로
+    // 세 본진 같은 넓이 — 먼저 갈 수 있는 칸 수를 세어 가장 적은 본진에 맞춘다(최대 7×6m 의 80%)
+    if (!ZF.target) { const ms = [...new Set([...(G.map.grounds || []), ...(G.map.solids || [])])].filter((m) => !(m.material && (m.material.transparent || m.material.alphaTest > 0))); ZF.target = 1e9; for (const z of G.zones.list) { const tp = topGrid(z, ms); region(z, tp, floorY(z)); } const c = Object.values(ZF.counts || {}); ZF.target = Math.min(Math.round((G.cfg.zoneWidth || 7) * (G.cfg.zoneDepth || 6) * 0.8 / 0.04), ...c); console.log('[zonefence] 본진 넓이 맞춤', c, '→', ZF.target, '칸'); }
     let built = 0;
     for (const z of G.zones.list) {
       const old = ZF.list.find((b) => b.z === z), key = [z.cx, z.cz, z.yaw, G.cfg.zoneWidth, G.cfg.zoneDepth].join();
@@ -5482,6 +5490,9 @@ void main(){
     if (X && X.sfx && X.sfx.sizzle) X.sfx.sizzle(0.9, V);
     try { const G = window.__G, hm = [skinOf(G.body.main), skinOf(G.body.drag)]; if (mpOn() && window.__mp.douse && e.meshes.some((m) => hm.includes(m))) window.__mp.douse(); } catch { /* 넘어간다 */ }   // 같이 하기 — 내 불이 물에 꺼졌다고 서버에
     if (X && X.steam) X.steam(V.x, wa.wy, V.z, 1);
+    // b431 — 칙 하고 확 꺼진다(사용자 「물에 들어가 꺼질 때 불이 바람에 날리듯 날아가 사라진다」 — 이미 뿜어진 불꽃 입자가 수명대로 날아갔다) → 이 몸의 불꽃 입자를 그 자리에서 지우고 김만
+    for (let i = parts.f.length - 1; i >= 0; i--) if (parts.f[i].src === e) parts.f.splice(i, 1);
+    if (X && X.steam) { X.steam(V.x, wa.wy + 0.6, V.z, 0.7); X.steam(V.x, wa.wy + 1.1, V.z, 0.5); }
     console.log('[burn] 물에 들어가 불이 꺼졌다', (e.dz.bu * 100).toFixed(0) + '% 탄 채로');
   }
   // 타는 동안 표정 — 비명 → 눈알이 튀어나올 듯 이 악묾 → 울부짖음 → 고통 → 비명 → 숨막힘 → 꺼지면 죽을 것 같음 → 넋 나감
@@ -6481,6 +6492,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'bloodvomit', name: '일어난 뒤 피를 토함(knock.js — 10-12 사용자: 맞고 일어나 움츠릴 때 입에서 피 · 숙인 뒤 입에서 앞 · 아래로 피 줄기 · 두 번 왈칵 · 땅에 방울 자국 · 기침 소리)', def: true },
     { key: 'bothold', name: '봇도 줍는 동안 제자리 · 시작 때 멈칫(pickup.js — 10-12 사용자: 봇이 드는 동작이 끝나기 전에 들고 달린다 · 시작하자마자 달려 나간다 · 줍는 동작 80% 까지 제자리 · 판 시작 0.7~1.5초 뒤 움직임 · 혼자 하기)', def: true },
     { key: 'botparity', name: '봇 = 나 같은 조건(game.js · knock.js — 10-12 사용자: 모든 조건이 동일해야 · 속도 무작위 0.9~1.1배 → 1배 · 맞으면 나처럼 포물선으로 날아가 미끄러지고(6.5m+3.9m) 같은 시간 쓰러졌다 일어남(1.35+4.3초 · 예전 3.2초) · 일어난 뒤 주춤 · 피 토함 · 기침 · 하늘 피)', def: true },
+    { key: 'camfollow', name: '카메라가 가는 쪽을 비춤(camera.js — 10-12 사용자: 달리는 동안 등 뒤로 1.2초에 걸쳐 돌아감 · 마우스로 돌린 뒤 2.5초 쉼)', def: true },
     { key: 'eyelight', name: '눈 앞 시야(eyelight.js — 10-12 사용자: 손전등 없이 내 앞이 자연스럽게 보이게 · 손전등이 꺼져 있을 때 그 빛을 아주 넓고 부드럽고 약한 차가운 밤빛으로 빌려 · 머리 높이에서 보는 쪽 땅을)', def: true },
     { key: 'zonefence', name: '본진 바닥 표시 — 바닥 모델링을 따라(zonefence.js — 10-12 사용자: 뿌옇다 · 바닥 모델링을 따라 자연스럽게 · 맵 바닥 · 바위 윗면 삼각형을 본진 네모로 잘라 덮는 데칼 · 칠한 것처럼(번짐 없음) · 떠 있던 판은 숨김)', def: true },
     { key: 'monsmooth', name: '괴물 막힘 떨림 없애기(montwitch.js — 10-12 사용자: 막힌 곳에서 부들부들 · 그릴 때만 몸 자리 · 방향을 부드럽게 따라가게 · 실제 움직임 · 판정은 그대로)', def: true },
@@ -10271,23 +10283,19 @@ vec3 srGN(vec2 p) {
       // b421 — 「컥」 하며 피 분수를 잠깐(사용자 「피 토하는 게 어색 · 걍 컥 하고 피를 뿜는 느낌으로 피 분수를 잠깐」) — 줄기(원기둥)는 뺐다
       //   · 기침(컥) 순간(꼬리 17%)부터 0.15초 동안 입에서 앞 · 위로 확 뿜어(방울 60여 개) 포물선으로 떨어진다 · 고개가 뿜는 순간 살짝 들렸다 숙여짐 · 발 앞 핏물 하나
       const gore = G.gore || (G.mpApi && G.mpApi.gore), hd = bones.Head;
-      const burst = Math.exp(-Math.pow((u - 0.21) / 0.04, 2));
+      // b431 — 입에서 살짝 주륵(사용자 「걍 캐릭터 입에서 살짝 주륵하고 흘러내리게」) — 분수는 뺐다
+      //   기침(컥) 뒤 0.5초 동안 입꼬리에서 가는 핏줄기가 턱 아래로 흘러 떨어진다(줄기 굵기 1~1.6cm · 방울 몇 개)
+      const burst = Math.exp(-Math.pow((u - 0.21) / 0.04, 2)), flow = Math.max(0, Math.min(1, (u - 0.17) / 0.04, (0.48 - u) / 0.08));
       const side = new T.Vector3(Math.cos(y), 0, -Math.sin(y));
-      rot(bones.Head, ax, -k * 0.22 * burst); rot(bones.Neck, ax, -k * 0.12 * burst);   // 컥 — 고개가 순간 들린다
-      if (hd && gore && gore.drop) {
+      rot(bones.Head, ax, -k * 0.15 * burst);   // 컥 — 고개가 순간 들린다
+      if (hd && flow > 0.02) {
         hd.updateMatrixWorld(true);
         const e = hd.matrixWorld.elements, ly = Math.hypot(e[4], e[5], e[6]) || 1, lz = Math.hypot(e[8], e[9], e[10]) || 1;
         const Y = new T.Vector3(e[4] / ly, e[5] / ly, e[6] / ly), Z = new T.Vector3(e[8] / lz, e[9] / lz, e[10] / lz);
-        const mouth = hd.getWorldPosition(new T.Vector3()).addScaledVector(Y, 0.03).addScaledVector(Z, 0.1);
-        if (burst > 0.15 && (HS.vt = (HS.vt || 0) - (HS.vdt || 0.016)) <= 0) {
-          HS.vt = 0.016;
-          // b422 — 등 뒤 카메라에서도 보이게 머리 위로 솟구친다(위 3~5m/s → 0.5~1.3m) · 양옆으로도 퍼짐 · 더 많이(b421 은 앞 · 낮게만 튀어 몸에 가려 「안 보인다」)
-          const n = Math.round(6 + 14 * burst), hz = Math.hypot(Z.x, Z.z) || 1, fx = Z.x / hz, fz = Z.z / hz;
-          for (let i = 0; i < n; i++) {
-            const sp = 0.4 + Math.random() * 1.4, upv = 3 + Math.random() * 2, sd = (Math.random() - 0.5) * 2.2;
-            gore.drop(mouth.clone(), new T.Vector3(fx * sp + side.x * sd, upv, fz * sp + side.z * sd));
-          }
-        }
+        const mouth = hd.getWorldPosition(new T.Vector3()).addScaledVector(Y, 0.03).addScaledVector(Z, 0.1).addScaledVector(side, 0.015);
+        const hz = Math.hypot(Z.x, Z.z) || 1;
+        streamDraw(G, mouth, Z.x / hz * 0.12, Z.z / hz * 0.12, 0.25 + 0.25 * flow + 0.3 * burst, now, key);
+        if (gore && gore.drop && (HS.vt = (HS.vt || 0) - (HS.vdt || 0.016)) <= 0) { HS.vt = 0.09; gore.drop(mouth.clone(), new T.Vector3(Z.x / hz * 0.2, -0.3, Z.z / hz * 0.2)); }
       }
       // 땅 — 뿜은 피가 떨어지는 발 앞(0.7~1.1m)에 핏물 하나(20초)
       if (u >= 0.3 && !HS.v1 && window.__smear) {
@@ -10754,6 +10762,12 @@ vec3 srGN(vec2 p) {
     const mp = !!(window.__mp && window.__mp.on);
     const me = mp ? md < 12 : !!(C && C.tgt && !C.tgt.bot);
     const chase = monOk && (C.state === 'chase' || C.state === 'attack') && me ? clamp((16 - md) / 12, 0, 1) : 0;
+    // b431 — 카메라가 내가 가는 쪽을 비춘다(사용자 「기본적으로 카메라가 내가 이동하는 방향으로」) — 달리는 동안 등 뒤로 천천히 돌아간다(1.2초) · 마우스로 돌린 뒤 2.5초는 그대로 · 뒤로 걸으면(140° 넘게) 안 돌림
+    if (!hitOn && !(window.__fx && window.__fx.on && window.__fx.on.camfollow === false) && performance.now() - (S.manT || 0) > 2500 && G.mpApi.camYaw) {
+      const hp = G.hero.position; if (S.fp) { const mx = hp.x - S.fp[0], mz = hp.z - S.fp[1], sp = Math.hypot(mx, mz) / Math.max(dt, 1e-3);
+        if (sp > 1.5 && sp < 15) { const cy = G.mpApi.camYaw(), tg = Math.atan2(mx, mz) + Math.PI, dd = wrap(tg - cy); if (Math.abs(dd) < 2.45) G.mpApi.camYaw(cy + dd * ex(dt, 1.2)); } }
+      S.fp = [hp.x, hp.z];
+    } else S.fp = [G.hero.position.x, G.hero.position.z];
     const yawG = G.mpApi.camYaw();
     if (monOk && md < 10 && md > 1.5) { const fx = -Math.sin(yawG), fz = -Math.cos(yawG), cs = ((C.root.position.x - h.x) * fx + (C.root.position.z - h.z) * fz) / md; monF = ss((cs - 0.64) / 0.3) * ss((10 - md) / 5); }
     const K = S.k;
@@ -10766,8 +10780,8 @@ vec3 srGN(vec2 p) {
     { let want = 0; const X = window.__fx, zb = G.zones && G.zones.list && G.zones.list.find((z) => z.team === 0);
       const dB = zb ? Math.hypot(zb.cx - h.x, zb.cz - h.z) : 1e9;
       // b417 — 본진 밖(14m 넘게)으로 한 번 나갔다가 돌아올 때만(판 시작은 내 본진 안이라 시작하자마자 높이 내려다봐 「요청한 각도가 풀렸다」로 보였다)
-      if (dB > 14) S.outB = true; if (!G.started || dB > 40) S.outB = dB > 14;
-      if (zb && S.outB && !(X && X.on && X.on.basecam === false)) want = ss((13 - dB) / 8) * (1 - K.chase);
+      if (dB > 24) S.outB = true; if (!G.started || dB > 45) S.outB = dB > 24;
+      if (zb && S.outB && !(X && X.on && X.on.basecam === false)) want = ss((24 - dB) / 14) * (1 - K.chase);   // b431 — 24m 부터 천천히(10m 에서 가득 · 예전 13m → 5m 는 거의 다 와서야)
       K.base += (want - K.base) * ex(dt, want > K.base ? 1.4 : 1.0); }
     // 끝 장면(2026-10-09) — 판이 끝나면 3초에 걸쳐 천천히 다가가 낮아진다(거리 32% · 내려다봄 7° · 시야 4°) · 다음 판이면 바로 돌아옴 · 끄기: 시연실 「끝 장면 카메라」
     { const X = window.__fx, on = !(X && X.on && X.on.endcam === false), over = !!(G.game && G.game.over) || performance.now() < (S.endDemoUntil || 0);
@@ -10983,6 +10997,7 @@ vec3 srGN(vec2 p) {
   //   → 이 브라우저에서 한 번만 0.14 로 맞춘다(그 뒤 사용자가 바꾼 값은 그대로 둔다)
   window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); S.outB = false; K0(); })(window.__onRestart);   // 다시 시작 — 내 본진에서 출발하니 본진 카메라는 다시 나갔다 올 때부터
   function K0() { if (S.k) S.k.base = 0; }
+  addEventListener('pointermove', (e) => { if (e.buttons) S.manT = performance.now(); }, true);   // 마우스로 돌리는 중 — 따라 돌기 쉼
   (function pitchFix() {
     const G = window.__G; if (!G || !G.set || !G.cfg) { setTimeout(pitchFix, 300); return; }
     let done = false; try { done = localStorage.getItem('corpse_campitch_v2') === '1'; } catch { /* 저장소 없음 — 매번 맞춘다 */ }
