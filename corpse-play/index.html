@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-373 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-374 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -319,7 +319,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-373'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-374'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5029,16 +5029,24 @@ void main(){
   /* ── 불 붙은 몸 ──
      불 세기 F: 0.8초에 붙어 6초까지 · 8.5초에 꺼짐 / 탄 정도 uBurn: 7초에 걸쳐 온몸 / 불씨 uEmb: 꺼진 뒤 2초쯤 / 연기: 14초까지 */
   // 2026-10-08 사용자: 「자연적으로 불이 꺼지는 시간을 길게 · 화상도 그 속도에 맞춰」 — 8.5초 → 15초(서버 CFG.burn 과 같다) · 탄 정도는 13초에 걸쳐 온몸
-  const FIRE_ON = 12.0, FIRE_OFF = 15.0, END = 23;
+  // 2026-10-12 사용자: 「불이 붙었을 때 바닥에 구르는 동작을 가장 마지막에 · 구르고 나면 불이 꺼지게」 — 불이 붙을 때 roll.js R.plan 이 몸마다 시간표를 정한다
+  //   e.drop 쓰러짐 · e.ron 구르기 시작 = 불이 잦아들기 시작 · e.off 다 굴렀다 = 불 꺼짐(15초 — 서버 CFG.burn 과 같다)
+  //   끄기(시연실 연출 「불 끝에 구르기」)면 예전: 2초에 구르고 일어나 계속 타다 12~15초에 저절로 잦아듦
+  const FIRE_OFF = 15.0, END = 23;
   B.FIRE_OFF = FIRE_OFF;
-  const fireAt = (t) => (t < 0.8 ? sstep(0, 0.8, t) : t < FIRE_ON ? 1 : t < FIRE_OFF ? 1 - sstep(FIRE_ON, FIRE_OFF, t) : 0);
-  const burnAt = (t) => 0.06 + 0.94 * (1 - (1 - Math.min(1, t / 13)) ** 1.7);
-  // 불이 잦아든 뒤 남는 것(잔불 빛 · 몸부림 · 연기) — 불이 잦아들기 시작할 때(12초)부터 함께 줄어든다
+  const ON = (e) => (e && e.ron) || 12.0, OFF = (e) => (e && e.off) || FIRE_OFF;
+  const fireAt = (t, e) => (t < 0.8 ? sstep(0, 0.8, t) : t < ON(e) ? 1 : t < OFF(e) ? 1 - sstep(ON(e), OFF(e), t) : 0);
+  // 탄 정도 — 2026-10-12 사용자 「불이 붙었을 때 몸에 화상이 입는 단계가 너무 빠르다」
+  //   예전: 13초에 온몸 · 앞쪽이 빨라 붙자마자 검게(2초 29% · 5초 59% · 10초 93%) → 불이 꺼지는 15초에 걸쳐 고르게 깊어진다(2초 14% · 5초 32% · 10초 65% · 15초 100%)
+  //   끄기(시연실 연출 「화상 천천히」)면 예전 빠르기
+  const slowOn = () => !(window.__fx && window.__fx.on && window.__fx.on.burnslow === false);
+  const burnAt = (t) => (slowOn() ? 0.05 + 0.95 * Math.min(1, t / 15) ** 1.15 : 0.06 + 0.94 * (1 - (1 - Math.min(1, t / 13)) ** 1.7));
+  // 불이 잦아든 뒤 남는 것(잔불 빛 · 몸부림 · 연기) — 불이 잦아들기 시작할 때(e.ron)부터 함께 줄어든다
   //   (2026-10-08 사용자: 「몸이 불타는 게 끝나기 전에 불이 꺼지고 갑자기 한 번 밝게 들어왔다가 다시 어두워진다」 —
   //    예전엔 15초에 꺼진 불(0) 뒤로 잔불이 0.6 에서 새로 시작해 몸이 번쩍였다 · 이제 늘 줄어들기만 한다)
-  const after = (t, a, tau) => (t < FIRE_ON ? 0 : a * Math.exp(-(t - FIRE_ON) / tau));
-  const embAt = (t) => Math.max(fireAt(t), after(t, 0.6, 3.0));
-  const writheAt = (t) => Math.max(fireAt(t), after(t, 0.45, 3.6));
+  const after = (t, a, tau, e) => (t < ON(e) ? 0 : a * Math.exp(-(t - ON(e)) / tau));
+  const embAt = (t, e) => Math.max(fireAt(t, e), after(t, 0.6, 3.0, e));
+  const writheAt = (t, e) => Math.max(fireAt(t, e), after(t, 0.45, 3.6, e));
   /* 물에 꺼짐 — 타는 몸이 연못(nav.js waterAt)에 들어가면 바로: 불꽃·불씨·몸부림이 잦아들고 탄 정도는 그 자리에서 멈춘다(탄 무늬는 판 끝까지)
      치이익(fx.js sfx.sizzle) · 하얀 김(fx.js steam) · 표정은 헉 → 헐떡임 · 다시 불이 닿으면 또 붙는다 */
   const DZ_FACE = [[0, 'gasp'], [1.3, 'pant']];
@@ -5050,7 +5058,7 @@ void main(){
   }
   function douse(e, vis, wa) {
     const t = e.t;
-    e.dz = { t, bu: Math.max(e.base, burnAt(t)), em: embAt(t), wr: writheAt(t), fi: 0, st: 0 };
+    e.dz = { t, bu: Math.max(e.base, burnAt(t)), em: embAt(t, e), wr: writheAt(t, e), fi: 0, st: 0 };
     e.face = FACE.length;
     const X = window.__fx;
     vis.getWorldPosition(V);
@@ -5073,7 +5081,7 @@ void main(){
   B.burning = (target) => {
     const G = window.__G; if (!G) return false;
     const ms = meshesOf(target).filter(Boolean);
-    return B.list.some((e) => !e.dz && e.t < FIRE_OFF && ms.some((m) => e.meshes.includes(m)));
+    return B.list.some((e) => !e.dz && e.t < OFF(e) && ms.some((m) => e.meshes.includes(m)));
   };
   // 못 잡는다는 알림 — 테 없는 글자 한 줄(1.4초)
   let nagEl = null, nagT = 0;
@@ -5105,14 +5113,14 @@ void main(){
     }
     return best;
   }
-  function ignite(target, fromServer, from) {
+  function ignite(target, fromServer, from, opt) {
     const G = window.__G;
     if (!G || !B.ready || !fire) return false;
     if (mpOn() && !fromServer) return false;
     const meshes = [...new Set(meshesOf(target).filter(Boolean))];
     if (!meshes.length) return false;
     const prev = B.list.find((e) => e.meshes.includes(meshes[0]));
-    if (prev && prev.t < FIRE_OFF && !prev.dz) return false;   // 아직 타는 중(물에 꺼진 몸은 다시 붙는다)
+    if (prev && prev.t < OFF(prev) && !prev.dz) return false;   // 아직 타는 중(물에 꺼진 몸은 다시 붙는다)
     if (!fromServer && prev && prev.dz && prev.t - prev.dz.t < 2) return false;   // 막 젖은 몸은 2초 동안 안 붙는다(혼자 하기 — 같이 하기는 서버가 정한다 · 2026-10-09 — 연못 가에 땅불이 걸리면 봇이 물가를 오가며 화르륵 · 치이익을 몇 초마다 되풀이했다)
     { const v0 = meshes.find(shown) || meshes[0]; if (v0 && inWater(v0)) return false; }   // 물속에서는 붙지 않는다(물속 땅불에서 붙고 꺼지기를 매 프레임 되풀이했다)
     const pos = meshes[0].geometry.attributes.position;
@@ -5124,7 +5132,8 @@ void main(){
     const cand = new Int32Array(1600);
     for (let k = 0; k < cand.length; k++) cand[k] = (Math.random() * pos.count) | 0;
     for (const m of meshes) { const U = prepMat(m.material); if (U) U.uBurnO.value.set(o[0], o[1], o[2]); }
-    B.list.push({ meshes, o, t: 0, base: prev ? (prev.dz ? prev.dz.bu : 1) : 0, cand, face: 0, ph: Math.random() * 10 });
+    const pl = window.__roll && window.__roll.plan ? window.__roll.plan(opt && opt.fast) : null;   // 쓰러짐 · 구르기 · 꺼짐 시각(roll.js) — 보기(fast)는 3초에 쓰러진다
+    B.list.push({ meshes, o, t: 0, base: prev ? (prev.dz ? prev.dz.bu : 1) : 0, cand, face: 0, ph: Math.random() * 10, drop: pl ? pl.drop : 2.0, ron: pl ? pl.ron : 12.0, off: pl ? pl.off : FIRE_OFF });
     try { const R = window.__rsfx; if (R) { meshes[0].getWorldPosition(V); R.play('sys_fire_ign', { pos: { x: V.x, y: V.y, z: V.z }, range: 30, vol: 0.8 }); } } catch { /* */ }   // 화르륵(실제 녹음)
     // 불붙으면 들고 있던 시체를 놓친다(혼자 하기 — 같이 하기는 서버가 놓게 한다)
     if (!mpOn()) {
@@ -5137,7 +5146,7 @@ void main(){
   }
   // 지금 끄기(물에 들어간 것처럼) — 같이 하기에서 서버 봇이 물에 들어가 불을 껐을 때(mp.js 'douse')
   B.douseNow = (target) => {
-    const ms = meshesOf(target).filter(Boolean), e = B.list.find((x) => !x.dz && x.t < FIRE_OFF && x.meshes.some((m) => ms.includes(m)));
+    const ms = meshesOf(target).filter(Boolean), e = B.list.find((x) => !x.dz && x.t < OFF(x) && x.meshes.some((m) => ms.includes(m)));
     if (!e) return false; const v0 = e.meshes.find(shown) || e.meshes[0]; if (!v0) return false;
     v0.getWorldPosition(V); douse(e, v0, { wy: V.y + 0.3 }); return true;
   };
@@ -5158,8 +5167,8 @@ void main(){
     let lx = 0, ly = 0, lz = 0, lw = 0;
     for (const e of B.list) {
       e.t += dt;
-      if (!e.dz && fireAt(e.t) > 0.01) { const v0 = e.meshes.find(shown), wa = v0 && inWater(v0); if (wa) douse(e, v0, wa); }
-      const t = e.t, z = e.dz, F = z ? 0 : fireAt(t), bu = z ? z.bu : Math.max(e.base, burnAt(t)), em = z ? z.em * Math.exp(-(t - z.t) / 0.35) : embAt(t);
+      if (!e.dz && fireAt(e.t, e) > 0.01) { const v0 = e.meshes.find(shown), wa = v0 && inWater(v0); if (wa) douse(e, v0, wa); }
+      const t = e.t, z = e.dz, F = z ? 0 : fireAt(t, e), bu = z ? z.bu : Math.max(e.base, burnAt(t)), em = z ? z.em * Math.exp(-(t - z.t) / 0.35) : embAt(t, e);
       for (const m of e.meshes) { const U = UM.get(m.material) || prepMat(m.material); if (U) { U.uBurn.value = bu; U.uEmb.value = em; U.uFireT.value = t; } }
       const sd = window.__scream && window.__scream.faceDrive && window.__scream.faceDrive();   // 비명 소리가 표정을 끈다(scream.js) — 그때는 정해진 순서를 쉰다
       while (e.face < FACE.length && t >= FACE[e.face][0]) { if (!sd) { if (C && C.playOnKey) C.playOnKey(e.meshes, FACE[e.face][1]); else if (C && C.playOn) C.playOn(e.meshes, FACE[e.face][1]); } e.face++; }
@@ -5181,7 +5190,7 @@ void main(){
       }
       // 불꽃은 탄 자리 어디서나(번지는 경계 쪽에 더) · 연기는 불이 잦아든 뒤에도 한동안
       const pos = vis.geometry.attributes.position, R = 1.2, front = bu * 1.75;
-      const smk = Math.max(F, after(t, 0.6, 3.4));
+      const smk = Math.max(F, after(t, 0.6, 3.4, e));
       const emit = (rate, kind) => {
         const n = rate * dt, cnt = Math.floor(n) + (Math.random() < n % 1 ? 1 : 0);
         for (let k = 0; k < cnt; k++) {
@@ -5245,7 +5254,7 @@ void main(){
     if (!B.list.length) return;
     done.clear();
     for (const e of B.list) {
-      const W = e.dz ? e.dz.wr * Math.exp(-(e.t - e.dz.t) / 0.5) : writheAt(e.t);
+      const W = e.dz ? e.dz.wr * Math.exp(-(e.t - e.dz.t) / 0.5) : writheAt(e.t, e);
       if (W < 0.01) continue;
       const t = e.t + e.ph, s = (f, p) => Math.sin(t * f * 6.2832 + (p || 0));
       const jolt = (f, p) => Math.max(0, Math.sin(t * f * 6.2832 + p)) ** 12;       // 이따금 확 꺾이는 경련
@@ -6084,6 +6093,8 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'ambev', name: '밤 소리 사건(realsfx.js — 22~48초마다 멀리서: 범종 · 올빼미 · 먼 개 · 등 뒤 덤불 잔가지 · 먼 남자 신음 · 신사 방울 / 돌풍 때 바람 · 에마 카라카라)', def: true },
     { key: 'sway', name: '바람(sway.js — 토리이 금줄의 종이 · 방울 · 술 · 벚나무 가지 · 잎이 일렁인다 · 가끔 돌풍)', def: true },
     { key: 'scoot', name: '불타서 뒹군 뒤 발로 밀어 뒷걸음질(roll.js — 무릎 세워 뒤꿈치 끌어당기고 · 발을 박은 채 다리를 펴 몸이 뒤로 · 두 번 · 일어날 때 미끄러짐 없음)', def: true },
+    { key: 'rollend', name: '불 끝에 구르기(roll.js · burn.js — 10-12 사용자: 불붙으면 15초 내내 타며 몸부림치다 마지막(13.1초)에 쓰러져 구르고 · 다 구르면 불이 꺼짐 · 봇 · 같이 하기 서버 봇도 같은 때 · 끄면 예전(2초에 구르고 일어나 계속 타다 저절로 꺼짐) / 보기: 내게 불 — 3초에 쓰러져 구르고 꺼짐)', def: true },
+    { key: 'burnslow', name: '화상 천천히(burn.js — 10-12 사용자: 화상 단계가 너무 빠름 · 예전 2초 29% · 5초 59% · 10초 93% 로 붙자마자 검게 → 불이 꺼지는 15초에 걸쳐 고르게 2초 14% · 5초 32% · 10초 65% · 15초 100% · 끄면 예전 / 보기: 내게 불 — 15초 그대로)', def: true },
     { key: 'painlive', name: '신음할 때 살아 있는 얼굴 · 몸 떨림(cast.js — 신음 소리 크기에 맞춰 찡그림이 조였다 풀리고 · 고개가 숙인 채 느리게 흔들리며 · 어깨 · 손이 잔떨림)', def: true },
     { key: 'pickup', name: '시체 잡기 v3(10-08 밤 — 시체는 누운 그대로 · 사람이 걸어가 앉아서 손으로 잡고 일어서며 끌거나 들쳐 멘다 · 예전 「미끄러져 붙음」은 없앴다 · 저장된 값이 「끔」이라 켜고 저장해야 기본이 된다)', def: false },
     { key: 'ragdoll', name: '들린 시체 팔·머리 물리(ragdoll.js — 늘어지고 끌리고 흔들림 / 보기: 들린 시체를 두 번 크게 흔듦 — 누가 들고 있을 때)', def: true },
@@ -6710,9 +6721,9 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
     else if (key === 'ambev') { if (window.__rsfx && window.__rsfx.ambEvent) window.__rsfx.ambEvent(); }   // 하나 바로(무작위)
     else if (key === 'sway') { if (window.__wind) window.__wind.boostUntil = performance.now() + 4500; }   // 큰 돌풍 한 번(4.5초)
-    else if (key === 'scoot') {                                       // 내게 불 — 2초 뒤 쓰러져 구르고 · 뒷걸음질 · 일어남(옆에서 보게)
+    else if (key === 'scoot' || key === 'rollend' || key === 'burnslow') {   // 내게 불(옆에서 보게) — 뒷걸음질 · 불 끝에 구르기: 3초에 쓰러져 구르고 꺼짐(fast) / 화상 천천히: 15초 그대로
       const B = window.__burn, y = G.hero.rotation.y, h = G.hero.position;
-      if (B && B.ignite) { if (G.mpApi && G.mpApi.camYaw) G.mpApi.camYaw(y + Math.PI / 2); B.ignite('hero', false, { x: h.x + Math.sin(y) * 4, y: h.y + 1.2, z: h.z + Math.cos(y) * 4 }); }
+      if (B && B.ignite) { if (G.mpApi && G.mpApi.camYaw) G.mpApi.camYaw(y + Math.PI / 2); B.ignite('hero', false, { x: h.x + Math.sin(y) * 4, y: h.y + 1.2, z: h.z + Math.cos(y) * 4 }, { fast: key !== 'burnslow' }); }
     }
     else if (key === 'pickup') { if (window.__pickup && window.__pickup.preview) window.__pickup.preview(); }   // 가장 가까운 시체를 앞 1.6m 에 눕히고 걸어가 잡는다(끄기 · 업기 번갈아)
     else if (key === 'painlive') {                                    // 내 얼굴 쪽에서 — 끙(일어날 때) → 이어서 앓음(죽어 가는 신음) · 소리가 막혀 있으면 표정만
@@ -6739,7 +6750,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake', 'soundlook', 'rumble', 'look', 'flies', 'breath', 'sound', 'scream', 'realsfx', 'ragdoll', 'breathe', 'gustpetal', 'lampgutter', 'wetprint', 'nightdeep', 'squelch', 'pond', 'postmood', 'corpsepool', 'clouds', 'recoil', 'mist', 'reveal', 'roundstats', 'mixduck', 'hintfade', 'titleclean', 'redmoon', 'lastdrone', 'hudsharp', 'quietbtns'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'rollend', 'burnslow', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake', 'soundlook', 'rumble', 'look', 'flies', 'breath', 'sound', 'scream', 'realsfx', 'ragdoll', 'breathe', 'gustpetal', 'lampgutter', 'wetprint', 'nightdeep', 'squelch', 'pond', 'postmood', 'corpsepool', 'clouds', 'recoil', 'mist', 'reveal', 'roundstats', 'mixduck', 'hintfade', 'titleclean', 'redmoon', 'lastdrone', 'hudsharp', 'quietbtns'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
@@ -9616,6 +9627,19 @@ vec3 srGN(vec2 p) {
   const WET = [6233, 6234, 6349, 6350, 6465, 7130, 7131, 7132, 7246, 7247, 7248, 7249, 7362, 7363, 7364, 7365, 7366, 7478, 7479, 7480, 7481, 7482, 7594, 7595, 7596, 7597, 7598, 7599, 7600, 7711, 7712, 7713, 7714, 7715, 7716, 7717, 7828, 7829, 7830, 7831, 7832, 7833, 7834, 7946, 7947, 7948, 7949, 7950, 8064, 8065, 8066]
     .map((c) => ({ x: X0 + ((c % NX) + 0.5) * CS, z: Z0 + (((c / NX) | 0) + 0.5) * CS }));
   const R = (window.__roll = { DROP_AT, LIE, rolls: new Map() });
+  /* 불 끝에 구르기(2026-10-12 사용자: 「불이 붙었을 때 바닥에 구르는 동작을 가장 마지막에 넣어줘 · 구르고 나면 불이 꺼지게」)
+     · 예전: 붙고 2초에 쓰러져 구르고 일어나 다시 타다가 12~15초에 저절로 꺼졌다 → 이제: 15초 내내 타며 몸부림치다 마지막에 쓰러져 구르고 · 다 구르면 불이 꺼진다
+     · 시간표(burn.js 가 불이 붙을 때 몸마다 받는다): 쓰러짐 drop · 구르기 시작 ron(쓰러지고 0.45초 — 여기서부터 불이 잦아든다) · 다 굴렀다 off = 불 꺼짐(15초 — 서버 CFG.burn 과 같다)
+       뒷걸음질을 켜면 구르기는 쓰러지고 1.9초에 끝남 → 13.1초에 쓰러진다 / 끄면 2.75초 → 12.25초
+     · 같이 하기 서버 봇도 같은 13.1초(server ROLL.at) · 물에 뛰어든 몸은 구르지 않는다(그 자리에서 꺼짐)
+     · 보기(fast): 3초에 쓰러져 구르고 꺼진다 · 끄기: 시연실 연출 「불 끝에 구르기」 — 예전 2초 */
+  const rollEndOn = () => !(window.__fx && window.__fx.on && window.__fx.on.rollend === false);
+  R.plan = (fast) => {
+    const end = scootOn() ? LIE - 1.0 : LIE - 0.15;                    // 쓰러지고 구르기가 끝나는 때(angle 의 end)
+    if (!fast && !rollEndOn()) return { drop: DROP_AT, ron: 12.0, off: 15.0 };
+    const drop = fast ? 3.0 : 15.0 - end;
+    return { drop, ron: drop + 0.45, off: drop + end };
+  };
   const skinOf = (o) => { let s = null; if (o) o.traverse((x) => { if (x.isSkinnedMesh && !s) s = x; }); return s; };
   const burning = (t) => { const B = window.__burn; try { return !!(B && B.burning && B.burning(t)); } catch { return false; } };
   const mpOn = () => !!(window.__mp && window.__mp.on);
@@ -9807,7 +9831,8 @@ vec3 srGN(vec2 p) {
     const G = window.__G, B = window.__burn;
     if (!G || !G.started || !B || !B.list) return;
     for (const e of B.list) {
-      if (done.has(e) || e.dz || e.t < DROP_AT || e.t > DROP_AT + 1.5) continue;
+      const at = e.drop != null ? e.drop : DROP_AT;                   // 몸마다 쓰러지는 때(R.plan — 불 끝에 구르기)
+      if (done.has(e) || e.dz || e.t < at || e.t > at + 1.5) continue;
       done.add(e);
       const who = ownerOf(e, G);
       if (who === 'hero') { if (window.__heroDrop && window.__heroDrop(LIE)) startRoll(G.body.main, 'hero'); }
