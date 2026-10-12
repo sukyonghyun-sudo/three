@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-379 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-381 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -319,7 +319,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-379'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-381'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2732,6 +2732,16 @@ var MeshoptDecoder = (function () {
 (() => {
   const BF = (window.__basefx = { ready: false, list: [], pw: 1, ph: 1 });
   // 기둥 크기(2026-10-12 사용자: 「본진들 기둥 3개 동시에 같이 사이즈 키울 수 있는 패널 따로」) — 조절(Tab) 「본진 기둥」 굵기 · 높이 · 셋 모두 같이 · 밑동은 땅에 붙은 채 위로 자란다
+  // 본진 토리이 크기(2026-10-12 사용자: 「본진들 기둥은 빛기둥 말고 서 있는 구조물 — 신사 같은 거」) — 조절(Tab) 「본진 토리이」 · 셋 모두 같이 · 밑동(소품 원점)은 그 자리
+  //   크기가 바뀌면 nav.js 소품 서명이 바뀌어 기둥 둘레 못 지나가는 칸을 새로 찍는다(같이 하기 서버 봇의 격자는 기본 크기 그대로)
+  BF.tk = 1;
+  BF.toriiSize = (k) => {
+    if (isFinite(k)) BF.tk = Math.max(0.5, Math.min(2.5, k));
+    const G2 = window.__G, zs = (G2 && G2.zones && G2.zones.list) || [];
+    for (const z of zs) { const r = z.torii && z.torii.root; if (!r) continue; if (r.__s0 === undefined) r.__s0 = r.scale.x; r.scale.setScalar(r.__s0 * BF.tk); r.updateMatrixWorld(true); }
+    return BF.tk;
+  };
+  setInterval(() => { if (BF.tk !== 1) BF.toriiSize(); }, 2000);   // 판을 새로 놓거나 소품을 다시 깔아도 같은 크기로
   BF.size = (o) => { if (o && isFinite(o.w)) BF.pw = Math.max(0.2, Math.min(6, o.w)); if (o && isFinite(o.h)) BF.ph = Math.max(0.2, Math.min(5, o.h)); return { w: BF.pw, h: BF.ph }; };
   const SLOTS = false;   // 바닥 자리 셋 — 사용자 「본진에 도장 표시가 왜 있어 · 시체는 그냥 바닥에 내려 두면 되는 건데 이상하잖아」로 뺐다(true 면 되살아남)
   let G = null, T = null, texP = null, texS = null, texF = null;
@@ -3610,12 +3620,10 @@ window.__NAVGRID = {"sig":"n1|corpse/samurai_arena_lite|8f27e783|-28.843|-25.541
       { k: 'glowFree', label: '바닥', min: 0, max: 2.5, step: 0.05, def: 0.8, fmt: pct },   // 아무 본진에도 없는 시체(뼈 빛)
       glowRow('lineW', '선 굵기', 1, 3, 1, 1, (v) => `${Math.round(v)}칸`),              // 외곽선 굵기(화면 그림 칸)
     ] },
-    // 본진 기둥(2026-10-12 사용자: 「본진들 기둥 3개 동시에 같이 사이즈 키울 수 있는 패널 따로」) — basefx.js 혼불 빛기둥 셋을 한꺼번에(밑동은 땅에)
-    { title: '본진 기둥', sub: '혼불 빛기둥 셋 · 한꺼번에', rows: [
-      { k: 'pillar.w', label: '굵기', min: 0.5, max: 4, step: 0.05, def: 1, fmt: pct,
-        get: () => (window.__basefx ? window.__basefx.pw : 1), set: (v) => { if (window.__basefx && window.__basefx.size) window.__basefx.size({ w: v }); } },
-      { k: 'pillar.h', label: '높이', min: 0.5, max: 3, step: 0.05, def: 1, fmt: pct,
-        get: () => (window.__basefx ? window.__basefx.ph : 1), set: (v) => { if (window.__basefx && window.__basefx.size) window.__basefx.size({ h: v }); } },
+    // 본진 토리이(2026-10-12 사용자: 「본진들 기둥 3개 동시에 같이 사이즈 키울 수 있는 패널 따로」 → 「빛기둥 말고 서 있는 구조물 — 신사 같은 거」) — basefx.js toriiSize · 셋을 한꺼번에
+    { title: '본진 토리이', sub: '본진 셋의 토리이 · 한꺼번에', rows: [
+      { k: 'torii.size', label: '크기', min: 0.5, max: 2.5, step: 0.05, def: 1, fmt: pct,
+        get: () => (window.__basefx ? window.__basefx.tk : 1), set: (v) => { if (window.__basefx && window.__basefx.toriiSize) window.__basefx.toriiSize(v); } },
     ] },
     { title: '밝기·조명', sub: '테두리 = 화면 가장자리 어둠 · 손전등은 L', manual: true, rows: [
       // masterBright 4 = 100% (그리기 노출 = sceneExposure 1.5 × masterBright)
@@ -5200,7 +5208,10 @@ void main(){
         e.lastP = { x: V.x, y: V.y, z: V.z };
       }
       // 불꽃은 탄 자리 어디서나(번지는 경계 쪽에 더) · 연기는 불이 잦아든 뒤에도 한동안
-      const pos = vis.geometry.attributes.position, R = 1.2, front = bu * 1.75;
+      // 불꽃이 번지는 앞 — 2026-10-12 사용자: 「괴물 불에 맞아 타오르는 거니까 처음부터 크게 휩싸이는 게 맞다」 — 불꽃은 0.35초에 온몸(화상 깊이 bu 는 그대로 천천히)
+      //   끄기: 시연실 연출 「처음부터 휩싸임」(engulf) — 예전처럼 불이 붙은 자리에서 화상과 함께 번진다
+      const engulf = !(window.__fx && window.__fx.on && window.__fx.on.engulf === false) && !e.dz;
+      const pos = vis.geometry.attributes.position, R = 1.2, front = Math.max(bu * 1.75, engulf ? 2.4 * sstep(0, 0.35, t) : 0);
       const smk = Math.max(F, after(t, 0.6, 3.4, e));
       const emit = (rate, kind) => {
         const n = rate * dt, cnt = Math.floor(n) + (Math.random() < n % 1 ? 1 : 0);
@@ -5217,7 +5228,7 @@ void main(){
           }
         }
       };
-      if (F > 0.01) emit(120 * F, 'f');
+      { const Fe = engulf && t < 0.8 ? Math.max(F, sstep(0, 0.3, t)) : F; if (Fe > 0.01) emit((engulf ? 190 : 120) * Fe, 'f'); }   // 휩싸임 — 0.3초에 다 붙고 온몸이라 더 많이
       if (smk > 0.01) emit(16 * smk, 's');
       if (F > 0.01) {
         const sp = rig(vis).Spine2;
@@ -6105,9 +6116,10 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'sway', name: '바람(sway.js — 토리이 금줄의 종이 · 방울 · 술 · 벚나무 가지 · 잎이 일렁인다 · 가끔 돌풍)', def: true },
     { key: 'scoot', name: '불타서 뒹군 뒤 발로 밀어 뒷걸음질(roll.js — 무릎 세워 뒤꿈치 끌어당기고 · 발을 박은 채 다리를 펴 몸이 뒤로 · 두 번 · 일어날 때 미끄러짐 없음)', def: true },
     { key: 'rollend', name: '불 끝에 구르기(roll.js · burn.js — 10-12 사용자: 불붙으면 15초 내내 타며 몸부림치다 마지막(13.1초)에 쓰러져 구르고 · 다 구르면 불이 꺼짐 · 봇 · 같이 하기 서버 봇도 같은 때 · 끄면 예전(2초에 구르고 일어나 계속 타다 저절로 꺼짐) / 보기: 내게 불 — 3초에 쓰러져 구르고 꺼짐)', def: true },
+    { key: 'engulf', name: '처음부터 휩싸임(burn.js — 10-12 사용자: 괴물 불에 맞은 거니까 처음부터 크게 · 불꽃이 0.35초에 온몸을 덮고 화상은 「화상 천천히」대로 깊어짐 · 끄면 예전(붙은 자리에서 조그맣게 시작해 번짐) / 보기: 내게 불)', def: true },
     { key: 'burnslow', name: '화상 천천히(burn.js — 10-12 사용자: 화상 단계가 너무 빠름 · 예전 2초 29% · 5초 59% · 10초 93% 로 붙자마자 검게 → 불이 꺼지는 15초에 걸쳐 고르게 2초 14% · 5초 32% · 10초 65% · 15초 100% · 끄면 예전 / 보기: 내게 불 — 15초 그대로)', def: true },
     { key: 'painlive', name: '신음할 때 살아 있는 얼굴 · 몸 떨림(cast.js — 신음 소리 크기에 맞춰 찡그림이 조였다 풀리고 · 고개가 숙인 채 느리게 흔들리며 · 어깨 · 손이 잔떨림)', def: true },
-    { key: 'pickup', name: '시체 잡기 v3(10-08 밤 — 시체는 누운 그대로 · 사람이 걸어가 앉아서 손으로 잡고 일어서며 끌거나 들쳐 멘다 · 예전 「미끄러져 붙음」은 없앴다 · 저장된 값이 「끔」이라 켜고 저장해야 기본이 된다)', def: false },
+    { key: 'pickup', name: '시체 잡기 v3(10-08 밤 — 시체는 누운 그대로 · 사람이 걸어가 앉아서 손으로 잡고 일어서며 끌거나 들쳐 멘다 · 예전 「미끄러져 붙음」은 없앴다 · 10-12 사용자: 기본으로 켬 — 예전에 저장된 「끔」은 무시)', def: true },
     { key: 'ragdoll', name: '들린 시체 팔·머리 물리(ragdoll.js — 늘어지고 끌리고 흔들림 / 보기: 들린 시체를 두 번 크게 흔듦 — 누가 들고 있을 때)', def: true },
     { key: 'breathe', name: '숨쉬기 · 살아 있는 몸(breathe.js — 숨 · 무게 옮김 · 겁먹은 떨림 · 달린 뒤 헐떡임 / 보기: 막 달린 것처럼 헐떡임)', def: true },
   ];
@@ -6116,7 +6128,8 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
   const X = (window.__fx = { ready: false, opts: OPTS.map((o) => ({ key: o.key, name: o.name, nw: NEW[o.key] || '', tour: o.tour })), on: {}, shake, set, flash: hitFlash });
   for (const o of OPTS) X.on[o.key] = o.def;
   function set(key, v) { X.on[key] = !!v; }                          // 이번 판에만 — 저장은 settings.js 「저장」(모두의 기본값)
-  if (window.__settings) window.__settings.reg('fx', { get: () => Object.assign({}, X.on), set: (o) => { for (const k of Object.keys(X.on)) if (o && o[k] !== undefined) X.on[k] = !!o[k]; } });
+  // pk12 — 2026-10-12 사용자 「시체 드는 애니메이션은 기본으로 켜지게」: 그 전에 저장된 값(표시 없음)의 pickup 「끔」은 읽지 않는다 · 이 뒤에 저장하면 표시가 붙어 그 값을 따른다
+  if (window.__settings) window.__settings.reg('fx', { get: () => Object.assign({}, X.on, { pk12: true }), set: (o) => { for (const k of Object.keys(X.on)) if (o && o[k] !== undefined && !(k === 'pickup' && !o.pk12)) X.on[k] = !!o[k]; } });
   const rnd = (a, b) => a + Math.random() * (b - a);
   const skinOf = (o) => { let s = null; if (o) o.traverse((x) => { if (x.isSkinnedMesh && !s) s = x; }); return s; };
   const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
@@ -6732,9 +6745,9 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else if (key === 'othersteps') { if (window.__rsfx && window.__rsfx.otherDemo) window.__rsfx.otherDemo(); }
     else if (key === 'ambev') { if (window.__rsfx && window.__rsfx.ambEvent) window.__rsfx.ambEvent(); }   // 하나 바로(무작위)
     else if (key === 'sway') { if (window.__wind) window.__wind.boostUntil = performance.now() + 4500; }   // 큰 돌풍 한 번(4.5초)
-    else if (key === 'scoot' || key === 'rollend' || key === 'burnslow') {   // 내게 불(옆에서 보게) — 뒷걸음질 · 불 끝에 구르기: 3초에 쓰러져 구르고 꺼짐(fast) / 화상 천천히: 15초 그대로
+    else if (key === 'scoot' || key === 'rollend' || key === 'burnslow' || key === 'engulf') {   // 내게 불(옆에서 보게) — 뒷걸음질 · 불 끝에 구르기: 3초에 쓰러져 구르고 꺼짐(fast) / 화상 천천히: 15초 그대로
       const B = window.__burn, y = G.hero.rotation.y, h = G.hero.position;
-      if (B && B.ignite) { if (G.mpApi && G.mpApi.camYaw) G.mpApi.camYaw(y + Math.PI / 2); B.ignite('hero', false, { x: h.x + Math.sin(y) * 4, y: h.y + 1.2, z: h.z + Math.cos(y) * 4 }, { fast: key !== 'burnslow' }); }
+      if (B && B.ignite) { if (G.mpApi && G.mpApi.camYaw) G.mpApi.camYaw(y + Math.PI / 2); B.ignite('hero', false, { x: h.x + Math.sin(y) * 4, y: h.y + 1.2, z: h.z + Math.cos(y) * 4 }, { fast: key !== 'burnslow' && key !== 'engulf' }); }
     }
     else if (key === 'pickup') { if (window.__pickup && window.__pickup.preview) window.__pickup.preview(); }   // 가장 가까운 시체를 앞 1.6m 에 눕히고 걸어가 잡는다(끄기 · 업기 번갈아)
     else if (key === 'painlive') {                                    // 내 얼굴 쪽에서 — 끙(일어날 때) → 이어서 앓음(죽어 가는 신음) · 소리가 막혀 있으면 표정만
@@ -6761,7 +6774,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       for (let i = 1; i <= 16; i++) setTimeout(() => B.bloom(wx + (Math.random() - 0.5) * 0.3, wz + (Math.random() - 0.5) * 0.3, 0.45, 0.075, 2), i * 150);   // 이어서 배어 나옴
     }
   };
-  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'rollend', 'burnslow', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake', 'soundlook', 'rumble', 'look', 'flies', 'breath', 'sound', 'scream', 'realsfx', 'ragdoll', 'breathe', 'gustpetal', 'lampgutter', 'wetprint', 'nightdeep', 'squelch', 'pond', 'postmood', 'corpsepool', 'clouds', 'recoil', 'mist', 'reveal', 'roundstats', 'mixduck', 'hintfade', 'titleclean', 'redmoon', 'lastdrone', 'hudsharp', 'quietbtns'];
+  X.previewable = ['lightning', 'ash', 'twitch', 'hitflash', 'bloodwater', 'stain', 'painlive', 'scoot', 'rollend', 'burnslow', 'engulf', 'pickup', 'sway', 'ambev', 'muffle', 'torchflick', 'stepsurf', 'othersteps', 'spotted', 'foley2', 'slam', 'music2', 'basefx', 'corpseglance', 'occl', 'monlost', 'wetcloth', 'dust', 'footblood', 'startcard', 'lampblow', 'monweight', 'hudhunt', 'injured', 'stepcam', 'endcam', 'lastbell', 'monblood', 'moths', 'birds', 'crows', 'breathhold', 'motes', 'montwitch', 'torchshake', 'soundlook', 'rumble', 'look', 'flies', 'breath', 'sound', 'scream', 'realsfx', 'ragdoll', 'breathe', 'gustpetal', 'lampgutter', 'wetprint', 'nightdeep', 'squelch', 'pond', 'postmood', 'corpsepool', 'clouds', 'recoil', 'mist', 'reveal', 'roundstats', 'mixduck', 'hintfade', 'titleclean', 'redmoon', 'lastdrone', 'hudsharp', 'quietbtns'];
   function tickTwitch(dt) {
     for (let i = twitches.length - 1; i >= 0; i--) { twitches[i].t += dt; if (twitches[i].t >= twitches[i].len) twitches.splice(i, 1); }
     if (!X.on.twitch) return;
