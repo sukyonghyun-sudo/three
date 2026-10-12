@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-432 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-434 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-432'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-434'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2909,15 +2909,17 @@ var MeshoptDecoder = (function () {
 (() => {
   const ZF = (window.__zonefence = { ready: false, list: [] });
   let G = null, T = null, texF = null, texE = null;
-  const K = 1.4, KF = 1.0;   // 보통 섞기 투명도 배율 — 테두리 0.39 → 0.96 · 바닥 판 0.17 그대로(2.5배는 파란 판이 덮은 듯 진했다)
+  const K = 0.75, KF = 1.5;   // 보통 섞기 투명도 배율 — 테두리 0.39 → 0.96 · 바닥 판 0.17 그대로(2.5배는 파란 판이 덮은 듯 진했다)
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.zonefence === false); };
   const canvasTex = (draw) => { const S = 512, c = document.createElement('canvas'); c.width = c.height = S; draw(c.getContext('2d'), S); const t = new T.CanvasTexture(c); t.anisotropy = Math.min(8, (G.renderer && G.renderer.capabilities.getMaxAnisotropy()) || 4); return t; };
   // 바닥 판 — 고른 칠 + 가운데 인장(game.js __zfill 에서 번짐 띠만 뺐다)
+  // b433 — 은은한 격자(사용자 「본진 영역 표시가 너무 뚜렷 · 은은하게 격자 느낌으로 자연스럽게」) — 아주 옅은 칠 + 0.5m 간격 가는 선(가장자리로 갈수록 조금 더 옅게) · 인장은 뺐다
   const fillTex = () => canvasTex((g, S) => {
-    const c = G.cfg; g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(0, 0, S, S);
-    g.save(); g.translate(S / 2, S / 2); g.scale((c.zoneDepth || 6) / (c.zoneWidth || 7), 1);
-    const R = S * 0.2; g.strokeStyle = 'rgba(255,255,255,1)'; g.lineWidth = S * 0.02; g.strokeRect(-R, -R, 2 * R, 2 * R); g.lineWidth = S * 0.006; g.strokeRect(-R * 0.84, -R * 0.84, R * 1.68, R * 1.68);
-    g.fillStyle = 'rgba(255,255,255,1)'; g.font = "800 " + Math.round(R * 1.25) + "px 'UIF', 'Nanum Myeongjo','Noto Serif KR',serif"; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('屍', 0, R * 0.07); g.restore();
+    const c = G.cfg, nx = Math.round((c.zoneWidth || 7) / 0.5), ny = Math.round((c.zoneDepth || 6) / 0.5);
+    g.fillStyle = 'rgba(255,255,255,.16)'; g.fillRect(0, 0, S, S);
+    g.strokeStyle = 'rgba(255,255,255,.85)'; g.lineWidth = 2.2;
+    for (let i = 1; i < nx; i++) { const x = (i / nx) * S; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, S); g.stroke(); }
+    for (let j = 1; j < ny; j++) { const y = (j / ny) * S; g.beginPath(); g.moveTo(0, y); g.lineTo(S, y); g.stroke(); }
   });
   // 테두리 — 바깥 실선 · 안쪽 가는 선 · 꺾쇠 · 눈금(game.js qy(1) 에서 번짐 띠만 뺐다)
   const edgeTex = () => canvasTex((n, S) => {
@@ -2994,7 +2996,7 @@ var MeshoptDecoder = (function () {
       for (let guard = 0; guard < 5000; guard++) { const tail = key(pts[pts.length - 1]), nx = (adj.get(tail) || []).find((k) => !used[k]); if (nx === undefined) break; used[nx] = 1; const sg = segs[nx]; pts.push(key(sg[0]) === tail ? sg[1] : sg[0]); }
       if (pts.length > 6) loops.push(pts);
     }
-    const w = 0.13, pos = [], uvs = [], idx = [];
+    const w = 0.07, pos = [], uvs = [], idx = [];
     for (const lp of loops) {
       const closed = key(lp[0]) === key(lp[lp.length - 1]), n = lp.length, W3 = lp.map(([u, v]) => P(u, v));
       let ys = W3.map(([x, zz]) => { const y = top.exact(x, zz); return isFinite(y) ? Math.min(Math.max(y, R.y0 - 0.3), R.y0 + 1.6) : R.y0; });   // 바위 위는 올라타고 · 절벽 아래로는 안 내려감
@@ -3121,7 +3123,7 @@ var MeshoptDecoder = (function () {
     const grp = new T.Group(); grp.name = 'zonefence';
     const mf = new T.Mesh(d.geo, fill.material); mf.renderOrder = 3; mf.frustumCulled = false; grp.add(mf);   // 바닥 판 — 재질은 원래 판 것 그대로(고른 칠)
     // 경계선 — 테두리 재질 복제(같은 프로그램) · 그림은 테두리 그림의 흰 줄 한 점(uv) · 팀 색 · 늘 또렷하게
-    const lineM = edge.material.clone(); lineM.map = texE; lineM.alphaMap = texE; lineM.color.setHex((G.colors && G.colors[z.team]) || 0xffffff); lineM.opacity = 0.95; lineM.blending = 1; lineM.vertexColors = true; lineM.polygonOffset = true; lineM.polygonOffsetFactor = -6; lineM.polygonOffsetUnits = -6;
+    const lineM = edge.material.clone(); lineM.map = texE; lineM.alphaMap = texE; lineM.color.setHex((G.colors && G.colors[z.team]) || 0xffffff); lineM.opacity = 0.5; lineM.blending = 1; lineM.vertexColors = true; lineM.polygonOffset = true; lineM.polygonOffsetFactor = -6; lineM.polygonOffsetUnits = -6;
     grp.add(contour2(z, lineM, top, [5 / 512, 0.5], RG));   // 흰 줄 한가운데(0~10px) · 둥근 영역 가장자리
     G.scene.add(grp);
     console.log('[zonefence] 본진', z.team, '데칼 삼각형', d.tris, Math.round(performance.now() - T0) + 'ms');
@@ -3230,6 +3232,49 @@ var MeshoptDecoder = (function () {
     if (!red) { G.map.root.traverse((o) => { if (!red && o.name === 'PlatformShape_Material_TilesRed_0') red = o; }); if (!red) return; console.log('[mapfix] 가운데 붉은 원판 숨김'); }
     red.visible = !on();
   }, 300);
+})();
+
+</script>
+<script>/* charlit.js */
+/* 사람 · 괴물 · 시체 자체 밝기(2026-10-12 사용자: 「캐릭터와 괴물 시체들 전체 밝기와 상관없이 이 정도 톤으로 조명 · 캐릭터 · 괴물 · 시체에만」)
+   · 장면 빛은 그대로 두고, 이 몸들의 재질에만 「제 그림을 조금 스스로 빛나게」(emissiveMap = 제 그림 · emissive 흰색 × K)
+     → 어두운 곳에서도 얼굴 · 옷 · 핏자국이 보이고, 빛을 받는 쪽은 그대로 더 밝다 · 땅 · 나무 · 건물은 그대로
+   · 새 셰이더는 준비 단계에서만(ready.js 가 이 파일이 다 입힐 때까지 기다렸다 굽는다) — 판 중에는 그림만 바뀐다
+   · 끄기: 시연실 연출 「사람 · 괴물 · 시체 자체 밝기」 · 세기: window.__charlit.k(기본 0.42) */
+(() => {
+  const CL = (window.__charlit = { ready: false, k: 0.42, n: 0 });
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.charlit === false); };
+  const done = new WeakSet();
+  function dress(root) {
+    if (!root) return 0; let n = 0;
+    root.traverse((o) => {
+      if (!(o.isMesh || o.isSkinnedMesh) || !o.material) return;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        if (!m.isMeshStandardMaterial && !m.isMeshPhongMaterial && !m.isMeshLambertMaterial) continue;
+        if (!m.map) continue;
+        if (!done.has(m)) { done.add(m); m.userData.cl0 = { e: m.emissive.getHex(), ei: m.emissiveIntensity, em: m.emissiveMap }; m.emissive.setHex(0xffffff); m.emissiveMap = m.map; m.needsUpdate = true; n++; }
+        if (m.emissiveMap !== m.map) m.emissiveMap = m.map;              // 몸을 갈아입으면(cast.js · corpse18) 그림만 따라간다
+        m.emissiveIntensity = on() ? CL.k : 0;
+      }
+    });
+    return n;
+  }
+  function roots(G) {
+    const r = [];
+    const B = G.body; if (B) r.push(B.main, B.drag);
+    for (const b of (G.game && G.game.bots) || []) r.push(b.model);
+    for (const b of (G.game && G.game.bodies) || []) r.push(b.model);
+    if (G.carry) r.push(G.carry.model);
+    if (G.monster && G.monster.model) r.push(G.monster.model);
+    return r.filter(Boolean);
+  }
+  setInterval(() => {
+    const G = window.__G; if (!G || !G.game) return;
+    try {
+      for (const r of roots(G)) CL.n += dress(r);
+      if (!CL.ready && G.game.bodies.length && G.game.bots.length && G.body) { CL.ready = true; console.log('[charlit] 사람 · 괴물 · 시체 자체 밝기 — 재질', CL.n); }
+    } catch (e) { if (!CL.err) { CL.err = true; console.warn('[charlit]', e); } }
+  }, 250);
 })();
 
 </script>
@@ -4233,7 +4278,7 @@ window.__NAVGRID = {"sig":"n4|corpse/samurai_arena_lite|8f27e783|-28.843|-25.541
   function checks(G) {
     const N = window.__nav;
     return {
-      props: G.game.bodies.length > 0 && G.game.bots.length > 0 && (!window.__cast || window.__cast.settled) && (!window.__burn || window.__burn.ready) && (!window.__corpse18 || window.__corpse18.settled) && (!window.__fire || window.__fire.ready) && (!window.__fx || window.__fx.ready) && (!window.__water || window.__water.ready) && (!window.__occ || window.__occ.ready) && (!window.__basefx || window.__basefx.ready) && (!window.__sway || window.__sway.ready),   // 소품이 다 놓이면 시체·봇이 생긴다 · 내 몸(cast.js)까지 입혀야 굽는다 · 불(burn.js) 셰이더·불빛까지
+      props: G.game.bodies.length > 0 && G.game.bots.length > 0 && (!window.__cast || window.__cast.settled) && (!window.__charlit || window.__charlit.ready) && (!window.__burn || window.__burn.ready) && (!window.__corpse18 || window.__corpse18.settled) && (!window.__fire || window.__fire.ready) && (!window.__fx || window.__fx.ready) && (!window.__water || window.__water.ready) && (!window.__occ || window.__occ.ready) && (!window.__basefx || window.__basefx.ready) && (!window.__sway || window.__sway.ready),   // 소품이 다 놓이면 시체·봇이 생긴다 · 내 몸(cast.js)까지 입혀야 굽는다 · 불(burn.js) 셰이더·불빛까지
       monster: !!G.monster.ready,
       nav: !!(N && (N.settled !== undefined ? N.settled : N.ready)),   // 격자 + 본진 바닥까지
       hud: !!document.getElementById('tz'),
@@ -6495,6 +6540,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'bothold', name: '봇도 줍는 동안 제자리 · 시작 때 멈칫(pickup.js — 10-12 사용자: 봇이 드는 동작이 끝나기 전에 들고 달린다 · 시작하자마자 달려 나간다 · 줍는 동작 80% 까지 제자리 · 판 시작 0.7~1.5초 뒤 움직임 · 혼자 하기)', def: true },
     { key: 'botparity', name: '봇 = 나 같은 조건(game.js · knock.js — 10-12 사용자: 모든 조건이 동일해야 · 속도 무작위 0.9~1.1배 → 1배 · 맞으면 나처럼 포물선으로 날아가 미끄러지고(6.5m+3.9m) 같은 시간 쓰러졌다 일어남(1.35+4.3초 · 예전 3.2초) · 일어난 뒤 주춤 · 피 토함 · 기침 · 하늘 피)', def: true },
     { key: 'camfollow', name: '카메라가 가는 쪽을 비춤(camera.js — 10-12 사용자: 달리는 동안 등 뒤로 1.2초에 걸쳐 돌아감 · 마우스로 돌린 뒤 2.5초 쉼)', def: false },
+    { key: 'charlit', name: '사람 · 괴물 · 시체 자체 밝기(charlit.js — 10-12 사용자: 장면 밝기와 상관없이 캐릭터 · 괴물 · 시체만 잘 보이는 톤 · 제 그림을 조금 스스로 빛나게 · 세기 __charlit.k)', def: true },
     { key: 'eyelight', name: '눈 앞 시야(eyelight.js — 10-12 사용자: 손전등 없이 내 앞이 자연스럽게 보이게 · 손전등이 꺼져 있을 때 그 빛을 아주 넓고 부드럽고 약한 차가운 밤빛으로 빌려 · 머리 높이에서 보는 쪽 땅을)', def: true },
     { key: 'zonefence', name: '본진 바닥 표시 — 바닥 모델링을 따라(zonefence.js — 10-12 사용자: 뿌옇다 · 바닥 모델링을 따라 자연스럽게 · 맵 바닥 · 바위 윗면 삼각형을 본진 네모로 잘라 덮는 데칼 · 칠한 것처럼(번짐 없음) · 떠 있던 판은 숨김)', def: true },
     { key: 'monsmooth', name: '괴물 막힘 떨림 없애기(montwitch.js — 10-12 사용자: 막힌 곳에서 부들부들 · 그릴 때만 몸 자리 · 방향을 부드럽게 따라가게 · 실제 움직임 · 판정은 그대로)', def: true },
