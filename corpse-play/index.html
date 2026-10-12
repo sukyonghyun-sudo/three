@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-478 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-479 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -321,7 +321,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-478'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-479'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3314,7 +3314,7 @@ var MeshoptDecoder = (function () {
         if (m.emissive.getHex() !== 0xffffff) m.emissive.setHex(0xffffff);    // 게임 charBright 가 emissive 를 덮어써도
         const cur = m.color.getHex(); if (cur !== m.userData.clSet) { m.userData.clBase = cur; }
         const L = c ? CL.lit : 1; m.color.setHex(m.userData.clBase); m.color.multiplyScalar(L); m.userData.clSet = m.color.getHex();
-        m.emissiveIntensity = c ? CL.k / expo() : 0;
+        m.emissiveIntensity = c ? CL.k * (CL.mul || 1) / expo() : 0;   // mul — 연출이 잠깐 곱하는 값(death.js) · k(조절창 값)는 건드리지 않는다
       }
     });
     return n;
@@ -4205,7 +4205,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     if (tau < t.tauH + CF.squashT && S.bp) freeParts();
     if (mesh.drop) { mesh.drop.material.emissiveIntensity = CF.bloodGlow; mesh.flesh.material.emissiveIntensity = CF.bloodGlow; }   // 피 빛(밤에도 빨갛게)
     const tbB = tau - t.tauH - CF.squashT; gen(); placeParts(u >= t.uH && tbB >= -0.02 * CF.spurt ? tbB : -1); placeBody(tbB >= 0 ? tbB : -1); overlays(u, t, hs);
-    if (window.__charlit && S.k0 != null) window.__charlit.k = S.k0 * CF.light;   // 사람이 밤에 묻히지 않게(연출 동안만)
+    if (window.__charlit) window.__charlit.mul = CF.light;   // 사람이 밤에 묻히지 않게(연출 동안만) — b479: 조절창 값(k)은 그대로 두고 곱하기만(예전엔 k 를 바꿔 「저장」 때 2.2배씩 쌓였다)
     { const R = G.renderer, kw = u >= t.uW ? lerp(1, CF.winBright, ss((u - t.uW) / 0.4)) : 1; expo0 = R.toneMappingExposure; R.toneMappingExposure = expo0 * CF.endBright * kw; }   // 결말 · 이긴 사람 장면 화면 밝기(그린 뒤 되돌림)
   }
   function restore(cam) {
@@ -4244,7 +4244,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     freeParts();
     restore(G && G.cam); overlaysOff();
     for (const k in mesh) mesh[k].count = 0;
-    if (S && S.k0 != null && window.__charlit) window.__charlit.k = S.k0;
+    if (window.__charlit) window.__charlit.mul = 1;
     for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = '';
     S = null;
   }
