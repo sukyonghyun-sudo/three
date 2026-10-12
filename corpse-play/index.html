@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-487 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-490 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -321,7 +321,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-487'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-490'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3358,7 +3358,45 @@ var MeshoptDecoder = (function () {
       G.scene.add(grp);
       console.log('[mapfix] P3 문 숨김 · 계단 입구 바위', grp.children.length, '· 바위 삼각형', keep.length / 3);
     } catch (e) { grp = false; console.warn('[mapfix] 바위', e); }
-    const o = on(); for (const m of gate) m.visible = !o; if (grp) grp.visible = o;
+    const o = on(); for (const m of gate) m.visible = !o; if (grp) grp.visible = o && !window.__staircut;
+  }, 300);
+})();
+/* b489 — 아래로 내려가는 돌계단 자리를 메운다(사용자 「바위로 막은 게 허접 · 그 부분을 날려 버리고 기본 테두리처럼」)
+   · 걷어 내기(b488)는 산비탈까지 구멍이 뚫려 하늘이 보였다 → 계단 골을 양옆 땅 높이를 이어 붙인 땅(같은 땅 재질)으로 덮는다 — 둘레 비탈과 똑같이 이어진다
+   · 계단 길(nav.js STAIR) 위 · 길찾기는 원래대로 막힘 · 입구 바위(gateblock)는 숨김 · 끄기: 시연실 연출 「계단 메우기」(staircut) */
+(() => {
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.staircut === false); };
+  const ST = { ax: 9.6, az: -9.6, bx: 15.5, bz: -21.5, hw: 1.5 };
+  let fill = null, tries = 0;
+  const iv = setInterval(() => {
+    const G = window.__G; if (!G || !G.map || !G.map.loaded || !G.map.root || !G.THREE) return;
+    if (fill === null) {
+      if (++tries > 200) { clearInterval(iv); return; }
+      try {
+        const T = G.THREE; let gm = null; G.map.root.traverse((o) => { if (o.isMesh && o.name === 'BaseShape_Ground_0') gm = o; }); if (!gm) return;
+        const ms = [...new Set([...(G.map.grounds || []), ...(G.map.solids || [])])], rc = new T.Raycaster(), o3 = new T.Vector3(), dn = new T.Vector3(0, -1, 0);
+        const hAt = (x, z) => { o3.set(x, 30, z); rc.set(o3, dn); rc.far = 80; const h = rc.intersectObjects(ms, false)[0]; return h ? h.point.y : NaN; };
+        const dx = ST.bx - ST.ax, dz = ST.bz - ST.az, Lg = Math.hypot(dx, dz), ux = dx / Lg, uz = dz / Lg, px = uz, pz = -ux, side = ST.hw + 0.7;
+        const NA = 40, NC = 8, pos = [], uv = [], idx = [];
+        let lastL = NaN, lastR = NaN;
+        for (let a = 0; a <= NA; a++) {
+          const t = -1.2 + (Lg + 2.2) * a / NA, cx = ST.ax + ux * t, cz = ST.az + uz * t;
+          let hl = hAt(cx + px * side, cz + pz * side), hr = hAt(cx - px * side, cz - pz * side);
+          if (!isFinite(hl)) hl = isFinite(hr) ? hr : lastL; if (!isFinite(hr)) hr = isFinite(hl) ? hl : lastR; lastL = hl; lastR = hr;
+          for (let c = 0; c <= NC; c++) {
+            const k = c / NC, w = (k * 2 - 1) * side, x = cx + px * w, z = cz + pz * w, y = hl + (hr - hl) * (1 - k) + 0.03 - 0.25 * Math.pow(Math.abs(k * 2 - 1), 6);   // 가장자리는 살짝 땅 속으로
+            pos.push(x, y, z); uv.push(x * 0.25, z * 0.25);
+          }
+        }
+        for (let a = 0; a < NA; a++) for (let c = 0; c < NC; c++) { const i0 = a * (NC + 1) + c, i1 = i0 + NC + 1; idx.push(i0, i1, i0 + 1, i0 + 1, i1, i1 + 1); }
+        const tmp = new T.PlaneGeometry(1, 1), BA = tmp.attributes.position.constructor, geo = new (Object.getPrototypeOf(tmp.constructor.prototype).constructor)();
+        geo.setAttribute('position', new BA(new Float32Array(pos), 3)); geo.setAttribute('uv', new BA(new Float32Array(uv), 2)); geo.setIndex(idx); geo.computeVertexNormals();
+        if (geo.attributes.normal.getY(Math.floor(geo.attributes.normal.count / 2)) < 0) { for (let i = 0; i < idx.length; i += 3) { const q = idx[i + 1]; idx[i + 1] = idx[i + 2]; idx[i + 2] = q; } geo.setIndex(idx); geo.computeVertexNormals(); }   // 위를 보게(뒷면은 안 그려진다)
+        fill = new T.Mesh(geo, gm.material); fill.name = 'stair-fill'; fill.receiveShadow = true; fill.material.side = fill.material.side; G.scene.add(fill);
+        console.log('[mapfix] 계단 메움 — 양옆 땅 높이로', NA * NC * 2, '삼각형');
+      } catch (e) { fill = false; console.warn('[mapfix] 계단 메움', e); }
+    }
+    const o = on(); if (fill) fill.visible = o; window.__staircut = o && !!fill;
   }, 300);
 })();
 
@@ -4282,10 +4320,10 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     if (mesh.drop) { mesh.drop.material.emissiveIntensity = CF.bloodGlow; mesh.flesh.material.emissiveIntensity = CF.bloodGlow; }   // 피 빛(밤에도 빨갛게)
     const tbB = tau - t.tauH - CF.squashT; gen(); placeParts(u >= t.uH && tbB >= -0.02 * CF.spurt ? tbB : -1); placeBody(tbB >= 0 ? tbB : -1); overlays(u, t, hs);
     if (window.__charlit) window.__charlit.mul = CF.light;   // 사람이 밤에 묻히지 않게(연출 동안만) — b479: 조절창 값(k)은 그대로 두고 곱하기만(예전엔 k 를 바꿔 「저장」 때 2.2배씩 쌓였다)
-    { const R = G.renderer, kw = u >= t.uW ? lerp(1, CF.winBright, ss((u - t.uW) / 0.4)) : 1; expo0 = R.toneMappingExposure; R.toneMappingExposure = expo0 * CF.endBright * kw; }   // 결말 · 이긴 사람 장면 화면 밝기(그린 뒤 되돌림)
+    // b488 — 화면 밝기는 매 프레임 흐름(tick)에서 — 노출은 마지막 화면 필터에서 쓰여서 장면 그리기 전후로 바꾸면 효과가 없었다
   }
   function restore(cam) {
-    if (expo0 !== null) { G.renderer.toneMappingExposure = expo0; expo0 = null; }
+
     for (let i = bsv.length - 2; i >= 0; i -= 2) bsv[i].quaternion.copy(bsv[i + 1]); bsv.length = 0;
     for (let i = msv.length - 3; i >= 0; i -= 3) msv[i][msv[i + 1]] = msv[i + 2]; msv.length = 0;
     for (let i = svA.length - 5; i >= 0; i -= 5) { const o = svA[i]; o.position.copy(svA[i + 1]); o.rotation.copy(svA[i + 2]); o.scale.copy(svA[i + 3]); o.visible = svA[i + 4]; o.updateMatrixWorld(true); } svA.length = 0;
@@ -4309,6 +4347,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     if (S.playing) { S.u += dt * S.rate * (CF.speed || 1); if (S.u >= e) { if (S.mode === 'studio' && S.loop) S.u = 0; else { S.u = e; if (S.mode === 'studio') S.playing = false; } } }
     if (S.playing) sounds(u0, S.u);
     if (S.mode === 'real') { const hide = S.u < e - 0.6; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = hide ? 'hidden' : ''; }   // 판 끝 카드는 연출이 끝날 때
+    { const tt = TL(), kw = S.u >= tt.uW ? lerp(1, CF.winBright, ss((S.u - tt.uW) / 0.4)) : 1, b = CF.endBright * kw, cv = G.renderer.domElement; cv.style.filter = Math.abs(b - 1) > 0.01 ? `brightness(${b.toFixed(3)})` : ''; S.expSet = true; }   // b489 — 화면(캔버스) 밝기 — 노출값은 톤매핑에 눌려 거의 안 밝아졌다   // 결말 · 이긴 사람 장면 화면 밝기(게임 값은 그대로 · 끝나면 되돌림)
     if (D.onTick) D.onTick();
   })();
   function begin(mode, winner) {
@@ -4321,6 +4360,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     restore(G && G.cam); overlaysOff();
     for (const k in mesh) mesh[k].count = 0;
     if (window.__charlit) window.__charlit.mul = 1;
+    if (S && S.expSet && G) G.renderer.domElement.style.filter = '';
     for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = '';
     S = null;
   }
@@ -7791,6 +7831,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'bigscream', name: '맞고 날아갈 때 큰 비명(scream.js — 10-12 사용자: 먹먹 대신 큰 비명 · 공포 비명 · 찢어지는 비명 · 길게 울부짖음 · 절규(젊은 남자) 중 하나를 크게 · 10-12 「구리다」 → b397 새 녹음 10(찢어지는 남자 비명 · 시연실 비명 「큰 비명」에서 하나씩 들어 보기) 로 바꿔 다시 켬)', def: true },
     { key: 'botreach', name: '봇 · 남이 시체 곁으로 가서 줍기(pickup.js — 10-12 사용자: 봇이 시체를 멀리서 끌어온다 · 그리기에서만 시체 곁으로 숙여 갔다가 일어서며 제자리로 · 걷기 · 자리는 게임 그대로)', def: true },
     { key: 'monspasm', name: '괴물 고개 경련(montwitch.js — 서 있으면 4~9초마다 고개가 확 꺾이며 0.35초 떨림 · 10-12 사용자 「괴물이 내 앞에서 부들부들」 → 기본 끔 · 천천히 꺾기 · 시선은 그대로)', def: false },
+    { key: 'staircut', name: 'P3 쪽 아래 계단 메우기(mapfix.js — 10-12 사용자 · 양옆 땅 높이로 덮음 · 켜면 막던 바위는 숨김)', def: true },
     { key: 'gateblock', name: 'P3 쪽 문 숨김 · 아래 계단 입구 바위로 막기(mapfix.js — 10-12 사용자)', def: true },
     { key: 'noredcircle', name: '가운데 붉은 원판 숨김(mapfix.js — 10-12 사용자: 맵 가운데 빨간 원 제거 · 보이기만 · 밑은 같은 돌 타일)', def: true },
     { key: 'basecam', name: '내 본진 가까이 카메라(camera.js — 10-12 사용자: 본진에 가까워질수록 천천히 줌아웃하며 본진을 보여 주게 · 13m 안부터 최대 40% 물러나고 9° 더 내려다봄 · 쫓기는 동안은 쉼)', def: true },
