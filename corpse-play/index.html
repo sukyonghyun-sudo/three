@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-431 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-432 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-431'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-432'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2957,7 +2957,9 @@ var MeshoptDecoder = (function () {
     for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) if (okc[j * nu + i]) { const d = (i - ci) ** 2 + (j - cj) ** 2; if (d < bd) { bd = d; seed = j * nu + i; } }
     const comp = [];
     if (seed >= 0) { const q = [seed], seen = new Uint8Array(nu * nv); seen[seed] = 1; while (q.length) { const c = q.pop(); comp.push(c); const i = c % nu, j = (c / nu) | 0; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = i + di, b = j + dj; if (a < 0 || b < 0 || a >= nu || b >= nv) continue; const n = b * nu + a; if (!seen[n] && okc[n]) { seen[n] = 1; q.push(n); } } } }
-    const dist = (c) => { const u = -W0 + (c % nu) * C, v = -D0 + ((c / nu) | 0) * C; return (u / W) ** 2 + ((v + 0.4) / D) ** 2; };
+    // b432 — 지형처럼 들쭉날쭉한 둥근 모양(사용자 「봇 본진은 대놓고 동그라미 · 지형에 맞춘 자연스러운 영역」) — 방향마다 반지름이 부드럽게 다르게(본진마다 다른 결)
+    const ph = [1.3 + z.team * 2.1, 0.4 + z.team * 1.7, 2.2 + z.team * 0.9], wob = (a) => 1 + 0.22 * Math.sin(2 * a + ph[0]) + 0.14 * Math.sin(3 * a + ph[1]) + 0.09 * Math.sin(5 * a + ph[2]);
+    const dist = (c) => { const u = -W0 + (c % nu) * C, v = -D0 + ((c / nu) | 0) * C, r = Math.hypot(u / W, (v + 0.4) / D); return r / wob(Math.atan2(v + 0.4, u)); };
     comp.sort((a, b) => dist(a) - dist(b));
     const want = Math.min(comp.length, ZF.target || comp.length); for (let k = 0; k < want; k++) keep[comp[k]] = 1;
     ZF.counts = ZF.counts || {}; ZF.counts[z.team] = comp.length;
@@ -6489,10 +6491,10 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'monspasm', name: '괴물 고개 경련(montwitch.js — 서 있으면 4~9초마다 고개가 확 꺾이며 0.35초 떨림 · 10-12 사용자 「괴물이 내 앞에서 부들부들」 → 기본 끔 · 천천히 꺾기 · 시선은 그대로)', def: false },
     { key: 'noredcircle', name: '가운데 붉은 원판 숨김(mapfix.js — 10-12 사용자: 맵 가운데 빨간 원 제거 · 보이기만 · 밑은 같은 돌 타일)', def: true },
     { key: 'basecam', name: '내 본진 가까이 카메라(camera.js — 10-12 사용자: 본진에 가까워질수록 천천히 줌아웃하며 본진을 보여 주게 · 13m 안부터 최대 40% 물러나고 9° 더 내려다봄 · 쫓기는 동안은 쉼)', def: true },
-    { key: 'bloodvomit', name: '일어난 뒤 피를 토함(knock.js — 10-12 사용자: 맞고 일어나 움츠릴 때 입에서 피 · 숙인 뒤 입에서 앞 · 아래로 피 줄기 · 두 번 왈칵 · 땅에 방울 자국 · 기침 소리)', def: true },
+    { key: 'bloodvomit', name: '일어난 뒤 피를 토함(knock.js — 10-12 사용자: 맞고 일어나 움츠릴 때 입에서 피 · 숙인 뒤 입에서 앞 · 아래로 피 줄기 · 두 번 왈칵 · 땅에 방울 자국 · 기침 소리)', def: false },
     { key: 'bothold', name: '봇도 줍는 동안 제자리 · 시작 때 멈칫(pickup.js — 10-12 사용자: 봇이 드는 동작이 끝나기 전에 들고 달린다 · 시작하자마자 달려 나간다 · 줍는 동작 80% 까지 제자리 · 판 시작 0.7~1.5초 뒤 움직임 · 혼자 하기)', def: true },
     { key: 'botparity', name: '봇 = 나 같은 조건(game.js · knock.js — 10-12 사용자: 모든 조건이 동일해야 · 속도 무작위 0.9~1.1배 → 1배 · 맞으면 나처럼 포물선으로 날아가 미끄러지고(6.5m+3.9m) 같은 시간 쓰러졌다 일어남(1.35+4.3초 · 예전 3.2초) · 일어난 뒤 주춤 · 피 토함 · 기침 · 하늘 피)', def: true },
-    { key: 'camfollow', name: '카메라가 가는 쪽을 비춤(camera.js — 10-12 사용자: 달리는 동안 등 뒤로 1.2초에 걸쳐 돌아감 · 마우스로 돌린 뒤 2.5초 쉼)', def: true },
+    { key: 'camfollow', name: '카메라가 가는 쪽을 비춤(camera.js — 10-12 사용자: 달리는 동안 등 뒤로 1.2초에 걸쳐 돌아감 · 마우스로 돌린 뒤 2.5초 쉼)', def: false },
     { key: 'eyelight', name: '눈 앞 시야(eyelight.js — 10-12 사용자: 손전등 없이 내 앞이 자연스럽게 보이게 · 손전등이 꺼져 있을 때 그 빛을 아주 넓고 부드럽고 약한 차가운 밤빛으로 빌려 · 머리 높이에서 보는 쪽 땅을)', def: true },
     { key: 'zonefence', name: '본진 바닥 표시 — 바닥 모델링을 따라(zonefence.js — 10-12 사용자: 뿌옇다 · 바닥 모델링을 따라 자연스럽게 · 맵 바닥 · 바위 윗면 삼각형을 본진 네모로 잘라 덮는 데칼 · 칠한 것처럼(번짐 없음) · 떠 있던 판은 숨김)', def: true },
     { key: 'monsmooth', name: '괴물 막힘 떨림 없애기(montwitch.js — 10-12 사용자: 막힌 곳에서 부들부들 · 그릴 때만 몸 자리 · 방향을 부드럽게 따라가게 · 실제 움직임 · 판정은 그대로)', def: true },
