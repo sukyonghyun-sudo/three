@@ -45,10 +45,10 @@ html.sa-m #minimap { width: 76px !important; height: 76px !important; top: 8px !
 #sam-restart { position: absolute; right: max(10px, env(safe-area-inset-right)); top: 10px; height: 40px; padding: 0 12px; }
 #sam-sheet { display: none; position: absolute; left: max(10px, env(safe-area-inset-left)); top: 56px; pointer-events: auto; background: rgba(8,8,7,.92); border: 1px solid rgba(214,210,194,.3); border-radius: 12px; padding: 8px; gap: 6px; flex-direction: column; max-height: calc(100% - 70px); overflow-y: auto; }
 #sam.open #sam-sheet { display: flex; }
-#sam-sheet button { height: 40px; padding: 0 16px; text-align: left; min-width: 150px; }
+#sam-sheet button { height: 34px; padding: 0 14px; text-align: left; min-width: 150px; white-space: nowrap; font-size: 12px !important; }
 #sam-sheet .sam-q { color: #b9b29c; font-size: 12px; padding: 4px 4px 2px; display: flex; flex-direction: column; gap: 5px; }
 #sam-sheet .sam-q span { display: flex; gap: 5px; }
-#sam-sheet .sam-q button { min-width: 0; flex: 1; text-align: center; padding: 0 10px; }
+#sam-sheet .sam-q button { min-width: 0; flex: 1; text-align: center; padding: 0 8px; }
 #sam-sheet .sam-q button.on { border-color: #e8d8a8; color: #e8d8a8; }
 #sam-rot { display: none; position: absolute; inset: 0; background: rgba(0,0,0,.92); color: #e8e2cf; align-items: center; justify-content: center; text-align: center; font: 600 18px var(--serif, serif); letter-spacing: .1em; pointer-events: auto; }
 @media (orientation: portrait) { html.sa-m.sa-play #sam-rot { display: flex; } }
@@ -94,7 +94,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
     });
     // 최적화 — 그리는 크기 · 그림자 · 무거운 효과(안개 · 재 · 날벌레 · 물방울)
     const Q = [{ res: 0.4, light: false }, { res: 0.55, light: false }, { res: 0.8, light: true }];
-    let qNow = 1; try { const v = +localStorage.getItem('sa_m_q'); if (v >= 0 && v <= 2) qNow = v; } catch (e) { /* */ }
+    let qNow = 1; try { const sv = localStorage.getItem('sa_m_q'), v = sv === null ? NaN : +sv; if (v >= 0 && v <= 2) qNow = v; } catch (e) { /* */ }
     const applyQ = () => {
       const G = window.__G; if (!G || !G.set) return false;
       const c = Q[qNow];
