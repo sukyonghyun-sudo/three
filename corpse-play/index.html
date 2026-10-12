@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-446 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-453 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-446'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-453'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1985,6 +1985,7 @@ var MeshoptDecoder = (function () {
 
   /* ── 본진 숫자판 · 도난 경고 ─────────────────────── */
   // 월드 좌표 → 화면. 화면 안이면 on, 밖이면 가장자리 자리와 방향을 준다
+  let vq = null;
   function project(x, y, z) {
     const cam = G.cam, W = innerWidth, H = innerHeight;
     vc.set(x, y, z).applyMatrix4(cam.matrixWorldInverse);
@@ -1992,8 +1993,11 @@ var MeshoptDecoder = (function () {
     vp.copy(vc).applyMatrix4(cam.projectionMatrix);
     if (!behind && Math.abs(vp.x) < 0.95 && Math.abs(vp.y) < 0.92)
       return { on: true, x: (vp.x + 1) * 0.5 * W, y: (1 - vp.y) * 0.5 * H };
-    let dx = vc.x, dy = -vc.y;
-    if (behind) dy = Math.abs(dy) + 0.4;           // 등 뒤는 화면 아래쪽으로
+    // b448 — 땅 위 방향으로(나침반처럼 위 = 카메라 앞 · 아래 = 뒤). 예전엔 카메라 높이 차(vc.y)를 써서 앞에 있는 낮은 본진이 「아래(뒤)」로 보였다
+    if (!vq) vq = vc.clone(); cam.getWorldDirection(vq); let fl = Math.hypot(vq.x, vq.z) || 1; const fx = vq.x / fl, fz = vq.z / fl;
+    const wx = x - cam.position.x, wz = z - cam.position.z;
+    let dx = wx * -fz + wz * fx, dy = -(wx * fx + wz * fz);
+    if (Math.abs(dx) + Math.abs(dy) < 1e-3) dy = 1;
     const L = 60, R = W - 60, T = 110, B = H - 80;  // 위쪽은 오른쪽 위 단추 아래로
     const cx = (L + R) / 2, cy = (T + B) / 2;
     const s = Math.min((R - cx) / Math.max(1e-4, Math.abs(dx)), (B - cy) / Math.max(1e-4, Math.abs(dy)));
@@ -2076,6 +2080,8 @@ var MeshoptDecoder = (function () {
     }
     want.water = wC;
   }
+  // b448 — 불붙었을 때는 다른 표지 · 글은 다 걷고 「물에 뛰어들어라」만(사용자 2026-10-12)
+  (() => { const st = document.createElement('style'); st.textContent = 'body.tz-burn #prompt,body.tz-burn #arrows,body.tz-burn #alerts,body.tz-burn #alertpulse,body.tz-burn #monstat,body.tz-burn #score,body.tz-burn #btn-view,body.tz-burn #hud .hint,body.tz-burn #sr-stamp{visibility:hidden!important}'; document.head.appendChild(st); })();
 
   /* ── 화면 표지(HUD) — 본진 표지 셋 · 내 본진 길잡이 · 도난 경고 ─────────────────────
      에마처럼 캔버스에 그린 그림(붓으로 칠한 화살촉 · 인장을 찍은 나무/옻칠 표찰)을 화면 좌표 판에 입혀
@@ -2099,12 +2105,12 @@ var MeshoptDecoder = (function () {
   // 붓으로 칠한 화살촉 — 오른쪽(+x)을 가리킨다. 캔버스 가운데가 기준점(화살은 가운데를 축으로 돈다)
   function arrowArt(color, seed) {
     const S = AR, k = S / 46, [c, g] = hcanvas(S, S), R = rnd(seed), m = S / 2;
-    const shape = () => { g.beginPath(); g.moveTo(m + 17 * k, m); g.lineTo(m - 13 * k, m - 14 * k); g.lineTo(m - 5 * k, m); g.lineTo(m - 13 * k, m + 14 * k); g.closePath(); };
+    const shape = () => { g.beginPath(); g.moveTo(m + 20 * k, m); g.lineTo(m - 16 * k, m - 11 * k); g.lineTo(m - 6 * k, m); g.lineTo(m - 16 * k, m + 11 * k); g.closePath(); };   // b450 — 길고 날렵하게(넓적한 삼각형이 ▽ 처럼 보여 방향이 헷갈렸다)
     g.save(); g.shadowColor = color; g.shadowBlur = 14 * k * HDPR; g.fillStyle = color;   // 번지는 빛(두 번 — 필터에 눌려도 남게)
     shape(); g.fill(); shape(); g.fill(); g.restore();
     g.save(); shape(); g.clip();
-    const body = g.createLinearGradient(m - 13 * k, 0, m + 17 * k, 0);   // 뒤는 제 색, 촉 끝은 밝게
-    body.addColorStop(0, color); body.addColorStop(1, tint(color, 0.55));
+    const body = g.createLinearGradient(m - 16 * k, 0, m + 20 * k, 0);   // 뒤는 제 색, 촉 끝은 밝게
+    body.addColorStop(0, color); body.addColorStop(0.55, color); body.addColorStop(1, tint(color, 0.8));
     g.fillStyle = body; g.fillRect(0, 0, S, S);
     for (let i = 0; i < 26; i++) {                             // 붓결 — 뒤에서 촉 끝으로 모이는 결(옅게)
       const y = m + (R() - 0.5) * 28 * k;
@@ -2323,7 +2329,8 @@ var MeshoptDecoder = (function () {
   window.__hudHuntDemo = () => { hDemo = performance.now() + 4000; };
   function hudDraw(target) {
     if (!G || !G.started || !el) return;
-    const w = want.warn, hm = want.home, bs = want.bases, wt = want.water;
+    const wt = want.water, solo = !!wt && !(window.__fx && window.__fx.on && window.__fx.on.burnonly === false), w = solo ? null : want.warn, hm = solo ? null : want.home, bs = solo ? [] : want.bases;
+    document.body.classList.toggle('tz-burn', solo);
     if (!w && !hm && !bs.length && !wt) return;
     if (!HUD.scene) hudSetup();
     const W = innerWidth, H = innerHeight;
@@ -2463,6 +2470,7 @@ var MeshoptDecoder = (function () {
   };
 
   window.__onRestart = () => { prev = []; stolen.clear(); baseSeen.fill(-1); roundT0 = performance.now(); showStart(); };
+  window.__tensionHUD = () => HUD;
   window.__tension = {
     // 같이 하기 — 내 자리 색·이름으로 에마·표지·화살을 다시 그린다(mp.js 가 판마다 부른다)
     refresh: () => {
@@ -3379,6 +3387,11 @@ var MeshoptDecoder = (function () {
   const ss = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
   const now = () => performance.now() / 1000;
   const INTRO = 10;
+  // b450 졌을 때 시간표(사용자 「너무 빨라서 순식간에 지나가」) — 메시지 MSG 초 → 카메라가 얼굴 앞으로(GO) → RISE_T 초 동안 RISE m 끌려 올라가며 몸부림 · 비명 → PRE 초 부풀며 경련 → 펑 → CARD 초 뒤 카드
+  const L = { MSG: 2.4, GO: 1.3, RISE_T: 8.0, PRE: 1.1, CARD: 3.4, RISE: 5.0 };
+  const CF = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('corpse_cinema_v1') || '{}'); } catch (e) { /* */ } return Object.assign({ speed: 1, close: 0.8, writhe: 1.25 }, o); })();
+  const saveCF = () => { try { localStorage.setItem('corpse_cinema_v1', JSON.stringify(CF)); } catch (e) { /* */ } };
+  CN.cf = CF;
   let T = null, intro = null, lose = null, sv = null, held = null, flash = null, title = null;
   function el(css, html) { const d = document.createElement('div'); d.style.cssText = css; d.innerHTML = html || ''; (document.getElementById('game-root') || document.body).appendChild(d); return d; }
   function startIntro(G) {
@@ -3395,25 +3408,66 @@ var MeshoptDecoder = (function () {
     try { const S = G.map && G.map.solids; if (!S || !S.length) return (intro.fd = 2.4); if (!rcC) rcC = new T.Raycaster(); const o = new T.Vector3(h.x, h.y + 1.5, h.z), d = new T.Vector3(fx, 0, fz); rcC.set(o, d); rcC.far = 2.6; const hit = rcC.intersectObjects(S, false)[0]; intro.fd = hit ? Math.max(0.9, hit.distance - 0.35) : 2.4; } catch (e) { intro.fd = 2.4; }
     return intro.fd;
   }
-  function startLose(G) {
-    const h = G.hero.position;
-    lose = { t0: now(), x: h.x, y: h.y, z: h.z, boom: false };
-    try { const S = window.__scream; if (S && S.bigPick && S.say) { const id = S.bigPick(); const B = G.body, hm = []; for (const m of [B.main, B.drag]) m && m.traverse((o) => { if (o.isSkinnedMesh) hm.push(o); }); if (id) S.say(id, h, hm, { vol: 1.0, rate: 1.0, expr: 'scream' }); } } catch (e) { /* */ }
+  // 끝나면 세상을 멈춘다 — 괴물 · 봇 동작 · 괴물 불(사용자 「뒤에서는 게임은 멈춰야 · 끝나도 계속 돌아간다」)
+  let frozen = null;
+  function freeze(G, on) {
+    const C = G.monster, mx = [C && C.mixer, ...((G.game && G.game.bots) || []).map((b) => b.mixer)].filter(Boolean);
+    if (on && !frozen) { frozen = { peace: G.cfg.monPeace, auto: window.__fire ? window.__fire.auto : undefined, ts: mx.map((m) => m.timeScale), mx }; G.cfg.monPeace = true; if (window.__fire) { window.__fire.auto = false; if (window.__fire.reset) window.__fire.reset(); } for (const m of mx) { m.__tsv = m.timeScale; Object.defineProperty(m, 'timeScale', { configurable: true, get: () => 0, set: (v) => { m.__tsv = v; } }); } if (C) { C.state = 'rest'; C.restT = 999; } }
+    else if (!on && frozen) { G.cfg.monPeace = frozen.peace || false; if (window.__fire && frozen.auto !== undefined) window.__fire.auto = frozen.auto; frozen.mx.forEach((m, i) => { const v = m.__tsv; delete m.timeScale; m.timeScale = v !== undefined ? v : frozen.ts[i]; }); if (C) C.restT = 0; frozen = null; }
   }
+  CN.freeze = freeze;
+  // 화면 속 몸(보이는 쪽 skinned mesh)
+  function heroSm(G) {
+    const B = G.body; let sm = null;
+    for (const m of [B.main, B.drag]) { if (sm || !m) continue; let vis = true; for (let o = m; o; o = o.parent) if (!o.visible) vis = false; if (vis) m.traverse((o) => { if (o.isSkinnedMesh && !sm) sm = o; }); }
+    return sm;
+  }
+  function scream(G, vol) {
+    try { const S = window.__scream; if (!S || !S.bigPick || !S.say) return; const id = S.bigPick(); const sm = heroSm(G); if (id) S.say(id, G.hero.position, sm ? [sm] : [], { vol: vol || 1, rate: 0.95 + Math.random() * 0.12, expr: 'scream' }); } catch (e) { /* */ }
+  }
+  function startLose(G, demo) {
+    const h = G.hero.position;
+    lose = { t0: now(), x: h.x, y: h.y, z: h.z, yaw: G.hero.rotation.y, boom: false, demo: !!demo, nextScr: L.MSG + 0.6, dmax: 6, dmin: 2.6, k0: window.__charlit ? window.__charlit.k : null };
+    // 카메라 길이 막히지 않는 쪽(정면 → 45° 씩) · 터진 뒤 물러나는 길(6m)도 · 그쪽을 보게 몸을 돌린다
+    try {
+      const S = G.map && G.map.solids;
+      if (S && S.length) {
+        if (!rcC) rcC = new T.Raycaster();
+        const o = new T.Vector3(), d = new T.Vector3();
+        const clr = (y, dx, dy, dz, far) => { o.set(h.x, y, h.z); d.set(dx, dy, dz).normalize(); rcC.set(o, d); rcC.far = far; const k = rcC.intersectObjects(S, false)[0]; return k ? k.distance : far; };
+        let best = null;
+        for (const a of [0, 0.79, -0.79, 1.57, -1.57, 2.36, -2.36, 3.14]) {
+          const yw = lose.yaw + a, fx = Math.sin(yw), fz = Math.cos(yw);
+          const c1 = Math.min(clr(h.y + 1.4, fx, 0, fz, 3.0), clr(h.y + 1.4 + L.RISE * 0.5, fx, 0, fz, 3.0), clr(h.y + L.RISE + 1.4, fx, 0, fz, 3.0));
+          const c2 = clr(h.y + L.RISE + 1.3, fx * 6, -0.8, fz * 6, 6.2);
+          const sc = Math.min(c1, 2.9) * 2 + Math.min(c2, 6.2) - Math.abs(a) * 0.3;
+          if (!best || sc > best.sc) best = { sc, yw, c1, c2 };
+          if (c1 >= 2.95 && c2 >= 6.1) break;
+        }
+        lose.yaw = best.yw; lose.dmax = Math.max(1.8, Math.min(6, best.c2 - 0.5)); lose.dmin = Math.max(1.0, Math.min(2.6, best.c1 - 0.3));
+      }
+    } catch (e) { /* */ }
+  }
+  function goreBack() { if (lose && lose.gm) { for (const [m, e, i] of lose.gm) { m.emissive.setHex(e); m.emissiveIntensity = i; } lose.gm = null; } }
   function boom(G) {
     lose.boom = true; lose.boomT = now();
-    const V = G.cam.position.constructor, gore = G.gore || (G.mpApi && G.mpApi.gore), p = new V(lose.x, lose.y + 6 + 1.1, lose.z);
-    if (gore && gore.drop) for (let i = 0; i < 420; i++) { const a = Math.random() * Math.PI * 2, e = Math.random() * 2 - 0.6, sp = 3 + Math.random() * 9; gore.drop(p.clone(), new V(Math.cos(a) * sp * Math.cos(e), Math.sin(e) * sp + 2, Math.sin(a) * sp * Math.cos(e))); }
-    if (window.__smear) for (let i = 0; i < 26; i++) { const a = Math.random() * Math.PI * 2, r = 0.5 + Math.random() * 5.5, x = lose.x + Math.cos(a) * r, z = lose.z + Math.sin(a) * r; window.__smear(x, z, x + Math.cos(a) * (0.3 + Math.random() * 0.8), z + Math.sin(a) * (0.3 + Math.random() * 0.8), 0.35 + Math.random() * 0.5, 60); }
-    if (window.__fx && window.__fx.shake) window.__fx.shake(0.5, 1.2, 14);
-    try { const R = window.__rsfx; if (R && R.play) R.play('sys_fire_ign', { pos: { x: lose.x, y: lose.y + 6, z: lose.z }, range: 60, vol: 1.0, rate: 0.6 }); } catch (e) { /* */ }
+    try { const gr = G.gore || (G.mpApi && G.mpApi.gore); if (gr && gr.trigger) gr.trigger(); } catch (e) { /* */ }   // 게임의 터짐(머리 · 살점 조각 · 피)
+    const V = G.cam.position.constructor, gore = G.gore || (G.mpApi && G.mpApi.gore), p = new V(lose.x, lose.y + L.RISE + 1.1, lose.z);
+    if (gore && gore.drop) for (let i = 0; i < 520; i++) { const a = Math.random() * Math.PI * 2, e = Math.random() * 2 - 0.6, sp = 3 + Math.random() * 10; gore.drop(p.clone(), new V(Math.cos(a) * sp * Math.cos(e), Math.sin(e) * sp + 2, Math.sin(a) * sp * Math.cos(e))); }
+    // 두 번째 물결 — 0.25초 뒤 늦게 떨어지는 덩어리 피
+    if (gore && gore.drop) setTimeout(() => { for (let i = 0; i < 160; i++) { const a = Math.random() * Math.PI * 2, sp = 1 + Math.random() * 4; gore.drop(p.clone(), new V(Math.cos(a) * sp, Math.random() * 3, Math.sin(a) * sp)); } }, 250);
+    // 밤이라 피 · 살점이 검게만 보였다 — 연출 동안만 피 재질을 검붉게 스스로 빛나게(색만 · 새 셰이더 없음 · 다시 하면 되돌림)
+    try { if (gore && gore.warmMats && !lose.gm) { lose.gm = gore.warmMats().filter((m) => m && m.emissive).map((m) => [m, m.emissive.getHex(), m.emissiveIntensity]); for (const [m] of lose.gm) { m.emissive.setHex(0x7a0a10); m.emissiveIntensity = 1.0; } } } catch (e) { /* */ }
+    if (window.__smear) for (let i = 0; i < 34; i++) { const a = Math.random() * Math.PI * 2, r = 0.5 + Math.random() * 6, x = lose.x + Math.cos(a) * r, z = lose.z + Math.sin(a) * r; window.__smear(x, z, x + Math.cos(a) * (0.3 + Math.random() * 0.9), z + Math.sin(a) * (0.3 + Math.random() * 0.9), 0.35 + Math.random() * 0.55, 60); }
+    if (window.__fx && window.__fx.shake) window.__fx.shake(0.7, 1.6, 16);
+    try { const R = window.__rsfx; if (R && R.play) { R.play('sys_fire_ign', { pos: { x: lose.x, y: lose.y + L.RISE, z: lose.z }, range: 60, vol: 1.0, rate: 0.55 }); if (R.muffle) setTimeout(() => R.muffle(), 60); } } catch (e) { /* */ }
     if (!flash) flash = el('position:absolute;inset:0;pointer-events:none;z-index:39;background:radial-gradient(ellipse at center,rgba(150,0,0,.55),rgba(60,0,0,.85));opacity:0;transition:opacity 1.6s');
-    flash.style.transition = 'none'; flash.style.opacity = '1'; requestAnimationFrame(() => { flash.style.transition = 'opacity 2.4s'; flash.style.opacity = '0.35'; });
+    flash.style.transition = 'none'; flash.style.opacity = '0.7'; requestAnimationFrame(() => { flash.style.transition = 'opacity 1.2s'; flash.style.opacity = '0.12'; });   // 조각 · 피가 보이게 옅게
   }
   (function hook() {
     const G = window.__G; if (!G || !G.scene || !G.THREE || !G.cam) { setTimeout(hook, 400); return; }
     T = G.THREE;
-    const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender, Q = G.scene.quaternion.clone(), V1 = new T.Vector3(), V2 = new T.Vector3();
+    const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender, Q = G.scene.quaternion.clone(), V1 = new T.Vector3(), V2 = new T.Vector3(), V3 = new T.Vector3(), V4 = new T.Vector3();
     Sc.onBeforeRender = function (r, s, cam, ...a) {
       if (pb) pb.call(this, r, s, cam, ...a);
       try {
@@ -3438,23 +3492,51 @@ var MeshoptDecoder = (function () {
             if (title) title.style.opacity = u > 7.4 && u < 9.6 ? '1' : '0';
           }
         }
-        if (lose) { const ec = document.getElementById('sr-end'), ef = document.getElementById('sr-endfade'), hide = !lose.boom || t - lose.boomT < 1.4; for (const x of [ec, ef]) if (x) x.style.visibility = hide ? 'hidden' : ''; }   // 실패 카드는 터진 뒤 1.4초에
+        if (lose) { const ec = document.getElementById('sr-end'), ef = document.getElementById('sr-endfade'), uu = (t - lose.t0) * CF.speed, hide = uu > L.MSG && (!lose.boom || (t - lose.boomT) * CF.speed < L.CARD); for (const x of [ec, ef]) if (x) x.style.visibility = hide ? 'hidden' : ''; }   // 실패 카드 — 먼저 보이고(메시지) · 연출 동안 숨고 · 터진 뒤 다시
         if (lose && cam === G.cam) {
-          const u = t - lose.t0, rise = ss(u / 2.4) * 6, hero = G.hero;
-          held = { p: hero.position.clone(), vis: hero.visible };
-          hero.position.set(lose.x + Math.sin(u * 13) * 0.05 * Math.min(1, u), lose.y + rise, lose.z + Math.cos(u * 11) * 0.05 * Math.min(1, u)); hero.rotation.z = Math.sin(u * 9) * 0.25 * Math.min(1, u);
-          if (u >= 2.4 && !lose.boom) boom(G);
-          if (lose.boom) hero.visible = false;
-          hero.updateMatrixWorld(true);
+          // b450 — 메시지 → 얼굴 앞으로 → 끌려 올라가며 불붙은 듯 몸부림 · 비명 · 아주 가까이 → 부풀며 경련 → 펑 → 물러나 피비
+          const u = (t - lose.t0) * CF.speed, r0 = L.MSG, r1 = r0 + L.RISE_T, r2 = r1 + L.PRE, hero = G.hero;
+          if (u >= r0) {
+            const kr = Math.min(1, (u - r0) / L.RISE_T), lift = ss(Math.min(1, (u - r0) / 0.5)) * 0.35 + (L.RISE - 0.35) * (kr < 0.5 ? 2 * kr * kr : 1 - Math.pow(-2 * kr + 2, 2) / 2);
+            const pre = u > r1 ? Math.min(1, (u - r1) / L.PRE) : 0, wob = Math.min(1, (u - r0) * 1.5) * (1 + 1.6 * pre);
+            held = { p: hero.position.clone(), vis: hero.visible, q: hero.quaternion.clone(), s: hero.scale.clone() };
+            hero.position.set(lose.x + Math.sin(u * 17) * 0.05 * wob, lose.y + lift + Math.sin(u * 23) * 0.04 * wob, lose.z + Math.cos(u * 13) * 0.05 * wob);
+            hero.rotation.set(Math.sin(u * 5.3) * 0.12 * wob, lose.yaw + Math.sin(u * 1.9) * 0.18 * Math.min(1, wob), Math.sin(u * 7.1) * 0.15 * wob);
+            if (pre > 0) { const sw = 1 + 0.12 * pre + 0.03 * Math.sin(u * 60) * pre; hero.scale.set(held.s.x * sw, held.s.y * (1 + 0.06 * pre), held.s.z * sw); }   // 터지기 직전 부풀며 떤다
+            hero.updateMatrixWorld(true);
+            if (u >= r2 && !lose.boom) boom(G);   // 떠 있는 자리에서(게임 터짐 조각이 땅이 아니라 공중에서 튄다)
+            let head = null;
+            if (!lose.boom) { const W = Math.min(1, (u - r0) * 1.2) * CF.writhe * (1 + 0.5 * pre), sm = heroSm(G), Bn = window.__burn; if (Bn && Bn.writhe && sm) { const rr = Bn.writhe(sm, (u - r0) * (1.5 + 2.5 * pre), W, true); if (rr && rr.Head) head = rr.Head.getWorldPosition(V2).clone(); } }
+            else hero.visible = false;
+            if (head) lose.head = lose.head ? lose.head.lerp(head, 0.35) : head;
+            if (window.__charlit && lose.k0 != null) window.__charlit.k = lose.k0 * (lose.boom ? 1 : 1.7);   // 얼굴이 어둠에 묻히지 않게(연출 동안만)
+          }
           sv = sv || { p: cam.position.clone(), q: cam.quaternion.clone() };
-          V1.set(lose.x + 5, lose.y + 1.2, lose.z + 5); V2.set(lose.x, lose.y + Math.min(rise, 6) + 1, lose.z);
-          cam.position.copy(V1); cam.lookAt(V2); cam.updateMatrixWorld(true);
+          if (u >= r0) {
+            const fx3 = Math.sin(lose.yaw), fz3 = Math.cos(lose.yaw), H = lose.head || V2.set(lose.x, lose.y + 1.5, lose.z).clone();
+            if (!lose.boom) {
+              const kr = Math.min(1, (u - r0 - L.GO) / (L.RISE_T - L.GO)), pre = u > r1 ? Math.min(1, (u - r1) / L.PRE) : 0;
+              const dd = Math.min(lose.dmin, 2.6), d = dd - (dd - CF.close) * ss(kr) + 0.45 * ss(pre), orb = 0.32 * Math.sin((u - r0) * 0.45) * (1 - pre);
+              const ox = Math.sin(lose.yaw + orb), oz = Math.cos(lose.yaw + orb), sh = (0.006 + 0.02 * kr + 0.05 * pre);
+              V1.set(H.x + ox * d + Math.sin(u * 31) * sh, H.y - 0.08 - 0.1 * kr + Math.sin(u * 27) * sh, H.z + oz * d + Math.cos(u * 29) * sh);
+              const g = ss(Math.min(1, (u - r0) / L.GO));   // 게임 카메라에서 얼굴 앞으로 이어짐
+              cam.position.copy(sv.p).lerp(V1, g);
+              V3.copy(sv.p).add(V4.set(0, 0, -1).applyQuaternion(sv.q).multiplyScalar(5)).lerp(H, g);
+              cam.lookAt(V3);
+            } else {
+              const tb = (t - lose.boomT) * CF.speed, bb = ss(Math.min(1, tb / 2.6)), dn = ss((tb - 2.0) / 2.6), d = CF.close + 1.2 + (lose.dmax - CF.close - 1.2) * bb, by = lose.y + L.RISE + 1.2;
+              // 터진 자리를 보며 물러남 → 1.2초부터 떨어지는 피 · 조각을 따라 땅으로 고개를 내림
+              V1.set(lose.x + fx3 * d, by + 0.6 * bb, lose.z + fz3 * d); V3.set(lose.x, by - (L.RISE + 1.2) * dn, lose.z);
+              cam.position.copy(V1); cam.lookAt(V3);
+            }
+            cam.updateMatrixWorld(true);
+          }
         }
       } catch (e) { if (!hook.err) { hook.err = true; console.warn('[cinema]', e); } }
     };
     Sc.onAfterRender = function (r, s, cam, ...a) {
       if (sv && cam === G.cam) { cam.position.copy(sv.p); cam.quaternion.copy(sv.q); cam.updateMatrixWorld(true); sv = null; }
-      if (held) { G.hero.position.copy(held.p); G.hero.visible = held.vis; G.hero.rotation.z = 0; G.hero.updateMatrixWorld(true); held = null; }
+      if (held) { G.hero.position.copy(held.p); G.hero.visible = held.vis; if (held.q) G.hero.quaternion.copy(held.q); if (held.s) G.hero.scale.copy(held.s); G.hero.updateMatrixWorld(true); held = null; }
       if (pa) pa.call(this, r, s, cam, ...a);
     };
   })();
@@ -3464,12 +3546,53 @@ var MeshoptDecoder = (function () {
     const G = window.__G; if (!G || !G.game) return;
     const st = !!G.started, over = !!G.game.over;
     if (st && !wasStart && !mpOn() && fx('intro')) startIntro(G);
-    if (over && !wasOver && G.game.winner >= 0 && G.game.winner !== 0 && fx('loseboom')) startLose(G);
-    if (!over && wasOver) { lose = null; if (flash) flash.style.opacity = '0'; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = ''; }
+    if (over && !wasOver) { if (!mpOn()) freeze(G, true); if (G.game.winner >= 0 && G.game.winner !== 0 && fx('loseboom')) { startLose(G); scream(G, 0.9); } }
+    if (!over && wasOver) freeze(G, false);
+    if (lose && !lose.boom && (now() - lose.t0) * CF.speed > lose.nextScr) { lose.nextScr += 1.3 + Math.random() * 0.6; scream(G, 1.0); }
+    if (lose && lose.boom && lose.k0 != null && window.__charlit) { window.__charlit.k = lose.k0; lose.k0 = null; }
+    if (!over && wasOver) { goreBack(); if (lose && lose.k0 != null && window.__charlit) window.__charlit.k = lose.k0; lose = null; if (flash) flash.style.opacity = '0'; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = ''; }
     wasStart = st; wasOver = over;
     if (intro && intro.hold) { const h = G.hero.position; h.x = intro.hold[0]; h.z = intro.hold[2]; }
   }, 16);
-  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); lose = null; if (flash) flash.style.opacity = '0'; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = ''; wasStart = false; })(window.__onRestart);
+  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); goreBack(); if (lose && lose.k0 != null && window.__charlit) window.__charlit.k = lose.k0; lose = null; const G0 = window.__G; if (G0) freeze(G0, false); if (flash) flash.style.opacity = '0'; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = ''; wasStart = false; })(window.__onRestart);
+  /* 연출 패널(b450 · 사용자 「연출을 볼 수 있는 패널도 만들어 줘」) — 오른쪽 아래 「연출」 단추 · K
+     시작 연출 보기 · 졌을 때 연출 보기(판이 끝난다 — R 로 다시) · 빠르기 · 클로즈업 거리 · 몸부림 세기 · 켜고 끄기(시연실 연출과 같은 값)
+     값은 이 브라우저에만(localStorage) — 모두의 기본값 「저장」과는 따로 */
+  (function panel() {
+    if (!document.body) { setTimeout(panel, 300); return; }
+    const st = document.createElement('style');
+    st.textContent = `#cin-btn{position:fixed;right:156px;bottom:14px;z-index:60;padding:6px 12px;background:rgba(10,8,6,.82);color:#e9e1d0;border:1px solid #5a4a3a;font:700 12px "UIF","Noto Serif KR",serif;letter-spacing:.2em;cursor:pointer}
+body:not(.tz-live) #cin-btn{visibility:hidden}
+#cin-p{position:fixed;right:14px;bottom:52px;z-index:61;width:300px;padding:14px 16px;background:rgba(12,9,7,.94);color:#e9e1d0;border:1px solid #6b2a20;font:13px "UIF","Noto Serif KR",serif;display:none}
+#cin-p.on{display:block} #cin-p h4{margin:0 0 10px;font-size:14px;letter-spacing:.3em;color:#d23a26}
+#cin-p button.b{display:block;width:100%;margin:6px 0;padding:8px;background:#2a0f0b;color:#f2e6d6;border:1px solid #8a2a1c;font:700 13px inherit;cursor:pointer;letter-spacing:.1em}
+#cin-p label{display:flex;justify-content:space-between;align-items:center;margin:8px 0 2px;font-size:12px;color:#c9bfae} #cin-p input[type=range]{width:100%}
+#cin-p .n{font-size:11px;color:#8d877a;margin-top:8px;line-height:1.5}`;
+    document.head.appendChild(st);
+    const btn = document.createElement('button'); btn.id = 'cin-btn'; btn.type = 'button'; btn.textContent = '연출';
+    const p = document.createElement('div'); p.id = 'cin-p';
+    const row = (k, name, mn, mx, stp, fmt) => `<label>${name}<b id="cin-v-${k}">${fmt(CF[k])}</b></label><input type="range" min="${mn}" max="${mx}" step="${stp}" value="${CF[k]}" data-k="${k}">`;
+    const F = { speed: (v) => `${(+v).toFixed(2)}×`, close: (v) => `${(+v).toFixed(2)}m`, writhe: (v) => `${Math.round(v * 100)}%` };
+    p.innerHTML = `<h4>演出 · 연출</h4>
+<button class="b" data-a="intro">▶ 시작 연출 보기</button>
+<button class="b" data-a="lose">▶ 졌을 때 연출 보기</button>
+${row('speed', '빠르기(작을수록 느리게)', 0.4, 1.6, 0.05, F.speed)}${row('close', '얼굴 클로즈업 거리', 0.45, 2.0, 0.05, F.close)}${row('writhe', '몸부림 세기', 0.3, 2.0, 0.05, F.writhe)}
+<label><span>시작 연출 켜기</span><input type="checkbox" data-f="intro"></label><label><span>졌을 때 연출 켜기</span><input type="checkbox" data-f="loseboom"></label>
+<div class="n">졌을 때 연출을 보면 이번 판이 끝난다 — R 로 다시 · 값은 이 브라우저에만 남는다 · K 로 열고 닫기</div>`;
+    document.body.appendChild(btn); document.body.appendChild(p);
+    const sync = () => { const X = window.__fx; for (const c of p.querySelectorAll('input[data-f]')) c.checked = !(X && X.on && X.on[c.dataset.f] === false); };
+    const tog = () => { p.classList.toggle('on'); sync(); };
+    btn.onclick = tog;
+    addEventListener('keydown', (e) => { if (e.code === 'KeyK' && !e.repeat && !/INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) tog(); });
+    p.addEventListener('input', (e) => { const k = e.target.dataset.k; if (!k) return; CF[k] = +e.target.value; document.getElementById('cin-v-' + k).textContent = F[k](CF[k]); saveCF(); });
+    p.addEventListener('change', (e) => { const f = e.target.dataset.f; if (!f) return; const X = window.__fx; if (X && X.on) X.on[f] = e.target.checked; });
+    p.addEventListener('click', (e) => {
+      const a = e.target.dataset && e.target.dataset.a, G = window.__G; if (!a || !G || !G.game) return;
+      p.classList.remove('on');
+      if (a === 'intro') { if (!lose) startIntro(G); }
+      if (a === 'lose' && !G.game.over && !mpOn()) { G.game.winner = 1; G.game.over = true; }   // 실제로 진 것과 똑같이(세상 멈춤 · 카드 · 연출)
+    });
+  })();
 })();
 
 </script>
@@ -5996,6 +6119,40 @@ void main(){
     for (let i = savedP.length - 4; i >= 0; i -= 4) savedP[i].position.set(savedP[i + 1], savedP[i + 2], savedP[i + 3]);
     saved.length = 0; savedP.length = 0;
   }
+  // 졌을 때 연출(cinema.js)이 빌려 쓴다 — 불붙었을 때와 같은 몸부림 · air 면 엉덩이를 내리지 않고 다리를 허공에 버둥 · 되돌림은 이 파일 onAfterRender(restoreWrithe)
+  B.writhe = (sm, t, W, air) => {
+    if (!sm || !sm.skeleton) return;
+    const r = rig(sm);
+    if (!qa) { const T = window.__G.THREE; qa = sm.skeleton.bones[0].quaternion.clone(); AX = new T.Vector3(1, 0, 0); AY = new T.Vector3(0, 1, 0); AZ = new T.Vector3(0, 0, 1); VH = new T.Vector3(); }
+    const s = (f, p) => Math.sin(t * f * 6.2832 + (p || 0));
+    const jolt = (f, p) => Math.max(0, Math.sin(t * f * 6.2832 + p)) ** 12;
+    const j1 = jolt(1.13, 0.4), j2 = jolt(0.71, 2.1), tr = 0.05 * s(6.3) + 0.03 * s(9.7, 1);
+    if (air) {   // 허공 — 허벅지를 번갈아 차올리고 무릎을 굽혔다 편다
+      for (const [L, ph] of [['Left', 0], ['Right', 2.6]]) {
+        const k = W * (0.35 + 0.55 * s(1.9, ph) + 0.25 * s(3.7, ph * 1.7) + 0.3 * (L === 'Left' ? j2 : j1));
+        rotB(r[L + 'UpLeg'], k, 0, W * 0.18 * s(1.3, ph + 1) * (L === 'Left' ? 1 : -1));
+        rotB(r[L + 'Leg'], -W * Math.max(0.15, 0.9 + 0.7 * s(1.9, ph + 1.2)), 0, 0);
+      }
+    } else {
+      const aL = W * Math.max(0, 0.2 + 0.13 * s(0.55, 0.3) + 0.18 * j2), aR = W * Math.max(0, 0.2 + 0.13 * s(0.55, 2.2) + 0.14 * j1);
+      rotB(r.LeftUpLeg, aL, 0, 0); rotB(r.LeftLeg, -2 * aL, 0, 0); rotB(r.RightUpLeg, aR, 0, 0); rotB(r.RightLeg, -2 * aR, 0, 0);
+    }
+    rotB(r.Spine, W * (0.14 + 0.1 * s(0.47) + 0.2 * j2 - 0.12 * j1 + tr), W * (0.3 * s(0.83) + 0.08 * s(2.3, 1)), W * (0.17 * s(0.61, 1) + 0.06 * s(1.9)));
+    rotB(r.Spine1, W * (0.06 + 0.06 * s(0.9, 2)), W * 0.15 * s(1.17, 0.5), W * (0.09 * s(1.03, 2) + tr));
+    rotB(r.Spine2, W * (0.05 * s(1.6) - 0.14 * j1), W * 0.1 * s(1.7, 1.2), W * 0.06 * s(1.3));
+    rotB(r.Neck, W * (-0.1 + 0.1 * s(1.05)), W * 0.12 * s(1.55, 0.3), W * 0.08 * s(2.0));
+    rotB(r.Head, W * (-0.22 + 0.14 * s(1.3, 0.4) - 0.3 * j1 + tr), W * (0.22 * s(1.45, 1) + 0.1 * s(3.7)), W * 0.18 * s(2.1, 0.3));   // 얼굴이 카메라를 향하게 도리질은 조금 작게
+    for (const sd of [1, -1]) {
+      const ph = sd > 0 ? 0 : 2.4, L = sd > 0 ? 'Left' : 'Right';
+      const raise = W * Math.max(0.15, 0.75 + 0.45 * s(1.6, ph) + 0.25 * s(3.3, ph * 2));
+      const fwd = W * (0.5 + 0.6 * s(2.1, ph + 0.5) + 0.25 * s(4.4, ph) + 2 * tr);
+      rotB(r[L + 'Arm'], -raise, 0, fwd * sd);
+      rotB(r[L + 'ForeArm'], 0, 0, W * Math.max(0.1, 0.8 + 0.55 * s(2.6, ph + 1) + 0.2 * s(5.1, ph)) * sd);
+      rotB(r[L + 'Hand'], W * 0.5 * s(3.3, ph), 0, W * 0.35 * s(2.7, ph + 1));
+    }
+    (r.Hips || r.Spine || sm.skeleton.bones[0]).updateMatrixWorld(true);
+    return r;
+  };
   function installHook() {
     const S = window.__G.scene;
     if (S.__burnHook) return;
@@ -11063,7 +11220,7 @@ vec3 srGN(vec2 p) {
       // b417 — 본진 밖(14m 넘게)으로 한 번 나갔다가 돌아올 때만(판 시작은 내 본진 안이라 시작하자마자 높이 내려다봐 「요청한 각도가 풀렸다」로 보였다)
       if (dB > 24) S.outB = true; if (!G.started || dB > 45) S.outB = dB > 24;
       if (zb && S.outB && !(X && X.on && X.on.basecam === false)) want = ss((24 - dB) / 14) * (1 - K.chase);   // b431 — 24m 부터 천천히(10m 에서 가득 · 예전 13m → 5m 는 거의 다 와서야)
-      K.base += (want - K.base) * ex(dt, want > K.base ? 1.4 : 1.0); }
+      S.zb0 = zb; K.base += (want - K.base) * ex(dt, want > K.base ? 1.4 : 1.0); }
     // 끝 장면(2026-10-09) — 판이 끝나면 3초에 걸쳐 천천히 다가가 낮아진다(거리 32% · 내려다봄 7° · 시야 4°) · 다음 판이면 바로 돌아옴 · 끄기: 시연실 「끝 장면 카메라」
     { const X = window.__fx, on = !(X && X.on && X.on.endcam === false), over = !!(G.game && G.game.over) || performance.now() < (S.endDemoUntil || 0);
       const want = on && over ? 1 : 0; K.end = (K.end || 0) + (want - (K.end || 0)) * ex(dt, want > (K.end || 0) ? 1.1 : 0.15); }
@@ -11093,17 +11250,18 @@ vec3 srGN(vec2 p) {
     }
     // 목표 — 거리(휠) · 내려다봄(마우스 위아래) · 중심 높이
     const kE = ss(K.end || 0);
-    let pitchG = (c.camPitch !== undefined ? c.camPitch : 0.14) + 0.07 * ss(K.base) + 0.1 * K.drag + 0.05 * K.chase - 0.14 * K.monF + LV.slope + LV.nod - 0.12 * kE;
+    let pitchG = (c.camPitch !== undefined ? c.camPitch : 0.14) + 0.2 * ss(K.base) + 0.1 * K.drag + 0.05 * K.chase - 0.14 * K.monF + LV.slope + LV.nod - 0.12 * kE;
     // 숨 참기(breathe.js) — 참는 동안 4초에 걸쳐 카메라가 8% 다가가고 시야가 3.5° 좁아진다(조여 오는 긴장) · 숨을 쉬면 0.6초에 풀림
     { const HB = window.__breath && window.__breath.hero, hz = HB && HB.hold > 0.5 ? 1 : 0; S.holdZ = (S.holdZ || 0) + (hz - (S.holdZ || 0)) * ex(dt, hz > (S.holdZ || 0) ? 3.5 : 0.6); }
     const kH = ss(S.holdZ || 0);
-    let distG = ((c.camDist || 3.4) * (1 + 0.18 * K.chase) + 0.55 * K.drag + 0.25 * K.carry) * (1 - 0.32 * kE) * (1 - 0.08 * kH) * (1 + 0.3 * ss(K.base));
+    let distG = ((c.camDist || 3.4) * (1 + 0.18 * K.chase) + 0.55 * K.drag + 0.25 * K.carry) * (1 - 0.32 * kE) * (1 - 0.08 * kH) * (1 + 0.85 * ss(K.base));   // b450 — 본진에 오면 본진 바닥이 적당히 보이게 더 멀리(3.4 → 약 6.3m) · 더 내려다봄(+11°) · 중심을 본진 쪽으로 조금(사용자 「본진의 영역이 적당히 보일 정도로」)
     const upK = 1 - ss((pitchG + 0.15) / 0.4);                         // 올려다볼수록 1(#14 #15)
     distG *= 1 - 0.28 * upK;
     const pivH = 1.35 + 0.15 * K.drag + 0.1 * K.carry + 0.1 * K.chase;
 
     // 부드럽게 — 방향 · 내려다봄 · 거리는 따로(둥근 길로 돈다) · 중심점은 수평 빠르게 · 수직 느리게
     const pg = [h.x, h.y + pivH, h.z];
+    if (K.base > 0.01 && S.zb0) { const kb = ss(K.base), bx = S.zb0.cx - h.x, bz = S.zb0.cz - h.z, bl = Math.hypot(bx, bz), m = Math.min(bl * 0.4, 2.5) * kb / Math.max(bl, 1e-3); pg[0] += bx * m; pg[2] += bz * m; }
     let sm = S.sm;
     if (!sm || Math.hypot(pg[0] - sm.p[0], pg[2] - sm.p[2]) > 3 || Math.abs(pg[1] - sm.p[1]) > 3) { sm = S.sm = { yaw: yawG, pitch: pitchG, dist: distG, p: pg.slice() }; S.cd = null; }
     else {
