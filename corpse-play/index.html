@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-477 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-478 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -321,7 +321,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-477'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-478'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3759,7 +3759,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const DEF = {
     titleT: 2.6, aerial: 1.6, closeA: 1.0, closeB: 1.0, trackA: 0.8, trackB: 0.8, wide: 0.55, slowLen: 0, slowRate: 1, burst: 0.6, burstRate: 0.3, after: 2.8, winT: 5.0,
     accel: 3.4, jerk: 0.5, floatH: 0.3, lean: 0.3, writhe: 1.0, wSpd: 1.0, armR: 1, legK: 1,
-    mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', speed: 1, gap: 0.2, squashT: 0.04, dashT: 0.3, dashFrom: 0.7, dashPow: 1.6, hitStop: 0.08, burstEase: 1, hitSnd: 0, burstSnd: 0, squash: 0.35, spurt: 1, winBright: 1, endBright: 1,
+    mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', speed: 1, aerialZoom: 0.35, bloodGlow: 1, gap: 0.2, squashT: 0.04, dashT: 0.3, dashFrom: 0.7, dashPow: 1.6, hitStop: 0.08, burstEase: 1, hitSnd: 0, burstSnd: 0, squash: 0.35, spurt: 1, winBright: 1, endBright: 1,
     closeD: 1.1, closeFov: 40, trackD: 2.4, trackFov: 56, wideD: 4.2, wideFov: 52, kick: 0.6, fovPunch: 4, shake: 1, winD: 0.7, winFov: 30, bars: 1,
     parts: 1, partF: 1, partSpin: 1, chunks: 45, cloth: 0, skin: 0, bones: 0, chunkSize: 0.55, chunkF: 1, roll: 1, drops: 1400, dropSize: 1, dropF: 1, mist: 1,
     flash: 0, ring: 0, sound: 1, light: 2.2,
@@ -3794,7 +3794,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     if (!base) { setTimeout(build, 300); return; }
     const mat = (hex, rough, metal, em) => { const m = base.clone(); for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap', 'lightMap', 'bumpMap', 'displacementMap']) if (k in m) m[k] = null; m.transparent = false; m.opacity = 1; m.alphaTest = 0; m.color.setHex(hex); m.roughness = rough; m.metalness = metal; m.emissive.setHex(em); m.emissiveIntensity = 1; m.side = 0; m.vertexColors = false; m.needsUpdate = true; return m; };
     const geoLump = new T.CylinderGeometry(0.5, 0.42, 1, 6, 1), geoDrop = new T.CylinderGeometry(0.5, 0.5, 1, 5, 1);
-    const spec = { flesh: [geoLump, mat(0x6a0d0c, 0.45, 0.05, 0x1a0000)], cloth: [geoLump, mat(0x3c3a38, 0.9, 0, 0x050505)], skin: [geoLump, mat(0xb07a62, 0.6, 0, 0x120604)], bone: [geoDrop, mat(0xd9cdb8, 0.5, 0, 0x101010)], drop: [geoDrop, mat(0x4a0206, 0.18, 0.1, 0x2a0002)] };
+    const spec = { flesh: [geoLump, mat(0x9a1010, 0.4, 0.05, 0x5a0000)], cloth: [geoLump, mat(0x3c3a38, 0.9, 0, 0x050505)], skin: [geoLump, mat(0xb07a62, 0.6, 0, 0x120604)], bone: [geoDrop, mat(0xd9cdb8, 0.5, 0, 0x101010)], drop: [geoDrop, mat(0xb00a0a, 0.15, 0.1, 0x8a0000)] };   // b478 — 밝은 핏빛(예전 검붉은 색은 피 같지 않았다)
     const far = new M4().makeTranslation(0, -999, 0);
     for (const k in spec) { const m = new T.InstancedMesh(spec[k][0], spec[k][1], MAXN[k]); m.name = 'end-' + k; m.frustumCulled = false; m.setMatrixAt(0, far); m.count = 1; G.scene.add(m); mesh[k] = m; }
     // 몸 조각 재질 — 내 몸 재질을 복제(뼈 없는 메시로 그린다 · 준비 단계에서 한 번 그려 셰이더를 굽는다 · 판 중엔 그림만 바꿔 낀다)
@@ -4176,8 +4176,8 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     if (S.free) { const F = S.free, H = V(S.cx, S.cy + 1, S.cz); P = V(H.x + Math.sin(F.yaw) * Math.cos(F.pitch) * F.d, H.y + Math.sin(F.pitch) * F.d, H.z + Math.cos(F.yaw) * Math.cos(F.pitch) * F.d); L = H; }
     else if (u < t.u0) { P.copy(S.cam0.p); L = V(0, 0, -1).applyQuaternion(S.cam0.q).add(S.cam0.p); }
     else if (u < t.uF) {   // 하늘에서 — 경기장 · 양쪽 진영의 두 사람
-      const k = (u - t.u0) / CF.aerial, ang = Math.atan2(S.perp[0], S.perp[1]) + 0.5 * k;
-      P = V(S.cx + Math.sin(ang) * 10, S.cy + 15 - 2 * k, S.cz + Math.cos(ang) * 10); L = C.clone().add(V(0, 0.5, 0)); fov = 55;
+      const k = (u - t.u0) / CF.aerial, ang = Math.atan2(S.perp[0], S.perp[1]) + 0.5 * k, z = 1 - CF.aerialZoom * ss(k);   // b478 — 천천히 다가가며(줌인)
+      P = V(S.cx + Math.sin(ang) * 10 * z, S.cy + (15 - 2 * k) * z, S.cz + Math.cos(ang) * 10 * z); L = C.clone().add(V(0, 0.5, 0)); fov = 55 - 10 * CF.aerialZoom * ss(k);
     } else if (u < t.cB && a) {   // A 얼굴 정면 — 끌려가는 순간 카메라는 그 자리(얼굴이 확 멀어진다) → 따라붙음
       const k = ss((u - t.cA - 0.12) / 0.55); const fix = V(a.bx + a.fwd[0] * CF.closeD, a.by + 1.55, a.bz + a.fwd[1] * CF.closeD);
       P = fix.clone().lerp(front(a, CF.closeD, 0.02), k); L = a.head; fov = CF.closeFov; sh = 0.012;
@@ -4203,6 +4203,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     let hs = null; { const v = C.clone().add(V(0, 1.2, 0)).project(cam); if (v.z < 1) hs = [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }
     if (tau >= t.tauH + CF.squashT && !S.bp && S.L.every((A) => A.bakeReady)) { try { bakeAll(); } catch (e) { console.warn('[end] 몸 조각', e); S.bp = []; } for (const A of S.L) A.obj.visible = false; }   // 부딪힌 순간의 몸을 굳혀 조각으로
     if (tau < t.tauH + CF.squashT && S.bp) freeParts();
+    if (mesh.drop) { mesh.drop.material.emissiveIntensity = CF.bloodGlow; mesh.flesh.material.emissiveIntensity = CF.bloodGlow; }   // 피 빛(밤에도 빨갛게)
     const tbB = tau - t.tauH - CF.squashT; gen(); placeParts(u >= t.uH && tbB >= -0.02 * CF.spurt ? tbB : -1); placeBody(tbB >= 0 ? tbB : -1); overlays(u, t, hs);
     if (window.__charlit && S.k0 != null) window.__charlit.k = S.k0 * CF.light;   // 사람이 밤에 묻히지 않게(연출 동안만)
     { const R = G.renderer, kw = u >= t.uW ? lerp(1, CF.winBright, ss((u - t.uW) / 0.4)) : 1; expo0 = R.toneMappingExposure; R.toneMappingExposure = expo0 * CF.endBright * kw; }   // 결말 · 이긴 사람 장면 화면 밝기(그린 뒤 되돌림)
@@ -4258,14 +4259,14 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const FACE_OPT = () => [['cycle', '번갈아(겁 · 비명 · 공포 · 경악)'], ...(((window.__cast && window.__cast.EXPRS) || []).map((e) => [e.key, e.name.split(' — ')[0]]))];
   const SC = [
     { k: 'title', name: '승리 글', at: (t) => 0, rows: [['titleT', '길이', 0, 5, 0.1, 's'], ['bars', '위아래 검은 띠', 0, 2, 0.05, '%']] },
-    { k: 'aerial', name: '하늘', at: (t) => t.u0, rows: [['aerial', '길이', 0.3, 4, 0.1, 's']] },
+    { k: 'aerial', name: '하늘', at: (t) => t.u0, rows: [['aerial', '길이', 0.3, 4, 0.1, 's'], ['aerialZoom', '다가가는(줌인) 정도', 0, 0.8, 0.02, '%']] },
     { k: 'faceA', name: '① 얼굴', at: (t) => t.cA, rows: [['closeA', '길이', 0.3, 3, 0.05, 's'], ['faceA', '표정', 'sel', FACE_OPT], ['motionA', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'faceB', name: '② 얼굴', at: (t) => t.cB, rows: [['closeB', '길이', 0.3, 3, 0.05, 's'], ['faceB', '표정', 'sel', FACE_OPT], ['motionB', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'track', name: '끌려감', at: (t) => t.tA, rows: [['trackA', '① 따라가는 길이', 0.2, 3, 0.05, 's'], ['trackB', '② 따라가는 길이', 0.2, 3, 0.05, 's'], ['motionA', '① 동작', 'sel', () => MOTIONS], ['motionB', '② 동작', 'sel', () => MOTIONS], ['writhe', '버둥 세기', 0, 2, 0.05, '%'], ['wSpd', '버둥 빠르기', 0.2, 2.5, 0.05, '×'], ['armR', '팔', 0, 2, 0.05, '%'], ['legK', '다리', 0, 2, 0.05, '%'], ['accel', '점점 빨라짐', 1, 6, 0.05, ''], ['jerk', '처음 확 낚아채임', 0, 2, 0.05, 'm'], ['floatH', '떠서 끌려가는 높이', 0, 1.5, 0.02, 'm'], ['lean', '버티며 숙임', 0, 0.9, 0.02, ''], ['trackD', '카메라 거리', 1, 6, 0.1, 'm'], ['trackFov', '화각', 30, 90, 1, '°']] },
     { k: 'hit', name: '날아듦', at: (t) => t.w0, rows: [['wide', '옆에서 보는 길이', 0.2, 3, 0.05, 's'], ['dashT', '마지막 돌진 시간', 0, 1.5, 0.01, 's'], ['dashFrom', '돌진 전까지 온 거리', 0.2, 0.98, 0.01, '%'], ['dashPow', '돌진 가속(클수록 끝에 확)', 0.5, 4, 0.05, ''], ['gap', '맞닿는 거리(가운데에서)', 0, 0.5, 0.01, 'm'], ['_h', '— 카메라'], ['wideD', '카메라 거리', 2, 16, 0.1, 'm'], ['wideFov', '화각', 20, 80, 1, '°']] },
     // b477 — 부딪혀 터지는 순간만(사용자 「부딪힘 항목에선 몸이 안 부딪히고 조각으로 넘어가면 부딪힘 조절이 없다 · 부딪히고 터지는 타이밍을 잡아야」)
     { k: 'impact', name: '부딪혀 터짐', at: (t) => Math.max(t.w0, t.uH - 0.35), rows: [['_h', '— 맞닿음'], ['hitStop', '맞닿는 순간 멈칫', 0, 0.5, 0.01, 's'], ['squashT', '맞닿아 터지기까지', 0, 0.3, 0.01, 's'], ['squash', '짓눌림 세기', 0, 0.8, 0.02, '%'],
-      ['_h', '— 터짐'], ['partF', '조각 날아가는 힘', 0.2, 3, 0.05, '×'], ['partSpin', '조각 도는 빠르기', 0, 3, 0.05, '×'], ['dropF', '피 튀는 힘', 0.2, 3, 0.05, '×'],
+      ['_h', '— 터짐'], ['bloodGlow', '피 빨간 정도(밤에도 보이게)', 0, 3, 0.05, '×'], ['partF', '조각 날아가는 힘', 0.2, 3, 0.05, '×'], ['partSpin', '조각 도는 빠르기', 0, 3, 0.05, '×'], ['dropF', '피 튀는 힘', 0.2, 3, 0.05, '×'],
       ['_h', '— 느린 화면'], ['burst', '터진 뒤 느린 화면 길이', 0, 3, 0.05, 's'], ['burstRate', '느린 화면 빠르기', 0.05, 1, 0.01, '×'], ['burstEase', '원래 빠르기로 돌아오는 부드럽기', 0, 3, 0.05, ''],
       ['_h', '— 소리'], ['hitSnd', '퍽 소리 당기기/늦추기', -0.5, 0.5, 0.01, 's'], ['burstSnd', '터지는 소리 당기기/늦추기', -0.5, 0.5, 0.01, 's'],
       ['_h', '— 카메라'], ['kick', '퍽 — 카메라 뒤로 밀림', 0, 3, 0.05, 'm'], ['fovPunch', '퍽 — 화각 출렁', 0, 30, 1, '°'], ['shake', '흔들림', 0, 3, 0.05, '%']] },
