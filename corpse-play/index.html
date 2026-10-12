@@ -24,12 +24,12 @@
 html.sa-m, html.sa-m body { touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overflow: hidden; }
 /* 화면에서 뺄 것(메뉴 안으로) */
 html.sa-m #btn-view, html.sa-m #sr-tune-btn, html.sa-m #sr-show-btn, html.sa-m #cin-btn, html.sa-m #t-view, html.sa-m #ttabs,
-html.sa-m #tsettings, html.sa-m #tsettings2, html.sa-m #hud, html.sa-m #btn-peace, html.sa-m #monstat, html.sa-m .keys { display: none !important; }
+html.sa-m #tsettings, html.sa-m #tsettings2, html.sa-m #hud, html.sa-m #btn-peace, html.sa-m #monstat, html.sa-m .keys, html.sa-m #sr-stamp { display: none !important; }
 /* 이동 · 잡기 */
-html.sa-m #joy { left: max(18px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom)); width: 132px; max-width: none; border-width: 2px; background: rgba(0,0,0,.28); }
+html.sa-m #joy { left: max(22px, env(safe-area-inset-left)) !important; bottom: max(18px, env(safe-area-inset-bottom)) !important; width: 136px !important; height: 136px !important; max-width: none !important; border-width: 2px !important; background: rgba(0,0,0,.28) !important; }
 html.sa-m #knob { width: 42%; }
-html.sa-m #tbtns { right: max(18px, env(safe-area-inset-right)); bottom: max(22px, env(safe-area-inset-bottom)); }
-html.sa-m #t-grab { width: 86px; height: 86px; font-size: 15px; font-weight: 700; border-width: 2px; }
+html.sa-m #tbtns { right: max(22px, env(safe-area-inset-right)) !important; bottom: max(24px, env(safe-area-inset-bottom)) !important; top: auto !important; left: auto !important; }
+html.sa-m #t-grab { width: 92px !important; height: 92px !important; font-size: 16px !important; font-weight: 700; border-width: 2px !important; }
 /* 작게 */
 html.sa-m #start .card { zoom: .52; }
 html.sa-m #sr-start { zoom: .55; }
