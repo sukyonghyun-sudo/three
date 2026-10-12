@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-490 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-491 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -321,7 +321,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-490'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-491'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3348,17 +3348,23 @@ var MeshoptDecoder = (function () {
       const tmp = new T.PlaneGeometry(1, 1), BA = tmp.attributes.position.constructor, geo = new (Object.getPrototypeOf(tmp.constructor.prototype).constructor)();   /* 맵 속성은 끼워 넣은(interleaved) 꼴이라 일반 속성으로 */ geo.setAttribute('position', new BA(new Float32Array(pos), 3)); if (UV) geo.setAttribute('uv', new BA(new Float32Array(uv), 2)); geo.setIndex(keep); geo.computeVertexNormals(); geo.computeBoundingSphere();
       grp = new T.Group(); grp.name = 'gate-block';
       const ax = 9.6, az = -9.6, dx = 0.444, dz = -0.896, px = 0.896, pz = 0.444;   // 계단 입구 · 내려가는 쪽 · 옆
-      const spots = [[0, 0.3, 1.0, 0], [-1.05, 0.5, 0.85, 1.7], [1.05, 0.45, 0.9, 3.4], [-0.5, 1.4, 1.1, 4.6], [0.6, 1.5, 1.0, 2.2]];
+      /* b491 — 계단(Tiles)을 걷어 낸 뒤 내려가는 입구에 바위 다섯(사용자 「계단 치워 버리고 내려가는 곳을 맵에 붙은 바위 몇 개로 가려」) · 높이는 메운 땅(stair-fill)에 맞춘다 */
+      const spots = [[-1.1, 1.6, 0.75, 0.3], [0.2, 1.3, 0.9, 1.9], [1.3, 1.8, 0.7, 3.1], [-0.4, 2.9, 0.85, 4.4], [0.6, 3.0, 0.85, 5.5]];
       for (const [s, f, k, r] of spots) {
-        const m = new T.Mesh(geo, rock.material); const x = ax + px * s + dx * f, z = az + pz * s + dz * f;
-        const gy = G.groundAt ? G.groundAt(x, z) : 0;
-        const top0 = G.mpApi && G.mpApi.gy ? G.mpApi.gy(ax - dx * 0.8, az - dz * 0.8) : 0;   // 계단 위 땅 높이(계단 아래가 아니라)
-        m.position.set(x, Math.max(isFinite(gy) ? gy : -9, top0) - 0.45, z); m.rotation.y = r; m.scale.set(k * 1.7, k * 1.4, k * 1.7); m.castShadow = m.receiveShadow = true; grp.add(m);
+        const m = new T.Mesh(geo, rock.material); m.position.set(ax + px * s + dx * f, 0, az + pz * s + dz * f); m.userData.sink = 0.55 * k;
+        m.rotation.y = r; m.scale.set(k * 1.5, k * 1.25, k * 1.5); m.castShadow = m.receiveShadow = true; grp.add(m);
       }
+      grp.userData.placed = false;
       G.scene.add(grp);
       console.log('[mapfix] P3 문 숨김 · 계단 입구 바위', grp.children.length, '· 바위 삼각형', keep.length / 3);
     } catch (e) { grp = false; console.warn('[mapfix] 바위', e); }
-    const o = on(); for (const m of gate) m.visible = !o; if (grp) grp.visible = o && !window.__staircut;
+    if (grp && !grp.userData.placed) {   // 땅 높이 — 메운 땅이 생긴 뒤에(없으면 맵 땅)
+      const fill = G.scene.getObjectByName('stair-fill'); if (!fill && tries < 60) { tries++; return; }
+      const T = G.THREE, rc = new T.Raycaster(), o3 = new T.Vector3(), dn = new T.Vector3(0, -1, 0), ms = [fill, ...(G.map.grounds || [])].filter(Boolean);
+      for (const m of grp.children) { o3.set(m.position.x, 30, m.position.z); rc.set(o3, dn); const h = rc.intersectObjects(ms, false)[0]; m.position.y = (h ? h.point.y : (G.groundAt ? G.groundAt(m.position.x, m.position.z) : 0)) - m.userData.sink; }
+      grp.userData.placed = true;
+    }
+    const o = on(); for (const m of gate) m.visible = !o; if (grp) grp.visible = o;
   }, 300);
 })();
 /* b489 — 아래로 내려가는 돌계단 자리를 메운다(사용자 「바위로 막은 게 허접 · 그 부분을 날려 버리고 기본 테두리처럼」)
@@ -3367,7 +3373,7 @@ var MeshoptDecoder = (function () {
 (() => {
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.staircut === false); };
   const ST = { ax: 9.6, az: -9.6, bx: 15.5, bz: -21.5, hw: 1.5 };
-  let fill = null, tries = 0;
+  let fill = null, tiles = null, tries = 0;
   const iv = setInterval(() => {
     const G = window.__G; if (!G || !G.map || !G.map.loaded || !G.map.root || !G.THREE) return;
     if (fill === null) {
@@ -3396,7 +3402,8 @@ var MeshoptDecoder = (function () {
         console.log('[mapfix] 계단 메움 — 양옆 땅 높이로', NA * NC * 2, '삼각형');
       } catch (e) { fill = false; console.warn('[mapfix] 계단 메움', e); }
     }
-    const o = on(); if (fill) fill.visible = o; window.__staircut = o && !!fill;
+    if (tiles === null) { tiles = []; G.map.root.traverse((m) => { if (m.isMesh && m.name === 'BaseShape_Tiles_0') tiles.push(m); }); }   // b491 — 돌계단 자체(Tiles · 이 계단에만 쓰임)를 숨긴다
+    const o = on(); if (fill) fill.visible = o; for (const m of tiles) m.visible = !o; window.__staircut = o && !!fill;
   }, 300);
 })();
 
