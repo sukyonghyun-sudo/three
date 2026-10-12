@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-374 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-375 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -319,7 +319,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-374'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-375'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -8145,17 +8145,25 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const fx = (p.lf.x + p.rf.x) / 2, fz = (p.lf.z + p.rf.z) / 2;
     let dx = fx - p.hips.x, dz = fz - p.hips.z; const dl = Math.hypot(dx, dz); if (dl < 0.2) return null; dx /= dl; dz /= dl;
     const N = window.__nav, ok = (x, z) => !N || !N.canStand || N.canStand(x, z) !== null;
+    // 정한 자리에 설 수 없으면(난간 · 벽 · 바위 · 물가) 그 둘레에서 설 수 있고 사람에게 가까운 자리로
+    //   (2026-10-12 사용자: 「가끔 시체를 멀리서 땡겨 온다 · 시체가 공중부양하는 느낌」 — 예전엔 여기서 null → 사람은 제자리 · 시체가 1.5초 동안 떠서 어깨로 날아왔다)
+    const ring = (cx, cz, rs) => { let best = null, bd = 1e9; for (const r of rs) for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2, x = cx + Math.sin(a) * r, z = cz + Math.cos(a) * r; if (!ok(x, z)) continue; const dd = Math.hypot(x - hero.position.x, z - hero.position.z); if (dd < bd) { bd = dd; best = [x, z]; } } return best; };
     let tx, tz, tyaw;
-    if (kind === 'drag') { tx = fx + dx * 0.08; tz = fz + dz * 0.08; tyaw = Math.atan2(dx, dz); if (!ok(tx, tz)) return null; }
-    else {
+    if (kind === 'drag') {
+      tx = fx + dx * 0.08; tz = fz + dz * 0.08; tyaw = Math.atan2(dx, dz);
+      if (!ok(tx, tz)) { const q = ring(fx, fz, [0.3, 0.5]) || ring(p.hips.x, p.hips.z, [0.6, 0.8]); if (!q) return null; tx = q[0]; tz = q[1]; }
+    } else {
       let nx = dz, nz = -dx;
       if ((hero.position.x - p.hips.x) * nx + (hero.position.z - p.hips.z) * nz < 0) { nx = -nx; nz = -nz; }
       const at = (sg) => [p.hips.x + nx * 0.5 * sg + dx * 0.12, p.hips.z + nz * 0.5 * sg + dz * 0.12];
-      let q = at(1); if (!ok(q[0], q[1])) { q = at(-1); nx = -nx; nz = -nz; if (!ok(q[0], q[1])) return null; }
-      tx = q[0]; tz = q[1]; tyaw = Math.atan2(-nx, -nz);
+      let q = at(1);
+      if (!ok(q[0], q[1])) { q = at(-1); nx = -nx; nz = -nz; }
+      if (ok(q[0], q[1])) tyaw = Math.atan2(-nx, -nz);
+      else { q = ring(p.hips.x, p.hips.z, [0.55, 0.75]); if (!q) return null; tyaw = Math.atan2(p.hips.x - q[0], p.hips.z - q[1]); }   // 시체 엉덩이를 본다
+      tx = q[0]; tz = q[1];
     }
     const sx = hero.position.x, sz = hero.position.z, d = Math.hypot(tx - sx, tz - sz);
-    if (d > 1.8) return null;
+    if (d > 2.4) return null;                                        // 잡는 거리(1.1m) + 발치까지 — 예전 1.8 은 발치 쪽 끌기에서 넘쳐 떠서 날아왔다
     const syaw = hero.rotation.y, dy = Math.atan2(Math.sin(tyaw - syaw), Math.cos(tyaw - syaw));
     return { hero, sx, sz, syaw, tx, tz, dy, d };
   }
@@ -8219,7 +8227,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       if (cur && cur !== prev && cur.model && P.cap.get(cur)) {
         const carry = b.kind === 'carry';
         const e = { who: b, kind: carry ? 'carry' : 'drag', model: cur.model, from: P.cap.get(cur), t0: now(), dur: carry ? T_CARRY : T_DRAG, up: true }; e.warp = warpPlan(b, e.kind, e.from);
-        if (e.warp && e.warp.d <= 0.5) P.list.push(e);   // 봇은 걸어가지 못한다(게임이 바로 붙인다) — 잡을 자리가 0.5m 넘게 멀거나 같이 하기의 남이면 잇지 않는다(시체가 미끄러져 와 보였다 · 잰 값 0.55~1.07m) · 예전처럼 바로 바뀜
+        if (e.warp && e.warp.d <= 1.1) P.list.push(e);   // 2026-10-12 — 0.5 → 1.1(봇이 잡는 거리 0.55~1.07m 를 다 덮게 · 넘으면 봇이 다가가 숙인다 — 시체가 순간 이동해 붙지 않게)   // 봇은 걸어가지 못한다(게임이 바로 붙인다) — 잡을 자리가 0.5m 넘게 멀거나 같이 하기의 남이면 잇지 않는다(시체가 미끄러져 와 보였다 · 잰 값 0.55~1.07m) · 예전처럼 바로 바뀜
       }
       if (!cur && prev && prev.model && P.cap.get(prev)) P.list.push({ who: b, kind: P.cap.get(prev).kind || 'drag', model: prev.model, from: P.cap.get(prev), t0: now(), dur: T_DROP, up: false });
       botHeld.set(b, cur);
@@ -8410,7 +8418,17 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
         const tc = CLIP.tc[e.kind] || CLIP.tc.drag;
         ct = u < 0.35 ? CLIP.te + (tc - CLIP.te) * ss(u / 0.35) : u < 0.45 ? tc : tc + (CLIP.te - tc) * ss((u - 0.45) / 0.55);
         w = ss(u / 0.1) * (1 - ss((u - 0.86) / 0.14));
-      } else { ct = CLIP.te + (CLIP.drop - CLIP.te) * Math.sin(Math.PI * u); w = ss(u / 0.15) * (1 - ss((u - 0.75) / 0.25)); }
+      } else {
+        ct = CLIP.te + (CLIP.drop - CLIP.te) * Math.sin(Math.PI * u); w = ss(u / 0.15) * (1 - ss((u - 0.75) / 0.25));
+        // 놓자마자 걸으면 숙였다 서는 동작을 0.12초에 푼다(2026-10-12 사용자: 「시체 놓은 다음에 바로 이동키를 누르면 시체를 내리던 자세가 잠깐 남으면서 이동」 — 다리까지 숙인 채 미끄러졌다)
+        const ho = e.who === 'hero' ? G.hero : e.who && e.who.hero;
+        if (ho && ho.position) {
+          const hp = ho.position, dt = e.lt === undefined ? 0 : t - e.lt;
+          if (dt > 1e-4) { if (Math.hypot(hp.x - e.lp[0], hp.z - e.lp[1]) / dt > 0.5) e.cut = Math.min(1, (e.cut || 0) + dt / 0.12); e.lp = [hp.x, hp.z]; e.lt = t; }
+          else if (e.lt === undefined) { e.lp = [hp.x, hp.z]; e.lt = t; }
+        }
+        w *= 1 - (e.cut || 0);
+      }
       const sm = e.who === 'hero' ? (() => { const B = G.body; const vis = B && [B.drag, B.main].find((m) => m && shown(m)); return vis ? skinOf(vis) : null; })() : (e.who && e.who.model ? skinOf(e.who.model) : null);
       if (sm) clipPose(sm, ct, w);
     }
