@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-420 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-421 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-420'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-421'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -10197,7 +10197,7 @@ vec3 srGN(vec2 p) {
     HS.vdt = HS.lt ? Math.min(0.1, now - HS.lt) : 0.016; HS.lt = now;
     if (u < -0.15) return;
     const k = Math.max(0, Math.min(1, (u + 0.15) / 0.3)) * (1 - Math.max(0, Math.min(1, (u - 0.7) / 0.3)));
-    if (!HS.said && u >= 0) { HS.said = true; try { const S = window.__scream; if (S && S.pick && S.say) { const id = (fxOn('bloodvomit') && S.pick('cough')) || S.pick('getup'); if (id && !(S.busy && S.busy(hm, null))) S.say(id, pos, hm, { vol: 0.7, rate: 0.95, expr: fxOn('bloodvomit') ? 'choke' : 'agony' }); } } catch (e) { /* */ } }
+    if (!HS.said && u >= (fxOn('bloodvomit') ? 0.17 : 0)) { HS.said = true; try { const S = window.__scream; if (S && S.pick && S.say) { const id = (fxOn('bloodvomit') && S.pick('cough')) || S.pick('getup'); if (id && !(S.busy && S.busy(hm, null))) S.say(id, pos, hm, { vol: 0.7, rate: 0.95, expr: fxOn('bloodvomit') ? 'choke' : 'agony' }); } } catch (e) { /* */ } }
     if (k < 0.002 || !sm) return;
     const bones = sm.__hsB || (sm.__hsB = Object.fromEntries(sm.skeleton.bones.map((b) => [b.name.replace(/^mixamorig:?/, ''), b])));
     const T = G.THREE, ax = new T.Vector3(Math.cos(y), 0, -Math.sin(y)), up = new T.Vector3(0, 1, 0);
@@ -10209,36 +10209,33 @@ vec3 srGN(vec2 p) {
     rot(bones.LeftUpLeg, ax, -k * 0.12); rot(bones.RightUpLeg, ax, -k * 0.12); rot(bones.LeftLeg, ax, k * 0.2); rot(bones.RightLeg, ax, k * 0.2);   // 무릎도 살짝 굽혀 주저앉을 듯
     // 피를 토한다(2026-10-12 사용자: 「맞은 다음 일어나서 몸을 움츠리는 데서 입에 피 토하게」) — 숙인 뒤(꼬리 10~55%) 입에서 앞 · 아래로 피 줄기 · 두 번 왈칵(25% · 45%) · 땅에 떨어지면 방울 자국(gore.drop)
     //   소리는 「일어남」 신음 대신 젊은 남자 기침(컥) · 끄기: 시연실 연출 「일어난 뒤 피를 토함」
-    if (fxOn('bloodvomit') && u > 0.12 && u < 0.55) {
-      // b418 — 잠깐 왈칵(사용자 「너무 길게 나온다 · 입에서 안 나오고 이마에서 나온다 · 잠깐 왈칵하고 쏟는 느낌」)
-      //   · 입 자리는 머리 뼈 축으로(머리 뼈 Z = 얼굴 앞 · Y = 위 — 앞으로 3cm 위 · 10cm 앞) — 예전엔 몸 방향 수평 앞 · 10cm 아래라 고개를 숙이면 이마 앞이었다
-      //   · 크게 한 번(25%) + 작게 한 번(36%) — 0.4초쯤 · 핏줄기는 그 사이만 · 발 앞 핏물 둘
+    if (fxOn('bloodvomit') && u > 0.12 && u < 0.5) {
+      // b421 — 「컥」 하며 피 분수를 잠깐(사용자 「피 토하는 게 어색 · 걍 컥 하고 피를 뿜는 느낌으로 피 분수를 잠깐」) — 줄기(원기둥)는 뺐다
+      //   · 기침(컥) 순간(꼬리 17%)부터 0.15초 동안 입에서 앞 · 위로 확 뿜어(방울 60여 개) 포물선으로 떨어진다 · 고개가 뿜는 순간 살짝 들렸다 숙여짐 · 발 앞 핏물 하나
       const gore = G.gore || (G.mpApi && G.mpApi.gore), hd = bones.Head;
-      const surge = Math.exp(-Math.pow((u - 0.25) / 0.05, 2)) + Math.exp(-Math.pow((u - 0.36) / 0.035, 2)) * 0.55;
+      const burst = Math.exp(-Math.pow((u - 0.21) / 0.04, 2));
       const side = new T.Vector3(Math.cos(y), 0, -Math.sin(y));
-      rot(bones.Head, up, k * 0.25 * Math.min(1, surge + 0.3));   // 고개를 살짝 옆으로(등 뒤 카메라에서 입 쪽이 보이게)
-      if (hd) {
+      rot(bones.Head, ax, -k * 0.22 * burst); rot(bones.Neck, ax, -k * 0.12 * burst);   // 컥 — 고개가 순간 들린다
+      if (hd && gore && gore.drop) {
         hd.updateMatrixWorld(true);
         const e = hd.matrixWorld.elements, ly = Math.hypot(e[4], e[5], e[6]) || 1, lz = Math.hypot(e[8], e[9], e[10]) || 1;
         const Y = new T.Vector3(e[4] / ly, e[5] / ly, e[6] / ly), Z = new T.Vector3(e[8] / lz, e[9] / lz, e[10] / lz);
         const mouth = hd.getWorldPosition(new T.Vector3()).addScaledVector(Y, 0.03).addScaledVector(Z, 0.1);
-        if (gore && gore.drop && (HS.vt = (HS.vt || 0) - (HS.vdt || 0.016)) <= 0 && surge > 0.08) {
+        if (burst > 0.15 && (HS.vt = (HS.vt || 0) - (HS.vdt || 0.016)) <= 0) {
           HS.vt = 0.016;
-          const n = 1 + Math.round(14 * Math.min(1, surge));
-          for (let i = 0; i < n; i++) { const sp = 0.5 + Math.random() * 0.6 + surge * 1.4, sd = (Math.random() - 0.5) * (0.3 + surge * 0.6); gore.drop(mouth.clone(), new T.Vector3(Z.x * sp + side.x * sd, Z.y * sp - 0.2 + Math.random() * 0.3, Z.z * sp + side.z * sd)); }
+          const n = Math.round(4 + 9 * burst), hz = Math.hypot(Z.x, Z.z) || 1, fx = Z.x / hz, fz = Z.z / hz;
+          for (let i = 0; i < n; i++) {
+            const sp = 1.4 + Math.random() * 1.8, upv = 1.2 + Math.random() * 1.8, sd = (Math.random() - 0.5) * 1.1;
+            gore.drop(mouth.clone(), new T.Vector3(fx * sp + side.x * sd, upv, fz * sp + side.z * sd));
+          }
         }
-        // 왈칵 — 입에서 땅까지 줄기(왈칵 사이만 · 굵기는 왈칵 세기)
-        const sv = Math.min(1, surge * 1.3);
-        if (sv > 0.12) { const hz = Math.hypot(Z.x, Z.z) || 1; streamDraw(G, mouth, Z.x / hz * Math.max(0.2, hz), Z.z / hz * Math.max(0.2, hz), sv, now, key); }
       }
-      // 땅 — 왈칵마다 발 앞에 핏물(20초)
-      for (const [c, key] of [[0.27, 'v1'], [0.38, 'v2']]) {
-        if (u >= c && !HS[key] && window.__smear) {
-          HS[key] = true;
-          const h = pos, fx = Math.sin(y), fz = Math.cos(y), d = 0.45 + Math.random() * 0.15, o = (Math.random() - 0.5) * 0.25;
-          const x0 = h.x + fx * (d - 0.15) + side.x * o, z0 = h.z + fz * (d - 0.15) + side.z * o;
-          window.__smear(x0, z0, x0 + fx * 0.3 + side.x * (Math.random() - 0.5) * 0.25, z0 + fz * 0.3 + side.z * (Math.random() - 0.5) * 0.25, 0.28 + Math.random() * 0.12, 20);
-        }
+      // 땅 — 뿜은 피가 떨어지는 발 앞(0.7~1.1m)에 핏물 하나(20초)
+      if (u >= 0.3 && !HS.v1 && window.__smear) {
+        HS.v1 = true;
+        const h = pos, fx = Math.sin(y), fz = Math.cos(y), d = 0.75 + Math.random() * 0.25, o = (Math.random() - 0.5) * 0.25;
+        const x0 = h.x + fx * (d - 0.15) + side.x * o, z0 = h.z + fz * (d - 0.15) + side.z * o;
+        window.__smear(x0, z0, x0 + fx * 0.35 + side.x * (Math.random() - 0.5) * 0.3, z0 + fz * 0.35 + side.z * (Math.random() - 0.5) * 0.3, 0.32 + Math.random() * 0.12, 20);
       }
     }
   }
