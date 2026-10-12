@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-440 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-441 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -320,7 +320,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-440'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-441'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1333,7 +1333,7 @@ body.mp-art #mp-cd.n1 { background-image: var(--art-count-n1); }
   </div>
 </div>
 <div id="hud">
-  <div class="hint">WASD 이동 · Space 뒤돌아보기 · G 잡기·놓기 · V 시점 · R 다시 · Tab 조절</div>
+  <div class="hint">WASD 이동 · G · Space 잡기·놓기 · V 시점 · R 다시 · Tab 조절</div>
   <button id="btn-settings" type="button">설정</button>
 </div>
 
@@ -3217,15 +3217,18 @@ var MeshoptDecoder = (function () {
 </script>
 <script>/* mapfix.js */
 /* 맵 손질 — 보이기만 바꾼다(길찾기 · 충돌 · 맵 서명은 그대로)
-   · 가운데 단상의 붉은 원판(PlatformShape_Material_TilesRed_0) 숨김 — 2026-10-12 사용자: 「맵 가운데 빨간 원 제거해」(밑에 같은 돌 타일이 깔려 있어 구멍 없음)
+   · 가운데 단상의 붉은 원판(PlatformShape_Material_TilesRed_0) — 2026-10-12 사용자: 「맵 가운데 빨간 원 제거해」
+     b441 — 숨기니 밑의 잔디가 보였다(사용자 「왜 돌바닥이 아니고 잔디가 있냐」) → 숨기지 않고 둘레 돌바닥(PlatformShape_Building_Tiles_0) 재질을 그대로 입힌다(같은 재질 · 새 셰이더 없음)
    · 끄기: 시연실 연출 「가운데 붉은 원판 숨김」 */
 (() => {
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.noredcircle === false); };
-  let red = null;
+  let red = null, tile = null, m0 = null;
   setInterval(() => {
     const G = window.__G; if (!G || !G.map || !G.map.loaded || !G.map.root) return;
-    if (!red) { G.map.root.traverse((o) => { if (!red && o.name === 'PlatformShape_Material_TilesRed_0') red = o; }); if (!red) return; console.log('[mapfix] 가운데 붉은 원판 숨김'); }
-    red.visible = !on();
+    if (!red) { G.map.root.traverse((o) => { if (o.name === 'PlatformShape_Material_TilesRed_0') red = o; if (o.name === 'PlatformShape_Building_Tiles_0') tile = o; }); if (!red) return; m0 = red.material; console.log('[mapfix] 가운데 붉은 원판 → 돌바닥'); }
+    red.visible = true;
+    const want = on() && tile ? tile.material : m0;
+    if (red.material !== want) red.material = want;
   }, 300);
 })();
 
@@ -3278,6 +3281,40 @@ var MeshoptDecoder = (function () {
       if (!CL.ready && G.game.bodies.length && G.game.bots.length && G.body) { CL.ready = true; console.log('[charlit] 사람 · 괴물 · 시체 자체 밝기 — 재질', CL.n); }
     } catch (e) { if (!CL.err) { CL.err = true; console.warn('[charlit]', e); } }
   }, 250);
+})();
+
+</script>
+<script>/* controls.js */
+/* 조작 · 판 시작(2026-10-12 사용자)
+   · Space 로도 시체 잡기 · 놓기(G 와 같다) — 「스페이스바 뒤돌아보기 제거 · G 또는 스페이스바로 시체를 들 수 있게」(뒤돌아보기는 camera.js 에서 끔 · 연출 lookback)
+   · 마우스로 카메라 못 돌림 — 「마우스로 카메라 시점은 못 바꾸게」 · 화면(캔버스)을 누른 마우스 끌기를 게임에 넘기지 않는다(휠 거리 · 버튼 · 패널은 그대로 · 터치는 그대로)
+   · 괴물은 판 시작 6초 동안 잠들어 있다 — 「시작하자마자 괴물이 달려온다 · 몇 초간은 잠들어 있다가 움직이게」(같이 하기는 서버 game.server.js sleepUntil 이 같다)
+   · 끄기: 시연실 연출 「Space 로 시체 잡기」 · 「마우스 카메라 막기」 · 「괴물 시작 잠」 */
+(() => {
+  const fx = (k) => { const X = window.__fx; return !(X && X.on && X.on[k] === false); };
+  const typing = (e) => { const t = e.target && e.target.tagName; return t === 'INPUT' || t === 'TEXTAREA' || (e.target && e.target.isContentEditable); };
+  const started = () => { const G = window.__G; return !!(G && G.started); };
+  // Space → G
+  for (const ty of ['keydown', 'keyup']) addEventListener(ty, (e) => {
+    if (e.code !== 'Space' || typing(e) || !started() || !fx('spacegrab')) return;
+    if (e.isTrusted === false && e.__cg) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (ty === 'keydown' && e.repeat) return;
+    const k = new KeyboardEvent(ty, { code: 'KeyG', key: 'g', bubbles: true }); k.__cg = true; window.dispatchEvent(k);
+  }, true);
+  // 마우스 끌기로 카메라 돌리기 막기
+  const block = (e) => { if (!fx('nomousecam') || e.pointerType === 'touch') return; if (e.target && e.target.tagName === 'CANVAS') { e.stopImmediatePropagation(); } };
+  addEventListener('pointerdown', block, true); addEventListener('mousedown', block, true);
+  // 괴물 시작 잠
+  let was = false, until = 0, keep = null;
+  const sleep = () => { if (!fx('monsleep') || (window.__mp && window.__mp.on)) return; const G = window.__G; until = performance.now() + 6000; if (!keep) keep = { peace: G.cfg.monPeace, auto: window.__fire ? window.__fire.auto : undefined }; G.cfg.monPeace = true; if (window.__fire) window.__fire.auto = false; const C = G.monster; if (C) { C.state = 'rest'; C.restT = 6; } };
+  setInterval(() => {
+    const G = window.__G; if (!G) return; const st = !!G.started && !(G.game && G.game.over);
+    if (st && !was) sleep();
+    was = st;
+    if (keep && performance.now() > until) { G.cfg.monPeace = keep.peace || false; if (window.__fire && keep.auto !== undefined) window.__fire.auto = keep.auto; keep = null; }
+  }, 100);
+  window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); setTimeout(sleep, 0); })(window.__onRestart);
 })();
 
 </script>
@@ -6564,6 +6601,10 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'botparity', name: '봇 = 나 같은 조건(game.js · knock.js — 10-12 사용자: 모든 조건이 동일해야 · 속도 무작위 0.9~1.1배 → 1배 · 맞으면 나처럼 포물선으로 날아가 미끄러지고(6.5m+3.9m) 같은 시간 쓰러졌다 일어남(1.35+4.3초 · 예전 3.2초) · 일어난 뒤 주춤 · 피 토함 · 기침 · 하늘 피)', def: true },
     { key: 'camfollow', name: '카메라가 가는 쪽을 비춤(camera.js — 10-12 사용자: 달리는 동안 등 뒤로 1.2초에 걸쳐 돌아감 · 마우스로 돌린 뒤 2.5초 쉼)', def: false },
     { key: 'charlit', name: '사람 · 괴물 · 시체 자체 밝기(charlit.js — 10-12 사용자: 장면 밝기와 상관없이 캐릭터 · 괴물 · 시체만 잘 보이는 톤 · 제 그림을 조금 스스로 빛나게 · 세기 __charlit.k)', def: true },
+    { key: 'spacegrab', name: 'Space 로 시체 잡기 · 놓기(controls.js — G 와 같다)', def: true },
+    { key: 'nomousecam', name: '마우스 카메라 막기(controls.js — 화면을 끌어도 시점이 안 돈다 · 휠 거리는 그대로)', def: true },
+    { key: 'monsleep', name: '괴물 시작 잠(controls.js · 서버 — 판 시작 6초 동안 서 있기만)', def: true },
+    { key: 'lookback', name: 'Space 뒤돌아보기(camera.js — 10-12 사용자 요청으로 뺌)', def: false },
     { key: 'eyelight', name: '눈 앞 시야(eyelight.js — 10-12 사용자: 손전등 없이 내 앞이 자연스럽게 보이게 · 손전등이 꺼져 있을 때 그 빛을 아주 넓고 부드럽고 약한 차가운 밤빛으로 빌려 · 머리 높이에서 보는 쪽 땅을)', def: true },
     { key: 'zonefence', name: '본진 바닥 표시 — 바닥 모델링을 따라(zonefence.js — 10-12 사용자: 뿌옇다 · 바닥 모델링을 따라 자연스럽게 · 맵 바닥 · 바위 윗면 삼각형을 본진 네모로 잘라 덮는 데칼 · 칠한 것처럼(번짐 없음) · 떠 있던 판은 숨김)', def: true },
     { key: 'monsmooth', name: '괴물 막힘 떨림 없애기(montwitch.js — 10-12 사용자: 막힌 곳에서 부들부들 · 그릴 때만 몸 자리 · 방향을 부드럽게 따라가게 · 실제 움직임 · 판정은 그대로)', def: true },
@@ -8932,16 +8973,19 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     else go();
   };
   function triggerGrab(kind) {
-    const G = window.__G, c = G.cfg, m0 = c.carryMode;
+    const G = window.__G, c = G.cfg, m0 = c.carryMode, r0 = c.pickupRange;
     if (m0 === 0) c.carryMode = kind === 'carry' ? 2 : 1;
+    // b441 — 걸어간 자리(끌기는 발치)가 게임의 잡는 거리(엉덩이에서 1.1m)를 넘을 때가 있다 → 「들 수 있다」 떴는데 안 잡히던 것(사용자) · 이 한 번만 2.6m 로 넓혀 잡는다
+    if (G.mpApi && G.mpApi.nearest && !G.mpApi.nearest(r0 || 1.1) && G.mpApi.nearest(2.6)) c.pickupRange = 2.6;
     passG = true;
     try { for (const ty of ['keydown', 'keyup']) window.dispatchEvent(new KeyboardEvent(ty, { code: 'KeyG', key: 'g', bubbles: true })); }
-    finally { passG = false; c.carryMode = m0; }
+    finally { passG = false; c.carryMode = m0; c.pickupRange = r0; }
   }
   window.__autoWalk = (Aa, Qt, n, r) => {
     if (!AP) return;
     const G = window.__G;
-    if (n || r || !G.started || (G.carry && G.carry.heldBody) || (G.hit && G.hit.active)) { AP = null; return; }
+    if (!G.started || (G.carry && G.carry.heldBody) || (G.hit && G.hit.active)) { AP = null; return; }
+    if (n || r) { const k = AP.kind; AP = null; setTimeout(() => triggerGrab(k), 0); return; }   // b441 — 걸어가는 중 방향키 — 그만 걷고 그 자리에서 바로 잡는다(예전: 그냥 취소돼 안 잡혔다)
     const h = G.hero.position, dx = AP.tx - h.x, dz = AP.tz - h.z, d = Math.hypot(dx, dz), t = performance.now();
     if (d < 0.3 || t - AP.t0 > 2200 || (t - AP.lastT > 450 && AP.lastD - d < 0.05)) { const k = AP.kind; AP = null; Aa.set(0, 0, 0); setTimeout(() => triggerGrab(k), 0); return; }
     if (t - AP.lastT > 450) { AP.lastT = t; AP.lastD = d; }
@@ -10766,6 +10810,7 @@ vec3 srGN(vec2 p) {
   addEventListener('pointermove', (e) => { if (S.drag && (e.buttons & 7) && (e.movementX || e.movementY)) S.manualT = performance.now(); }, true);
   addEventListener('keydown', (e) => {
     if (e.code !== 'Space' || typing(e)) return;
+    const X = window.__fx; if (!(X && X.on && X.on.lookback === true)) return;   // b441 — 뒤돌아보기 뺌(사용자) · Space 는 시체 잡기(controls.js)
     const G = window.__G; if (!G || !G.started) return;
     e.preventDefault(); S.lbHeld = true;
   }, true);
@@ -10860,7 +10905,7 @@ vec3 srGN(vec2 p) {
     // 끝 장면(2026-10-09) — 판이 끝나면 3초에 걸쳐 천천히 다가가 낮아진다(거리 32% · 내려다봄 7° · 시야 4°) · 다음 판이면 바로 돌아옴 · 끄기: 시연실 「끝 장면 카메라」
     { const X = window.__fx, on = !(X && X.on && X.on.endcam === false), over = !!(G.game && G.game.over) || performance.now() < (S.endDemoUntil || 0);
       const want = on && over ? 1 : 0; K.end = (K.end || 0) + (want - (K.end || 0)) * ex(dt, want > (K.end || 0) ? 1.1 : 0.15); }
-    if (chase > 0.15 && S.hintArm && !S.lbUsed && S.hintN < 3) { S.hintArm = false; S.hintN++; hint(); }
+    if (chase > 0.15 && S.hintArm && !S.lbUsed && S.hintN < 3 && window.__fx && window.__fx.on && window.__fx.on.lookback === true) { S.hintArm = false; S.hintN++; hint(); }
     if (chase === 0 && md > 18) S.hintArm = true;
 
     // v3 살아 있는 카메라 — 출발 · 멈춤 무게 · 비탈 · 숨 · 심장 · 업기 구도
