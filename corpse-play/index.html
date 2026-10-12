@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-474 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-476 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -321,7 +321,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-474'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-476'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3759,7 +3759,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const DEF = {
     titleT: 2.6, aerial: 1.6, closeA: 1.0, closeB: 1.0, trackA: 0.8, trackB: 0.8, wide: 0.55, slowLen: 0, slowRate: 1, burst: 0.6, burstRate: 0.3, after: 2.8, winT: 5.0,
     accel: 3.4, jerk: 0.5, floatH: 0.3, lean: 0.3, writhe: 1.0, wSpd: 1.0, armR: 1, legK: 1,
-    mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', speed: 1, gap: 0.2, squashT: 0.04, squash: 0.35, spurt: 1, winBright: 1, endBright: 1,
+    mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', speed: 1, gap: 0.2, squashT: 0.04, dashT: 0.3, dashFrom: 0.7, dashPow: 1.6, hitStop: 0.08, burstEase: 1, hitSnd: 0, burstSnd: 0, squash: 0.35, spurt: 1, winBright: 1, endBright: 1,
     closeD: 1.1, closeFov: 40, trackD: 2.4, trackFov: 56, wideD: 4.2, wideFov: 52, kick: 0.6, fovPunch: 4, shake: 1, winD: 0.7, winFov: 30, bars: 1,
     parts: 1, partF: 1, partSpin: 1, chunks: 45, cloth: 0, skin: 0, bones: 0, chunkSize: 0.55, chunkF: 1, roll: 1, drops: 1400, dropSize: 1, dropF: 1, mist: 1,
     flash: 0, ring: 0, sound: 1, light: 2.2,
@@ -3772,11 +3772,13 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   (function regSet() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regSet, 300); return; } St.reg('endFx', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; saveCF(); if (lab && lab.show) { const c = lab.cur; lab.cur = null; lab.show(c || 'title'); } } } }); })();
   // 시간표(u = 화면 시간) — 슬로모션 구간에서는 사건 시간 τ 가 느리게 흐른다
   const TL = () => {
-    const u0 = CF.titleT, uF = u0 + CF.aerial, cA = uF, cB = cA + CF.closeA, tA = cB + CF.closeB, tB = tA + CF.trackA, w0 = tB + CF.trackB, uS = w0 + CF.wide, uH = uS + CF.slowLen, uB = uH + CF.burst, uW = uB + CF.after, end = uW + CF.winT;
-    const tauH = uS + CF.slowLen * CF.slowRate, tauB = tauH + CF.burst * CF.burstRate;
-    return { u0, uF, cA, cB, tA, tB, w0, uS, uH, uB, uW, end, tauH, tauB };
+    const u0 = CF.titleT, uF = u0 + CF.aerial, cA = uF, cB = cA + CF.closeA, tA = cB + CF.closeB, tB = tA + CF.trackA, w0 = tB + CF.trackB, uS = w0 + CF.wide, uH = uS + CF.slowLen, uHs = uH + CF.hitStop, uB = uHs + CF.burst, uW = uB + CF.after, end = uW + CF.winT;
+    const tauH = uS + CF.slowLen * CF.slowRate, r0 = CF.burstRate, e = CF.burstEase > 0 ? 1 + 2 * CF.burstEase : 0, tauB = tauH + CF.burst * (e ? r0 + (1 - r0) / (e + 1) : r0);
+    return { u0, uF, cA, cB, tA, tB, w0, uS, uH, uHs, uB, uW, end, tauH, tauB, e };
   };
-  const tauOf = (u, t) => u < t.uS ? u : u < t.uH ? t.uS + (u - t.uS) * CF.slowRate : u < t.uB ? t.tauH + (u - t.uH) * CF.burstRate : t.tauB + (u - t.uB);
+  // 부딪힌 순간 화면이 멈칫(hitStop) → 느린 화면(burstRate)에서 점점 원래 빠르기로(burstEase — 0 이면 뚝 바뀜)
+  const tauOf = (u, t) => { if (u < t.uS) return u; if (u < t.uH) return t.uS + (u - t.uS) * CF.slowRate; if (u < t.uHs) return t.tauH; if (u < t.uB) { const B = Math.max(1e-3, CF.burst), x = (u - t.uHs) / B, r0 = CF.burstRate; return t.tauH + B * (t.e ? r0 * x + (1 - r0) * Math.pow(x, t.e + 1) / (t.e + 1) : r0 * x); } return t.tauB + (u - t.uB); };
+  const uOfTau = (tau, t) => { let a = t.uS, b = t.uW; for (let i = 0; i < 40; i++) { const m = (a + b) / 2; if (tauOf(m, t) < tau) a = m; else b = m; } return b; };
 
   let G = null, T = null, M4 = null, QT = null, EU = null, S = null;
   const mesh = {}, PM = [], WARM = [];
@@ -3938,8 +3940,8 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     if (cross(t.w0 + 0.1)) { scr(a, 1); scr(b, 1); }
     // b474 — 소리는 모두 화면 소리(자리 없음 · 카메라와의 거리로 줄지 않게 — 「캐릭터마다 비명 · 웃음 크기가 다르고 안 들린다」)
     //   퍽(맞닿는 순간) → 짓눌림 squashT 뒤 터지는 소리(살 터짐 둘)
-    const uBurst = t.uH + CF.squashT / Math.max(0.05, CF.burstRate);
-    if (cross(t.uH) && Rf && Rf.play) Rf.play('mon_hit', { vol: v, rate: 0.75 });
+    const uBurst = uOfTau(t.tauH + CF.squashT, t) + CF.burstSnd;
+    if (cross(t.uH + CF.hitSnd) && Rf && Rf.play) Rf.play('mon_hit', { vol: v, rate: 0.75 });
     if (cross(uBurst) && Rf && Rf.play) { Rf.play('sys_gore', { vol: v, rate: 0.8 }); setTimeout(() => Rf.play && Rf.play('sys_gore2', { vol: 0.95 * v, rate: 0.85 }), 60); if (Rf.muffle) setTimeout(() => Rf.muffle(), 40); }
     for (const dx of [0.9, 1.3, 1.8]) if (cross(t.uB + dx - 0.7) && Rf && Rf.play) Rf.play('p_squelch', { vol: 0.7 * v, rate: 0.75 + dx * 0.1 });
     if (cross(t.uW + CF.reliefT + 0.15) && Rf && Rf.play && CF.laugh > 0 && S.W) Rf.play('end_laugh' + (CF.laughId || '1'), { vol: CF.laugh * v, rate: 1 });   // 흐흐흐 — 비열한 웃음
@@ -4128,7 +4130,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     // 진 둘 — 등 뒤로 끌려감
     for (let i = 0; i < S.L.length; i++) {
       const A = S.L[i], o = A.obj; keep(o);
-      const k = cl((tau - t.uF) / (t.tauH - t.uF)), f = Math.pow(k, CF.accel), jk = tau > t.uF ? CF.jerk * (1 - Math.exp(-(tau - t.uF) * 7)) * (1 - k) : 0;
+      const k = cl((tau - t.uF) / (t.tauH - t.uF)), td = t.tauH - CF.dashT, f = CF.dashT > 0.01 && tau > td ? CF.dashFrom + (1 - CF.dashFrom) * Math.pow(cl((tau - td) / CF.dashT), CF.dashPow) : CF.dashFrom * Math.pow(cl((tau - t.uF) / Math.max(0.1, td - t.uF)), CF.accel) * (CF.dashT > 0.01 ? 1 : 1 / Math.max(1e-3, CF.dashFrom)), jk = tau > t.uF ? CF.jerk * (1 - Math.exp(-(tau - t.uF) * 7)) * (1 - k) : 0;
       if (tau >= t.tauH) { if (!S.bp) {
           // b472 — 팍 맞닿음: 등과 등이 부딪혀 짓눌리고(squashT 동안 · 부딪힌 쪽으로 납작 · 옆으로 불룩 · 떨림) 그다음 터진다
           const q = cl((tau - t.tauH) / Math.max(0.01, CF.squashT)), sq = Math.sin(Math.PI * Math.min(1, q * 1.4)) * 0.4 + 0.6 * q, push = 0.12 * q;
@@ -4226,6 +4228,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     const t = now(), dt = Math.min(0.1, t - (lastT || t)); lastT = t;
     if (!S) return;
     const u0 = S.u, e = TL().end;
+    if (S.playing && S.hitLoop) { const tt = TL(); if (S.u > tt.uB + 1.0) { S.u = Math.max(0, tt.uS - 1.0); freeParts(); } }
     if (S.playing) { S.u += dt * S.rate * (CF.speed || 1); if (S.u >= e) { if (S.mode === 'studio' && S.loop) S.u = 0; else { S.u = e; if (S.mode === 'studio') S.playing = false; } } }
     if (S.playing) sounds(u0, S.u);
     if (S.mode === 'real') { const hide = S.u < e - 0.6; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = hide ? 'hidden' : ''; }   // 판 끝 카드는 연출이 끝날 때
@@ -4259,7 +4262,9 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     { k: 'faceA', name: '① 얼굴', at: (t) => t.cA, rows: [['closeA', '길이', 0.3, 3, 0.05, 's'], ['faceA', '표정', 'sel', FACE_OPT], ['motionA', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'faceB', name: '② 얼굴', at: (t) => t.cB, rows: [['closeB', '길이', 0.3, 3, 0.05, 's'], ['faceB', '표정', 'sel', FACE_OPT], ['motionB', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'track', name: '끌려감', at: (t) => t.tA, rows: [['trackA', '① 따라가는 길이', 0.2, 3, 0.05, 's'], ['trackB', '② 따라가는 길이', 0.2, 3, 0.05, 's'], ['motionA', '① 동작', 'sel', () => MOTIONS], ['motionB', '② 동작', 'sel', () => MOTIONS], ['writhe', '버둥 세기', 0, 2, 0.05, '%'], ['wSpd', '버둥 빠르기', 0.2, 2.5, 0.05, '×'], ['armR', '팔', 0, 2, 0.05, '%'], ['legK', '다리', 0, 2, 0.05, '%'], ['accel', '점점 빨라짐', 1, 6, 0.05, ''], ['jerk', '처음 확 낚아채임', 0, 2, 0.05, 'm'], ['floatH', '떠서 끌려가는 높이', 0, 1.5, 0.02, 'm'], ['lean', '버티며 숙임', 0, 0.9, 0.02, ''], ['trackD', '카메라 거리', 1, 6, 0.1, 'm'], ['trackFov', '화각', 30, 90, 1, '°']] },
-    { k: 'hit', name: '부딪힘', at: (t) => t.w0, rows: [['wide', '옆에서 보는 길이', 0.2, 3, 0.05, 's'], ['gap', '맞닿는 거리(가운데에서)', 0, 0.5, 0.01, 'm'], ['squashT', '맞닿아 터지기까지', 0, 0.3, 0.01, 's'], ['squash', '짓눌림 세기', 0, 0.8, 0.02, '%'], ['burst', '부딪힌 순간 느리게', 0, 2, 0.05, 's'], ['burstRate', '그 느리기', 0.05, 1, 0.01, '×'], ['wideD', '카메라 거리', 2, 16, 0.1, 'm'], ['wideFov', '화각', 20, 80, 1, '°'], ['kick', '퍽 — 카메라 뒤로 밀림', 0, 3, 0.05, 'm'], ['fovPunch', '퍽 — 화각 출렁', 0, 30, 1, '°'], ['shake', '흔들림', 0, 3, 0.05, '%']] },
+    { k: 'hit', name: '부딪힘', at: (t) => t.w0, rows: [['wide', '옆에서 보는 길이', 0.2, 3, 0.05, 's'], ['_h', '— 날아듦'], ['dashT', '마지막 돌진 시간', 0, 1.5, 0.01, 's'], ['dashFrom', '돌진 전까지 온 거리', 0.2, 0.98, 0.01, '%'], ['dashPow', '돌진 가속(클수록 끝에 확)', 0.5, 4, 0.05, ''], ['gap', '맞닿는 거리(가운데에서)', 0, 0.5, 0.01, 'm'],
+      ['_h', '— 부딪힘 · 터짐'], ['hitStop', '부딪힌 순간 멈칫', 0, 0.5, 0.01, 's'], ['squashT', '맞닿아 터지기까지', 0, 0.3, 0.01, 's'], ['squash', '짓눌림 세기', 0, 0.8, 0.02, '%'], ['burst', '터진 뒤 느린 화면 길이', 0, 3, 0.05, 's'], ['burstRate', '느린 화면 빠르기', 0.05, 1, 0.01, '×'], ['burstEase', '원래 빠르기로 돌아오는 부드럽기', 0, 3, 0.05, ''],
+      ['_h', '— 소리 시각'], ['hitSnd', '퍽 소리 당기기/늦추기', -0.5, 0.5, 0.01, 's'], ['burstSnd', '터지는 소리 당기기/늦추기', -0.5, 0.5, 0.01, 's'], ['_h', '— 카메라'], ['wideD', '카메라 거리', 2, 16, 0.1, 'm'], ['wideFov', '화각', 20, 80, 1, '°'], ['kick', '퍽 — 카메라 뒤로 밀림', 0, 3, 0.05, 'm'], ['fovPunch', '퍽 — 화각 출렁', 0, 30, 1, '°'], ['shake', '흔들림', 0, 3, 0.05, '%']] },
     { k: 'gore', name: '조각', at: (t) => t.uH, rows: [['after', '길이', 0.5, 6, 0.1, 's'], ['parts', '팔 · 다리 · 머리 · 몸통 조각', 0, 1, 1, ''], ['partF', '조각 날아가는 힘', 0.2, 3, 0.05, '×'], ['partSpin', '조각 도는 빠르기', 0, 3, 0.05, '×'], ['roll', '땅에서 굴러감', 0, 3, 0.05, '×'], ['chunks', '잔 살점', 0, 200, 1, ''], ['chunkSize', '살점 크기', 0.3, 3, 0.05, '×'], ['drops', '핏방울', 0, 2200, 10, ''], ['dropSize', '핏방울 크기', 0.3, 3, 0.05, '×'], ['dropF', '피 튀는 힘', 0.2, 3, 0.05, '×'], ['mist', '피 안개', 0, 2, 0.05, '%']] },
     { k: 'win', name: '이긴 사람', at: (t) => t.uW, rows: [['winT', '길이', 1, 10, 0.1, 's'], ['reliefT', '안도의 숨(미소 전까지)', 0, 3, 0.05, 's'], ['relief', '안도 표정', 0, 1, 0.02, '%'], ['sneer', '씨익 미소', 0, 1, 0.02, '%'], ['laughId', '웃음소리 종류', 'sel', () => [['1', '크크크 — 낮게 킥킥'], ['2', '키킥 — 짧게 비웃음']]], ['laugh', '웃음소리 크기', 0, 1.5, 0.05, '%'], ['winBright', '이 장면 화면 밝기', 0.3, 4, 0.05, '×'], ['winD', '얼굴 거리', 0.35, 2, 0.05, 'm'], ['winFov', '화각', 15, 60, 1, '°']] },
     { k: 'all', name: '전체', at: null, rows: [['speed', '결말 전체 빠르기', 0.3, 2, 0.05, '×'], ['endBright', '결말 전체 화면 밝기', 0.3, 4, 0.05, '×'], ['light', '사람 밝기', 1, 5, 0.05, '×'], ['sound', '소리', 0, 1.5, 0.05, '%'], ['shake', '흔들림', 0, 3, 0.05, '%']] },
@@ -4308,14 +4313,14 @@ body.dl-on #cin-btn,body.dl-on #cin-p,body.dl-on #hud,body.dl-on #prompt,body.dl
 <button data-a="loop" class="on">반복</button><button data-a="free">자유 카메라</button><span class="tm"></span><button data-a="close" style="margin-left:auto">닫기(Esc)</button></div></div>`;
     document.body.appendChild(root);
     const vals = root.querySelector('.vals');
-    const U = {}; for (const sc of SC) for (const r of sc.rows) if (r[2] !== 'sel') U[r[0]] = r[5];
+    const U = {}; for (const sc of SC) for (const r of sc.rows) if (r[0] !== '_h' && r[2] !== 'sel') U[r[0]] = r[5];
     const tabs = root.querySelector('.tabs');
     tabs.innerHTML = SC.map((sc) => `<button data-sc="${sc.k}">${sc.name}</button>`).join('');
     const show = (k) => {
       if (lab && lab.cur === k) return; if (lab) lab.cur = k;
       const sc = SC.find((q) => q.k === k); root.querySelector('.scn').textContent = sc.name;
       for (const b of tabs.querySelectorAll('button')) b.classList.toggle('on', b.dataset.sc === k);
-      vals.innerHTML = sc.rows.map((r) => r[2] === 'sel'
+      vals.innerHTML = (k === 'hit' ? `<div class="row" style="margin:4px 0 6px"><button data-a="hitloop" class="${S && S.hitLoop ? 'on' : ''}">▶ 부딪힘만 반복해서 보기</button></div>` : '') + sc.rows.map((r) => r[0] === '_h' ? `<h5>${r[1]}</h5>` : r[2] === 'sel'
         ? `<label>${r[1]}</label><select class="v" data-k="${r[0]}">${r[3]().map(([v, n]) => `<option value="${v}"${CF[r[0]] === v ? ' selected' : ''}>${n}</option>`).join('')}</select>`
         : `<label>${r[1]}<b id="dl-v-${r[0]}">${fmt(CF[r[0]], r[5])}</b></label><input type="range" min="${r[2]}" max="${r[3]}" step="${r[4]}" value="${CF[r[0]]}" data-k="${r[0]}">`).join('');
     };
@@ -4338,6 +4343,7 @@ body.dl-on #cin-btn,body.dl-on #cin-p,body.dl-on #hud,body.dl-on #prompt,body.dl
       if (a === 'back') { S.u = Math.max(0, S.u - FR); S.playing = false; }
       if (a === 'fwd') { S.u = Math.min(t.end, S.u + FR); S.playing = false; }
       if (a === 'hit') { S.u = Math.max(0, t.w0); S.playing = true; }
+      if (a === 'hitloop') { S.hitLoop = !S.hitLoop; lab.pin = S.hitLoop; e.target.classList.toggle('on', S.hitLoop);   /* 반복하는 동안 패널은 부딪힘에 고정 */ if (S.hitLoop) { S.u = Math.max(0, t.uS - 1.0); S.playing = true; S.rate = Math.min(S.rate, 0.5); } }
       if (a === 'loop') { S.loop = !S.loop; e.target.classList.toggle('on', S.loop); }
       if (a === 'free') { S.free = S.free ? null : { yaw: Math.atan2(S.perp[0], S.perp[1]), pitch: 0.35, d: 9 }; root.classList.toggle('free', !!S.free); e.target.classList.toggle('on', !!S.free); }
       if (a === 'seed') { S.seed = (Math.random() * 1e9) | 0; freeParts(); }
