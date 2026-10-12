@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-479 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-487 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -321,7 +321,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-479'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-487'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3106,6 +3106,39 @@ var MeshoptDecoder = (function () {
   }
   // 데칼 — 맵 바닥 · 바위 윗면 삼각형을 본진 네모(옆 u · 앞 v)로 자른다 · 설 수 있는 윗면만(위를 보는 면 · 길찾기 높이와 35cm 안)
   //   uv 는 원래 판과 같은 방향(game.js Xy: 옆 = 너비 · 앞 = 깊이)
+  // b486 — 본진 둘레의 바위 · 소품 겉면도 팀 색으로 물들인다(사용자 「초창기처럼 본진 표시를 오브젝트에 자연스럽게」 — 바위 옆구리 · 윗면까지)
+  //   둥근 영역에서 0.9m 안 · 바닥 높이 −0.2 ~ +1.8m 의 겉면(옆면 포함) · 바닥 데칼(맨 윗면)과 겹치지 않게 맨 윗면은 뺀다 · 같은 재질(새 셰이더 없음)
+  function objDecal(z, fill, meshes, top, y0b, RG) {
+    const W = (G.cfg.zoneWidth || 7) / 2 + 1.2, D = (G.cfg.zoneDepth || 6) / 2 + 1.2, cx = z.cx, cz = z.cz, R = Math.hypot(W, D) + 0.5;
+    const near = (x, zz) => { if (!RG) return true; for (const [ox, oz] of [[0, 0], [0.45, 0], [-0.45, 0], [0, 0.45], [0, -0.45], [0.9, 0], [-0.9, 0], [0, 0.9], [0, -0.9]]) if (RG.at(x + ox, zz + oz) >= RG.LV) return true; return false; };
+    const out = [], uvs = [], A = new T.Vector3(), B = new T.Vector3(), C = new T.Vector3(), S0 = new T.Vector3();
+    for (const m of meshes) {
+      const g = m.geometry, P = g && g.attributes && g.attributes.position; if (!P) continue;
+      if (m.material && (m.material.transparent || m.material.alphaTest > 0)) continue;
+      m.updateMatrixWorld(true); if (!g.boundingSphere) g.computeBoundingSphere();
+      S0.copy(g.boundingSphere.center).applyMatrix4(m.matrixWorld);
+      if (Math.hypot(S0.x - cx, S0.z - cz) > g.boundingSphere.radius * m.matrixWorld.getMaxScaleOnAxis() + R) continue;
+      const I = g.index, n = I ? I.count : P.count, mw = m.matrixWorld;
+      for (let t = 0; t + 2 < n; t += 3) {
+        A.fromBufferAttribute(P, I ? I.getX(t) : t).applyMatrix4(mw); B.fromBufferAttribute(P, I ? I.getX(t + 1) : t + 1).applyMatrix4(mw); C.fromBufferAttribute(P, I ? I.getX(t + 2) : t + 2).applyMatrix4(mw);
+        const mx = (A.x + B.x + C.x) / 3, my = (A.y + B.y + C.y) / 3, mz = (A.z + B.z + C.z) / 3;
+        if (Math.abs(mx - cx) > R || Math.abs(mz - cz) > R) continue;
+        if (my < y0b - 0.2 || my > y0b + 1.8) continue;
+        const L = Math.max(A.distanceTo(B), B.distanceTo(C), C.distanceTo(A)); if (L > 2.5) continue;
+        const h = top.at(mx, mz); if (isFinite(h) && Math.abs(my - h) < 0.2) continue;   // 맨 윗면은 바닥 데칼이 맡는다
+        if (!near(mx, mz)) continue;
+        const e1x = B.x - A.x, e1y = B.y - A.y, e1z = B.z - A.z, e2x = C.x - A.x, e2y = C.y - A.y, e2z = C.z - A.z;
+        const nx = e1y * e2z - e1z * e2y, ny = e1z * e2x - e1x * e2z, nz = e1x * e2y - e1y * e2x, nl = Math.hypot(nx, ny, nz) || 1;
+        const o = 0.012 / nl;   // 겉면 바깥으로 1.2cm 띄워 겹침 깜빡임 없게
+        for (const V of [A, B, C]) { out.push(V.x + nx * o, V.y + ny * o, V.z + nz * o); uvs.push(0.5, 0.5); }
+      }
+    }
+    if (!out.length) return null;
+    const BA = fill.geometry.attributes.position.constructor, BG = Object.getPrototypeOf(fill.geometry.constructor.prototype).constructor;
+    const geo = new BG(); geo.setAttribute('position', new BA(new Float32Array(out), 3)); geo.setAttribute('uv', new BA(new Float32Array(uvs), 2)); geo.setAttribute('color', new BA(new Float32Array(out.length).fill(1), 3));
+    geo.computeVertexNormals(); geo.computeBoundingSphere();
+    return geo;
+  }
   function decal(z, fill, meshes, top, y0b, RG) {
     const W = (G.cfg.zoneWidth || 7) / 2, D = (G.cfg.zoneDepth || 6) / 2, fx = z.fx, fz = z.fz, sx = fz, sz = -fx, cx = z.cx, cz = z.cz;
     const N = window.__nav, R = Math.hypot(W, D) + 0.5, h0 = N && N.okAt ? N.okAt(cx, cz) : null, y0 = h0 !== null && h0 !== undefined && isFinite(h0) ? h0 : (G.groundAt(cx, cz) || 0);
@@ -3163,7 +3196,8 @@ var MeshoptDecoder = (function () {
     const T0 = performance.now(), meshes = [...new Set([...(G.map.grounds || []), ...(G.map.solids || [])])].filter((m) => !(m.material && (m.material.transparent || m.material.alphaTest > 0)));
     const top = topGrid(z, meshes), y0b = floorY(z), RG = region(z, top, y0b), d = decal(z, fill, meshes, top, y0b, RG);
     const grp = new T.Group(); grp.name = 'zonefence';
-    const mf = new T.Mesh(d.geo, fill.material); mf.renderOrder = 3; mf.frustumCulled = false; grp.add(mf);   // 바닥 판 — 재질은 원래 판 것 그대로(고른 칠)
+    const mf = new T.Mesh(d.geo, fill.material); mf.renderOrder = 3; mf.frustumCulled = false; grp.add(mf);
+    { const og = objDecal(z, fill, meshes, top, y0b, RG); if (og) { const mo = new T.Mesh(og, fill.material); mo.renderOrder = 3; mo.frustumCulled = false; mo.name = 'objtint'; mo.userData.objtint = true; grp.add(mo); console.log('[zonefence] 본진', z.team, '둘레 바위 · 소품 물들임 삼각형', og.attributes.position.count / 3); } }   // 바닥 판 — 재질은 원래 판 것 그대로(고른 칠)
     // 경계선 — 테두리 재질 복제(같은 프로그램) · 그림은 테두리 그림의 흰 줄 한 점(uv) · 팀 색 · 늘 또렷하게
     const lineM = edge.material.clone(); lineM.map = texE; lineM.alphaMap = texE; lineM.color.setHex((G.colors && G.colors[z.team]) || 0xffffff); lineM.opacity = 0.5; lineM.blending = 1; lineM.vertexColors = true; lineM.polygonOffset = true; lineM.polygonOffsetFactor = -6; lineM.polygonOffsetUnits = -6;
     { const ln = contour2(z, lineM, top, [5 / 512, 0.5], RG); grp.add(ln); if (ln.userData.beam) grp.add(ln.userData.beam); }   // 흰 줄 한가운데(0~10px) · 둥근 영역 가장자리
@@ -3284,6 +3318,47 @@ var MeshoptDecoder = (function () {
     red.visible = true;
     const want = on() && tile ? tile.material : m0;
     if (red.material !== want) red.material = want;
+  }, 300);
+})();
+/* b481 — P3 쪽 문(GateShape) 숨김 · 아래로 내려가는 돌계단 입구를 바위로 막음(사용자 「이 문 장식과 아래로 내려가는 길을 없애고 바위로 막아 · 플레이에 헷갈린다」)
+   · 바위 = 맵의 큰 바위(BaseShape_Rock_detaild) 꼭대기 한 덩이를 떼어 내 복제(같은 재질 → 새 셰이더 없음) · 계단 입구에 세 개 + 뒤에 둘
+   · 길은 이미 nav.js stairBlocked 로 막혀 있다(걸어서는 못 내려간다) · 끄기: 시연실 연출 「P3 문 · 계단 막기」(gateblock) */
+(() => {
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.gateblock === false); };
+  let gate = null, grp = null, tries = 0;
+  const iv = setInterval(() => {
+    const G = window.__G; if (!G || !G.map || !G.map.loaded || !G.map.root || !G.THREE) return;
+    if (grp === null && ++tries > 200) { clearInterval(iv); return; }
+    if (!gate) { gate = []; G.map.root.traverse((o) => { if (o.isMesh && /^GateShape_/.test(o.name)) gate.push(o); }); }
+    if (grp === null) try {
+      let rock = null; G.map.root.traverse((o) => { if (o.isMesh && /^BaseShape_Rock_detaild/.test(o.name) && (!rock || o.geometry.attributes.position.count > rock.geometry.attributes.position.count)) rock = o; });
+      if (!rock) return;
+      const T = G.THREE, g = rock.geometry, P = g.attributes.position, idx = g.index, n = P.count, W = new Float32Array(n * 3), v = new T.Vector3();
+      rock.updateWorldMatrix(true, false);
+      let top = -1e9, ti = 0; for (let i = 0; i < n; i++) { v.fromBufferAttribute(P, i).applyMatrix4(rock.matrixWorld); W[i * 3] = v.x; W[i * 3 + 1] = v.y; W[i * 3 + 2] = v.z; if (v.y > top) { top = v.y; ti = i; } }
+      const cx = W[ti * 3], cz = W[ti * 3 + 2], R = 1.6, H = 2.2, keep = [], map = new Map(), pos = [], uv = [], UV = g.attributes.uv;
+      const NT = idx ? idx.count : n;
+      for (let t = 0; t < NT; t += 3) {
+        const a = idx ? idx.getX(t) : t, b = idx ? idx.getX(t + 1) : t + 1, c = idx ? idx.getX(t + 2) : t + 2;
+        let ok = true; for (const k of [a, b, c]) if (Math.hypot(W[k * 3] - cx, W[k * 3 + 2] - cz) > R || W[k * 3 + 1] < top - H) ok = false;
+        if (!ok) continue;
+        for (const k of [a, b, c]) { let j = map.get(k); if (j === undefined) { j = map.size; map.set(k, j); pos.push(W[k * 3] - cx, W[k * 3 + 1] - (top - H), W[k * 3 + 2] - cz); if (UV) uv.push(UV.getX(k), UV.getY(k)); } keep.push(j); }
+      }
+      if (keep.length < 90) { grp = false; console.warn('[mapfix] 바위 덩이를 못 떼어 냄'); return; }
+      const tmp = new T.PlaneGeometry(1, 1), BA = tmp.attributes.position.constructor, geo = new (Object.getPrototypeOf(tmp.constructor.prototype).constructor)();   /* 맵 속성은 끼워 넣은(interleaved) 꼴이라 일반 속성으로 */ geo.setAttribute('position', new BA(new Float32Array(pos), 3)); if (UV) geo.setAttribute('uv', new BA(new Float32Array(uv), 2)); geo.setIndex(keep); geo.computeVertexNormals(); geo.computeBoundingSphere();
+      grp = new T.Group(); grp.name = 'gate-block';
+      const ax = 9.6, az = -9.6, dx = 0.444, dz = -0.896, px = 0.896, pz = 0.444;   // 계단 입구 · 내려가는 쪽 · 옆
+      const spots = [[0, 0.3, 1.0, 0], [-1.05, 0.5, 0.85, 1.7], [1.05, 0.45, 0.9, 3.4], [-0.5, 1.4, 1.1, 4.6], [0.6, 1.5, 1.0, 2.2]];
+      for (const [s, f, k, r] of spots) {
+        const m = new T.Mesh(geo, rock.material); const x = ax + px * s + dx * f, z = az + pz * s + dz * f;
+        const gy = G.groundAt ? G.groundAt(x, z) : 0;
+        const top0 = G.mpApi && G.mpApi.gy ? G.mpApi.gy(ax - dx * 0.8, az - dz * 0.8) : 0;   // 계단 위 땅 높이(계단 아래가 아니라)
+        m.position.set(x, Math.max(isFinite(gy) ? gy : -9, top0) - 0.45, z); m.rotation.y = r; m.scale.set(k * 1.7, k * 1.4, k * 1.7); m.castShadow = m.receiveShadow = true; grp.add(m);
+      }
+      G.scene.add(grp);
+      console.log('[mapfix] P3 문 숨김 · 계단 입구 바위', grp.children.length, '· 바위 삼각형', keep.length / 3);
+    } catch (e) { grp = false; console.warn('[mapfix] 바위', e); }
+    const o = on(); for (const m of gate) m.visible = !o; if (grp) grp.visible = o;
   }, 300);
 })();
 
@@ -3538,6 +3613,7 @@ var MeshoptDecoder = (function () {
     ord.forEach((b, i) => {
       const k = Math.max(0, Math.min(1, (u - 0.35 - i * 0.75) / 1.1)), kf = Math.max(0, Math.min(1, (u - 1.1 - i * 0.75) / 0.8)), kb = Math.max(0, (u - 1.3 - i * 0.75));
       for (const m of b.grp.children) {
+        if (m.userData.objtint) continue;   // 바닥 판과 같은 재질 — 두 번 곱하지 않게
         if (m.userData.loops !== undefined) { const g = m.geometry, n = g.index ? g.index.count : 0; zsv.push(['dr', g, g.drawRange.start, g.drawRange.count]); g.setDrawRange(0, Math.floor(n * k / 6) * 6); zsv.push(['op', m.material, m.material.opacity]); m.material.opacity = Math.min(1, m.material.opacity * (1 + 1.2 * (1 - kf))); }
         else if (m.name === 'beam') { zsv.push(['op', m.material, m.material.opacity]); m.material.opacity = kb > 0 ? 0.1 + 0.7 * Math.exp(-kb * 1.6) : 0; }
         else { zsv.push(['op', m.material, m.material.opacity]); m.material.opacity *= kf; }
@@ -4102,7 +4178,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const svA = [], bsv = [], msv = [];
   let sv = null;
   const noise = (t, s) => Math.sin(t * 13.1 + s) * 0.5 + Math.sin(t * 7.3 + s * 2.1) * 0.3 + Math.sin(t * 23.7 + s * 0.7) * 0.2;
-  const keep = (o) => { svA.push(o, o.position.clone(), o.quaternion.clone(), o.scale.clone(), o.visible); };
+  const keep = (o) => { svA.push(o, o.position.clone(), o.rotation.clone(), o.scale.clone(), o.visible); };   // b480 — 회전은 오일러로 되돌린다(쿼터니언으로 되돌리면 뒤로 돈 몸이 x·z=180° 꼴로 바뀌어 게임이 y 만 바꿀 때 엉뚱한 쪽을 봤다)
   function face(sm, vals) {
     if (!sm || !sm.morphTargetDictionary || !sm.morphTargetInfluences) return;
     const d = sm.morphTargetDictionary, inf = sm.morphTargetInfluences;
@@ -4212,7 +4288,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     if (expo0 !== null) { G.renderer.toneMappingExposure = expo0; expo0 = null; }
     for (let i = bsv.length - 2; i >= 0; i -= 2) bsv[i].quaternion.copy(bsv[i + 1]); bsv.length = 0;
     for (let i = msv.length - 3; i >= 0; i -= 3) msv[i][msv[i + 1]] = msv[i + 2]; msv.length = 0;
-    for (let i = svA.length - 5; i >= 0; i -= 5) { const o = svA[i]; o.position.copy(svA[i + 1]); o.quaternion.copy(svA[i + 2]); o.scale.copy(svA[i + 3]); o.visible = svA[i + 4]; o.updateMatrixWorld(true); } svA.length = 0;
+    for (let i = svA.length - 5; i >= 0; i -= 5) { const o = svA[i]; o.position.copy(svA[i + 1]); o.rotation.copy(svA[i + 2]); o.scale.copy(svA[i + 3]); o.visible = svA[i + 4]; o.updateMatrixWorld(true); } svA.length = 0;
     if (sv && cam) { cam.position.copy(sv.p); cam.quaternion.copy(sv.q); if (cam.fov !== sv.fov) { cam.fov = sv.fov; cam.updateProjectionMatrix(); } cam.updateMatrixWorld(true); sv = null; }
   }
   (function hook() {
@@ -4249,6 +4325,10 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     S = null;
   }
   D.active = () => !!S;
+  // 안전망 — 사람 · 봇 몸의 회전이 (180°, a, 180°) 꼴이면 (0, 180°−a, 0) 으로 바로잡는다(같은 방향 · 게임은 rotation.y 만 바꾼다)
+  const fixEuler = (o) => { const r = o && o.rotation; if (!r || r.order !== 'XYZ') return; if (Math.abs(Math.abs(r.x) - Math.PI) < 1e-3 && Math.abs(Math.abs(r.z) - Math.PI) < 1e-3) { const y = Math.PI - r.y; r.set(0, Math.atan2(Math.sin(y), Math.cos(y)), 0); } };
+  D.fixEuler = fixEuler;
+  setInterval(() => { const g = window.__G; if (!g || !g.hero || S) return; fixEuler(g.hero); for (const b of (g.game && g.game.bots) || []) fixEuler(b.hero); }, 100);
   D._dbg = () => S && { cx: S.cx, cz: S.cz, cy: S.cy, L: S.L.map((A) => A.p && [A.p.x, A.p.y, A.p.z, A.bx, A.bz]) };
   D.real = (winner) => { if (!G || !D.ready || mpOn() || S || !(winner >= 0)) return; begin('real', winner); };
   D.reset = () => { if (S && S.mode === 'real') end(); };
@@ -4280,7 +4360,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   function openLab(winner) {
     G = window.__G; if (!G || !G.game || !D.ready || G.game.over || mpOn() || S) return;
     if (window.__cinema && window.__cinema.freeze) window.__cinema.freeze(G, true);
-    begin('studio', winner === undefined ? 0 : winner); S.playing = false; S.rate = 0.5; S.loop = true;
+    begin('studio', winner === undefined ? 0 : winner); S.playing = false; S.rate = 1; S.loop = true;
     if (!lab) buildLab();
     lab.root.style.display = 'block'; document.body.classList.add('dl-on'); sync();
   }
@@ -4314,7 +4394,7 @@ body.dl-on #cin-btn,body.dl-on #cin-p,body.dl-on #hud,body.dl-on #prompt,body.dl
 <div style="font-size:11px;color:#8d877a;margin-top:8px;line-height:1.5">값은 지금 프레임에도 바로 · 이 브라우저에만 저장 · 판은 그대로 — 닫으면 원래대로 · Space 재생 · ← → 한 프레임 · Esc 닫기</div></div>
 <div class="bar pn"><div class="seg"></div><input class="tl" type="range" min="0" max="10" step="0.001" value="0">
 <div class="row"><button data-a="first">⏮</button><button data-a="back">◀ 1프레임</button><button data-a="play">▶ 재생</button><button data-a="fwd">1프레임 ▶</button><button data-a="hit">부딪히기 직전</button><button data-a="last">⏭</button>
-<span>속도</span><select><option>0.1</option><option>0.25</option><option selected>0.5</option><option>1</option></select>
+<span>속도</span><select><option>0.1</option><option>0.25</option><option>0.5</option><option selected>1</option></select>
 <button data-a="loop" class="on">반복</button><button data-a="free">자유 카메라</button><span class="tm"></span><button data-a="close" style="margin-left:auto">닫기(Esc)</button></div></div>`;
     document.body.appendChild(root);
     const vals = root.querySelector('.vals');
@@ -7711,6 +7791,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'bigscream', name: '맞고 날아갈 때 큰 비명(scream.js — 10-12 사용자: 먹먹 대신 큰 비명 · 공포 비명 · 찢어지는 비명 · 길게 울부짖음 · 절규(젊은 남자) 중 하나를 크게 · 10-12 「구리다」 → b397 새 녹음 10(찢어지는 남자 비명 · 시연실 비명 「큰 비명」에서 하나씩 들어 보기) 로 바꿔 다시 켬)', def: true },
     { key: 'botreach', name: '봇 · 남이 시체 곁으로 가서 줍기(pickup.js — 10-12 사용자: 봇이 시체를 멀리서 끌어온다 · 그리기에서만 시체 곁으로 숙여 갔다가 일어서며 제자리로 · 걷기 · 자리는 게임 그대로)', def: true },
     { key: 'monspasm', name: '괴물 고개 경련(montwitch.js — 서 있으면 4~9초마다 고개가 확 꺾이며 0.35초 떨림 · 10-12 사용자 「괴물이 내 앞에서 부들부들」 → 기본 끔 · 천천히 꺾기 · 시선은 그대로)', def: false },
+    { key: 'gateblock', name: 'P3 쪽 문 숨김 · 아래 계단 입구 바위로 막기(mapfix.js — 10-12 사용자)', def: true },
     { key: 'noredcircle', name: '가운데 붉은 원판 숨김(mapfix.js — 10-12 사용자: 맵 가운데 빨간 원 제거 · 보이기만 · 밑은 같은 돌 타일)', def: true },
     { key: 'basecam', name: '내 본진 가까이 카메라(camera.js — 10-12 사용자: 본진에 가까워질수록 천천히 줌아웃하며 본진을 보여 주게 · 13m 안부터 최대 40% 물러나고 9° 더 내려다봄 · 쫓기는 동안은 쉼)', def: true },
     { key: 'bloodvomit', name: '일어난 뒤 피를 토함(knock.js — 10-12 사용자: 맞고 일어나 움츠릴 때 입에서 피 · 숙인 뒤 입에서 앞 · 아래로 피 줄기 · 두 번 왈칵 · 땅에 방울 자국 · 기침 소리)', def: false },
@@ -10178,7 +10259,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
       let j = i; while (j >= 0 && typeof saved[j] === 'number') j--;
       const o = saved[j], n = i - j;
       if (n === 4) o.quaternion.set(saved[j + 1], saved[j + 2], saved[j + 3], saved[j + 4]);
-      else if (n === 10) { o.quaternion.set(saved[j + 1], saved[j + 2], saved[j + 3], saved[j + 4]); o.position.set(saved[j + 5], saved[j + 6], saved[j + 7]); o.scale.set(saved[j + 8], saved[j + 9], saved[j + 10]); o.updateMatrixWorld(true); }
+      else if (n === 10) { o.quaternion.set(saved[j + 1], saved[j + 2], saved[j + 3], saved[j + 4]); if (window.__death && window.__death.fixEuler) window.__death.fixEuler(o); o.position.set(saved[j + 5], saved[j + 6], saved[j + 7]); o.scale.set(saved[j + 8], saved[j + 9], saved[j + 10]); o.updateMatrixWorld(true); }
       i = j - 1;
     }
     saved.length = 0;
@@ -10508,7 +10589,7 @@ vec3 srGN(vec2 p) {
     const wa = N.waterAt(x, z) || N.waterAt(pos.x, pos.z); if (!wa) return false;
     const X = window.__fx;
     if (X && X.splash) { X.splash(x, wa.wy, z, 1.2); X.splash(x + rnd(-0.25, 0.25), wa.wy, z + rnd(-0.25, 0.25), 0.45); }
-    if (X && X.sfx && X.sfx.heavySplash) X.sfx.heavySplash(0.75, { x, y: wa.wy, z });
+    if (X && X.sfx && X.sfx.heavySplash && Math.random() < 0.6) X.sfx.heavySplash(0.28, { x, y: wa.wy, z });   // b486 — 「괴물이 물 위를 걸을 때 너무 시끄럽다」 0.75 → 0.28 · 걸음마다가 아니라 가끔
     ripple(x, z, 1.2);
     return true;
   };
