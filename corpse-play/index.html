@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-546 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-548 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-546'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-548'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1100,6 +1100,15 @@ body.sr-tune-open #btn-view { visibility: hidden; }   /* 패널 뒤로 비친다
 #start .t3-tag { transform: translate(var(--t3tx, 0), var(--t3ty, 0)) scale(var(--t3ts, 1)); transform-origin: left center; }
 #start .card.t3 .keys { transform: translate(var(--t3kx, 0), var(--t3ky, 0)) scale(var(--t3ks, 1)); transform-origin: left top; }
 #start.t3-noKeys .card.t3 .keys { display: none; }
+/* b547 — 타이틀 등장 연출 전엔 글을 숨겨 둔다(title.js playIntro 가 푼다) · 필터를 패널 값으로(--t3f*) */
+#start.t3-pre .t3-logo img, #start.t3-pre .t3-menu .sr-modes button, #start.t3-pre .card.t3 .t3-tag, #start.t3-pre .card.t3 .keys, #start.t3-pre .t3-menu::before { opacity: 0; }
+#start .card.t3 { filter: sepia(var(--t3fs, .32)) saturate(var(--t3ft, .82)) contrast(var(--t3fc, 1.08)) brightness(var(--t3fbr, 1)) blur(var(--t3fb, .35px))
+  drop-shadow(var(--t3fa, 1.2px) 0 0 rgba(255, 0, 0, var(--t3fac, .18))) drop-shadow(calc(var(--t3fa, 1.2px) * -1) 0 0 rgba(0, 200, 255, calc(var(--t3fac, .18) * .7))) drop-shadow(0 0 var(--t3fgl, 0px) rgba(170, 0, 0, .8)); }
+#start::before { opacity: var(--t3fg, .11); }
+#start::after { opacity: var(--t3fl, .16); }
+#start { box-shadow: inset 0 0 calc(var(--t3fv, 0) * 32vmin) calc(var(--t3fv, 0) * 14vmin) #000; }
+@keyframes t3flick { 0%, 100% { opacity: 1; } 2% { opacity: calc(1 - var(--t3ff, 0) * .55); } 3% { opacity: 1; } 31% { opacity: 1; } 32% { opacity: calc(1 - var(--t3ff, 0) * .3); } 34% { opacity: 1; } 63% { opacity: 1; } 64% { opacity: calc(1 - var(--t3ff, 0) * .7); } 65.5% { opacity: calc(1 - var(--t3ff, 0) * .15); } 67% { opacity: 1; } }
+@keyframes t3jit { 0% { translate: 0 0; } 25% { translate: calc(var(--t3fj, 0) * 1px) 0; } 50% { translate: calc(var(--t3fj, 0) * -.6px) calc(var(--t3fj, 0) * .4px); } 75% { translate: calc(var(--t3fj, 0) * .3px) calc(var(--t3fj, 0) * -.5px); } }
 
 </style>
 <style>/* tension.css */
@@ -15536,9 +15545,21 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   const T3 = (window.__title3 = { on: false });
   const FADE = 0.6, STUDIO = /[?&]preview=1/.test(location.search);
   // b531 — 위치 · 크기 조절(사용자 「타이틀 화면에서 내가 위치랑 크기 잡을 수 있게 패널」) · 이 브라우저에 바로 · 조절창(Tab) 「저장」 = 모두의 기본값('title3')
-  const DEF = { side: 0.95, dist: 3.3, camH: 1.32, lookH: 1.38, fov: 38, scale: 1, speed: 0.78, radius: 0, dir: 1, cUp: 0, cBack: 0, eF: 0.15, eIn: 0.0, eDown: 0.03, hF: 0.1, hIn: -0.03, hDown: 0.42, lS: 1, lX: 0, lY: 0, mS: 1, mX: 0, mY: 0, mF: 1, mG: 1, oS: 1, oX: 0, oY: 0, oH: 0, tS: 1, tX: 0, tY: 0, kS: 1, kX: 0, kY: 0, kH: 0, bright: 1.7, zone: 0 };
+  const DEF = { side: 0.95, dist: 3.3, camH: 1.32, lookH: 1.38, fov: 38, scale: 1, speed: 0.78, radius: 0, dir: 1, cUp: 0, cBack: 0, eF: 0.15, eIn: 0.0, eDown: 0.03, hF: 0.1, hIn: -0.03, hDown: 0.42, lS: 1, lX: 0, lY: 0, mS: 1, mX: 0, mY: 0, mF: 1, mG: 1, oS: 1, oX: 0, oY: 0, oH: 0, tS: 1, tX: 0, tY: 0, kS: 1, kX: 0, kY: 0, kH: 0, bright: 1.7, zone: 0,
+    lA: 6, lD: 1.6, lW: 0.2, lI: 1, lL: 1, lLF: 7, mA: 2, mD: 0.8, mW: 1.0, mGp: 0.18, mI: 1, sA: 1, sD: 1.2, sW: 2.0, sI: 1, vD: 1.6, vW: 0,
+    fS: 0.32, fT: 0.82, fC: 1.08, fBr: 1, fB: 0.35, fA: 1.2, fAc: 0.18, fGl: 0, fG: 0.11, fL: 0.16, fF: 0, fJ: 0, fV: 0 };
   // b545 — 칸을 묶음별로(['#', 제목] = 묶음 머리) · 패널을 연 동안은 화면의 로고 · 메뉴 · 작은 글을 마우스로 끌어 옮기고 휠로 크기(사용자 「대충하노」)
-  const ROWS = [['#', '로고 — 끌기 · 휠로도'], ['lS', '로고 크기', 0.3, 2.5, 0.01], ['lX', '로고 좌우(화면 %)', -40, 80, 0.5], ['lY', '로고 위아래(화면 %)', -40, 60, 0.5],
+  // b547 — 등장 연출(사용자 「타이틀이 기괴하거나 스윽 나오는 애니메이션 · 서브메뉴도 나오는 연출 패널」) · 필터(「메뉴에도 게임 필터처럼 더 진하게」)
+  const ANIM = [[0, '없음 — 바로'], [1, '스윽 나타남'], [2, '왼쪽에서 스윽'], [3, '아래에서 스윽'], [4, '위에서 툭 내려옴'], [5, '크게 → 제자리(흐릿하게)'], [6, '형광등처럼 깜빡이며 켜짐'], [7, '지지직 글리치'], [8, '핏물처럼 위→아래로 드러남'], [9, '왼→오 쓸며 드러남'], [10, '덜덜 떨며 나타남'], [11, '잉크 번지듯'], [12, '어둠에서 천천히 스며 나옴']];
+  const IDLE = [[0, '없음'], [1, '가끔 깜빡'], [2, '가끔 지지직'], [3, '숨 쉬듯 천천히'], [4, '가끔 덜덜 떨림']];
+  const ROWS = [['#', '등장 연출 — 로고'], ['lA', '나오는 방식', 'sel', ANIM], ['lD', '길이(초)', 0.1, 6, 0.05], ['lW', '시작 지연(초)', 0, 5, 0.05], ['lI', '세기', 0, 3, 0.05], ['lL', '나온 뒤 평소 움직임', 'sel', IDLE], ['lLF', '평소 움직임 간격(초)', 1, 20, 0.5],
+    ['#', '등장 연출 — 메뉴 · 서브메뉴(하나씩 차례로)'], ['mA', '나오는 방식', 'sel', ANIM], ['mD', '하나당 길이(초)', 0.1, 4, 0.05], ['mW', '시작 지연(초)', 0, 6, 0.05], ['mGp', '하나씩 간격(초)', 0, 1.5, 0.01], ['mI', '세기', 0, 3, 0.05],
+    ['#', '등장 연출 — 아래 한 줄 · 조작 안내'], ['sA', '나오는 방식', 'sel', ANIM], ['sD', '길이(초)', 0.1, 5, 0.05], ['sW', '시작 지연(초)', 0, 8, 0.05], ['sI', '세기', 0, 3, 0.05],
+    ['#', '등장 연출 — 배경(3D 장면)'], ['vD', '어둠에서 밝아지는 길이(초)', 0, 6, 0.05], ['vW', '시작 지연(초)', 0, 6, 0.05],
+    ['#', '필터 — 로고 · 메뉴 · 글(게임 필터처럼)'], ['fS', '세피아(누렇게)', 0, 1, 0.01], ['fT', '채도', 0, 1.5, 0.01], ['fC', '대비', 0.5, 2.5, 0.01], ['fBr', '밝기', 0.3, 1.6, 0.01], ['fB', '흐림(px)', 0, 4, 0.05],
+    ['fA', '색 번짐 거리(px)', 0, 10, 0.1], ['fAc', '색 번짐 진하기', 0, 1, 0.01], ['fGl', '붉은 빛 번짐(px)', 0, 40, 0.5], ['fG', '알갱이(노이즈 · 화면 전체)', 0, 0.8, 0.01], ['fL', '주사선(화면 전체)', 0, 0.9, 0.01],
+    ['fF', '깜빡임', 0, 1, 0.01], ['fJ', '흔들림(px)', 0, 8, 0.1], ['fV', '가장자리 어둠(화면 전체)', 0, 1, 0.01],
+    ['#', '로고 — 끌기 · 휠로도'], ['lS', '로고 크기', 0.3, 2.5, 0.01], ['lX', '로고 좌우(화면 %)', -40, 80, 0.5], ['lY', '로고 위아래(화면 %)', -40, 60, 0.5],
     ['#', '메뉴(싱글플레이 · 멀티플레이 · 설정) — 끌기 · 휠로도'], ['mS', '메뉴 전체 크기', 0.4, 2, 0.01], ['mX', '메뉴 좌우(화면 %)', -40, 80, 0.5], ['mY', '메뉴 위아래(화면 %)', -40, 60, 0.5], ['mF', '메뉴 글자 크기', 0.5, 2, 0.01], ['mG', '메뉴 줄 간격', 0.3, 2.5, 0.01],
     ['#', '서브메뉴 「둘러보기」 — 끌기 · 휠로도'], ['oS', '크기', 0.4, 3, 0.01], ['oX', '좌우(화면 %)', -40, 80, 0.5], ['oY', '위아래(화면 %)', -40, 60, 0.5], ['oH', '숨기기(1)', 0, 1, 1],
     ['#', '아래 한 줄 「먼저 시체 3구를…」 — 끌기 · 휠로도'], ['tS', '크기', 0.4, 3, 0.01], ['tX', '좌우(화면 %)', -40, 80, 0.5], ['tY', '위아래(화면 %)', -40, 40, 0.5],
@@ -15631,6 +15652,20 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (fadeEl) fadeEl.style.opacity = '0';
   }
   T3.stop = stop;
+  /* b548 — 게임 시작 = 타이틀 끝: 배우(복제 사람 · 시체)를 장면에서 빼고 · 등장 연출 · 평소 움직임 타이머 · 덮개를 모두 치운다
+     (사용자 「타이틀에서 설정한 거나 타이틀 연출이 게임플레이에 영향을 안 주게 · 게임 시작할 때 타이틀에 있던 것이 남는다던가」) */
+  function cleanup() {
+    T3.cleaned = true; stop();
+    if (A && A.grp) { if (A.grp.parent) A.grp.parent.remove(A.grp); try { A.mixer.stopAllAction(); } catch (e) { /* */ } }
+    A = false;   // 다시 만들지 않는다(다시 타이틀은 「타이틀로」 = 새로 불러오기)
+    const X = window.__grip; if (X) X.extra = [];
+    const RG = window.__ragdoll; if (RG) { RG.extra = []; for (const k of [...RG.list.keys()]) if (k && k.root && !k.held && !(window.__G.game.bodies || []).includes(k)) RG.list.delete(k); }
+    for (const a of anims) { try { a.cancel(); } catch (e) { /* */ } } anims = [];
+    clearTimeout(idleT); if (breath) { try { breath.cancel(); } catch (e) { /* */ } breath = null; }
+    if (fadeEl) { fadeEl.style.transition = 'none'; fadeEl.style.opacity = '0'; }
+    const card = document.querySelector('#start .card.t3'); if (card) card.style.animation = 'none';
+    console.log('[title] 게임 시작 — 타이틀 배우 · 연출을 모두 치웠다');
+  }
   // b532 — 끊김 없이 계속 걷기(사용자 「제자리 반복 말고 계속 걸어가는 느낌 · 암전됐다 다시 나오는 것 없애」): 경기장 가운데를 크게 도는 원 위를 걷는다 — 배경이 계속 바뀌고 처음으로 돌아가는 자리가 없다
   // b535 — 반지름 자동: 둘레 전체(사람 폭 ±0.7m)가 설 수 있는 땅(nav 격자 — 석등 · 바위 · 물 없이)인 원 중 11m 에 가까운 것
   function autoR(Z) {
@@ -15661,7 +15696,9 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   }
   function frame() {
     requestAnimationFrame(frame);
+    try { veilTick(performance.now()); } catch (e) { /* */ }
     G = window.__G; if (!G || !G.hero || !G.cfg) return;
+    if (G.started && !T3.cleaned) cleanup();   // b548 — 게임이 시작되면 타이틀 것은 하나도 남기지 않는다
     if (!st) {
       if (!G.started && enabled() && !blocked() && startShown() && G.game && G.game.bots && G.game.bots.length && G.game.bodies && G.game.bodies.length && (!window.__cast || window.__cast.settled)) begin();   // b534 — 몸 입히기(cast.js)가 끝난 뒤에(먼저 하면 나중에 내 몸으로 덮였다)
       return;
@@ -15713,6 +15750,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     cam.updateMatrixWorld(true);
     if (!st.hide) st.hide = hideList();
     for (const o of st.hide) if (o.visible) { vsv.push(o); o.visible = false; }
+    st.frames = (st.frames || 0) + 1;
   }
   function restore(cam) {
     for (const o of vsv) o.visible = true; vsv.length = 0;
@@ -15737,19 +15775,111 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
       '--t3os': CF.oS, '--t3ox': CF.oX + 'vw', '--t3oy': CF.oY + 'vh', '--t3ts': CF.tS, '--t3tx': CF.tX + 'vw', '--t3ty': CF.tY + 'vh', '--t3ks': CF.kS, '--t3kx': CF.kX + 'vw', '--t3ky': CF.kY + 'vh' };
     for (const k in v) s0.style.setProperty(k, String(v[k]));
     s0.classList.toggle('t3-noLook', CF.oH >= 0.5); s0.classList.toggle('t3-noKeys', CF.kH >= 0.5);
+    const f = { '--t3fs': CF.fS, '--t3ft': CF.fT, '--t3fc': CF.fC, '--t3fbr': CF.fBr, '--t3fb': CF.fB + 'px', '--t3fa': CF.fA + 'px', '--t3fac': CF.fAc, '--t3fgl': CF.fGl + 'px', '--t3fg': CF.fG, '--t3fl': CF.fL, '--t3ff': CF.fF, '--t3fj': CF.fJ, '--t3fv': CF.fV };
+    for (const k in f) s0.style.setProperty(k, String(f[k]));
+    const card = s0.querySelector('.card.t3');
+    if (card) { const an = []; if (CF.fF > 0.001) an.push('t3flick 5s linear infinite'); if (CF.fJ > 0.01) an.push('t3jit .42s steps(1, end) infinite'); const v = an.join(', ') || 'none'; if (card.style.animation !== v) card.style.animation = v; }   // 0 이면 돌지 않게(필터 걸린 판을 매 프레임 다시 그리지 않게)
   }
-  function sync() { applyUI(); if (!pan) return; for (const [k] of ROWS) { const i = pan.querySelector(`input[data-k="${k}"]`), b = pan.querySelector(`b[data-v="${k}"]`); if (i) i.value = CF[k]; if (b) b.textContent = (+CF[k]).toFixed(2).replace(/\.00$/, ''); } }
+  /* ── b547 등장 연출 — Web Animations · translate · scale · rotate 낱개 속성이라 위치 · 크기 조절(transform)과 겹치지 않는다 ── */
+  const startEl = () => document.getElementById('start');
+  const logoImg = () => document.querySelector('#start .t3-logo img');
+  const FLICK = [[0, 0], [0.85, 0.07], [0, 0.11], [0, 0.3], [1, 0.33], [0.1, 0.37], [0.1, 0.52], [1, 0.55], [0.4, 0.66], [1, 0.7], [1, 1]];
+  function kf(t, k, f0) {
+    const F = (x) => (f0 && f0 !== 'none' ? x + ' ' + f0 : x), E = 'cubic-bezier(.2,.7,.2,1)', S = 'steps(1, end)';
+    switch (t) {
+      case 1: return [[{ opacity: 0, translate: `0 ${10 * k}px`, filter: F('blur(6px)') }, { opacity: 1, translate: '0 0', filter: F('blur(0px)') }], 'ease-out'];
+      case 2: return [[{ opacity: 0, translate: `${-150 * k}px 0`, filter: F(`blur(${10 * k}px)`) }, { opacity: 1, translate: '0 0', filter: F('blur(0px)') }], E];
+      case 3: return [[{ opacity: 0, translate: `0 ${60 * k}px`, filter: F(`blur(${8 * k}px)`) }, { opacity: 1, translate: '0 0', filter: F('blur(0px)') }], E];
+      case 4: return [[{ opacity: 0, translate: `0 ${-80 * k}px`, filter: F(`blur(${6 * k}px)`) }, { opacity: 1, translate: '0 0', filter: F('blur(0px)') }], 'cubic-bezier(.3,1.5,.5,1)'];
+      case 5: return [[{ opacity: 0, scale: `${1 + 0.5 * k}`, filter: F(`blur(${16 * k}px)`) }, { opacity: 1, scale: '1', filter: F('blur(0px)') }], E];
+      case 6: return [FLICK.map(([o, of]) => ({ opacity: o, offset: of, easing: S })), 'linear'];
+      case 7: {
+        const sh = (a) => F(`drop-shadow(${a * k}px 0 0 rgba(255,0,0,.85)) drop-shadow(${-a * k}px 0 0 rgba(0,255,255,.7))`);
+        const P = [[0, 0, 0, 0, '0 0 0 0', 0], [0.06, 1, -18, 0, '12% 0 58% 0', 8], [0.12, 1, 14, 0, '55% 0 10% 0', 6], [0.18, 0, 0, 0, '0 0 0 0', 0], [0.3, 1, -8, 3, '30% 0 35% 0', 10], [0.36, 1, 6, 0, '0 0 0 0', 4], [0.48, 0.3, -3, 0, '70% 0 0 0', 3], [0.54, 1, 0, 0, '0 0 0 0', 2], [0.75, 1, 2, 0, '0 0 0 0', 1], [1, 1, 0, 0, '0 0 0 0', 0]];
+        return [P.map(([of, o, x, y, ins, a]) => ({ offset: of, opacity: o, translate: `${x * k}px ${y * k}px`, clipPath: `inset(${ins})`, filter: sh(a), easing: S })), 'linear'];
+      }
+      case 8: return [[{ opacity: 1, clipPath: 'inset(0 0 100% 0)', filter: F('blur(3px)') }, { opacity: 1, clipPath: 'inset(0 0 0% 0)', filter: F('blur(0px)') }], 'cubic-bezier(.55,0,.25,1)'];
+      case 9: return [[{ opacity: 1, clipPath: 'inset(0 100% 0 0)', filter: F('blur(2px)') }, { opacity: 1, clipPath: 'inset(0 0% 0 0)', filter: F('blur(0px)') }], 'cubic-bezier(.55,0,.25,1)'];
+      case 10: {
+        const fr = [{ offset: 0, opacity: 0, translate: '0 0', rotate: '0deg' }]; let sd = 9; const r = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647 - 0.5; };
+        for (let i = 1; i < 16; i++) { const f = i / 16, a = (1 - f) * 7 * k; fr.push({ offset: f, opacity: Math.min(1, f * 4), translate: `${r() * a}px ${r() * a}px`, rotate: `${r() * 3 * k * (1 - f)}deg`, easing: S }); }
+        fr.push({ offset: 1, opacity: 1, translate: '0 0', rotate: '0deg' }); return [fr, 'linear'];
+      }
+      case 11: return [[{ opacity: 0, scale: '0.97', filter: F(`blur(${14 * k}px) contrast(4)`) }, { offset: 0.5, opacity: 0.75, scale: '0.99', filter: F(`blur(${4 * k}px) contrast(2)`) }, { opacity: 1, scale: '1', filter: F('blur(0px) contrast(1)') }], 'ease-out'];
+      case 12: return [[{ opacity: 0, filter: F('brightness(0) blur(4px)') }, { opacity: 1, filter: F('brightness(1) blur(0px)') }], 'ease-in'];
+      default: return null;
+    }
+  }
+  let anims = [], introEnd = 0;
+  function go(el, type, dur, delay, k) {
+    if (!el || !(type > 0)) return 0;
+    const f0 = getComputedStyle(el).filter, r = kf(type | 0, k, f0); if (!r) return 0;
+    try { anims.push(el.animate(r[0], { duration: Math.max(50, dur * 1000), delay: delay * 1000, easing: r[1], fill: 'backwards' })); } catch (e) { /* */ }
+    return delay + dur;
+  }
+  function playIntro(base) {
+    for (const a of anims) { try { a.cancel(); } catch (e) { /* */ } } anims = [];
+    const s0 = startEl(); if (!s0) return; s0.classList.remove('t3-pre');
+    let end = 0; const b = base || 0;
+    end = Math.max(end, go(logoImg(), CF.lA, CF.lD, b + CF.lW, CF.lI));
+    const menu = s0.querySelector('.t3-menu'), btns = menu ? [...menu.querySelectorAll('.sr-modes button')].filter((x) => x.offsetParent) : [];
+    btns.forEach((x, i) => { end = Math.max(end, go(x, CF.mA, CF.mD, b + CF.mW + i * CF.mGp, CF.mI)); });
+    if (menu && CF.mA > 0) { try { anims.push(menu.animate([{ opacity: 0, clipPath: 'inset(0 0 100% 0)' }, { opacity: 1, clipPath: 'inset(0 0 0% 0)' }], { pseudoElement: '::before', duration: Math.max(200, CF.mD * 1500), delay: (b + CF.mW) * 1000, easing: 'ease-out', fill: 'backwards' })); } catch (e) { /* */ } }   // 붉은 세로줄 — 위에서 아래로 핏물처럼
+    [['.t3-tag', 0], ['.keys', 1]].forEach(([sel, j]) => { end = Math.max(end, go(s0.querySelector('.card.t3 ' + sel), CF.sA, CF.sD, b + CF.sW + j * 0.35, CF.sI)); });
+    introEnd = performance.now() + end * 1000; idle();
+  }
+  // 나온 뒤 평소 움직임(로고)
+  let idleT = 0, breath = null;
+  function idle() {
+    clearTimeout(idleT); if (breath) { try { breath.cancel(); } catch (e) { /* */ } breath = null; }
+    const img = logoImg(), t = CF.lL | 0; if (!img || !t) return;
+    const wait = Math.max(0, introEnd - performance.now());
+    if (t === 3) { idleT = setTimeout(() => { breath = img.animate([{ scale: '1', opacity: 1 }, { scale: '1.018', opacity: 0.88 }, { scale: '1', opacity: 1 }], { duration: Math.max(1, CF.lLF) * 1000, iterations: Infinity, easing: 'ease-in-out' }); }, wait); return; }
+    const tick = () => {
+      const s0 = startEl();
+      if (s0 && getComputedStyle(s0).display !== 'none') {
+        const f0 = getComputedStyle(img).filter, S = 'steps(1, end)';
+        if (t === 1) img.animate([[1, 0], [0.15, 0.1], [1, 0.2], [0.4, 0.5], [1, 0.62], [1, 1]].map(([o, of]) => ({ opacity: o, offset: of, easing: S })), { duration: 520 });
+        else if (t === 2) { const r = kf(7, 0.55, f0); r[0][0].opacity = 1; r[0][3].opacity = 0.6; img.animate(r[0], { duration: 480 }); }
+        else if (t === 4) { const r = kf(10, 0.5, f0); for (const q of r[0]) q.opacity = 1; img.animate(r[0], { duration: 420 }); }
+      }
+      idleT = setTimeout(tick, CF.lLF * (0.6 + Math.random() * 0.8) * 1000);
+    };
+    idleT = setTimeout(tick, wait + CF.lLF * 1000);
+  }
+  // 배경(3D) — 시작 화면이 뜨는 순간부터 검게 덮어 두고(로딩 뒤 위에서 본 게임 화면이 비치지 않게) · 3D 장면이 그려지면 밝아진다
+  let veilDone = false, shownAt = 0, introDone = false;
+  function veilOut(d, w) { if (!fadeEl) return; fadeEl.style.transition = `opacity ${Math.max(0, d)}s ease ${Math.max(0, w)}s`; requestAnimationFrame(() => { fadeEl.style.opacity = '0'; }); }
+  function veilTick(now) {
+    const s0 = startEl(); if (!s0 || !fadeEl) return;
+    const shown = s0.style.display !== 'none' && getComputedStyle(s0).display !== 'none';
+    if (shown && !shownAt) shownAt = now;
+    if (shown && !introDone) { introDone = true; playIntro(0.6); }   // 로딩 화면이 걷히는 0.6초 뒤부터
+    if (veilDone || !shown) return;
+    if (st && st.frames > 2) { veilDone = true; veilOut(CF.vD, CF.vW); }
+    else if (!enabled() || now - shownAt > 15000) { veilDone = true; veilOut(0.6, 0); }   // 3D 를 안 쓰거나 못 세우면 그냥 걷는다
+  }
+  T3.replay = () => { if (fadeEl && st) { fadeEl.style.transition = 'none'; fadeEl.style.opacity = '1'; void fadeEl.offsetWidth; veilOut(CF.vD, CF.vW); } playIntro(0); };
+  function sync() { applyUI(); if (!pan) return; for (const [k] of ROWS) { const i = pan.querySelector(`[data-k="${k}"]`), b = pan.querySelector(`b[data-v="${k}"]`); if (i) i.value = String(CF[k]); if (b) b.textContent = (+CF[k]).toFixed(2).replace(/\.00$/, ''); } }
   function buildPanel(s) {
     const st0 = document.createElement('style');
     st0.textContent = `#t3-pbtn{position:absolute;right:14px;top:14px;z-index:6;background:rgba(10,8,7,.8);color:#e9e1d0;border:1px solid #6b2a20;padding:6px 12px;font:12px sans-serif;cursor:pointer}
 #t3-pan{position:absolute;right:14px;top:48px;z-index:6;width:280px;max-height:calc(100% - 70px);overflow-y:auto;background:rgba(12,9,7,.92);border:1px solid #6b2a20;padding:10px 12px;font:12px sans-serif;color:#e9e1d0;display:none}
 #t3-pan.on{display:block} #t3-pan label{display:flex;justify-content:space-between;margin-top:6px;color:#c9bfae} #t3-pan input{width:100%} #t3-pan .r{display:flex;gap:6px;margin-top:10px} #t3-pan .r button{flex:1;padding:5px;background:#2a1712;color:#e9e1d0;border:1px solid #6b2a20;cursor:pointer}
-#t3-pan small{display:block;margin-top:8px;color:#8d887a;line-height:1.5} #t3-pan h6{margin:14px 0 2px;padding-top:8px;border-top:1px solid #3a2a20;font:600 12px sans-serif;color:#d9a07a}
+#t3-pan small{display:block;margin-top:8px;color:#8d887a;line-height:1.5} #t3-pan h6{margin:14px 0 2px;padding-top:8px;border-top:1px solid #3a2a20;font:600 12px sans-serif;color:#d9a07a;cursor:pointer} #t3-pan h6::before{content:'▾ '} #t3-pan .g.shut h6::before{content:'▸ '} #t3-pan .g.shut .gb{display:none} #t3-pan select{width:100%;margin-top:3px;padding:3px;background:#1c1310;color:#e9e1d0;border:1px solid #6b2a20}
 #start.t3-edit [data-t3drag]{outline:1px dashed rgba(255,200,120,.55);outline-offset:4px;cursor:move} #start.t3-edit [data-t3drag]:hover{outline-color:#ffd27a}`;
     document.head.appendChild(st0);
     const b = document.createElement('button'); b.id = 't3-pbtn'; b.type = 'button'; b.textContent = '타이틀 조절';
     pan = document.createElement('div'); pan.id = 't3-pan';
-    pan.innerHTML = '<small>패널을 연 동안: 화면의 로고 · 메뉴 · 둘러보기 · 아래 한 줄 · 조작 안내를 마우스로 끌면 옮겨지고 · 휠을 굴리면 크기가 바뀐다(이때 메뉴를 눌러도 시작되지 않는다)</small>' + ROWS.map(([k, n, a, z, step]) => k === '#' ? `<h6>${n}</h6>` : `<label>${n}<b data-v="${k}"></b></label><input type="range" min="${a}" max="${z}" step="${step}" data-k="${k}">`).join('') +
+    pan.innerHTML = '<div class="r"><button type="button" data-a="replay">▶ 등장 연출 다시 보기</button></div><small>패널을 연 동안: 화면의 로고 · 메뉴 · 둘러보기 · 아래 한 줄 · 조작 안내를 마우스로 끌면 옮겨지고 · 휠을 굴리면 크기가 바뀐다(이때 메뉴를 눌러도 시작되지 않는다) · 묶음 제목을 누르면 접고 편다</small>' + (() => {
+      let open = {}; try { open = JSON.parse(localStorage.getItem('corpse_title_pan_g') || '{}'); } catch (e) { /* */ }
+      let h = '', inG = false;
+      for (const [k, n, a, z, step] of ROWS) {
+        if (k === '#') { if (inG) h += '</div></div>'; const op = open[n] !== undefined ? open[n] : /등장 연출 — (로고|메뉴)|필터/.test(n); h += `<div class="g${op ? '' : ' shut'}" data-gn="${n}"><h6>${n}</h6><div class="gb">`; inG = true; continue; }
+        h += a === 'sel' ? `<label>${n}</label><select data-k="${k}">${z.map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}</select>` : `<label>${n}<b data-v="${k}"></b></label><input type="range" min="${a}" max="${z}" step="${step}" data-k="${k}">`;
+      }
+      return h + (inG ? '</div></div>' : '');
+    })() +
       `<div class="r"><button type="button" data-a="def">기본값</button><button type="button" data-a="restart">처음 자리로</button></div><div class="r"><button type="button" data-a="gsave">모두의 기본값으로 저장</button></div><small class="gs"></small><small>바꾸면 바로 · 이 브라우저에 기억 · 「모두의 기본값으로 저장」을 누르면 다음에 켤 때 모두가 이 값(조절창 「저장」과 같은 곳 — 다른 설정도 지금 값으로 함께 저장)</small>`;
     for (const ev of ['click', 'pointerdown', 'mousedown', 'keydown', 'wheel']) { pan.addEventListener(ev, (e) => e.stopPropagation()); b.addEventListener(ev, (e) => e.stopPropagation()); }
     b.addEventListener('click', () => { pan.classList.toggle('on'); s.classList.toggle('t3-edit', pan.classList.contains('on')); });
@@ -15763,8 +15893,11 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     s.addEventListener('pointerup', () => { if (dr) { dr = null; saveCF(); } });
     s.addEventListener('wheel', (e) => { if (!s.classList.contains('t3-edit')) return; const p = which(e.target); if (!p) return; e.preventDefault(); e.stopPropagation(); const k = p + 'S'; CF[k] = Math.max(0.3, Math.min(3, Math.round((CF[k] * (e.deltaY < 0 ? 1.04 : 1 / 1.04)) * 100) / 100)); saveCF(); sync(); }, { capture: true, passive: false });
     s.addEventListener('click', (e) => { if (s.classList.contains('t3-edit') && which(e.target)) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);   // 꾸미는 동안 메뉴를 눌러도 시작하지 않게
-    pan.addEventListener('input', (e) => { const k = e.target.dataset.k; if (!k) return; CF[k] = +e.target.value; saveCF(); sync(); });
+    const onIn = (e) => { const k = e.target.dataset.k; if (!k) return; CF[k] = +e.target.value; saveCF(); sync(); if (/^lL/.test(k)) idle(); if (e.type === 'change' && e.target.tagName === 'SELECT' && /^[lms]A$/.test(k)) playIntro(0); };   // 방식을 고르면 바로 한 번 보여 준다
+    pan.addEventListener('input', onIn); pan.addEventListener('change', onIn);
+    pan.addEventListener('click', (e) => { const h = e.target.closest && e.target.closest('h6'); if (!h) return; const g = h.parentElement; g.classList.toggle('shut'); try { const o = JSON.parse(localStorage.getItem('corpse_title_pan_g') || '{}'); o[g.dataset.gn] = !g.classList.contains('shut'); localStorage.setItem('corpse_title_pan_g', JSON.stringify(o)); } catch (er) { /* */ } });
     pan.addEventListener('click', (e) => { const a = e.target.dataset && e.target.dataset.a; if (a === 'def') { Object.assign(CF, DEF); saveCF(); sync(); } else if (a === 'restart' && st) st.s = 0;
+      else if (a === 'replay') T3.replay();
       else if (a === 'gsave') {   // b543 — 모두의 기본값(settings.js 'title3' · MSW 글로벌 저장소) · 스튜디오 미리보기에서만
         const St = window.__settings, g = pan.querySelector('.gs');
         if (!St || !St.save) g.textContent = '저장 기능 없음'; else if (!St.canSave) g.textContent = '스튜디오 미리보기에서만 저장됩니다';
@@ -15774,7 +15907,8 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   }
   (function mk() {
     const s = document.getElementById('start'), modes = s && s.querySelector('.t3-menu .sr-modes'); if (!s || !modes) { setTimeout(mk, 300); return; }
-    fadeEl = document.createElement('div'); fadeEl.className = 't3-fade'; s.insertBefore(fadeEl, s.firstChild);
+    fadeEl = document.createElement('div'); fadeEl.className = 't3-fade'; fadeEl.style.opacity = '1'; s.insertBefore(fadeEl, s.firstChild);   // b547 — 처음엔 검게(veilTick 이 걷는다)
+    s.classList.add('t3-pre');   // 등장 연출 전엔 글을 숨겨 둔다(playIntro 가 푼다)
     applyUI(); if (STUDIO) buildPanel(s);
     const items = () => [...modes.querySelectorAll('button')].filter((b) => !b.disabled && b.offsetParent);
     let cur = null;
