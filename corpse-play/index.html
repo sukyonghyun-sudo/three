@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-626 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-630 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-626'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-630'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3176,7 +3176,7 @@ var MeshoptDecoder = (function () {
         BF.near = (BF.near || 0) + (want - (BF.near || 0)) * Math.min(1, dt * (want > (BF.near || 0) ? 2.5 : 1.7));
         const mine = BF.list.find((b) => b.z === z), fl = mine ? mine.flare || 0 : 0;
         const k = Math.min(2, 1 + BF.near * (0.3 + 0.3 * (0.5 + 0.5 * Math.sin(t * 3.9))) + fl * fl);   // 최대 1.6배(2.2배는 바닥이 하얗게 떠 보였다) · 바친 순간만 2배까지 번쩍
-        f.material.opacity = 0.16 * c.zoneOpacity * 3 * k * (BF.fillK || 1); e.material.opacity = 0.55 * c.zoneOpacity * 2 * c.zoneGlow * Math.min(1.6, k) * (BF.edgeK || 1);   // fillK · edgeK — zonefence.js(또렷한 테두리)가 옅게
+        f.material.opacity = 0.16 * c.zoneOpacity * 3 * k * (BF.fillK || 1) * (window.__zonefence ? window.__zonefence.fillMul : 1); e.material.opacity = 0.55 * c.zoneOpacity * 2 * c.zoneGlow * Math.min(1.6, k) * (BF.edgeK || 1);   // fillK · edgeK — zonefence.js(또렷한 테두리)가 옅게
       } }
     for (const b of BF.list) {
       b.grp.visible = on; if (!on) continue;
@@ -3185,7 +3185,7 @@ var MeshoptDecoder = (function () {
       const d = Math.hypot(h.x - z.cx, h.z - z.cz);
       b.pillar.rotation.y = Math.atan2(cam.position.x - z.cx, cam.position.z - z.cz);
       const fl = b.flare || 0;
-      b.pillar.material.opacity = 0.2 * clamp((d - 8) / 8, 0, 1) * (0.85 + 0.15 * Math.sin(t * 0.7 + z.team * 2.1)) + 0.42 * fl * fl;   // 바친 순간 확 솟는다(가까이 있어도)
+      b.pillar.material.opacity = (BF.pillarIdle === true ? 0.2 * clamp((d - 8) / 8, 0, 1) * (0.85 + 0.15 * Math.sin(t * 0.7 + z.team * 2.1)) : 0) + 0.42 * fl * fl; b.pillar.visible = BF.pillarIdle === true || fl > 0.001;   // b627 — 빛기둥은 시체를 바칠 때만 한 번 솟는다(사용자 「빛이 솟아오르는 건 시체를 루팅했을 때만 한 번씩」) · 평소 기둥 켜기: __basefx.pillarIdle = true   // 바친 순간 확 솟는다(가까이 있어도)
       const sy = (1 + 0.12 * fl) * BF.ph;
       b.pillar.scale.set((1 + 0.6 * fl) * BF.pw, sy, 1); b.pillar.position.y = (b.gy || 0) + 8 * sy;   // 높이를 키워도 밑동은 땅에
       b.pillar.material.color.setHex(col);
@@ -3226,7 +3226,7 @@ var MeshoptDecoder = (function () {
    · 새 셰이더 없음 — 데칼은 원래 판의 재질을 그대로 쓴다(그림만 바꾸고 · 섞기는 셰이더가 아니다) · basefx 의 맥박 · 밝기도 그대로
    · 끄기: 시연실 연출 「본진 바닥 표시 또렷하게」 — 끄면 원래 판 · 그림 · 섞기로 */
 (() => {
-  const ZF = (window.__zonefence = { ready: false, list: [] });
+  const ZF = (window.__zonefence = { ready: false, list: [], fillMul: 1, lineMul: 0 });   // b628 — 조절(Tab) 「본진 영역」 색 진하기 · 테두리 라인 진하기(0 = 끔)
   let G = null, T = null, texF = null, texE = null, texM = null, texG = null;
   const K = 0.75, KF = 0.6;   // 보통 섞기 투명도 배율 — 테두리 0.39 → 0.96 · 바닥 판 0.17 그대로(2.5배는 파란 판이 덮은 듯 진했다)
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.zonefence === false); };
@@ -3530,7 +3530,7 @@ var MeshoptDecoder = (function () {
     // b556 — 사용자 그림(「바닥 영역 표시 이런 느낌 · 화살표는 빼고」): 밝은 흰빛 테두리 + 은은한 번짐 · 안쪽에 꺾쇠 · 눈금 · + 표시 · 옅은 점선(새 셰이더 없음 — 테두리 재질 복제)
     const tc = new T.Color((G.colors && G.colors[z.team]) || 0xffffff).lerp(new T.Color(0xffffff), 0.5);
     if (ZF.look !== false) { lineM.color.copy(tc); lineM.opacity = 0.92; }
-    { const ln = contour2(z, lineM, top, [5 / 512, 0.5], RG, { w: ZF.look !== false ? 0.07 : 0.045 }); grp.add(ln); if (ln.userData.beam) grp.add(ln.userData.beam); }
+    { const ln = contour2(z, lineM, top, [5 / 512, 0.5], RG, { w: ZF.look !== false ? 0.07 : 0.045 }); ln.name = 'zline'; grp.add(ln); if (ln.userData.beam) grp.add(ln.userData.beam); }
     if (ZF.look !== false) {
       const gm = lineM.clone(); gm.map = texG; gm.alphaMap = texG; gm.opacity = 0.55; gm.polygonOffsetFactor = -5; gm.polygonOffsetUnits = -5;
       const gl = contour2(z, gm, top, [0.5, 0.5], RG, { w: 0.42, across: true, noBeam: true }); gl.renderOrder = 4; gl.name = 'zglow'; grp.add(gl);
@@ -3572,17 +3572,20 @@ var MeshoptDecoder = (function () {
     const BF = window.__basefx; if (BF) { BF.fillK = vis ? KF : 1; BF.edgeK = vis ? K : 1; }
     const sc = G.scores ? G.scores() : null, tn = performance.now() / 1000;
     for (const b of ZF.list) {
+      // b627 — 테두리 빛(줄 · 번짐 · 꺾쇠) 기본 끔 · 영역 색만(사용자 「본진 영역 발광하는 색 빼고 영역만 색으로」) · 켜기: __zonefence.outline = true
+      for (const nm of ['zline', 'zglow', 'zmarks']) { const o = b.grp.getObjectByName(nm); if (!o) continue; const lm = ZF.outline === true ? Math.max(1, ZF.lineMul) : ZF.lineMul; if (o.userData.op0 === undefined) o.userData.op0 = o.material.opacity; o.visible = lm > 0; o.material.opacity = Math.min(1, o.userData.op0 * lm); }
       const bm = b.grp.getObjectByName('beam');
       if (bm) {   // 바치면 빛이 확 솟구친다(1.8초에 가라앉음) · 평소엔 천천히 숨쉬듯
         if (sc) { const v = sc[b.z.team]; if (b.sc !== undefined && v > b.sc) b.flareT = tn; b.sc = v; }
         const f = b.flareT ? Math.max(0, 1 - (tn - b.flareT) / 1.8) : 0;
-        bm.visible = vis && !(window.__fx && window.__fx.on && window.__fx.on.basebeam === false);
-        bm.material.opacity = 0.09 + 0.03 * Math.sin(tn * 1.7 + b.z.team) + 0.8 * f * f;   // b444 — 평소엔 아주 옅게(0.22 는 벽처럼 진했다)
+        bm.visible = vis && !(window.__fx && window.__fx.on && window.__fx.on.basebeam === false) && (ZF.beamIdle === true || f > 0);   // b627 — 솟는 빛은 시체를 바칠 때만 한 번(사용자) · 평소 커튼 켜기: __zonefence.beamIdle = true
+        bm.material.opacity = (ZF.beamIdle === true ? 0.09 + 0.03 * Math.sin(tn * 1.7 + b.z.team) : 0) + 0.8 * f * f;
+        if (f > 0 && !b.fr) { b.fr = true; const step = () => { const f2 = b.flareT ? Math.max(0, 1 - (performance.now() / 1000 - b.flareT) / 1.8) : 0; bm.material.opacity = (ZF.beamIdle === true ? 0.09 : 0) + 0.8 * f2 * f2; bm.visible = b.grp.visible && (ZF.beamIdle === true || f2 > 0); if (f2 > 0) requestAnimationFrame(step); else b.fr = false; }; requestAnimationFrame(step); }   // 0.25초 박자 말고 매 프레임 부드럽게   // b444 — 평소엔 아주 옅게(0.22 는 벽처럼 진했다)
       }
       b.grp.visible = vis; apply(b, vis);
-      { const mk = b.grp.getObjectByName('zmarks'), X = window.__fx; if (mk) mk.visible = !(X && X.on && X.on.zonemarks === false); }
+      { const mk = b.grp.getObjectByName('zmarks'), X = window.__fx; if (mk && X && X.on && X.on.zonemarks === false) mk.visible = false; }
       // 내 본진(0)은 basefx 가 매 프레임 정한다 · 나머지는 처음 값에 곱한다
-      if (b.z.team !== 0) for (const [m, k] of [[b.fill, KF], [b.edge, K]]) { if (m.userData.op0 === undefined) m.userData.op0 = m.material.opacity; m.material.opacity = m.userData.op0 * (vis ? k : 1); }
+      if (b.z.team !== 0) for (const [m, k] of [[b.fill, KF], [b.edge, K]]) { if (m.userData.op0 === undefined) m.userData.op0 = m.material.opacity; m.material.opacity = m.userData.op0 * (vis ? k : 1) * (m === b.fill ? ZF.fillMul : 1); }
     }
   }
   setInterval(() => { try { tick(); } catch (e) { if (!tick.err2) { tick.err2 = true; console.warn('[zonefence]', e); } } }, 250);
@@ -3598,7 +3601,7 @@ var MeshoptDecoder = (function () {
      손전등을 켜면 손전등 그대로 · 그림자도 함께(이 빛이 움직이는 동안은 그림자 지도를 매 프레임 새로 그린다)
    · 끄기: 시연실 연출 「눈 앞 시야(손전등 없이)」 · 세기는 E.k(기본 1) */
 (() => {
-  const E = (window.__eyelight = { k: 1, ready: false, base: 6, decay: 0.4, h: 7, back: 2, ahead: 8, near: 4 });   // b615 — 바로 앞 물체가 하얗게 타지 않게(사용자 「내 눈앞 바위가 눈부시게 빛난다」 — 빛이 카메라 자리라 0.5m 앞 바위가 5m 앞보다 6배 밝았다 → 2.5배) · 5m 밝기는 예전과 같게
+  const E = (window.__eyelight = { k: 1, ready: false, base: 6.5, decay: 0.4, h: 14, back: 4, ahead: 10, near: 8, dist: 40 });   // b615 — 바로 앞 물체가 하얗게 타지 않게(사용자 「내 눈앞 바위가 눈부시게 빛난다」 — 빛이 카메라 자리라 0.5m 앞 바위가 5m 앞보다 6배 밝았다 → 2.5배) · 5m 밝기는 예전과 같게
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };   // b626 — 다시 켬(사용자 「없애니 이상 · 밝혀는 주되 바닥 아닌 오브젝트는 빛나지 않게」) — b618 끔 줄: const on = () => false;   // b618 — 아예 끔(사용자 「내 시야 앞 오브젝트가 빛난다 · 내 앞을 비추는 조명을 아예 없애」) · 되살리기: 예전 줄 = const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };
   const COL = 0xbcc6d6;           // 차가운 밤빛(달빛과 같은 결)
   let L = null, T = null, sv = null, col = null, Vf = null;
@@ -3618,6 +3621,23 @@ var MeshoptDecoder = (function () {
       if (pb) pb.apply(this, a);
       try {
         const c = G.cfg;
+        // b627 — 캐릭터 보조광(game.js charFill 점빛)이 나와 카메라 사이 1.6m · 높이 1.7m 에 있어 그 사이 바위가 빛에 바짝 붙어 하얗게 탔다(사용자 「내 앞 오브젝트가 심하게 반사」)
+        //   → 내 앞(카메라 쪽) 1m · 높이 1.4m · 닿는 거리 5m · 세기는 가슴 밝기가 예전과 같게(×0.494) — 카메라 앞 바위는 빛에서 1~2m 라 내 몸의 절반쯤만 · 끄기: E.fillFix = false
+        if (E.fillFix !== false) {
+          if (!E.fill) G.scene.traverse((o) => { if (!E.fill && o.isPointLight && !o.castShadow && o.decay === 1.5 && o.color.getHex() === 0xd8dde6) E.fill = o; });
+          const F = E.fill, h = G.hero && G.hero.position, cp = G.cam.position;
+          if (F && h) { let dx = cp.x - h.x, dz = cp.z - h.z; const l = Math.hypot(dx, dz) || 1; F.position.set(h.x + dx / l * 1.0, h.y + 1.4, h.z + dz / l * 1.0); F.distance = 5; F.intensity = (c.charFill || 0) * 0.494; }
+        }
+        // b627 — 오라 빛(game.js aura · 머리 위 2.2m · 감쇠 2 · 7.5m) — 머리 위 낮게 붙어 있어 곁의 바위 · 카메라 앞 바위가 하얗게 탔다(사용자 「내 앞 오브젝트가 심하게 반사」 — 이 빛만 끄면 멀쩡했다)
+        //   → 머리 위 5m · 감쇠 1 · 14m 로 높고 완만하게 · 세기는 내 발밑 밝기가 예전과 같게 · 끄기: E.auraFix = false
+        if (E.auraFix !== false && c.auraOn) {
+          const h = G.hero && G.hero.position;
+          if (!E.aura && h) G.scene.traverse((o) => { if (!E.aura && o.isPointLight && o.decay === 2 && !o.name && Math.hypot(o.position.x - h.x, o.position.z - h.z) < 0.05) E.aura = o; });
+          const A = E.aura;
+          if (A && h) { const h0 = Math.max(0.3, c.auraHeight || 2.2), d0 = c.auraDist || 7.5, cut = (d, D) => { const q = Math.max(0, 1 - Math.pow(d / D, 4)); return q * q; };
+            const base = (c.auraInt || 0) / (h0 * h0) * cut(h0, d0), H = E.auraH || 5, D = E.auraD || 14;
+            A.position.set(h.x, h.y + H, h.z); A.decay = 1; A.distance = D; A.intensity = base * H / Math.max(0.05, cut(H, D)); }
+        }
         if (!on() || !G.started || c.torch) return;
         sv = { i: L.intensity, an: L.angle, pe: L.penumbra, di: L.distance, de: L.decay, au: L.shadow.autoUpdate, p: L.position.clone(), t: L.target.position.clone(), c: L.color.getHex() };
         // b409 — 카메라 자리에서 화면보다 훨씬 넓게(원뿔 가장자리가 화면 밖) · 거리에 따라 아주 천천히 어두워지게 — 둥근 빛 웅덩이(손전등)가 생기지 않는다
@@ -3631,7 +3651,7 @@ var MeshoptDecoder = (function () {
         L.target.position.set(gx, gy, gz);
         sv.n = L.shadow.camera.near; L.shadow.camera.near = E.near; L.shadow.camera.updateProjectionMatrix();
         L.target.updateMatrixWorld(true); L.updateMatrixWorld(true);
-        L.intensity = E.base * E.k; L.angle = 1.25; L.penumbra = 1; L.distance = 30; L.decay = E.decay;
+        L.intensity = E.base * E.k; L.angle = 1.25; L.penumbra = 1; L.distance = E.dist || 30; L.decay = E.decay;   // b628 — 14m 위 · 4m 뒤(7m 는 카메라 앞 바위 경사면이 빛을 정면으로 받아 하얗게 — 사용자) · 가까운 것과 먼 땅의 거리 차가 작아 고르게
         L.color.setHex(COL);
         L.shadow.autoUpdate = true;
       } catch (e) { sv = null; if (!wait.err) { wait.err = true; console.warn('[eyelight]', e); } }
@@ -6095,6 +6115,11 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     { title: '본진 토리이', sub: '본진 셋의 토리이 · 한꺼번에', rows: [
       { k: 'torii.size', label: '크기', min: 0.5, max: 2.5, step: 0.05, def: 1, fmt: pct,
         get: () => (window.__basefx ? window.__basefx.tk : 1), set: (v) => { if (window.__basefx && window.__basefx.toriiSize) window.__basefx.toriiSize(v); } },
+    ] },
+    // b628 — 본진 영역 색 · 테두리 라인 진하기(사용자 「본진 영역 색과 테두리 라인 진하기 조절하는 패널」) — zonefence.js · 셋 모두
+    { title: '본진 영역', sub: '바닥 색 · 테두리 라인 진하기 · 본진 셋 모두', rows: [
+      { k: 'zone.fill', label: '영역 색 진하기', min: 0, max: 3, step: 0.05, def: 1, fmt: pct, get: () => (window.__zonefence ? window.__zonefence.fillMul : 1), set: (v) => { if (window.__zonefence) window.__zonefence.fillMul = v; } },
+      { k: 'zone.line', label: '테두리 라인 진하기', min: 0, max: 1.5, step: 0.05, def: 0, fmt: (v) => (v > 0 ? pct(v) : '끔'), get: () => (window.__zonefence ? window.__zonefence.lineMul : 0), set: (v) => { if (window.__zonefence) window.__zonefence.lineMul = v; } },
     ] },
     // b439 — 자세하게 · 범위 넓게(사용자 「패널을 디테일하게 · 범위도 더 넓게 · 해상도 같은 설정도」)
     { title: '밝기·조명', sub: '배경(장면) 밝기 — 사람·시체·괴물은 아래 「캐릭터」에서 따로', manual: true, rows: [
@@ -9089,7 +9114,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     }
   };
   // 괴물 입김 — 가까이서 숨 쉬고 그르렁댈 때(realsfx.js 가 그 소리와 함께 부른다) · 입에서 앞으로 짙고 큰 김 · 천천히 퍼지며 사라진다
-  X.noBreath = true;   // b625 — 입김 없앰(사람 · 괴물 모두 · 사용자 「입김 없애자」)
+  X.noBreath = true; X.noMist = true;   // b625 — 입김 없앰(사람 · 괴물 모두 · 사용자 「입김 없애자」)
   X.monPuff = (k) => {
     const G = window.__G, C = G && G.monster, F = window.__fire; if (!C || !C.root || !C.root.visible || !F || !F.mouthAt || !X.on.breath || X.noBreath) return;
     const m = F.mouthAt(VB.set(0, 0, 0)), yw = C.root.rotation.y, fx = Math.sin(yw), fz = Math.cos(yw), s = ((G.cfg && G.cfg.monHeight) || 4) / 4;
@@ -9253,7 +9278,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     const G = window.__G, N = window.__nav, c = G.cam.position; let k = 0;
     for (let i = mists.length - 1; i >= 0; i--) { const m = mists[i]; m.t += dt; if (m.t >= m.life) mists.splice(i, 1); }
     const nk = (window.__night && window.__night.kNow) || 0, want = X.on.mist && G.started ? Math.round(10 * (1 + 0.6 * nk)) : 0;
-    if (!X.on.mist && performance.now() > (X.mistDemoUntil || 0)) { mists.length = 0; mistCells.length = 0; mistM.count = 0; return; }   // 끄면 떠 있던 덩이도 · 물 칸 훑기도 멈춤(리뷰 b363)
+    if (X.noMist || (!X.on.mist && performance.now() > (X.mistDemoUntil || 0))) { /* b628 — 맵 위 안개 없앰(사용자 「맵 바깥 안개는 괜찮지만 맵 위 안개들은 제거」 · 되살리기 __fx.noMist=false) */ mists.length = 0; mistCells.length = 0; mistM.count = 0; return; }   // 끄면 떠 있던 덩이도 · 물 칸 훑기도 멈춤(리뷰 b363)
     if ((mistScanT -= dt) <= 0 && N && N.waterAt) {                       // 3초마다 둘레 22m 의 물 칸(1m)을 모은다 — 작은 연못도 놓치지 않게
       mistScanT = 3; mistCells.length = 0;
       for (let dx = -22; dx <= 22; dx += 1) for (let dz = -22; dz <= 22; dz += 1) { if (dx * dx + dz * dz > 484) continue; const w = N.waterAt(c.x + dx, c.z + dz); if (w) mistCells.push([c.x + dx, w.wy, c.z + dz]); }
@@ -12173,7 +12198,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const PK = (e) => B.per[e.kind] || Object.assign({}, B.DEF, B.DEFK[e.kind] || {});
   const IMG = window.__badgeImg || {};
   const N = 8;                                                       // 앞 줄 한 가닥 마디 수(점)
-  let T = null, V = null, M4 = null, BG = null, BA = null, TEX = null, srcMat = null, srcMesh = null, ready = false, failed = false, hooked = null;
+  let unlitSrc = null, T = null, V = null, M4 = null, BG = null, BA = null, TEX = null, srcMat = null, srcMesh = null, ready = false, failed = false, hooked = null;
   const tex = {}, mats = {};
   const shownUp = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; };
   const fxOff = () => { const X = window.__fx; return !!(X && X.on && X.on.badge === false); };
@@ -12196,6 +12221,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       if (!pick || (/Ground|Concrete/.test(o.name) && !/Ground|Concrete/.test(pick.o.name))) pick = { m, o };
     });
     if (pick) { srcMat = pick.m; srcMesh = pick.o; }
+    // b630 — 빛 영향 없는 재질(사용자 「목줄과 사원증은 빛의 영향을 안 받게」) — 이미 그려지는 그림 한 장 + 정점색 MeshBasic(본진 바닥 판)을 복제(같은 셰이더 · 반투명 칸 그대로 · 불투명 1) · 끄기: __badge.unlit = false 뒤 새로고침
+    if (B.unlit !== false) G.scene.traverse((o) => { if (unlitSrc || !o.isMesh || o.isSkinnedMesh || o.isInstancedMesh) return; const m = o.material; if (!m || Array.isArray(m) || m.type !== 'MeshBasicMaterial' || !m.map || m.alphaMap || !m.vertexColors || m.alphaTest > 0) return; const own = (k) => Object.prototype.hasOwnProperty.call(m, k); if (own('onBeforeCompile')) return; unlitSrc = m; });
     if (!srcMat) { failed = true; console.warn('[badge] 빌릴 재질이 없다 — 사원증을 그리지 않는다'); return false; }
     let P = Object.getPrototypeOf(srcMesh.geometry); while (P && !Object.prototype.hasOwnProperty.call(P, 'setAttribute')) P = Object.getPrototypeOf(P);
     BG = P && P.constructor; BA = srcMesh.geometry.attributes.uv.constructor; TEX = T.CanvasTexture;
@@ -12208,6 +12235,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
         const t = new TEX(c); if (srcMat.map.colorSpace !== undefined) t.colorSpace = srcMat.map.colorSpace;
         t.anisotropy = 4; if (k === 'strap') { t.wrapS = t.wrapT = 1000; }   // RepeatWrapping
         t.needsUpdate = true; tex[k] = t;
+        if (unlitSrc) { const u = unlitSrc.clone(); u.map = t; u.color.setRGB(1, 1, 1); u.opacity = 1; u.depthWrite = true; u.blending = 1; u.name = 'badge_' + k; u.userData.unlit = true; mats[k] = u; return; }
         const m = srcMat.clone(); m.map = t; m.color.setRGB(1, 1, 1); m.name = 'badge_' + k;
         if (Object.prototype.hasOwnProperty.call(srcMat, 'onBeforeCompile')) { m.onBeforeCompile = srcMat.onBeforeCompile; m.customProgramCacheKey = srcMat.customProgramCacheKey; }   // 같은 셰이더(새로 굽지 않는다)
         if (m.roughness !== undefined) { m.roughness = k === 'strap' ? 0.85 : 0.8; m.metalness = 0; }   // b570 — 손전등 반사로 하얗게 번쩍이지 않게
@@ -12244,6 +12272,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     }
     const g = new BG();
     g.setAttribute('position', new BA(new Float32Array(pos), 3)); g.setAttribute('normal', new BA(new Float32Array(nor), 3)); g.setAttribute('uv', new BA(new Float32Array(uv), 2));
+    g.setAttribute('color', new BA(new Float32Array(pos.length).fill(1), 3));   // b630 — 정점색 재질(빛 영향 없음)용 흰색
     g.setIndex(idx); g.computeBoundingSphere();
     return g;
   }
@@ -12251,7 +12280,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const BACKN = 9, SUB = 4, NS = (N - 1) * SUB + 1, LINES = [NS, NS];   // b581 — 목 뒤로 감기는 줄 없앰(사용자 「목 뒤로 감기는 부분을 없애자」 · 목에 끼우는 식)   // b576 — 앞 줄은 마디 사이를 곡선(캣멀-롬)으로 4칸씩 — 꺾인 선이 안 보이게
   function strapGeo() {
     const nv = LINES.reduce((s, k) => s + k * 4, 0), g = new BG(), idx = [];
-    g.setAttribute('position', new BA(new Float32Array(nv * 3), 3)); g.setAttribute('normal', new BA(new Float32Array(nv * 3), 3)); g.setAttribute('uv', new BA(new Float32Array(nv * 2), 2));
+    g.setAttribute('position', new BA(new Float32Array(nv * 3), 3)); g.setAttribute('normal', new BA(new Float32Array(nv * 3), 3)); g.setAttribute('uv', new BA(new Float32Array(nv * 2), 2)); g.setAttribute('color', new BA(new Float32Array(nv * 3).fill(1), 3));
     let o = 0;
     for (const k of LINES) {
       for (let i = 0; i < k - 1; i++) {
@@ -12547,7 +12576,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const sm0 = window.__slowmo === undefined ? 1 : window.__slowmo, dt = raw * sm0;
     const C = window.__cast, off = !B.on || fxOff();
     for (const e of ents.values()) { const p = PK(e), key = [p.drop, p.sideX, p.neckY, p.neckZ, p.size].join(); if (key !== e._key) { e._key = key; e.init = false; } }   // 줄 길이 · 목 위치 · 크기가 바뀌면 다시 건다
-    for (const k in B.KINDS) { const m = mats[k], ms = mats['s_' + k], b = (B.per[k] || B.DEF).bright; if (m && m.color.r !== b) m.color.setScalar(b); const sb = (B.per[k] || B.DEF).strapBright; if (ms && ms.color.r !== sb) ms.color.setScalar(sb); }
+    { const tc = (window.__title3 && window.__title3.cf) || {}; for (const k in B.KINDS) { const m = mats[k], ms = mats['s_' + k], b = m && m.userData.unlit ? (tc.bdC ?? 0.85) : (B.per[k] || B.DEF).bright; if (m && m.color.r !== b) m.color.setScalar(b); const sb = ms && ms.userData.unlit ? (tc.bdS ?? 0.9) : (B.per[k] || B.DEF).strapBright; if (ms && ms.color.r !== sb) ms.color.setScalar(sb); } }   // b630 — 빛 영향 없는 재질이면 타이틀 조절 「사원증 · 목줄 밝기」(모든 캐릭터 같이)
     for (const sm of people(G)) {
       const kind = C && C.badgeKind ? C.badgeKind(sm) : null;
       let e = ents.get(sm);
@@ -16211,7 +16240,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   // b531 — 위치 · 크기 조절(사용자 「타이틀 화면에서 내가 위치랑 크기 잡을 수 있게 패널」) · 이 브라우저에 바로 · 조절창(Tab) 「저장」 = 모두의 기본값('title3')
   const DEF = { side: 0.95, dist: 3.3, camH: 1.32, lookH: 1.38, fov: 38, scale: 1, speed: 0.78, radius: 0, dir: 1, cUp: 0, cBack: 0, eF: 0.15, eIn: 0.0, eDown: 0.03, hF: 0.1, hIn: -0.03, hDown: 0.42, lS: 1, lX: 0, lY: 0, mS: 1, mX: 0, mY: 0, mF: 1, mG: 1, oS: 1, oX: 0, oY: 0, oH: 0, tS: 1, tX: 0, tY: 0, kS: 1, kX: 0, kY: 0, kH: 0, bright: 1.7, zone: 0,
     lA: 6, lD: 1.6, lW: 0.2, lI: 1, lL: 1, lLF: 7, mA: 2, mD: 0.8, mW: 1.0, mGp: 0.18, mI: 1, sA: 1, sD: 1.2, sW: 2.0, sI: 1, vD: 1.6, vW: 0,
-    fS: 0.32, fT: 0.82, fC: 1.08, fBr: 1, fB: 0.35, fA: 1.2, fAc: 0.18, fGl: 0, fG: 0.11, fL: 0.16, fF: 0, fJ: 0, fV: 0 };
+    fS: 0.32, fT: 0.82, fC: 1.08, fBr: 1, fB: 0.35, fA: 1.2, fAc: 0.18, fGl: 0, fG: 0.11, fL: 0.16, fF: 0, fJ: 0, fV: 0, bdC: 0.85, bdS: 0.9 };   // b630 — 사원증 카드 · 목줄 밝기(빛 영향 없음 · 게임에서도 같은 값)
   // b545 — 칸을 묶음별로(['#', 제목] = 묶음 머리) · 패널을 연 동안은 화면의 로고 · 메뉴 · 작은 글을 마우스로 끌어 옮기고 휠로 크기(사용자 「대충하노」)
   // b547 — 등장 연출(사용자 「타이틀이 기괴하거나 스윽 나오는 애니메이션 · 서브메뉴도 나오는 연출 패널」) · 필터(「메뉴에도 게임 필터처럼 더 진하게」)
   const ANIM = [[0, '없음 — 바로'], [1, '스윽 나타남'], [2, '왼쪽에서 스윽'], [3, '아래에서 스윽'], [4, '위에서 툭 내려옴'], [5, '크게 → 제자리(흐릿하게)'], [6, '형광등처럼 깜빡이며 켜짐'], [7, '지지직 글리치'], [8, '핏물처럼 위→아래로 드러남'], [9, '왼→오 쓸며 드러남'], [10, '덜덜 떨며 나타남'], [11, '잉크 번지듯'], [12, '어둠에서 천천히 스며 나옴']];
@@ -16230,9 +16259,11 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     ['#', '조작 안내 줄(Enter · WASD …) — 끌기 · 휠로도'], ['kS', '크기', 0.4, 3, 0.01], ['kX', '좌우(화면 %)', -40, 80, 0.5], ['kY', '위아래(화면 %)', -40, 40, 0.5], ['kH', '숨기기(1)', 0, 1, 1],
     ['#', '카메라 · 사람'], ['side', '화면 좌우(사람 자리)', -2.5, 2.5, 0.01], ['dist', '카메라 거리', 1.2, 9, 0.05], ['camH', '카메라 높이', 0.2, 4, 0.02], ['lookH', '바라보는 높이', 0.2, 3, 0.02], ['fov', '시야각', 18, 70, 1],
     ['scale', '사람 크기', 0.5, 2, 0.01], ['speed', '걷는 빠르기(m/s)', 0.1, 2, 0.02], ['radius', '걷는 원 반지름(0 = 자동 — 막힌 데 없는 원)', 0, 26, 0.5], ['dir', '도는 방향(1 · -1)', -1, 1, 2], ['#', '업힌 시체'], ['cUp', '시체 위아래(m)', -0.4, 0.4, 0.01], ['cBack', '시체 앞뒤(m · − 가 등 쪽)', -0.4, 0.4, 0.01], ['#', '업힌 시체 오른팔(손 자리)'], ['eF', '시체 오른팔 — 팔꿈치 앞(m)', -0.2, 0.4, 0.01], ['eIn', '팔꿈치 안쪽(m · − 바깥)', -0.3, 0.3, 0.01], ['eDown', '팔꿈치 아래(m · − 위)', -0.3, 0.4, 0.01],
-    ['hF', '손 앞(m)', -0.2, 0.4, 0.01], ['hIn', '손 안쪽(m · − 바깥)', -0.3, 0.3, 0.01], ['hDown', '손 아래(m)', 0, 0.7, 0.01], ['bright', '사람 밝기', 0.5, 4, 0.05], ['zone', '장소(본진 0 · 1 · 2)', 0, 2, 1]];
+    ['hF', '손 앞(m)', -0.2, 0.4, 0.01], ['hIn', '손 안쪽(m · − 바깥)', -0.3, 0.3, 0.01], ['hDown', '손 아래(m)', 0, 0.7, 0.01], ['bright', '사람 밝기', 0.5, 4, 0.05], ['zone', '장소(본진 0 · 1 · 2)', 0, 2, 1],
+    ['#', '사원증 · 목줄 — 빛 영향 없음(게임에서도 이 밝기)'], ['bdC', '사원증 카드 밝기', 0, 2, 0.01], ['bdS', '목줄 밝기', 0, 2, 0.01]];   // b630 — 사용자 「타이틀 화면에 사원증하고 목줄 밝기 설정 · 빛의 영향을 안 받게」
   const LKEY = 'corpse_title_v1';
   const CF = Object.assign({}, DEF); try { Object.assign(CF, JSON.parse(localStorage.getItem(LKEY) || '{}')); } catch (e) { /* */ }
+  T3.cf = CF;   // b630 — lanyard.js 가 사원증 · 목줄 밝기를 읽는다
   const saveCF = () => { try { localStorage.setItem(LKEY, JSON.stringify(CF)); } catch (e) { /* */ } };
   (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 300); return; } St.reg('title3', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; saveCF(); sync(); } } }); })();
   let G = null, st = null, fadeEl = null;
