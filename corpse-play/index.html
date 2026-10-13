@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-514 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-518 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -430,7 +430,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-514'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-518'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -4104,14 +4104,19 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', speed: 1, aerialZoom: 0.35, bloodGlow: 1, gap: 0.2, squashT: 0.04, dashT: 0.3, dashFrom: 0.7, dashPow: 1.6, hitStop: 0.08, burstEase: 1, hitSnd: 0, burstSnd: 0, squash: 0.35, spurt: 1, winBright: 1, endBright: 1,
     closeD: 1.1, closeFov: 40, trackD: 2.4, trackFov: 56, wideD: 4.2, wideFov: 52, kick: 0.6, fovPunch: 4, shake: 1, winD: 0.7, winFov: 30, bars: 1,
     parts: 1, partF: 1, partSpin: 1, chunks: 45, cloth: 0, skin: 0, bones: 0, chunkSize: 0.55, chunkF: 1, roll: 1, drops: 1400, dropSize: 1, dropF: 1, mist: 1,
-    flash: 0, ring: 0, sound: 1, light: 2.2, wisp: 1.6, wispN: 6,
+    flash: 0, ring: 0, sound: 1, light: 2.2, wisp: 1.6, wispN: 6, hairLead: 0.55, hairShoot: 0.35, cutV: 0,
   };
   const CF = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('corpse_end_v4') || '{}'); } catch (e) { /* */ } return Object.assign({}, DEF, o); })();
   const saveCF = () => { try { localStorage.setItem('corpse_end_v4', JSON.stringify(CF)); } catch (e) { /* */ } };
   if (CF.squashT === 0.12) CF.squashT = 0.04;   // b474 — 맞닿자마자 터지게(예전 기본 0.12 는 늦었다)
+  /* b515 — 컷 길이 · 긴장 다시(사용자 「연출 텐션 · 컷 길이 손봐」): 승리 글 짧게 → 하늘(연기가 솟고 끝에 가닥이 쫘악) 길게 → 얼굴 둘 빠르게 → 따라가기 짧게 → 맞닿는 순간 멈칫 → 조각 · 이긴 사람
+     저장돼 있던 예전 컷 값에 한 번만 덮어쓴다(cutV) · 그 뒤로 연출실에서 바꾼 값은 그대로 */
+  const CUT2 = { titleT: 1.6, aerial: 2.2, closeA: 0.7, closeB: 0.55, trackA: 0.6, trackB: 0.5, wide: 0.5, hitStop: 0.1, after: 2.0, winT: 3.0, reliefT: 0.45, speed: 1, hairLead: 0.55, hairShoot: 0.35 };
+  const cut2 = () => { if (CF.cutV === 2) return; Object.assign(CF, CUT2); CF.cutV = 2; saveCF(); };
+  cut2();
   D.cf = CF;
   // 모두의 기본값 — 조절창(Tab)의 「저장」(settings.js · MSW 글로벌 저장소)에 함께 실린다 · 저장된 값이 있으면 켤 때 그 값으로
-  (function regSet() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regSet, 300); return; } St.reg('endFx', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; saveCF(); if (lab && lab.show) { const c = lab.cur; lab.cur = null; lab.show(c || 'title'); } } } }); })();
+  (function regSet() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regSet, 300); return; } St.reg('endFx', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; if (v.cutV !== 2) { CF.cutV = 0; cut2(); } saveCF(); if (lab && lab.show) { const c = lab.cur; lab.cur = null; lab.show(c || 'title'); } } } }); })();
   // 시간표(u = 화면 시간) — 슬로모션 구간에서는 사건 시간 τ 가 느리게 흐른다
   const TL = () => {
     const u0 = CF.titleT, uF = u0 + CF.aerial, cA = uF, cB = cA + CF.closeA, tA = cB + CF.closeB, tB = tA + CF.trackA, w0 = tB + CF.trackB, uS = w0 + CF.wide, uH = uS + CF.slowLen, uHs = uH + CF.hitStop, uB = uHs + CF.burst, uW = uB + CF.after, end = uW + CF.winT;
@@ -4135,8 +4140,13 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     G.scene.traverse((o) => { if (!base && o.isMesh && !o.isSkinnedMesh && !o.isInstancedMesh && o.material && o.material.isMeshStandardMaterial && !Array.isArray(o.material)) base = o.material; });
     if (!base) { setTimeout(build, 300); return; }
     const mat = (hex, rough, metal, em) => { const m = base.clone(); for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap', 'lightMap', 'bumpMap', 'displacementMap']) if (k in m) m[k] = null; m.transparent = false; m.opacity = 1; m.alphaTest = 0; m.color.setHex(hex); m.roughness = rough; m.metalness = metal; m.emissive.setHex(em); m.emissiveIntensity = 1; m.side = 0; m.vertexColors = false; m.needsUpdate = true; return m; };
-    const geoLump = new T.CylinderGeometry(0.5, 0.42, 1, 6, 1), geoDrop = new T.CylinderGeometry(0.5, 0.5, 1, 5, 1);
-    const spec = { flesh: [geoLump, mat(0x9a1010, 0.4, 0.05, 0x5a0000)], cloth: [geoLump, mat(0x3c3a38, 0.9, 0, 0x050505)], skin: [geoLump, mat(0xb07a62, 0.6, 0, 0x120604)], bone: [geoDrop, mat(0xd9cdb8, 0.5, 0, 0x101010)], drop: [geoDrop, mat(0xb00a0a, 0.15, 0.1, 0x8a0000)], wisp: [geoDrop, mat(0x050305, 0.28, 0.2, 0x030002)] };   // b500 wisp — 가운데서 흘러나오는 기괴한 기운(같은 재질 꼴 · 새 셰이더 없음)   // b478 — 밝은 핏빛(예전 검붉은 색은 피 같지 않았다)
+    const blobGeo = (seg, hs, prof, nz) => {   // 원기둥을 둥글게 빚는다(__G.THREE 엔 원기둥 · 판만 있다) — prof(높이 0..1) = 반지름 배수 · nz = 울퉁불퉁
+      const g = new T.CylinderGeometry(0.5, 0.5, 1, seg, hs), P = g.attributes.position;
+      for (let i = 0; i < P.count; i++) { const x = P.getX(i), y = P.getY(i), z = P.getZ(i), h = y + 0.5, an = Math.atan2(z, x), rr = Math.hypot(x, z) > 1e-6 ? 1 : 0, k = prof(h) * (1 + nz * (Math.sin(an * 3 + h * 7) * 0.5 + Math.sin(an * 5 - h * 11) * 0.3));
+        P.setXYZ(i, rr ? Math.cos(an) * 0.5 * k : 0, y, rr ? Math.sin(an) * 0.5 * k : 0); }
+      g.computeVertexNormals(); return g; };
+    const geoLump = blobGeo(10, 6, (h) => Math.sqrt(Math.max(0, Math.sin(Math.PI * h))) * 1.05, 0.22), geoDrop = blobGeo(10, 6, (h) => Math.sqrt(Math.max(0, Math.sin(Math.PI * Math.pow(h, 0.8)))), 0);   // b515 — 피 · 살점이 도형(5 · 6각 기둥)처럼 보였다 → 늘어진 방울 · 울퉁불퉁한 덩이
+    const spec = { flesh: [geoLump, mat(0x9a1010, 0.4, 0.05, 0x5a0000)], cloth: [geoLump, mat(0x3c3a38, 0.9, 0, 0x050505)], skin: [geoLump, mat(0xb07a62, 0.6, 0, 0x120604)], bone: [geoDrop, mat(0xd9cdb8, 0.5, 0, 0x101010)], drop: [geoDrop, mat(0x8c0606, 0.08, 0.15, 0x3a0000)], wisp: [geoDrop, mat(0x050305, 0.28, 0.2, 0x030002)] };   // b500 wisp — 가운데서 흘러나오는 기괴한 기운(같은 재질 꼴 · 새 셰이더 없음)   // b478 — 밝은 핏빛(예전 검붉은 색은 피 같지 않았다)
     const far = new M4().makeTranslation(0, -999, 0);
     for (const k in spec) { const m = new T.InstancedMesh(spec[k][0], spec[k][1], MAXN[k]); m.name = 'end-' + k; m.frustumCulled = false; m.setMatrixAt(0, far); m.count = 1; G.scene.add(m); mesh[k] = m; }
     // 몸 조각 재질 — 내 몸 재질을 복제(뼈 없는 메시로 그린다 · 준비 단계에서 한 번 그려 셰이더를 굽는다 · 판 중엔 그림만 바꿔 낀다)
@@ -4148,8 +4158,8 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     setTimeout(() => { for (const w of WARM) G.scene.remove(w); }, 9000);
     D.ready = true;
     console.log('[end] 결말 연출 · 3D 조각 준비 — 메쉬 5 · 몸 조각 재질 2');
-    try { makeSmoke(); } catch (e) { console.warn('[end] 연기', e); }
-    setTimeout(() => { for (const k in mesh) if (!S) mesh[k].count = 0; if (SMK && !S) SMK.count = 0; }, 8000);
+    try { makeSmoke(); makeHair(); } catch (e) { console.warn('[end] 연기', e); }
+    setTimeout(() => { for (const k in mesh) if (!S) mesh[k].count = 0; if (SMK && !S) SMK.count = 0; if (HAIR && !S) HAIR.geometry.setDrawRange(0, 0); }, 8000);
   }
   build();
 
@@ -4227,7 +4237,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const _w = {};
   function wisps(u, t, tau) {
     const M = mesh.wisp; if (!M) return;
-    const k0 = CF.wisp; if (!(k0 > 0) || !S.L.length || u < t.u0 || tau > t.tauH + 0.15) { M.count = 0; if (SMK) SMK.count = 0; return; }
+    const k0 = CF.wisp; if (!(k0 > 0) || !S.L.length || u < t.u0 || tau > t.tauH + 0.15) { M.count = 0; if (SMK) SMK.count = 0; if (HAIR) HAIR.geometry.setDrawRange(0, 0); return; }
     if (!_w.m) { _w.m = new M4(); _w.q = new QT(); _w.p = new T.Vector3(); _w.s = new T.Vector3(); _w.up = new T.Vector3(0, 1, 0); _w.a = new T.Vector3(); _w.b = new T.Vector3(); _w.d = new T.Vector3(); }
     const { m, q, p, s, up, a, b, d } = _w, ss2 = (x) => { x = cl(x); return x * x * (3 - 2 * x); };
     const grow = ss2((u - t.u0) / Math.max(0.2, CF.aerial * 0.8)), fade = tau > t.tauH ? 1 - cl((tau - t.tauH) / 0.15) : 1, tt = u;
@@ -4243,7 +4253,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
       if (coil > 0) { const an = f * 24 + tt * 3.4 + ph, r = (0.3 + 0.1 * Math.sin(ph * 2.3)) * coil; x += Math.cos(an) * r; z += Math.sin(an) * r; y += (((f - 0.55) / 0.45) * 1.5 - 1.0 + 0.25 * Math.sin(ph)) * coil; }
       out.set(x, y, z);
     };
-    smoke(u, t, tau, grow, fade, tt, pt); M.count = 0; return;   // b509 — 원기둥 촉수 대신 연기 알갱이 가닥만(악마 연기)
+    smoke(u, t, tau, grow, fade, tt, pt); hair(u, t, tau, pt); M.count = 0; return;   // b509 — 원기둥 촉수 대신 연기 알갱이 가닥만(악마 연기)
     for (const A of S.L) {
       if (tau >= t.tauH && A.obj && !A.obj.visible) continue;
       for (let j = 0; j < NS; j++) {
@@ -4294,7 +4304,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     const tex = anyTex ? new anyTex.constructor(img) : null; if (!tex) return;
     tex.flipY = false; img.onload = () => { tex.needsUpdate = true; };
     const vs = 'varying vec2 vUv; varying vec3 vC; void main(){ vC = instanceColor; float a = vC.b * 6.2832, c = cos(a), s = sin(a); vec2 q = vec2(c * position.x - s * position.y, s * position.x + c * position.y); vUv = uv; vec4 m = modelViewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0); m.xy += q * length(instanceMatrix[0].xyz); gl_Position = projectionMatrix * m; }';
-    const fs = 'uniform sampler2D uTex; varying vec2 vUv; varying vec3 vC; void main(){ float cell = floor(vC.g * 3.99); vec2 o = vec2(mod(cell, 2.0), floor(cell / 2.0)) * 0.5; float l = texture2D(uTex, o + vUv * 0.5).r; float a = smoothstep(0.03, 0.6, l) * vC.r; if (a < 0.004) discard; vec3 col = mix(vec3(0.035, 0.032, 0.036), vec3(0.004, 0.003, 0.005), l); gl_FragColor = vec4(col, a); }';
+    const fs = 'uniform sampler2D uTex; varying vec2 vUv; varying vec3 vC; void main(){ float cell = floor(vC.g * 3.99); vec2 o = vec2(mod(cell, 2.0), floor(cell / 2.0)) * 0.5; float l = texture2D(uTex, o + vUv * 0.5).r; float a = smoothstep(0.03, 0.6, l) * vC.r; if (a < 0.004) discard; vec3 col = mix(vec3(0.07, 0.065, 0.075), vec3(0.004, 0.003, 0.005), smoothstep(0.1, 0.7, l)); gl_FragColor = vec4(col, a); }';
     const mat = new T.ShaderMaterial({ uniforms: { uTex: { value: tex } }, vertexShader: vs, fragmentShader: fs, transparent: true, depthWrite: false });
     const m = new T.InstancedMesh(new T.PlaneGeometry(1, 1), mat, SMAX);
     const mm = new M4().makeTranslation(G.hero.position.x, G.hero.position.y - 3, G.hero.position.z), cc = new T.Color(0.01, 0, 0);
@@ -4306,13 +4316,13 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   function smoke(u, t, tau, grow, fade, tt, pt) {
     if (!SMK) return;
     if (!_w.mm) { _w.mm = new M4(); _w.cc = new T.Color(); _w.pp = new T.Vector3(); }
-    const mm = _w.mm, cc = _w.cc, pp = _w.pp, k0 = CF.wisp, NS = Math.max(2, Math.round(CF.wispN * 2)), K = 46; let n = 0;
+    const mm = _w.mm, cc = _w.cc, pp = _w.pp, k0 = CF.wisp, NS = Math.max(1, Math.round(CF.wispN)), K = 30; let n = 0;
     const put = (x, y, z, sz) => { if (n >= SMAX || sz <= 0.004) return; const h = hsh(n * 3.7 + 11), w = sz * 2.6; mm.makeScale(w, w, 1); mm.setPosition(x, y, z); SMK.setMatrixAt(n, mm); SMK.setColorAt(n, cc.setRGB(0.9, hsh(n + 0.5), (h + tt * 0.05 * (n % 2 ? 1 : -1)) % 1)); n++; };   // 알파 · 무늬 칸 · 돌림
     const blk = (h) => { const g = 0.004 + 0.02 * h; return [g * 1.05, g, g * 1.1]; };
     const sm = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
     const cx = S.cx, cy = S.cy, cz = S.cz;
     const rise = sm((u - t.u0) / Math.max(0.2, CF.aerial * 0.55)) * fade;      // 악마가 솟는 정도
-    const reachAll = sm((u - t.u0 - CF.aerial * 0.3) / Math.max(0.2, CF.aerial * 0.7));   // 가닥이 뻗은 정도
+    const hk = Math.max(0, Math.min(1, (u - (t.uF - CF.hairLead)) / Math.max(0.05, CF.hairShoot))), reachAll = 1 - Math.pow(1 - hk, 3);   // 가닥이 뻗은 정도 — 머리카락 가닥과 같이 쫘악
     // ── 가닥 — 악마 가슴에서 사람 몸통으로 · 머리카락처럼 가늘고 곱슬
     S.L.forEach((A, ai) => {
       if (tau >= t.tauH && A.obj && !A.obj.visible) return;
@@ -4349,16 +4359,82 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
       // ── 악마 — 몸통 기둥(땅에서 솟음) · 머리 · 눈 · 이빨 · 머리채 · 숨 쉬듯 부풂 · 카메라를 노려봄
       const cam = G.cam.position, H = 3.2 * rise, br = 1 + 0.05 * Math.sin(tt * 2.2);
       let fx = cam.x - cx, fz = cam.z - cz; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl; const sx = -fz, sz0 = fx;
-      for (let c = 0; c < 260; c++) {   // 몸통 — 아래는 넓게 퍼진 연기 · 위로 갈수록 어깨
+      for (let c = 0; c < 150; c++) {   // 몸통 — 아래는 넓게 퍼진 연기 · 위로 갈수록 어깨
         const h1 = hsh(5000 + c), h2 = hsh(5000.5 + c), h3 = hsh(5001.3 + c), hy = Math.pow(h1, 0.8), life = (h2 + tt * 0.25) % 1;
         const wide = (hy < 0.15 ? 1.3 - hy * 3 : 0.55 + 0.35 * Math.sin(Math.PI * Math.min(1, hy * 1.1))) * br, an = c * 2.399 + tt * (0.3 + 0.3 * h3) + life * 2;
         const r = wide * (0.35 + 0.65 * h3), y = cy + hy * H * 0.82 + life * 0.25;
-        const s = k0 * rise * (0.28 + 0.5 * h2) * (1 - 0.4 * hy), c1 = blk(h3 * 0.7);
+        const s = k0 * rise * (0.16 + 0.3 * h2) * (1 - 0.4 * hy), c1 = blk(h3 * 0.7);
         put(cx + Math.cos(an) * r - fx * 0.25 * hy, y, cz + Math.sin(an) * r - fz * 0.25 * hy, s, c1[0], c1[1], c1[2]);
       }
       // b510 — 악마 얼굴(머리 · 눈 · 이빨 · 머리채)은 뺐다(사용자) — 솟구치는 연기 덩어리만
     }
     SMK.count = n; SMK.instanceMatrix.needsUpdate = true; if (SMK.instanceColor) SMK.instanceColor.needsUpdate = true;
+  }
+  /* b515 — 머리카락 같은 연기 가닥(사용자 사진 · 「머리카락 같은 연기가 쫘악 뻗어 나가 끌고 오게」)
+     · 한 사람에 HN 가닥 · 가닥 = 화면을 보는 긴 띠(마디 HS) — 가운데(연기 덩어리 가슴 높이)에서 사람 몸통까지 굽이치며 꿈틀
+     · 띠 무늬 = 코드로 그린 「가는 선 수십 가닥이 엉켜 끝에서 갈라지는」 그림 · 무늬가 사람 → 가운데로 흘러 빨아들이는 느낌
+     · 하늘 장면 끝에 0.35초 만에 쫘악 뻗어 나가 낚아채고(그 뒤 끌려옴) · 부딪히면 끊겨 사라짐 · 셰이더 1개 — 준비 단계에서 미리 굽는다 */
+  let HAIR = null; const HN = 26, HS = 28;
+  function hairTex() {
+    const c = document.createElement('canvas'); c.width = 128; c.height = 512; const g = c.getContext('2d');
+    g.fillStyle = '#000'; g.fillRect(0, 0, 128, 512); g.globalCompositeOperation = 'lighter';
+    let sd = 7; const rnd = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
+    for (let k = 0; k < 70; k++) {   // 아래(가운데 쪽)는 굵게 모이고 위(사람 쪽)로 갈수록 가늘게 갈라져 흩날림
+      const x0 = 64 + (rnd() - 0.5) * 50, sp = (rnd() - 0.5) * 90, ph = rnd() * 6.28, fr = 2 + rnd() * 4, w = 0.6 + rnd() * 2.2, a = 0.25 + rnd() * 0.55;
+      g.strokeStyle = `rgba(255,255,255,${a})`; g.lineWidth = w; g.beginPath();
+      for (let y = 0; y <= 512; y += 8) { const v = y / 512, x = x0 + sp * v * v + Math.sin(v * fr * 6.28 + ph) * (4 + 14 * v); if (y === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+      g.stroke();
+    }
+    return c;
+  }
+  function makeHair() {
+    if (HAIR || !SMK) return;
+    const tex = new SMK.material.uniforms.uTex.value.constructor(hairTex()); tex.needsUpdate = true; tex.flipY = false;
+    const tmp = new T.PlaneGeometry(1, 1), BA = tmp.attributes.position.constructor, BG = Object.getPrototypeOf(tmp.constructor.prototype).constructor;
+    const N = HN * 2 * (HS + 1) * 2, geo = new BG(), idx = [];
+    geo.setAttribute('position', new BA(new Float32Array(N * 3), 3)); geo.setAttribute('uv', new BA(new Float32Array(N * 2), 2)); geo.setAttribute('aA', new BA(new Float32Array(N), 1));
+    for (let s = 0; s < HN * 2; s++) for (let k = 0; k < HS; k++) { const i = (s * (HS + 1) + k) * 2; idx.push(i, i + 1, i + 2, i + 1, i + 3, i + 2); }
+    geo.setIndex(idx); geo.boundingSphere = { center: new T.Vector3(), radius: 1e4 };
+    const vs = 'attribute float aA; varying vec2 vUv; varying float vA; void main(){ vUv = uv; vA = aA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
+    const fs = 'uniform sampler2D uTex; uniform float uT; varying vec2 vUv; varying float vA; void main(){ vec2 q = vec2(vUv.x, vUv.y); float l = texture2D(uTex, vec2(q.x, fract(q.y * 0.9 + uT))).r; l = max(l, texture2D(uTex, vec2(1.0 - q.x, fract(q.y * 0.6 - uT * 0.7 + 0.37))).r * 0.8); float side = 1.0 - pow(abs(q.x - 0.5) * 2.0, 3.0); float a = l * vA * side; if (a < 0.01) discard; gl_FragColor = vec4(mix(vec3(0.075, 0.07, 0.08), vec3(0.004, 0.003, 0.005), smoothstep(0.15, 0.8, l)), min(1.0, a * 1.5)); }';
+    const mat = new T.ShaderMaterial({ uniforms: { uTex: { value: tex }, uT: { value: 0 } }, vertexShader: vs, fragmentShader: fs, transparent: true, depthWrite: false, side: 2 });
+    const m = new T.Mesh(geo, mat); m.frustumCulled = false; m.renderOrder = 32; m.name = 'end-hair';
+    // 미리 굽기: 한 가닥만 발밑 아래에 보이게
+    const P = geo.attributes.position, A = geo.attributes.aA, h = G.hero.position;
+    for (let i = 0; i < 4; i++) { P.setXYZ(i, h.x + (i % 2) * 0.1, h.y - 3 + (i >> 1) * 0.1, h.z); A.setX(i, 0.5); }
+    geo.setDrawRange(0, 6); G.scene.add(m); HAIR = m;
+  }
+  const _h = {};
+  function hair(u, t, tau, pt) {
+    if (!HAIR) return;
+    const geo = HAIR.geometry, P = geo.attributes.position, UV = geo.attributes.uv, A = geo.attributes.aA, k0 = CF.wisp, fadeC = tau > t.tauH ? 1 - cl((tau - t.tauH) / 0.12) : 1;
+    const shot0 = t.uF - CF.hairLead, k = cl((u - shot0) / Math.max(0.05, CF.hairShoot)), reachAll = 1 - Math.pow(1 - k, 3);   // 쫘악 — 빠르게 뻗고 끝에서 감김
+    if (!(k0 > 0) || u < shot0 || fadeC <= 0 || !S.L.length) { geo.setDrawRange(0, 0); return; }
+    if (!_h.a) { _h.a = new T.Vector3(); _h.b = new T.Vector3(); _h.d = new T.Vector3(); _h.v = new T.Vector3(); _h.w = new T.Vector3(); }
+    const { a, b, d, v, w } = _h, cam = G.cam.position;
+    let s = 0;
+    S.L.forEach((Ac, ai) => {
+      const gone = tau >= t.tauH && Ac.obj && !Ac.obj.visible;
+      for (let j = 0; j < HN; j++, s++) {
+        const id = ai * 131 + j, hr = hsh(id * 1.7 + 3), reach = gone ? 0 : cl(reachAll * (1.12 - 0.22 * hr)), jj = j * 0.37 + ai * 11;
+        const wd0 = (0.03 + 0.07 * hsh(id + 9)) * k0 * fadeC;
+        for (let q = 0; q <= HS; q++) {
+          const f = (q / HS) * reach, f2 = Math.min(1, f + 0.01);
+          pt(Ac, jj, f, a); pt(Ac, jj, f2, b);
+          const sw = 0.12 * Math.sin(f * 9 + u * 5 + hr * 6) * Math.sin(Math.PI * f);   // 가닥마다 따로 꿈틀
+          const spl = Math.sin(Math.PI * f) * (0.9 + 0.6 * hsh(id + 6));   // 가닥마다 따로 벌어졌다 모임
+          a.x += sw * (hr - 0.5) * 2 + spl * (hr - 0.5) * 1.6; a.y += sw * 0.6 + spl * (hsh(id + 7) - 0.4) * 1.2; a.z += sw * (0.5 - hsh(id + 4)) * 2 + spl * (hsh(id + 8) - 0.5) * 1.6;
+          d.subVectors(b, a).normalize(); v.subVectors(cam, a).normalize(); w.crossVectors(d, v).normalize();
+          const wd = wd0 * (1.25 - 0.85 * f) * (q === HS ? 0.2 : 1), i = (s * (HS + 1) + q) * 2;
+          P.setXYZ(i, a.x + w.x * wd, a.y + w.y * wd, a.z + w.z * wd); P.setXYZ(i + 1, a.x - w.x * wd, a.y - w.y * wd, a.z - w.z * wd);
+          const vv = f * 2.2 + hr; UV.setXY(i, 0, vv); UV.setXY(i + 1, 1, vv);
+          const al = Math.min(1, (reach - f) * 12 + 0.15) * (0.55 + 0.45 * hsh(id + 2));
+          A.setX(i, al); A.setX(i + 1, al);
+        }
+      }
+    });
+    P.needsUpdate = true; UV.needsUpdate = true; A.needsUpdate = true;
+    geo.setDrawRange(0, s * HS * 6); HAIR.material.uniforms.uT.value = (u * 0.55) % 1;
   }
   function placeParts(tb) {
     if (!_m.m) { _m.m = new M4(); _m.q = new QT(); _m.q2 = new QT(); _m.p = new T.Vector3(); _m.s = new T.Vector3(); _m.ax = new T.Vector3(); _m.up = new T.Vector3(0, 1, 0); _m.v = new T.Vector3(); }
@@ -4372,7 +4448,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
         if (n >= MAXN[k]) break;
         const t = tb - P.delay; if (t < 0) continue;
         if (k === 'drop') {
-          if (t < P.tl) { posAt(P, t, p); const e = Math.exp(-P.k * t); v.set(P.vx * e, (P.vy + GRAV / P.k) * e - GRAV / P.k, P.vz * e); const sp = v.length(); q.setFromUnitVectors(up, sp > 1e-3 ? v.multiplyScalar(1 / sp) : up); s.set(P.sx, P.sy * (1 + sp * 0.12), P.sz); }
+          if (t < P.tl) { posAt(P, t, p); const e = Math.exp(-P.k * t); v.set(P.vx * e, (P.vy + GRAV / P.k) * e - GRAV / P.k, P.vz * e); const sp = v.length(); q.setFromUnitVectors(up, sp > 1e-3 ? v.multiplyScalar(1 / sp) : up); s.set(P.sx * 0.75, P.sy * (1 + sp * 0.3), P.sz * 0.75); /* b518 날아가는 쪽으로 늘어진 핏방울 */ }
           else { const k2 = Math.min(1, (t - P.tl) / 0.25); p.set(P.lx, P.g + 0.012, P.lz); q.setFromAxisAngle(up, P.ry); const r = P.sx * lerp(1, P.spl, k2); s.set(r * 1.3, 0.004, r); }
         } else if (t < P.tl) { posAt(P, t, p); ax.set(P.ax, P.ay, P.az); q.setFromAxisAngle(ax, P.w * t); s.set(P.sx, P.sy, P.sz); }
         else {   // 땅에서 굴러감
@@ -4698,7 +4774,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     let hs = null; { const v = C.clone().add(V(0, 1.2, 0)).project(cam); if (v.z < 1) hs = [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }
     if (tau >= t.tauH + CF.squashT && !S.bp && S.L.every((A) => A.bakeReady)) { try { bakeAll(); } catch (e) { console.warn('[end] 몸 조각', e); S.bp = []; } for (const A of S.L) A.obj.visible = false; }   // 부딪힌 순간의 몸을 굳혀 조각으로
     if (tau < t.tauH + CF.squashT && S.bp) freeParts();
-    if (mesh.drop) { mesh.drop.material.emissiveIntensity = CF.bloodGlow; mesh.flesh.material.emissiveIntensity = CF.bloodGlow; }   // 피 빛(밤에도 빨갛게)
+    if (mesh.drop) { mesh.drop.material.emissiveIntensity = CF.bloodGlow * 0.6; mesh.flesh.material.emissiveIntensity = CF.bloodGlow; }   // 피 빛(밤에도 빨갛게)
     const tbB = tau - t.tauH - CF.squashT; gen(); placeParts(u >= t.uH && tbB >= -0.02 * CF.spurt ? tbB : -1); placeBody(tbB >= 0 ? tbB : -1); wisps(u, t, tau); overlays(u, t, hs);
     if (window.__charlit) window.__charlit.mul = CF.light;   // 사람이 밤에 묻히지 않게(연출 동안만) — b479: 조절창 값(k)은 그대로 두고 곱하기만(예전엔 k 를 바꿔 「저장」 때 2.2배씩 쌓였다)
     // b488 — 화면 밝기는 매 프레임 흐름(tick)에서 — 노출은 마지막 화면 필터에서 쓰여서 장면 그리기 전후로 바꾸면 효과가 없었다
@@ -4760,6 +4836,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     restore(G && G.cam); overlaysOff();
     for (const k in mesh) mesh[k].count = 0;
     if (SMK) SMK.count = 0;
+    if (HAIR) HAIR.geometry.setDrawRange(0, 0);
     if (window.__charlit) window.__charlit.mul = 1;
     if (S && S.expSet && G) G.renderer.domElement.style.filter = '';
     if (S && S.postSave) S.postSave.U.uWobble.value = S.postSave.w;   // 화면 일렁임 되돌림
@@ -4781,7 +4858,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const FACE_OPT = () => [['cycle', '번갈아(겁 · 비명 · 공포 · 경악)'], ...(((window.__cast && window.__cast.EXPRS) || []).map((e) => [e.key, e.name.split(' — ')[0]]))];
   const SC = [
     { k: 'title', name: '승리 글', at: (t) => 0, rows: [['titleT', '길이', 0, 5, 0.1, 's'], ['bars', '위아래 검은 띠', 0, 2, 0.05, '%']] },
-    { k: 'aerial', name: '하늘', at: (t) => t.u0, rows: [['wisp', '기괴한 기운 세기', 0, 2.5, 0.05, '%'], ['wispN', '기운 가닥(한 사람당)', 1, 8, 1, ''], ['aerial', '길이', 0.3, 4, 0.1, 's'], ['aerialZoom', '다가가는(줌인) 정도', 0, 0.8, 0.02, '%']] },
+    { k: 'aerial', name: '하늘', at: (t) => t.u0, rows: [['wisp', '기괴한 기운 세기', 0, 2.5, 0.05, '%'], ['hairLead', '가닥이 뻗는 때(하늘 끝 몇 초 전)', 0.1, 2, 0.05, 's'], ['hairShoot', '가닥이 뻗는 빠르기(걸리는 초)', 0.08, 1.2, 0.02, 's'], ['wispN', '기운 가닥(한 사람당)', 1, 8, 1, ''], ['aerial', '길이', 0.3, 4, 0.1, 's'], ['aerialZoom', '다가가는(줌인) 정도', 0, 0.8, 0.02, '%']] },
     { k: 'faceA', name: '① 얼굴', at: (t) => t.cA, rows: [['closeA', '길이', 0.3, 3, 0.05, 's'], ['faceA', '표정', 'sel', FACE_OPT], ['motionA', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'faceB', name: '② 얼굴', at: (t) => t.cB, rows: [['closeB', '길이', 0.3, 3, 0.05, 's'], ['faceB', '표정', 'sel', FACE_OPT], ['motionB', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'track', name: '끌려감', at: (t) => t.tA, rows: [['trackA', '① 따라가는 길이', 0.2, 3, 0.05, 's'], ['trackB', '② 따라가는 길이', 0.2, 3, 0.05, 's'], ['motionA', '① 동작', 'sel', () => MOTIONS], ['motionB', '② 동작', 'sel', () => MOTIONS], ['writhe', '버둥 세기', 0, 2, 0.05, '%'], ['wSpd', '버둥 빠르기', 0.2, 2.5, 0.05, '×'], ['armR', '팔', 0, 2, 0.05, '%'], ['legK', '다리', 0, 2, 0.05, '%'], ['accel', '점점 빨라짐', 1, 6, 0.05, ''], ['jerk', '처음 확 낚아채임', 0, 2, 0.05, 'm'], ['floatH', '떠서 끌려가는 높이', 0, 1.5, 0.02, 'm'], ['lean', '버티며 숙임', 0, 0.9, 0.02, ''], ['trackD', '카메라 거리', 1, 6, 0.1, 'm'], ['trackFov', '화각', 30, 90, 1, '°']] },
