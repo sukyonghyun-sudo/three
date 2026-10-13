@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-544 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-546 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-544'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-546'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1093,6 +1093,13 @@ body.sr-tune-open #btn-view { visibility: hidden; }   /* 패널 뒤로 비친다
 #start .t3-logo { transform: translate(var(--t3lx, 0), var(--t3ly, 0)) scale(var(--t3ls, 1)); transform-origin: left center; }
 #start .t3-menu { transform: translate(var(--t3mx, 0), var(--t3my, 0)) scale(var(--t3ms, 1)); transform-origin: left top; }
 #start .t3-tag { transform: translateY(var(--t3ty, 0)); }
+/* b545 — 메뉴 글자 크기 · 줄 간격 · 둘러보기 · 아래 한 줄 · 조작 안내도 크기와 자리(title.js 패널 · 끌기 · 휠) */
+#start .t3-menu .sr-modes button { font-size: calc(30px * var(--t3mf, 1)); padding-top: calc(18px * var(--t3mg, 1)); padding-bottom: calc(18px * var(--t3mg, 1)); }
+#start .t3-menu #sr-look-btn { font-size: calc(15px * var(--t3mf, 1)); transform: translate(var(--t3ox, 0), var(--t3oy, 0)) scale(var(--t3os, 1)); transform-origin: left center; }
+#start.t3-noLook .t3-menu #sr-look-btn { display: none; }
+#start .t3-tag { transform: translate(var(--t3tx, 0), var(--t3ty, 0)) scale(var(--t3ts, 1)); transform-origin: left center; }
+#start .card.t3 .keys { transform: translate(var(--t3kx, 0), var(--t3ky, 0)) scale(var(--t3ks, 1)); transform-origin: left top; }
+#start.t3-noKeys .card.t3 .keys { display: none; }
 
 </style>
 <style>/* tension.css */
@@ -15529,11 +15536,15 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   const T3 = (window.__title3 = { on: false });
   const FADE = 0.6, STUDIO = /[?&]preview=1/.test(location.search);
   // b531 — 위치 · 크기 조절(사용자 「타이틀 화면에서 내가 위치랑 크기 잡을 수 있게 패널」) · 이 브라우저에 바로 · 조절창(Tab) 「저장」 = 모두의 기본값('title3')
-  const DEF = { side: 0.95, dist: 3.3, camH: 1.32, lookH: 1.38, fov: 38, scale: 1, speed: 0.78, radius: 0, dir: 1, cUp: 0, cBack: 0, eF: 0.15, eIn: 0.0, eDown: 0.03, hF: 0.1, hIn: -0.03, hDown: 0.42, lS: 1, lX: 0, lY: 0, mS: 1, mX: 0, mY: 0, tY: 0, bright: 1.7, zone: 0 };
-  const ROWS = [['lS', '로고 크기', 0.4, 2, 0.01], ['lX', '로고 좌우(화면 %)', -30, 60, 0.5], ['lY', '로고 위아래(화면 %)', -30, 40, 0.5],
-    ['mS', '메뉴 크기', 0.5, 1.8, 0.01], ['mX', '메뉴 좌우(화면 %)', -30, 60, 0.5], ['mY', '메뉴 위아래(화면 %)', -30, 40, 0.5], ['tY', '아래 한 줄 위아래(화면 %)', -30, 30, 0.5],
-    ['side', '화면 좌우(사람 자리)', -2.5, 2.5, 0.01], ['dist', '카메라 거리', 1.2, 9, 0.05], ['camH', '카메라 높이', 0.2, 4, 0.02], ['lookH', '바라보는 높이', 0.2, 3, 0.02], ['fov', '시야각', 18, 70, 1],
-    ['scale', '사람 크기', 0.5, 2, 0.01], ['speed', '걷는 빠르기(m/s)', 0.1, 2, 0.02], ['radius', '걷는 원 반지름(0 = 자동 — 막힌 데 없는 원)', 0, 26, 0.5], ['dir', '도는 방향(1 · -1)', -1, 1, 2], ['cUp', '시체 위아래(m)', -0.4, 0.4, 0.01], ['cBack', '시체 앞뒤(m · − 가 등 쪽)', -0.4, 0.4, 0.01], ['eF', '시체 오른팔 — 팔꿈치 앞(m)', -0.2, 0.4, 0.01], ['eIn', '팔꿈치 안쪽(m · − 바깥)', -0.3, 0.3, 0.01], ['eDown', '팔꿈치 아래(m · − 위)', -0.3, 0.4, 0.01],
+  const DEF = { side: 0.95, dist: 3.3, camH: 1.32, lookH: 1.38, fov: 38, scale: 1, speed: 0.78, radius: 0, dir: 1, cUp: 0, cBack: 0, eF: 0.15, eIn: 0.0, eDown: 0.03, hF: 0.1, hIn: -0.03, hDown: 0.42, lS: 1, lX: 0, lY: 0, mS: 1, mX: 0, mY: 0, mF: 1, mG: 1, oS: 1, oX: 0, oY: 0, oH: 0, tS: 1, tX: 0, tY: 0, kS: 1, kX: 0, kY: 0, kH: 0, bright: 1.7, zone: 0 };
+  // b545 — 칸을 묶음별로(['#', 제목] = 묶음 머리) · 패널을 연 동안은 화면의 로고 · 메뉴 · 작은 글을 마우스로 끌어 옮기고 휠로 크기(사용자 「대충하노」)
+  const ROWS = [['#', '로고 — 끌기 · 휠로도'], ['lS', '로고 크기', 0.3, 2.5, 0.01], ['lX', '로고 좌우(화면 %)', -40, 80, 0.5], ['lY', '로고 위아래(화면 %)', -40, 60, 0.5],
+    ['#', '메뉴(싱글플레이 · 멀티플레이 · 설정) — 끌기 · 휠로도'], ['mS', '메뉴 전체 크기', 0.4, 2, 0.01], ['mX', '메뉴 좌우(화면 %)', -40, 80, 0.5], ['mY', '메뉴 위아래(화면 %)', -40, 60, 0.5], ['mF', '메뉴 글자 크기', 0.5, 2, 0.01], ['mG', '메뉴 줄 간격', 0.3, 2.5, 0.01],
+    ['#', '서브메뉴 「둘러보기」 — 끌기 · 휠로도'], ['oS', '크기', 0.4, 3, 0.01], ['oX', '좌우(화면 %)', -40, 80, 0.5], ['oY', '위아래(화면 %)', -40, 60, 0.5], ['oH', '숨기기(1)', 0, 1, 1],
+    ['#', '아래 한 줄 「먼저 시체 3구를…」 — 끌기 · 휠로도'], ['tS', '크기', 0.4, 3, 0.01], ['tX', '좌우(화면 %)', -40, 80, 0.5], ['tY', '위아래(화면 %)', -40, 40, 0.5],
+    ['#', '조작 안내 줄(Enter · WASD …) — 끌기 · 휠로도'], ['kS', '크기', 0.4, 3, 0.01], ['kX', '좌우(화면 %)', -40, 80, 0.5], ['kY', '위아래(화면 %)', -40, 40, 0.5], ['kH', '숨기기(1)', 0, 1, 1],
+    ['#', '카메라 · 사람'], ['side', '화면 좌우(사람 자리)', -2.5, 2.5, 0.01], ['dist', '카메라 거리', 1.2, 9, 0.05], ['camH', '카메라 높이', 0.2, 4, 0.02], ['lookH', '바라보는 높이', 0.2, 3, 0.02], ['fov', '시야각', 18, 70, 1],
+    ['scale', '사람 크기', 0.5, 2, 0.01], ['speed', '걷는 빠르기(m/s)', 0.1, 2, 0.02], ['radius', '걷는 원 반지름(0 = 자동 — 막힌 데 없는 원)', 0, 26, 0.5], ['dir', '도는 방향(1 · -1)', -1, 1, 2], ['#', '업힌 시체'], ['cUp', '시체 위아래(m)', -0.4, 0.4, 0.01], ['cBack', '시체 앞뒤(m · − 가 등 쪽)', -0.4, 0.4, 0.01], ['#', '업힌 시체 오른팔(손 자리)'], ['eF', '시체 오른팔 — 팔꿈치 앞(m)', -0.2, 0.4, 0.01], ['eIn', '팔꿈치 안쪽(m · − 바깥)', -0.3, 0.3, 0.01], ['eDown', '팔꿈치 아래(m · − 위)', -0.3, 0.4, 0.01],
     ['hF', '손 앞(m)', -0.2, 0.4, 0.01], ['hIn', '손 안쪽(m · − 바깥)', -0.3, 0.3, 0.01], ['hDown', '손 아래(m)', 0, 0.7, 0.01], ['bright', '사람 밝기', 0.5, 4, 0.05], ['zone', '장소(본진 0 · 1 · 2)', 0, 2, 1]];
   const LKEY = 'corpse_title_v1';
   const CF = Object.assign({}, DEF); try { Object.assign(CF, JSON.parse(localStorage.getItem(LKEY) || '{}')); } catch (e) { /* */ }
@@ -15641,7 +15652,11 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (!CF.radius && !st.Z.R) st.Z.R = autoR(st.Z);
     const Z = st.Z, R = Math.max(2, CF.radius || Z.R), d = CF.dir < 0 ? -1 : 1, th = Z.a0 + d * s / R;
     const x = Z.cx + Math.cos(th) * R, z = Z.cz + Math.sin(th) * R, tx = -Math.sin(th) * d, tz = Math.cos(th) * d;
-    A.grp.position.set(x, G.groundAt(x, z), z); A.grp.rotation.y = Math.atan2(tx, tz); A.grp.scale.setScalar(CF.scale);
+    // b545 — 땅 높이는 몇 걸음 평균으로 · 갑자기 바뀌지 않게(길에 15cm 사이 40cm 턱이 있어 사람 · 화면이 위아래로 튀었다)
+    let gy = 0, n = 0; for (const o of [-0.6, -0.3, 0, 0.3, 0.6]) { const th2 = th + d * o / R, y = G.groundAt(Z.cx + Math.cos(th2) * R, Z.cz + Math.sin(th2) * R); if (y !== null && isFinite(y)) { gy += y; n++; } }
+    gy = n ? gy / n : G.groundAt(x, z);
+    st.py = st.py === undefined ? gy : st.py + (gy - st.py) * Math.min(1, (st.pdt || 0.016) * 8);
+    A.grp.position.set(x, st.py, z); A.grp.rotation.y = Math.atan2(tx, tz); A.grp.scale.setScalar(CF.scale);
     A.grp.updateMatrixWorld(true);
   }
   function frame() {
@@ -15652,7 +15667,8 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
       return;
     }
     if (G.started || !startShown() || blocked() || !enabled()) { stop(); return; }
-    const sp = Math.max(0.1, CF.speed), now = performance.now(), dt = Math.min(0.1, (now - (st.lt || now)) / 1000); st.lt = now; st.s = (st.s || 0) + dt * sp; const s = st.s;
+    const sp = Math.max(0.1, CF.speed), now = performance.now(), dt = Math.min(0.1, (now - (st.lt || now)) / 1000); st.lt = now; st.s = (st.s || 0) + dt * sp; const s = st.s; st.pdt = dt;
+    if (A && A.grp) { const y = A.grp.position.y; st.gy = st.gy === undefined ? y : st.gy + (y - st.gy) * Math.min(1, dt * 1.2); }
     if (st.zone !== CF.zone) { st.zone = CF.zone; st.Z = zone0() || st.Z; st.hide = null; }
     if (window.__charlit) window.__charlit.mul = CF.bright;
     place(s);
@@ -15690,8 +15706,9 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     const h = A.grp.position, yaw = A.grp.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw), rx = -fz, rz = fx;   // r = 사람의 왼쪽(카메라에서 보면 오른쪽)
     st.sv = { p: cam.position.clone(), q: cam.quaternion.clone(), fov: cam.fov };
     const D = CF.dist, side = CF.side, sway = Math.sin(performance.now() / 1000 * 0.4) * 0.06;
-    cam.position.set(h.x + fx * D + rx * (side * 0.35), h.y + CF.camH + sway * 0.5, h.z + fz * D + rz * (side * 0.35));
-    cam.lookAt(h.x + rx * side + fx * 0.2, h.y + CF.lookH, h.z + rz * side + fz * 0.2);
+    const gy = st.gy !== undefined ? st.gy : h.y;   // b545 — 카메라 높이는 땅 높이를 부드럽게 따라간다(사용자 「배경이 내려갔다 올라가듯 떨린다」 — 땅 굴곡을 매 프레임 그대로 따라갔다)
+    cam.position.set(h.x + fx * D + rx * (side * 0.35), gy + CF.camH + sway * 0.5, h.z + fz * D + rz * (side * 0.35));
+    cam.lookAt(h.x + rx * side + fx * 0.2, gy + CF.lookH, h.z + rz * side + fz * 0.2);
     if (cam.fov !== CF.fov) { cam.fov = CF.fov; cam.updateProjectionMatrix(); }
     cam.updateMatrixWorld(true);
     if (!st.hide) st.hide = hideList();
@@ -15714,21 +15731,38 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   /* ── 조절 패널(스튜디오 미리보기 — 「타이틀 조절」) ── */
   let pan = null;
   // b543 — 로고 · 메뉴 · 한 줄 자리와 크기(사용자 「타이틀 크기랑 메뉴 위치도 설정할 수 있게」) — #start 의 CSS 변수로
-  function applyUI() { const s0 = document.getElementById('start'); if (!s0) return; const v = { '--t3ls': CF.lS, '--t3lx': CF.lX + 'vw', '--t3ly': CF.lY + 'vh', '--t3ms': CF.mS, '--t3mx': CF.mX + 'vw', '--t3my': CF.mY + 'vh', '--t3ty': CF.tY + 'vh' }; for (const k in v) s0.style.setProperty(k, String(v[k])); }
+  function applyUI() {
+    const s0 = document.getElementById('start'); if (!s0) return;
+    const v = { '--t3ls': CF.lS, '--t3lx': CF.lX + 'vw', '--t3ly': CF.lY + 'vh', '--t3ms': CF.mS, '--t3mx': CF.mX + 'vw', '--t3my': CF.mY + 'vh', '--t3mf': CF.mF, '--t3mg': CF.mG,
+      '--t3os': CF.oS, '--t3ox': CF.oX + 'vw', '--t3oy': CF.oY + 'vh', '--t3ts': CF.tS, '--t3tx': CF.tX + 'vw', '--t3ty': CF.tY + 'vh', '--t3ks': CF.kS, '--t3kx': CF.kX + 'vw', '--t3ky': CF.kY + 'vh' };
+    for (const k in v) s0.style.setProperty(k, String(v[k]));
+    s0.classList.toggle('t3-noLook', CF.oH >= 0.5); s0.classList.toggle('t3-noKeys', CF.kH >= 0.5);
+  }
   function sync() { applyUI(); if (!pan) return; for (const [k] of ROWS) { const i = pan.querySelector(`input[data-k="${k}"]`), b = pan.querySelector(`b[data-v="${k}"]`); if (i) i.value = CF[k]; if (b) b.textContent = (+CF[k]).toFixed(2).replace(/\.00$/, ''); } }
   function buildPanel(s) {
     const st0 = document.createElement('style');
     st0.textContent = `#t3-pbtn{position:absolute;right:14px;top:14px;z-index:6;background:rgba(10,8,7,.8);color:#e9e1d0;border:1px solid #6b2a20;padding:6px 12px;font:12px sans-serif;cursor:pointer}
 #t3-pan{position:absolute;right:14px;top:48px;z-index:6;width:280px;max-height:calc(100% - 70px);overflow-y:auto;background:rgba(12,9,7,.92);border:1px solid #6b2a20;padding:10px 12px;font:12px sans-serif;color:#e9e1d0;display:none}
 #t3-pan.on{display:block} #t3-pan label{display:flex;justify-content:space-between;margin-top:6px;color:#c9bfae} #t3-pan input{width:100%} #t3-pan .r{display:flex;gap:6px;margin-top:10px} #t3-pan .r button{flex:1;padding:5px;background:#2a1712;color:#e9e1d0;border:1px solid #6b2a20;cursor:pointer}
-#t3-pan small{display:block;margin-top:8px;color:#8d887a;line-height:1.5}`;
+#t3-pan small{display:block;margin-top:8px;color:#8d887a;line-height:1.5} #t3-pan h6{margin:14px 0 2px;padding-top:8px;border-top:1px solid #3a2a20;font:600 12px sans-serif;color:#d9a07a}
+#start.t3-edit [data-t3drag]{outline:1px dashed rgba(255,200,120,.55);outline-offset:4px;cursor:move} #start.t3-edit [data-t3drag]:hover{outline-color:#ffd27a}`;
     document.head.appendChild(st0);
     const b = document.createElement('button'); b.id = 't3-pbtn'; b.type = 'button'; b.textContent = '타이틀 조절';
     pan = document.createElement('div'); pan.id = 't3-pan';
-    pan.innerHTML = ROWS.map(([k, n, a, z, step]) => `<label>${n}<b data-v="${k}"></b></label><input type="range" min="${a}" max="${z}" step="${step}" data-k="${k}">`).join('') +
+    pan.innerHTML = '<small>패널을 연 동안: 화면의 로고 · 메뉴 · 둘러보기 · 아래 한 줄 · 조작 안내를 마우스로 끌면 옮겨지고 · 휠을 굴리면 크기가 바뀐다(이때 메뉴를 눌러도 시작되지 않는다)</small>' + ROWS.map(([k, n, a, z, step]) => k === '#' ? `<h6>${n}</h6>` : `<label>${n}<b data-v="${k}"></b></label><input type="range" min="${a}" max="${z}" step="${step}" data-k="${k}">`).join('') +
       `<div class="r"><button type="button" data-a="def">기본값</button><button type="button" data-a="restart">처음 자리로</button></div><div class="r"><button type="button" data-a="gsave">모두의 기본값으로 저장</button></div><small class="gs"></small><small>바꾸면 바로 · 이 브라우저에 기억 · 「모두의 기본값으로 저장」을 누르면 다음에 켤 때 모두가 이 값(조절창 「저장」과 같은 곳 — 다른 설정도 지금 값으로 함께 저장)</small>`;
     for (const ev of ['click', 'pointerdown', 'mousedown', 'keydown', 'wheel']) { pan.addEventListener(ev, (e) => e.stopPropagation()); b.addEventListener(ev, (e) => e.stopPropagation()); }
-    b.addEventListener('click', () => pan.classList.toggle('on'));
+    b.addEventListener('click', () => { pan.classList.toggle('on'); s.classList.toggle('t3-edit', pan.classList.contains('on')); });
+    // 끌어 옮기기 · 휠 크기 — 패널을 연 동안만
+    const TG = [['#sr-look-btn', 'o'], ['.t3-logo', 'l'], ['.t3-tag', 't'], ['.keys', 'k'], ['.t3-menu', 'm']];
+    for (const [sel] of TG) { const el = s.querySelector(sel); if (el) el.setAttribute('data-t3drag', '1'); }
+    const which = (t) => { for (const [sel, p] of TG) { const el = t && t.closest && t.closest(sel); if (el && s.contains(el)) return p; } return null; };
+    let dr = null;
+    s.addEventListener('pointerdown', (e) => { if (!s.classList.contains('t3-edit')) return; const p = which(e.target); if (!p) return; e.preventDefault(); e.stopPropagation(); dr = { p, x: e.clientX, y: e.clientY, X: CF[p + 'X'], Y: CF[p + 'Y'] }; try { s.setPointerCapture(e.pointerId); } catch (er) { /* */ } }, true);
+    s.addEventListener('pointermove', (e) => { if (!dr) return; CF[dr.p + 'X'] = Math.round((dr.X + (e.clientX - dr.x) / innerWidth * 100) * 2) / 2; CF[dr.p + 'Y'] = Math.round((dr.Y + (e.clientY - dr.y) / innerHeight * 100) * 2) / 2; sync(); });
+    s.addEventListener('pointerup', () => { if (dr) { dr = null; saveCF(); } });
+    s.addEventListener('wheel', (e) => { if (!s.classList.contains('t3-edit')) return; const p = which(e.target); if (!p) return; e.preventDefault(); e.stopPropagation(); const k = p + 'S'; CF[k] = Math.max(0.3, Math.min(3, Math.round((CF[k] * (e.deltaY < 0 ? 1.04 : 1 / 1.04)) * 100) / 100)); saveCF(); sync(); }, { capture: true, passive: false });
+    s.addEventListener('click', (e) => { if (s.classList.contains('t3-edit') && which(e.target)) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);   // 꾸미는 동안 메뉴를 눌러도 시작하지 않게
     pan.addEventListener('input', (e) => { const k = e.target.dataset.k; if (!k) return; CF[k] = +e.target.value; saveCF(); sync(); });
     pan.addEventListener('click', (e) => { const a = e.target.dataset && e.target.dataset.a; if (a === 'def') { Object.assign(CF, DEF); saveCF(); sync(); } else if (a === 'restart' && st) st.s = 0;
       else if (a === 'gsave') {   // b543 — 모두의 기본값(settings.js 'title3' · MSW 글로벌 저장소) · 스튜디오 미리보기에서만
