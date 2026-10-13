@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-581 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-582 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-581'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-582'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5947,6 +5947,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
   const KEY = 'corpse_tune_v1';
   const FOG0 = 0.006;   // 안개 기본값(game.js p.fog — 미리보기에서 잰 값)
   const pct = (v) => `${Math.round(v * 100)}%`;
+  const BDEF = { m17: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.34, sideX: 0.08, neckY: 0.045, neckZ: 0 }, son: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.37, sideX: 0.062, neckY: 0, neckZ: 0 }, m16: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.31, sideX: 0.085, neckY: 0.055, neckZ: -0.015 } };   // b582 — 사원증 캐릭터별 기본값(사용자 저장값 고정)
   // 빛 합성 값(tension.js GLOW) — 게임 설정(p)이 아니라 tension 이 들고 있다
   const glowRow = (k, label, min, max, step, def, fmt) => ({
     k: 'glow.' + k, label, min, max, step, def, fmt,
@@ -5963,6 +5964,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
         ['cardGap', '카드 몸에서 띄움', 0, 0.06, 0.002, 0.012, (v) => `${(v * 100).toFixed(1)}cm`],
         ['stiff', '줄 부드러움(꺾임 버팀)', 0, 1, 0.05, 0.6, pct],
         ]
+        .map(([k, label, min, max, step, def0, fmt]) => [k, label, min, max, step, (BDEF[kind] || {})[k] !== undefined ? BDEF[kind][k] : def0, fmt])   // b582 — 캐릭터별 기본값(저장값 고정)
         .map(([k, label, min, max, step, def, fmt]) => ({ k: `badge.${kind}.${k}`, label, min, max, step, def, fmt,
           get: () => { const B = window.__badge, p = B && B.per && B.per[kind]; return p && typeof p[k] === 'number' ? p[k] : def; },
           set: (v) => { const B = (window.__badge = window.__badge || {}), per = (B.per = B.per || {}); (per[kind] = per[kind] || {})[k] = v; } })) })),
@@ -12067,9 +12069,11 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   // b571 — 캐릭터별(사용자 「캐릭터 별로 수정할 수 있게」) · 조절 창 「사원증 · 조상준 / 손주용 / 허지용」
   B.KINDS = { m17: '조상준(내 캐릭터)', son: '손주용(예전 son)', m16: '허지용(안경)' };
   B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006, cardTop: 0.16, front: 0.03, backShow: 0, stiff: 0.6, cardGap: 0.012 };   // b575 — 뒷목 줄 기본 숨김(사용자 「목 뒤로 목줄이 튀어나온다 · 조절해도 안 없어져」)
+  // b582 — 사용자가 저장한 값을 캐릭터별 기본값으로 고정(사용자 「현재 사원증 값은 저장된 걸 기본으로 고정」 · 10-13 저장값)
+  B.DEFK = { m17: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.34, sideX: 0.08, neckY: 0.045, neckZ: 0 }, son: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.37, sideX: 0.062, neckY: 0, neckZ: 0 }, m16: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.31, sideX: 0.085, neckY: 0.055, neckZ: -0.015 } };
   B.per = B.per || {};
-  for (const k in B.KINDS) B.per[k] = Object.assign({}, B.DEF, B.per[k] || {});
-  const PK = (e) => B.per[e.kind] || B.DEF;
+  for (const k in B.KINDS) B.per[k] = Object.assign({}, B.DEF, B.DEFK[k], B.per[k] || {});
+  const PK = (e) => B.per[e.kind] || Object.assign({}, B.DEF, B.DEFK[e.kind] || {});
   const IMG = window.__badgeImg || {};
   const N = 8;                                                       // 앞 줄 한 가닥 마디 수(점)
   let T = null, V = null, M4 = null, BG = null, BA = null, TEX = null, srcMat = null, srcMesh = null, ready = false, failed = false, hooked = null;
