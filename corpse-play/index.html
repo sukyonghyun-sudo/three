@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-577 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-580 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-577'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-580'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -12062,7 +12062,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
    · 끄기: 시연실 연출 「사원증 목걸이」(fx badge) · 값: window.__badge */
 (() => {
   const B = (window.__badge = Object.assign({
-    on: true, w: 0.072, h: 0.108, t: 0.004, r: 0.0045, strapW: 0.02, drop: 0.34, gap: 0.003, neckR: 0.068, neckY: 0.0, sideX: 0.062,
+    on: true, w: 0.072, h: 0.108, t: 0.004, r: 0.0045, strapW: 0.02, drop: 0.34, gap: 0, neckR: 0.068, neckY: 0.0, sideX: 0.062,
     grav: 9.8, drag: 1.6, flutter: 1, damp: 0.988, iters: 8, margin: 0.007, list: [],
   }, window.__badge || {}));   // 조절 창이 먼저 넣은 값(저장값)은 그대로
   // b571 — 캐릭터별(사용자 「캐릭터 별로 수정할 수 있게」) · 조절 창 「사원증 · 조상준 / 손주용 / 허지용」
@@ -12308,7 +12308,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const lead = { t: null };
   function bendChain(e, a0, arr, sg, st) {
     if (!(st > 0)) return;
-    const minD = 2 * e.segL * (0.55 + 0.42 * Math.min(1, st)), seq = (k) => (k === 0 ? a0 : arr[k - 1]), wOf = (k) => (k === 0 ? 0 : k === N - 1 ? 0.35 : 1);
+    const minD = 2 * e.segL * (0.45 + 0.35 * Math.min(1, st)),   /* b578 — 날카롭게 접히는 것만(예전 0.97 까지 — 줄이 막대처럼 굳어 안 출렁였다) */ seq = (k) => (k === 0 ? a0 : arr[k - 1]), wOf = (k) => (k === 0 ? 0 : k === N - 1 ? 0.35 : 1);
     for (let k = 0; k + 2 <= N - 1; k++) {
       const a = seq(k), c = seq(k + 2), d = tmp.a.subVectors(c, a), len = d.length(); if (len >= minD || len < 1e-6) continue;
       const wa = wOf(k), wc = wOf(k + 2); if (wa + wc <= 0) continue;
@@ -12316,7 +12316,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     }
     if (!lead.t) lead.t = new V();
     const t = lead.t.copy(a0).addScaledVector(e.fr.u, -0.85 * e.segL).addScaledVector(e.fr.f, 0.3 * e.segL).addScaledVector(e.fr.r, -sg * 0.2 * e.segL);
-    arr[0].lerp(t, 0.35 * Math.min(1, st));
+    arr[0].lerp(t, 0.06 * Math.min(1, st));   // b578 — 첫 마디만 살짝(예전 0.35 × 8번 — 붙박였다)
   }
   function rod(a, b, L, wa, wb) {
     const d = tmp.a.subVectors(b, a), len = d.length(); if (len < 1e-6) return;
@@ -12414,7 +12414,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const cx = tmp.b.subVectors(e.hook, e.bot).normalize(), side = vA.q.crossVectors(cx, e.fr.f).normalize();
     for (let i = 0; i < N - 1; i++) { fpL.push(e.pL[i]); fpR.push(e.pR[i]); }
     const ksd = e.fr.sc * PK(e).size, hl = e.hook.clone().addScaledVector(side, B.w * 0.3 * ksd), hr = e.hook.clone().addScaledVector(side, -B.w * 0.3 * ksd);   // b577 — 줄 끝을 카드 윗변 양쪽에(떠 있지 않게)
-    fpL[N - 1] = side.dot(tmp.d.subVectors(e.aL, e.hook)) > 0 ? hl : hr; fpR[N - 1] = fpL[N - 1] === hl ? hr : hl;
+    fpL[N - 1] = e.hook; fpR[N - 1] = e.hook; void hl; void hr;   // b578 — 두 줄 끝 = 카드 윗변 한가운데 한 점(V자로 붙임 · 사용자 「달릴 때 분리 · 모양이 이상 · 걍 V자로」)
     const g = e.strap.geometry, P = g.attributes.position.array, Nn = g.attributes.normal.array, U = g.attributes.uv.array;
     smooth(fpL, sL); smooth(fpR, sR);
     let o = line(e, sL, 0, 0, P, Nn, U); o = line(e, sR, o, 0.37, P, Nn, U); line(e, backPts, o, 0.71, P, Nn, U);
@@ -12423,7 +12423,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     // 카드 — 위(고리 쪽)가 +y · 앞면(+z)이 몸 앞으로
     const y = vA.t.subVectors(e.hook, e.bot).normalize(), z = vA.n.copy(e.fr.f).addScaledVector(y, -e.fr.f.dot(y)); if (z.lengthSq() < 1e-6) z.copy(e.fr.f); z.normalize();
     const ks = s * PK(e).size, x = vA.sd.crossVectors(y, z).normalize(), c = vA.ax.copy(e.hook).addScaledVector(y, -(B.gap + B.h / 2) * ks);
-    e.card.matrix.makeBasis(x.multiplyScalar(ks), y.multiplyScalar(ks), z.multiplyScalar(ks)).setPosition(c);   // 몸 크기만큼(시작 화면 배우는 1.7배) e.card.matrixWorld.copy(e.card.matrix);
+    e.card.matrix.makeBasis(x.multiplyScalar(ks), y.multiplyScalar(ks), z.multiplyScalar(ks)).setPosition(c); e.card.matrixWorld.copy(e.card.matrix);   // 몸 크기만큼(시작 화면 배우는 1.7배) · b579 — 이 줄이 주석 안에 들어가 카드가 한 프레임 늦었다(움직이면 줄과 벌어짐)
   }
 
   // ── 매 프레임(장면 그리기 직전 — 업기 손 · 넘어짐 같은 그리기 직전 뼈 고침 뒤) ──
