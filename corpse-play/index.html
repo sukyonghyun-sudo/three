@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-617 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-619 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-617'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-619'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3599,7 +3599,7 @@ var MeshoptDecoder = (function () {
    · 끄기: 시연실 연출 「눈 앞 시야(손전등 없이)」 · 세기는 E.k(기본 1) */
 (() => {
   const E = (window.__eyelight = { k: 1, ready: false, base: 3.7, decay: 0.4 });   // b615 — 바로 앞 물체가 하얗게 타지 않게(사용자 「내 눈앞 바위가 눈부시게 빛난다」 — 빛이 카메라 자리라 0.5m 앞 바위가 5m 앞보다 6배 밝았다 → 2.5배) · 5m 밝기는 예전과 같게
-  const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };
+  const on = () => false;   // b618 — 아예 끔(사용자 「내 시야 앞 오브젝트가 빛난다 · 내 앞을 비추는 조명을 아예 없애」) · 되살리기: 예전 줄 = const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };
   const COL = 0xbcc6d6;           // 차가운 밤빛(달빛과 같은 결)
   let L = null, T = null, sv = null, col = null, Vf = null;
   function find(G) {
@@ -6035,7 +6035,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
         ['drop', '줄 길이(카드 높이)', 0.18, 0.55, 0.01, 0.34, (v) => `${Math.round(v * 100)}cm`], ['sideX', '목 좌우 간격', 0.02, 0.12, 0.005, 0.062, (v) => `${(v * 200).toFixed(1)}cm`],
         ['hangY', '목 거는 높이(어깨 위)', -0.04, 0.06, 0.0025, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['hangZ', '목 앞뒤', -0.04, 0.06, 0.0025, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`],
         ['cardTop', '카드 최고 높이(목 아래로)', 0.05, 0.45, 0.01, 0.16, (v) => `${Math.round(v * 100)}cm`], ['front', '카드 몸 앞 최소', 0, 0.12, 0.005, 0.03, (v) => `${(v * 100).toFixed(1)}cm`],
-        ['neckLoop', '목 뒤로 두르기', 0, 1, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['backSag', '목 뒤 처짐', 0, 0.06, 0.0025, 0.015, (v) => `${(v * 100).toFixed(1)}cm`], ['backOut', '목 뒤 줄 띄움(옷 밖)', 0, 0.04, 0.001, 0.006, (v) => `${(v * 100).toFixed(1)}cm`],
+        ['loopOn', '목 뒤로 두르기', 0, 1, 1, 0, (v) => (v > 0.5 ? '켬' : '끔')], ['backSag', '목 뒤 처짐', 0, 0.06, 0.0025, 0.015, (v) => `${(v * 100).toFixed(1)}cm`], ['backOut', '목 뒤 줄 띄움(옷 밖)', 0, 0.04, 0.001, 0.006, (v) => `${(v * 100).toFixed(1)}cm`],
         ['stick', '목줄 가슴에 붙는 정도', 0, 1, 0.05, 0, pct],
         ['strapBright', '목줄 밝기(무늬)', 0, 2, 0.05, 1, pct],
         ['cardGap', '카드 몸에서 띄움', 0, 0.06, 0.002, 0.012, (v) => `${(v * 100).toFixed(1)}cm`],
@@ -12159,7 +12159,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }, window.__badge || {}));   // 조절 창이 먼저 넣은 값(저장값)은 그대로
   // b571 — 캐릭터별(사용자 「캐릭터 별로 수정할 수 있게」) · 조절 창 「사원증 · 조상준 / 손주용 / 허지용」
   B.KINDS = { m17: '조상준(내 캐릭터)', son: '손주용(예전 son)', m16: '허지용(안경)' };
-  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006, cardTop: 0.16, front: 0.03, backShow: 0, stiff: 0.6, cardGap: 0.012, strapBright: 1, stick: 0, neckLoop: 1, loopFit: 1.06, backSag: 0.005, hangY: 0, hangZ: 0 };   // b609 — 목 뒤로 두르는 고리(사용자 「뒷면까지 연결해서 정말 목에 걸린 것처럼」) · 목 둘레 맞춤   // b605 — 붙이기 기본 끔(b604 는 줄을 묶어 카드가 안 출렁였다)   // b604 — 줄 위쪽을 가슴에 붙임(사용자 「목줄이 꺾여 · 맞추기 어렵고 어색하게 떠 있다」)   // b600 — 줄 밝기는 카드와 따로(사용자 「목줄에 무늬가 안 나와」 — 카드 밝기 15% 에 묶여 무늬가 검게 눌렸다)   // b575 — 뒷목 줄 기본 숨김(사용자 「목 뒤로 목줄이 튀어나온다 · 조절해도 안 없어져」)
+  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006, cardTop: 0.16, front: 0.03, backShow: 0, stiff: 0.6, cardGap: 0.012, strapBright: 1, stick: 0, neckLoop: 1, loopOn: 0, loopFit: 1.06, backSag: 0.005, hangY: 0, hangZ: 0 };   // b609 — 목 뒤로 두르는 고리(사용자 「뒷면까지 연결해서 정말 목에 걸린 것처럼」) · 목 둘레 맞춤   // b605 — 붙이기 기본 끔(b604 는 줄을 묶어 카드가 안 출렁였다)   // b604 — 줄 위쪽을 가슴에 붙임(사용자 「목줄이 꺾여 · 맞추기 어렵고 어색하게 떠 있다」)   // b600 — 줄 밝기는 카드와 따로(사용자 「목줄에 무늬가 안 나와」 — 카드 밝기 15% 에 묶여 무늬가 검게 눌렸다)   // b575 — 뒷목 줄 기본 숨김(사용자 「목 뒤로 목줄이 튀어나온다 · 조절해도 안 없어져」)
   // b582 — 사용자가 저장한 값을 캐릭터별 기본값으로 고정(사용자 「현재 사원증 값은 저장된 걸 기본으로 고정」 · 10-13 저장값)
   B.DEFK = { m17: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.34, sideX: 0.08, neckY: 0.045, neckZ: 0 }, son: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.37, sideX: 0.062, neckY: 0, neckZ: 0 }, m16: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.31, sideX: 0.085, neckY: 0.055, neckZ: -0.015 } };
   B.per = B.per || {};
@@ -12383,12 +12383,16 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const rz = (zf - zb) / 2 + off; return { zc: (zf + zb) / 2, rz, rx: rz * 0.95 };
   }
   function anchors(e) {
+    const snap = !e.init || !e.anS; if (!e.anT) { e.anT = new V(); e.anS = null; }
     // b617 — 목 옆 어깨 위에 건다(사용자 「왜 앞에 목줄이 떠 있냐 · 처져 있어야지」 — 예전 고정점은 깃 앞면 바깥(목 앞 8~15cm 허공) · 높이도 턱 근처였다)
     //   옆 = 목 좌우 간격(목보다 1cm 바깥 이상) · 앞뒤 = 목 한가운데 + 「목 앞뒤」 · 높이 = 그 자리 어깨 · 깃 윗면 + 「목 거는 높이」 → 앞 줄은 여기서 가슴으로 늘어진다
     { const p = PK(e), s = e.fr.sc, off = (p.backOut + 0.004) * s, nd = neckDims(e, off), x = Math.max(p.sideX * s, nd.rx + 0.01 * s);
       let h = -9, n = 0, sm = 0; for (const sg of [-1, 1]) for (const dz of [-0.01, 0, 0.01]) { const v = topY(e, sg * x, nd.zc + dz * s); if (v > -8) { sm += v; n++; } } h = n ? sm / n : (p.neckY - 0.03) * s;
-      const y = h + off + p.hangY * s, z = nd.zc + p.hangZ * s;
-      if (e.prof && e.prof.top) { W(e, -x, y, z, e.aL); W(e, x, y, z, e.aR); return; } }
+      const y = h - 0.004 * s + p.hangY * s, z = nd.zc + p.hangZ * s;   // b618 — 깃 · 어깨 윗면 살짝 안(줄 끝이 옷에 끼워진 듯 숨는다)
+      if (e.prof && e.prof.top) {
+        // b618 — 몸 표를 0.12초마다 다시 재며 고정점이 툭툭 튀어 줄이 부들거렸다 → 몸 기준 자리에서 천천히 따라감
+        e.anT.set(x, y, z); if (snap) e.anS = e.anT.clone(); else e.anS.lerp(e.anT, 0.06);
+        W(e, -e.anS.x, e.anS.y, e.anS.z, e.aL); W(e, e.anS.x, e.anS.y, e.anS.z, e.aR); return; } }
     const p = PK(e), s = e.fr.sc, z0 = Math.max(0, ...[-0.035, -0.06, -0.09, -0.12].map((yy) => frontZ(e, p.sideX * s, yy * s))) + B.margin * s;   /* b605 — 깃이 가장 튀어나온 곳까지(그 아래 12cm) 넘는 높이에서 시작 */   // b576 — 목 옆 한가운데가 아니라 쇄골 쪽(조금 앞 · 아래)에서 시작   // b605 — 깃 표면 위에서 시작(깃 안쪽에서 시작해 깃 위로 넘어오며 꺾였다)
     W(e, -p.sideX * s, p.neckY * s - 0.03 * s, z0 + p.neckZ * s, e.aL); W(e, p.sideX * s, p.neckY * s - 0.03 * s, z0 + p.neckZ * s, e.aR);
   }
@@ -12561,7 +12565,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
         lOut[i * LSUB + j].set(p0.x * a + p1.x * b + p2.x * c + p3.x * d, p0.y * a + p1.y * b + p2.y * c + p3.y * d, p0.z * a + p1.z * b + p2.z * c + p3.z * d); }
     }
     lOut[NL - 1].copy(lRaw[LRAW - 1]);
-    if (!(p.neckLoop > 0.5)) for (const q of lOut) q.copy(e.aL);   // 끔 — 한 점(넓이 0)
+    if (!(p.loopOn > 0.5)) for (const q of lOut) q.copy(e.aL);   // b618 — 기본 끔(사용자 「목 뒤로 가는 줄은 안 보이게 · V 로만 목에 끼우는 느낌」)   // 끔 — 한 점(넓이 0)
     return lOut;
   }
   function smooth(src, out) {   // 캣멀-롬 — 마디 점을 그대로 지나며 사이를 곡선으로
@@ -12591,6 +12595,16 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     for (let i = 0; i < ia; i++) bz(0.5 * (1 - i / ia), a[i]);
     for (let j = 0; j < ib; j++) bz(0.5 + 0.5 * j / ib, B_(j));
   }
+  // b618 — V 끝(목에 끼워진 쪽) 7cm 를 한 곡선으로 — 아래 줄의 방향을 그대로 이어 올라가 꺾이지 않는다(사용자 「V 끝부분만 제발 꺾이지 않게」)
+  const TB = { c: null, p0: null, p2: null };
+  function topBend(a, s) {
+    if (!TB.c) { TB.c = new V(); TB.p0 = new V(); TB.p2 = new V(); }
+    const r = 0.07 * s; let i = 0, d = 0; while (i < a.length - 2 && d < r) { d += a[i].distanceTo(a[i + 1]); i++; }
+    if (i < 2) return;
+    const P0 = TB.p0.copy(a[0]), P2 = TB.p2.copy(a[i]), C = TB.c.subVectors(a[i + 1], a[i - 1]); const L = C.length(); if (L < 1e-6) return;
+    C.multiplyScalar(-d * 0.55 / L).add(P2);   // 아래 줄 방향을 거꾸로 이은 조절점
+    for (let j = 0; j < i; j++) { const t = j / i, u = 1 - t; a[j].set(u * u * P0.x + 2 * t * u * C.x + t * t * P2.x, u * u * P0.y + 2 * t * u * C.y + t * t * P2.y, u * u * P0.z + 2 * t * u * C.z + t * t * P2.z); }
+  }
   function draw(e) {
     const s = e.fr.sc;
     fpL.length = 0; fpR.length = 0; fpL.push(e.aL); fpR.push(e.aR);
@@ -12602,7 +12616,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const g = e.strap.geometry, P = g.attributes.position.array, Nn = g.attributes.normal.array, U = g.attributes.uv.array;
     smooth(fpL, sL); smooth(fpR, sR);
     const lo = neckLoop(e, PK(e));
-    if (PK(e).neckLoop > 0.5) { fillet(sL, lo, false, s); fillet(sR, lo, true, s); }   // b610 — 앞 줄 ↔ 목 뒤 줄 이음매를 둥글게(사용자 「왜 자꾸 목줄을 꺾어 놓냐」 — 한 점에서 직각으로 만났다)
+    if (PK(e).loopOn > 0.5) { fillet(sL, lo, false, s); fillet(sR, lo, true, s); } else { topBend(sL, s); topBend(sR, s); }   // b610 — 앞 줄 ↔ 목 뒤 줄 이음매를 둥글게(사용자 「왜 자꾸 목줄을 꺾어 놓냐」 — 한 점에서 직각으로 만났다)
     const o = line(e, sL, 0, 0, P, Nn, U), o2 = line(e, sR, o, 0.37, P, Nn, U); line(e, lo, o2, 0.71, P, Nn, U, true);
     g.attributes.position.needsUpdate = true; g.attributes.normal.needsUpdate = true; g.attributes.uv.needsUpdate = true;
     e.strap.matrix.identity(); e.strap.matrixWorld.identity();
