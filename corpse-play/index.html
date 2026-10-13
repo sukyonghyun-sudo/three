@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-621 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-622 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-621'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-622'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -12495,6 +12495,16 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     }
     out[NS - 1].copy(src[n - 1]);
   }
+  // b622 — 줄 꼭대기 8cm 를 아래 줄 방향을 그대로 이은 한 곡선으로 그림(사용자 「목 앞뒤 조절할 때 저렇게 안 꺾이게」 — 고정점을 뒤로 보내면 첫 마디가 앞으로 나왔다 아래로 꺾였다) · 그리기만 바꿈(줄 움직임 계산은 그대로)
+  const TB = { c: null, p0: null, p2: null };
+  function topBend(a, s) {
+    if (!TB.c) { TB.c = new V(); TB.p0 = new V(); TB.p2 = new V(); }
+    const r = 0.08 * s; let i = 0, d = 0; while (i < a.length - 2 && d < r) { d += a[i].distanceTo(a[i + 1]); i++; }
+    if (i < 2) return;
+    const P0 = TB.p0.copy(a[0]), P2 = TB.p2.copy(a[i]), C = TB.c.subVectors(a[i + 1], a[i - 1]), L = C.length(); if (L < 1e-6) return;
+    C.multiplyScalar(-d * 0.55 / L).add(P2);   // 아래 줄 방향을 거꾸로 이은 조절점 → P2 에서 꺾임 없이 이어진다
+    for (let j = 1; j < i; j++) { const t = j / i, u = 1 - t; a[j].set(u * u * P0.x + 2 * t * u * C.x + t * t * P2.x, u * u * P0.y + 2 * t * u * C.y + t * t * P2.y, u * u * P0.z + 2 * t * u * C.z + t * t * P2.z); }
+  }
   function draw(e) {
     const s = e.fr.sc;
     fpL.length = 0; fpR.length = 0; fpL.push(e.aL); fpR.push(e.aR);
@@ -12504,7 +12514,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const ksd = e.fr.sc * PK(e).size, hl = e.hook.clone().addScaledVector(side, B.w * 0.3 * ksd), hr = e.hook.clone().addScaledVector(side, -B.w * 0.3 * ksd);   // b577 — 줄 끝을 카드 윗변 양쪽에(떠 있지 않게)
     fpL[N - 1] = e.hook; fpR[N - 1] = e.hook; void hl; void hr;   // b578 — 두 줄 끝 = 카드 윗변 한가운데 한 점(V자로 붙임 · 사용자 「달릴 때 분리 · 모양이 이상 · 걍 V자로」)
     const g = e.strap.geometry, P = g.attributes.position.array, Nn = g.attributes.normal.array, U = g.attributes.uv.array;
-    smooth(fpL, sL); smooth(fpR, sR);
+    smooth(fpL, sL); smooth(fpR, sR); topBend(sL, s); topBend(sR, s);
     const o = line(e, sL, 0, 0, P, Nn, U); line(e, sR, o, 0.37, P, Nn, U);
     g.attributes.position.needsUpdate = true; g.attributes.normal.needsUpdate = true; g.attributes.uv.needsUpdate = true;
     e.strap.matrix.identity(); e.strap.matrixWorld.identity();
