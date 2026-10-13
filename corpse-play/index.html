@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-569 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-573 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-569'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-573'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5954,6 +5954,15 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     set: (v) => { const T = window.__tension; if (T && T.glow) T.glow({ [k]: v }); },
   });
   const SECS = [
+    // 사원증(2026-10-13 사용자: 「너무 빛나고 너무 펄럭이는데 패널로」 · 「좌우 목에 위치랑」 · 「캐릭터 별로」 · 「저장 버튼」) — lanyard.js window.__badge.per[누구]
+    ...[['m17', '조상준 — 내 캐릭터'], ['son', '손주용 — 예전 son'], ['m16', '허지용 — 안경']].map(([kind, who]) => ({ title: '사원증 · ' + who, sub: '그 몸을 입은 나 · 봇 모두 · 끄기는 시연실 「사원증 목걸이」', save: true, rows:
+      [['bright', '카드 밝기', 0, 1.5, 0.05, 0.55, pct], ['size', '카드 크기', 0.5, 2, 0.05, 1, pct], ['flap', '펄럭임(달릴 때)', 0, 2, 0.05, 0.35, pct], ['swing', '흔들림', 0.1, 2, 0.05, 0.6, pct],
+        ['drop', '줄 길이(카드 높이)', 0.18, 0.55, 0.01, 0.34, (v) => `${Math.round(v * 100)}cm`], ['sideX', '목 좌우 간격', 0.02, 0.12, 0.005, 0.062, (v) => `${(v * 200).toFixed(1)}cm`],
+        ['neckY', '목 거는 높이', -0.08, 0.1, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['neckZ', '목 앞뒤', -0.06, 0.06, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`],
+        ['backY', '뒷목 줄 높이', -0.06, 0.12, 0.005, 0.03, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['backOut', '뒷목 줄 띄움(옷 밖)', 0, 0.04, 0.001, 0.006, (v) => `${(v * 100).toFixed(1)}cm`]]
+        .map(([k, label, min, max, step, def, fmt]) => ({ k: `badge.${kind}.${k}`, label, min, max, step, def, fmt,
+          get: () => { const B = window.__badge, p = B && B.per && B.per[kind]; return p && typeof p[k] === 'number' ? p[k] : def; },
+          set: (v) => { const B = (window.__badge = window.__badge || {}), per = (B.per = B.per || {}); (per[kind] = per[kind] || {})[k] = v; } })) })),
     { title: '이동', sub: '나와 봇 모두 같은 값 · 같이 하기는 방장 값', mp: true, rows: [
       { k: 'speed', label: '달리기', min: 1, max: 9, step: 0.1, unit: 'm/s', def: 5.3 },
       { k: 'dragSpeed', label: '끌기', min: 0.3, max: 6, step: 0.05, unit: 'm/s', def: 2.4 },
@@ -6045,8 +6054,8 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     const root = document.createElement('div');
     root.id = 'sr-tune';
     root.innerHTML = `
-      <div class="hd"><b>조절</b><span>Tab</span></div>
-      <div class="svslot"></div>
+      <div class="top"><div class="hd"><b>조절</b><span>Tab</span></div>
+      <div class="svslot"></div></div>
       ${SECS.map((s, si) => `
         <section>
           <h3>${s.title}${s.sub ? `<small>${s.sub}</small>` : ''}<button type="button" data-reset="${si}">기본값</button></h3>
@@ -6055,10 +6064,12 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
             <label class="row"><span class="k">${r.label}</span>
               <input type="range" min="${r.min}" max="${r.max}" step="${r.step}" data-k="${r.k}">
               <span class="v" data-v="${r.k}"></span></label>`).join('')}
+          ${s.save ? '<div class="svsec"></div>' : ''}
         </section>`).join('')}
       <div class="ft">만지면 바로 바뀐다(이번 판) · 위 「저장」을 눌러야 다음에 켤 때도 — 모두의 기본값 · 시연실 「저장」과 같다</div>`;
     const st = document.createElement('style');
-    st.textContent = `#sr-tune .sv { min-height: 14px; margin: -6px 0 6px; font: 400 11px var(--serif); letter-spacing: .06em; color: #c9a36b; }
+    st.textContent = `#sr-tune .top { position: sticky; top: -26px; z-index: 5; margin: -26px -26px 0; padding: 26px 26px 2px; background: rgba(4,4,3,.97); }   /* b572 — 저장 단추가 늘 보이게(사용자 「패널이 너무 아래라 저장 버튼이 안 보여」) */
+#sr-tune .sv { min-height: 14px; margin: -6px 0 6px; font: 400 11px var(--serif); letter-spacing: .06em; color: #c9a36b; }
 #sr-tune .sv.ok { color: #9fc79a; }
 #sr-tune h3 button + button { margin-left: 6px; }
 #sr-tune h3 button.hot { color: #fff; border-color: var(--sr-red2); background: rgba(150, 12, 6, .55); }
@@ -6069,6 +6080,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     document.head.appendChild(st);
     document.body.appendChild(root);
     { const sv = root.querySelector('.svslot'); if (sv && window.__settings) sv.appendChild(window.__settings.button()); }
+    if (window.__settings) root.querySelectorAll('.svsec').forEach((x) => x.appendChild(window.__settings.button()));   // b571 — 사원증 칸마다 「저장」(위 저장과 같다 · 모두의 기본값)
     const btn = document.createElement('button');
     btn.id = 'sr-tune-btn'; btn.type = 'button'; btn.textContent = '조절';
     btn.addEventListener('click', () => toggle());
@@ -12045,10 +12057,16 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
    · 새 셰이더 없음: 장면에 이미 있는 「그림 한 장만 쓰는」 재질을 복제해 그림만 바꾼다 · 그림자 드리우기 끔
    · 끄기: 시연실 연출 「사원증 목걸이」(fx badge) · 값: window.__badge */
 (() => {
-  const B = (window.__badge = {
+  const B = (window.__badge = Object.assign({
     on: true, w: 0.072, h: 0.108, t: 0.004, r: 0.0045, strapW: 0.02, drop: 0.34, gap: 0.014, neckR: 0.068, neckY: 0.0, sideX: 0.062,
-    grav: 9.8, drag: 1.6, flutter: 0.35, damp: 0.988, iters: 8, margin: 0.007, list: [],
-  });
+    grav: 9.8, drag: 1.6, flutter: 1, damp: 0.988, iters: 8, margin: 0.007, list: [],
+  }, window.__badge || {}));   // 조절 창이 먼저 넣은 값(저장값)은 그대로
+  // b571 — 캐릭터별(사용자 「캐릭터 별로 수정할 수 있게」) · 조절 창 「사원증 · 조상준 / 손주용 / 허지용」
+  B.KINDS = { m17: '조상준(내 캐릭터)', son: '손주용(예전 son)', m16: '허지용(안경)' };
+  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006 };
+  B.per = B.per || {};
+  for (const k in B.KINDS) B.per[k] = Object.assign({}, B.DEF, B.per[k] || {});
+  const PK = (e) => B.per[e.kind] || B.DEF;
   const IMG = window.__badgeImg || {};
   const N = 8;                                                       // 앞 줄 한 가닥 마디 수(점)
   let T = null, V = null, M4 = null, BG = null, BA = null, TEX = null, srcMat = null, srcMesh = null, ready = false, failed = false, hooked = null;
@@ -12088,7 +12106,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
         t.needsUpdate = true; tex[k] = t;
         const m = srcMat.clone(); m.map = t; m.color.setRGB(1, 1, 1); m.name = 'badge_' + k;
         if (Object.prototype.hasOwnProperty.call(srcMat, 'onBeforeCompile')) { m.onBeforeCompile = srcMat.onBeforeCompile; m.customProgramCacheKey = srcMat.customProgramCacheKey; }   // 같은 셰이더(새로 굽지 않는다)
-        if (m.roughness !== undefined) { m.roughness = k === 'strap' ? 0.85 : 0.45; m.metalness = 0; }
+        if (m.roughness !== undefined) { m.roughness = k === 'strap' ? 0.85 : 0.8; m.metalness = 0; }   // b570 — 손전등 반사로 하얗게 번쩍이지 않게
         if (m.emissive) m.emissive.setRGB(0, 0, 0);
         mats[k] = m;
       };
@@ -12159,7 +12177,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
   function measure(sm, fr) {
     const g = sm.geometry, pos = g.attributes.position, n = pos.count, step = Math.max(1, Math.floor(n / 14000)), v = new V(), d = new V();
-    const prof = BANDS.map(() => new Float32Array(NB).fill(-9));
+    const prof = BANDS.map(() => new Float32Array(NB).fill(-9)), back = BANDS.map(() => new Float32Array(NB).fill(9));
     if (!sm.applyBoneTransform && !sm.boneTransform) return null;
     for (let i = 0; i < n; i += step) {
       v.fromBufferAttribute(pos, i);
@@ -12170,11 +12188,22 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       const bi = Math.floor((YTOP - y / fr.sc) / YSTEP); if (bi < 0 || bi >= NB) continue;
       const band = x / fr.sc < BANDS[0] ? 0 : x / fr.sc < BANDS[1] ? 1 : x / fr.sc < BANDS[2] ? 2 : -1; if (band < 0) continue;
       if (z / fr.sc > prof[band][bi]) prof[band][bi] = z / fr.sc;
+      if (z / fr.sc < back[band][bi]) back[band][bi] = z / fr.sc;   // b571 — 등 · 목 뒤(깃) 표면
     }
     for (const pr of prof) {   // 빈 칸 메움
       for (let i = 0; i < NB; i++) if (pr[i] < -8) { let a = i - 1, b = i + 1; while (a >= 0 && pr[a] < -8) a--; while (b < NB && pr[b] < -8) b++; pr[i] = a >= 0 && b < NB ? (pr[a] + pr[b]) / 2 : a >= 0 ? pr[a] : b < NB ? pr[b] : -9; }
     }
+    for (const pr of back) for (let i = 0; i < NB; i++) if (pr[i] > 8) { let a = i - 1, b = i + 1; while (a >= 0 && pr[a] > 8) a--; while (b < NB && pr[b] > 8) b++; pr[i] = a >= 0 && b < NB ? (pr[a] + pr[b]) / 2 : a >= 0 ? pr[a] : b < NB ? pr[b] : 9; }
+    prof.back = back;
     return prof;
+  }
+  // 등 표면(가장 뒤 · 음수) — 없으면 9
+  function backZ(e, x, y) {
+    const ax = Math.abs(x) / e.fr.sc, yy = (YTOP - y / e.fr.sc) / YSTEP;
+    if (ax >= BANDS[2] || yy < 0 || yy > NB - 1) return 9;
+    const band = ax < BANDS[0] ? 0 : ax < BANDS[1] ? 1 : 2, pr = e.prof.back[band], i = Math.floor(yy), t = yy - i;
+    const z = pr[i] + (pr[Math.min(NB - 1, i + 1)] - pr[i]) * t;
+    return z > 8 ? 9 : z * e.fr.sc;
   }
   // 몸 앞면(그 높이 · 옆 위치) — 몸 비율(sc) 단위가 아니라 미터
   function frontZ(e, x, y) {
@@ -12203,13 +12232,13 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   function drop(e) { try { e.card.parent && e.card.parent.remove(e.card); e.strap.parent && e.strap.parent.remove(e.strap); e.card.geometry.dispose(); e.strap.geometry.dispose(); } catch (er) { /* */ } ents.delete(e.sm); }
   const W = (e, x, y, z, out) => out.copy(e.fr.N).addScaledVector(e.fr.r, x).addScaledVector(e.fr.u, y).addScaledVector(e.fr.f, z);
   function anchors(e) {
-    const s = e.fr.sc, z0 = Math.max(frontZ(e, B.sideX * s, -0.01 * s), 0.0) * 0.5;
-    W(e, -B.sideX * s, B.neckY * s - 0.012 * s, z0, e.aL); W(e, B.sideX * s, B.neckY * s - 0.012 * s, z0, e.aR);
+    const p = PK(e), s = e.fr.sc, z0 = Math.max(frontZ(e, p.sideX * s, -0.01 * s), 0.0) * 0.5;
+    W(e, -p.sideX * s, p.neckY * s - 0.012 * s, z0 + p.neckZ * s, e.aL); W(e, p.sideX * s, p.neckY * s - 0.012 * s, z0 + p.neckZ * s, e.aR);
   }
   function restPose(e) {
-    const s = e.fr.sc, y = -B.drop * s, z = Math.max(frontZ(e, 0, y), 0.05 * s) + B.margin;
+    const p = PK(e), s = e.fr.sc, y = -p.drop * s, z = Math.max(frontZ(e, 0, y), 0.05 * s) + B.margin;
     W(e, 0, y, z, e.hook); e.hookO.copy(e.hook);
-    W(e, 0, y - (B.gap + B.h) * s, Math.max(frontZ(e, 0, y - B.h * s), 0.05 * s) + (B.margin + B.t) * s, e.bot); e.botO.copy(e.bot);
+    W(e, 0, y - (B.gap + B.h) * p.size * s, Math.max(frontZ(e, 0, y - B.h * s), 0.05 * s) + (B.margin + B.t) * s, e.bot); e.botO.copy(e.bot);
     anchors(e);
     const len = e.aL.distanceTo(e.hook) * 1.04; e.segL = len / (N - 1);
     for (let i = 0; i < N - 1; i++) {
@@ -12243,8 +12272,9 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     if (dt > 0) { e.vel.subVectors(e.fr.N, e.lastN).multiplyScalar(1 / dt); }
     e.lastN.copy(e.fr.N);
     if (dt <= 0) return;
-    const sp = Math.min(9, e.vel.length()), g = B.grav * dt * dt, k = Math.max(0, 1 - B.drag * dt) * B.damp, t = now / 1000 + e.ph;
-    const fl = B.flutter * sp * dt * dt;
+    const pp = PK(e), drag = B.drag / Math.max(0.15, pp.swing) * 0.6;   // 흔들림 ↓ = 공기 저항 ↑(빨리 멎는다)
+    const sp = Math.min(9, e.vel.length()), g = B.grav * dt * dt, k = Math.max(0, 1 - drag * dt) * B.damp, t = now / 1000 + e.ph;
+    const fl = B.flutter * pp.flap * sp * dt * dt;
     const step = (p, o, wgt) => {
       const vx = (p.x - o.x) * k, vy = (p.y - o.y) * k, vz = (p.z - o.z) * k; o.copy(p);
       p.x += vx; p.y += vy - g; p.z += vz;
@@ -12255,7 +12285,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     };
     for (let i = 0; i < N - 2; i++) { step(e.pL[i], e.oL[i], i * 0.3); step(e.pR[i], e.oR[i], i * 0.3 + 5); }
     step(e.hook, e.hookO, 9); step(e.bot, e.botO, 12);
-    const cardL = (B.gap + B.h) * s;
+    const cardL = (B.gap + B.h) * pp.size * s;
     for (let it = 0; it < B.iters; it++) {
       let prev = e.aL; for (let i = 0; i < N - 1; i++) { const p = e.pL[i]; rope(prev, p, e.segL, prev === e.aL ? 0 : 1, i === N - 2 ? 0.35 : 1); prev = p; }
       prev = e.aR; for (let i = 0; i < N - 1; i++) { const p = e.pR[i]; rope(prev, p, e.segL, prev === e.aR ? 0 : 1, i === N - 2 ? 0.35 : 1); prev = p; }
@@ -12295,9 +12325,12 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const s = e.fr.sc;
     // 목 뒤 고리 — 목 옆(앞 줄 시작)에서 목 뒤로 돌아 반대편 옆으로
     while (backPts.length < BACKN) backPts.push(new V());
-    for (let i = 0; i < BACKN; i++) {
-      const th = (i / (BACKN - 1)) * Math.PI, R = B.neckR * s;
-      W(e, -Math.cos(th) * B.sideX * s, B.neckY * s - 0.012 * s + Math.sin(th) * 0.03 * s, Math.min(frontZ(e, 0, 0) * 0, 0) - Math.sin(th) * R + (1 - Math.sin(th)) * e.fr.f.dot(tmp.d.subVectors(e.aL, e.fr.N)), backPts[i]);
+    const p = PK(e), za = e.fr.f.dot(tmp.d.subVectors(e.aL, e.fr.N));
+    for (let i = 0; i < BACKN; i++) {   // b571 — 등 표면(깃 포함) 밖으로(사용자 「등에 뚫고 나오는 것」)
+      const th = (i / (BACKN - 1)) * Math.PI, sn = Math.sin(th), R = B.neckR * s, x = -Math.cos(th) * p.sideX * s, y = (p.neckY - 0.012 + sn * p.backY) * s;
+      let z = za * (1 - sn) - sn * R;
+      const bz = backZ(e, x, y); if (bz < 8 && sn > 0.15) z = Math.min(z, bz - p.backOut * s);
+      W(e, x, y, z, backPts[i]);
     }
     backPts[0].copy(e.aL); backPts[BACKN - 1].copy(e.aR);
     fpL.length = 0; fpR.length = 0; fpL.push(e.aL); fpR.push(e.aR);
@@ -12312,8 +12345,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     e.strap.matrix.identity(); e.strap.matrixWorld.identity();
     // 카드 — 위(고리 쪽)가 +y · 앞면(+z)이 몸 앞으로
     const y = vA.t.subVectors(e.hook, e.bot).normalize(), z = vA.n.copy(e.fr.f).addScaledVector(y, -e.fr.f.dot(y)); if (z.lengthSq() < 1e-6) z.copy(e.fr.f); z.normalize();
-    const x = vA.sd.crossVectors(y, z).normalize(), c = vA.ax.copy(e.hook).addScaledVector(y, -(B.gap + B.h / 2) * s);
-    e.card.matrix.makeBasis(x.multiplyScalar(s), y.multiplyScalar(s), z.multiplyScalar(s)).setPosition(c);   // 몸 크기만큼(시작 화면 배우는 1.7배) e.card.matrixWorld.copy(e.card.matrix);
+    const ks = s * PK(e).size, x = vA.sd.crossVectors(y, z).normalize(), c = vA.ax.copy(e.hook).addScaledVector(y, -(B.gap + B.h / 2) * ks);
+    e.card.matrix.makeBasis(x.multiplyScalar(ks), y.multiplyScalar(ks), z.multiplyScalar(ks)).setPosition(c);   // 몸 크기만큼(시작 화면 배우는 1.7배) e.card.matrixWorld.copy(e.card.matrix);
   }
 
   // ── 매 프레임(장면 그리기 직전 — 업기 손 · 넘어짐 같은 그리기 직전 뼈 고침 뒤) ──
@@ -12331,6 +12364,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const now = performance.now(), raw = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now;
     const sm0 = window.__slowmo === undefined ? 1 : window.__slowmo, dt = raw * sm0;
     const C = window.__cast, off = !B.on || fxOff();
+    for (const e of ents.values()) { const p = PK(e), key = [p.drop, p.sideX, p.neckY, p.neckZ, p.size].join(); if (key !== e._key) { e._key = key; e.init = false; } }   // 줄 길이 · 목 위치 · 크기가 바뀌면 다시 건다
+    for (const k in B.KINDS) { const m = mats[k], b = (B.per[k] || B.DEF).bright; if (m && m.color.r !== b) m.color.setScalar(b); }
     for (const sm of people(G)) {
       const kind = C && C.badgeKind ? C.badgeKind(sm) : null;
       let e = ents.get(sm);
