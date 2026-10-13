@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-624 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-626 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-624'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-626'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3598,8 +3598,8 @@ var MeshoptDecoder = (function () {
      손전등을 켜면 손전등 그대로 · 그림자도 함께(이 빛이 움직이는 동안은 그림자 지도를 매 프레임 새로 그린다)
    · 끄기: 시연실 연출 「눈 앞 시야(손전등 없이)」 · 세기는 E.k(기본 1) */
 (() => {
-  const E = (window.__eyelight = { k: 1, ready: false, base: 3.7, decay: 0.4 });   // b615 — 바로 앞 물체가 하얗게 타지 않게(사용자 「내 눈앞 바위가 눈부시게 빛난다」 — 빛이 카메라 자리라 0.5m 앞 바위가 5m 앞보다 6배 밝았다 → 2.5배) · 5m 밝기는 예전과 같게
-  const on = () => false;   // b618 — 아예 끔(사용자 「내 시야 앞 오브젝트가 빛난다 · 내 앞을 비추는 조명을 아예 없애」) · 되살리기: 예전 줄 = const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };
+  const E = (window.__eyelight = { k: 1, ready: false, base: 6, decay: 0.4, h: 7, back: 2, ahead: 8, near: 4 });   // b615 — 바로 앞 물체가 하얗게 타지 않게(사용자 「내 눈앞 바위가 눈부시게 빛난다」 — 빛이 카메라 자리라 0.5m 앞 바위가 5m 앞보다 6배 밝았다 → 2.5배) · 5m 밝기는 예전과 같게
+  const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };   // b626 — 다시 켬(사용자 「없애니 이상 · 밝혀는 주되 바닥 아닌 오브젝트는 빛나지 않게」) — b618 끔 줄: const on = () => false;   // b618 — 아예 끔(사용자 「내 시야 앞 오브젝트가 빛난다 · 내 앞을 비추는 조명을 아예 없애」) · 되살리기: 예전 줄 = const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };
   const COL = 0xbcc6d6;           // 차가운 밤빛(달빛과 같은 결)
   let L = null, T = null, sv = null, col = null, Vf = null;
   function find(G) {
@@ -3622,9 +3622,14 @@ var MeshoptDecoder = (function () {
         sv = { i: L.intensity, an: L.angle, pe: L.penumbra, di: L.distance, de: L.decay, au: L.shadow.autoUpdate, p: L.position.clone(), t: L.target.position.clone(), c: L.color.getHex() };
         // b409 — 카메라 자리에서 화면보다 훨씬 넓게(원뿔 가장자리가 화면 밖) · 거리에 따라 아주 천천히 어두워지게 — 둥근 빛 웅덩이(손전등)가 생기지 않는다
         //   (b406 은 머리 위에서 7.5m 앞 땅을 비춰 「손전등처럼 나온다」 — 2026-10-12 사용자)
+        // b626 — 카메라 자리(눈높이)에서 비추면 바로 앞 바위 · 벽 옆면이 정면으로 받아 하얗게 탔다 → 카메라 뒤 위 높은 곳(7m)에서 앞쪽 땅을 비스듬히 아래로
+        //   땅(위를 보는 면)은 밝게 · 서 있는 물체 옆면은 빛이 비스듬히 스쳐 덜 밝음 · 가깝고 먼 차이도 작다 · 그림자는 빛 앞 4m 안(머리 위 가지 등)은 안 드리움
         const cam = G.cam; cam.updateMatrixWorld(true); cam.getWorldDirection(Vf);
-        L.position.set(cam.position.x, cam.position.y + 0.4, cam.position.z);
-        L.target.position.set(cam.position.x + Vf.x * 10, cam.position.y + Vf.y * 10, cam.position.z + Vf.z * 10);
+        let fl = Math.hypot(Vf.x, Vf.z); const fx = fl > 1e-3 ? Vf.x / fl : 0, fz = fl > 1e-3 ? Vf.z / fl : 1;
+        const gx = cam.position.x + fx * E.ahead, gz = cam.position.z + fz * E.ahead, gy0 = G.groundAt ? G.groundAt(gx, gz) : cam.position.y - 1.6, gy = isFinite(gy0) ? gy0 : cam.position.y - 1.6;
+        L.position.set(cam.position.x - fx * E.back, cam.position.y + E.h, cam.position.z - fz * E.back);
+        L.target.position.set(gx, gy, gz);
+        sv.n = L.shadow.camera.near; L.shadow.camera.near = E.near; L.shadow.camera.updateProjectionMatrix();
         L.target.updateMatrixWorld(true); L.updateMatrixWorld(true);
         L.intensity = E.base * E.k; L.angle = 1.25; L.penumbra = 1; L.distance = 30; L.decay = E.decay;
         L.color.setHex(COL);
@@ -3632,7 +3637,7 @@ var MeshoptDecoder = (function () {
       } catch (e) { sv = null; if (!wait.err) { wait.err = true; console.warn('[eyelight]', e); } }
     };
     Sc.onAfterRender = function (...a) {
-      if (sv) { L.intensity = sv.i; L.angle = sv.an; L.penumbra = sv.pe; L.distance = sv.di; L.decay = sv.de; L.shadow.autoUpdate = sv.au; L.position.copy(sv.p); L.target.position.copy(sv.t); L.color.setHex(sv.c); L.updateMatrixWorld(true); L.target.updateMatrixWorld(true); sv = null; }
+      if (sv) { L.intensity = sv.i; L.angle = sv.an; L.penumbra = sv.pe; L.distance = sv.di; L.decay = sv.de; L.shadow.autoUpdate = sv.au; L.position.copy(sv.p); L.target.position.copy(sv.t); L.color.setHex(sv.c); if (sv.n !== undefined) { L.shadow.camera.near = sv.n; L.shadow.camera.updateProjectionMatrix(); } L.updateMatrixWorld(true); L.target.updateMatrixWorld(true); sv = null; }
       if (pa) pa.apply(this, a);
     };
     E.ready = true; console.log('[eyelight] 눈 앞 시야 — 손전등 빛을 빌림');
@@ -8608,7 +8613,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'rumble', name: '괴물 발 구름(흔들림 / 보기: 가까이서 네 걸음)', def: true },
     { key: 'look', name: '괴물 쳐다보기(괴물이 6.5m 안이면 사람들이 괴물 쪽을 봄 / 보기: 4초 동안 모두 괴물을 봄)', def: true },
     { key: 'flies', name: '시체 파리(누운 시체 둘레 파리 떼 · 6m 안이면 윙윙 · 시체를 들어 올리면 확 흩어졌다 25초에 걸쳐 다시 모임 / 보기: 가장 가까운 누운 시체에서 흩어짐)', def: true },
-    { key: 'breath', name: '입김(숨 박자에 맞춘 하얀 김 / 보기: 4초 동안 0.8초마다)', def: true },
+    { key: 'breath', name: '(b625 없앰 — 사용자 「입김 없애자」 · 되살리기: __fx.noBreath=false) 입김(숨 박자에 맞춘 하얀 김 / 보기: 4초 동안 0.8초마다)', def: true },
     { key: 'breathsoft', name: '입김 옅게 · 뿌옇게(10-12 사용자: 입김이 너무 짙고 이동할 때 남는다 · 옅기 절반 · 더 넓게 번짐 · 사람과 같이 흐르고 움직이면 0.3초에 걷힘)', def: true },
     { key: 'hitflash', name: '피격 붉은 번쩍임', def: true },
     { key: 'lightning', name: '번개', def: false },
@@ -9084,8 +9089,9 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     }
   };
   // 괴물 입김 — 가까이서 숨 쉬고 그르렁댈 때(realsfx.js 가 그 소리와 함께 부른다) · 입에서 앞으로 짙고 큰 김 · 천천히 퍼지며 사라진다
+  X.noBreath = true;   // b625 — 입김 없앰(사람 · 괴물 모두 · 사용자 「입김 없애자」)
   X.monPuff = (k) => {
-    const G = window.__G, C = G && G.monster, F = window.__fire; if (!C || !C.root || !C.root.visible || !F || !F.mouthAt || !X.on.breath) return;
+    const G = window.__G, C = G && G.monster, F = window.__fire; if (!C || !C.root || !C.root.visible || !F || !F.mouthAt || !X.on.breath || X.noBreath) return;
     const m = F.mouthAt(VB.set(0, 0, 0)), yw = C.root.rotation.y, fx = Math.sin(yw), fz = Math.cos(yw), s = ((G.cfg && G.cfg.monHeight) || 4) / 4;
     const n = Math.round(6 + 4 * (k || 1));
     for (let i = 0; i < n; i++) { if (puffs.length >= PUFF_MAX) puffs.shift(); puffs.push({ x: m.x + fx * 0.1 * s, y: m.y - 0.05 * s, z: m.z + fz * 0.1 * s, vx: fx * rnd(0.35, 0.8) * s + rnd(-0.1, 0.1), vy: rnd(-0.05, 0.12), vz: fz * rnd(0.35, 0.8) * s + rnd(-0.1, 0.1), t: -i * 0.07, life: rnd(1.5, 2.3), s: rnd(0.14, 0.24) * s, a: rnd(0.2, 0.32) }); }
@@ -9093,7 +9099,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
   function breathPuffs(dt, now) {
     const G = window.__G;
     if ((window.__death && window.__death.active && window.__death.active())) puffs.length = 0;   // b500 — 결말 연출 동안 입김 없음(사용자)
-    if (X.on.breath && !(window.__death && window.__death.active && window.__death.active())) {
+    if (X.on.breath && !X.noBreath && !(window.__death && window.__death.active && window.__death.active())) {
       const who = [];
       const B = G.body; if (B && !window.__exploreFace) for (const m of [B.main, B.drag]) { const sm = skinOf(m); if (sm && shown(sm)) who.push({ sm, key: 'hero', speed: G.hero ? (G.hero.__spd || 0) : 0 }); }   // 둘러보기 「얼굴 보기」 동안 내 입김은 쉰다(카메라 바로 앞이라 얼굴을 가린다)
       for (const b of (G.game && G.game.bots) || []) { const sm = b.__sm || (b.__sm = skinOf(b.model)); if (sm && shown(sm)) who.push({ sm, key: b, speed: 0 }); }
