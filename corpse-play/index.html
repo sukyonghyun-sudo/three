@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-548 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-550 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-548'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-550'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1110,6 +1110,45 @@ body.sr-tune-open #btn-view { visibility: hidden; }   /* 패널 뒤로 비친다
 @keyframes t3flick { 0%, 100% { opacity: 1; } 2% { opacity: calc(1 - var(--t3ff, 0) * .55); } 3% { opacity: 1; } 31% { opacity: 1; } 32% { opacity: calc(1 - var(--t3ff, 0) * .3); } 34% { opacity: 1; } 63% { opacity: 1; } 64% { opacity: calc(1 - var(--t3ff, 0) * .7); } 65.5% { opacity: calc(1 - var(--t3ff, 0) * .15); } 67% { opacity: 1; } }
 @keyframes t3jit { 0% { translate: 0 0; } 25% { translate: calc(var(--t3fj, 0) * 1px) 0; } 50% { translate: calc(var(--t3fj, 0) * -.6px) calc(var(--t3fj, 0) * .4px); } 75% { translate: calc(var(--t3fj, 0) * .3px) calc(var(--t3fj, 0) * -.5px); } }
 
+/* ── b549 불러오기 화면 — 게임 필터처럼(알갱이 · 주사선 · 흐르는 띠 · 가장자리 어둠 · 깜빡임 · 색 번짐) · 핏빛 막대 · 핏방울 · 한 줄 귀띔(loadfx.js)
+   움직임은 transform · opacity 만 — 셰이더를 굽느라 메인 스레드가 바빠도 멎지 않는다 ── */
+#loading { background: radial-gradient(ellipse at 50% 52%, #140707 0%, #070303 50%, #000 100%); overflow: hidden; transition: opacity .9s ease; }
+#loading .ld-fx, #loading .ld-fx i { position: absolute; pointer-events: none; }
+#loading .ld-fx { inset: 0; }
+#loading .ld-grain { inset: -80px; opacity: .17; mix-blend-mode: overlay; will-change: transform;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0'/></filter><rect width='160' height='160' filter='url%28%23n%29'/></svg>");
+  animation: grainmove .6s steps(6) infinite; }
+#loading .ld-scan { inset: 0; opacity: .24; background: repeating-linear-gradient(0deg, rgba(0,0,0,.7) 0 1px, transparent 1px 3px); }
+#loading .ld-roll { left: 0; right: 0; top: -22vh; height: 20vh; background: linear-gradient(180deg, transparent, rgba(255,235,220,.045) 50%, transparent); will-change: transform; animation: ldRoll 7s linear infinite; }
+#loading .ld-vig { inset: 0; background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.88) 100%); }
+@keyframes ldRoll { to { transform: translateY(150vh); } }
+#loading .inner { position: relative; z-index: 1; width: min(540px, 82vw); animation: ldFlick 4.6s steps(1, end) infinite; will-change: opacity; }
+@keyframes ldFlick { 0%, 100% { opacity: 1; } 36.5% { opacity: .78; } 37.5% { opacity: 1; } 70% { opacity: .9; } 70.8% { opacity: .5; } 71.6% { opacity: 1; } 88% { opacity: .85; } 88.6% { opacity: 1; } }
+#loading h1 { font: 400 23px 'Song Myung', var(--serif); letter-spacing: .72em; text-indent: .72em; color: #dbd1bf; margin: 0 0 28px;
+  text-shadow: 1.6px 0 rgba(255,30,20,.5), -1.6px 0 rgba(0,190,255,.32), 0 0 16px rgba(150,0,0,.5); }
+#track { height: 5px; background: rgba(34, 6, 5, .9); box-shadow: inset 0 0 0 1px rgba(130, 22, 14, .3), 0 0 22px rgba(0,0,0,.9); overflow: visible; --p: 0; }
+#bar { top: 0; height: 5px; background: linear-gradient(90deg, #2c0101, #7d0907 45%, #c3140d 85%, #ff3b22); box-shadow: 0 0 14px rgba(220,20,10,.65); transition: transform .3s ease-out; }
+/* 찢긴 가장자리 — 막대 위아래를 들쭉날쭉 덮는다(늘어나지 않는 고정 그림) */
+#track::before { content: ''; position: absolute; left: -2px; right: -2px; top: -3px; bottom: -3px; z-index: 2; pointer-events: none;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 11' preserveAspectRatio='none'><path fill='%23060303' d='M0 0H600V3.2L590 2.6 571 3.6 548 2.4 531 3.9 509 2.8 486 3.5 463 2.3 441 3.8 420 2.9 398 3.4 377 2.2 352 3.7 331 2.7 309 3.6 287 2.5 266 3.9 243 2.8 222 3.3 199 2.4 177 3.8 156 2.9 134 3.5 111 2.3 90 3.7 68 2.6 45 3.4 23 2.5 0 3.3Z M0 11H600V7.8L584 8.6 562 7.4 540 8.9 519 7.7 497 8.4 474 7.2 452 8.8 430 7.9 409 8.3 387 7.3 364 8.7 342 7.6 321 8.5 298 7.4 276 8.9 255 7.8 232 8.2 210 7.3 188 8.8 166 7.7 145 8.4 122 7.2 100 8.6 79 7.6 56 8.3 34 7.5 12 8.5 0 7.9Z'/></svg>") 0 0 / 100% 100% no-repeat; }
+#track .sr-glint { z-index: 1; }
+/* 앞머리 — 막대 끝의 핏방울(빛나며 맺힘) */
+#track .ld-head { position: absolute; inset: 0; z-index: 3; pointer-events: none; transform: translateX(calc((var(--p) - 1) * 100%)); transition: transform .3s ease-out; will-change: transform; }
+#track .ld-head::after { content: ''; position: absolute; right: -4px; top: -2px; width: 9px; height: 9px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; background: radial-gradient(circle at 40% 35%, #ff6a4a, #b10d08 55%, #4a0202);
+  box-shadow: 0 0 10px 2px rgba(255,40,20,.6); animation: ldBead 1.6s ease-in-out infinite; }
+@keyframes ldBead { 0%, 100% { transform: scale(.85); opacity: .85; } 50% { transform: scale(1.12); opacity: 1; } }
+/* 지나간 자리에서 똑똑 떨어지는 피 */
+#track .ld-drips { position: absolute; left: 0; right: 0; top: 4px; height: 0; z-index: 1; pointer-events: none; }
+#track .ld-drips i { position: absolute; top: 0; width: 2px; height: 9px; margin-left: -1px; border-radius: 0 0 2px 2px; background: linear-gradient(180deg, #5e0604, #b8120b); opacity: 0; transform-origin: 50% 0; will-change: transform, opacity; }
+#track .ld-drips i.on { animation: ldDrip 2.8s cubic-bezier(.5,0,.8,.4) infinite; }
+@keyframes ldDrip { 0% { transform: translateY(0) scaleY(.15); opacity: 0; } 12% { opacity: .95; transform: translateY(0) scaleY(1); } 55% { transform: translateY(4px) scaleY(1.25); opacity: .95; } 80% { transform: translateY(34px) scaleY(.7); opacity: .6; } 100% { transform: translateY(46px) scaleY(.5); opacity: 0; } }
+#loadmsg { margin-top: 24px; font: 400 12px 'Song Myung', var(--serif); letter-spacing: .16em; color: #8e8677; font-variant-numeric: tabular-nums; text-shadow: 1px 0 rgba(255,30,20,.35), -1px 0 rgba(0,190,255,.22); }
+#loading .ld-tip { margin-top: 40px; min-height: 1.6em; font: 400 13px 'Song Myung', var(--serif); letter-spacing: .14em; color: #786f62; opacity: 0; transition: opacity .45s ease; text-shadow: 1px 0 rgba(255,30,20,.25), -1px 0 rgba(0,190,255,.15); }
+#loading .ld-tip.on { opacity: 1; }
+#loading.done .ld-fx { opacity: 0; transition: opacity .4s ease; }
+@media (prefers-reduced-motion: reduce) { #loading .ld-grain, #loading .ld-roll, #loading .inner, #track .ld-drips i.on, #track .ld-head::after { animation: none; } }
+#loading .ld-tip::before { content: '◆'; margin-right: .9em; font-size: .7em; vertical-align: .15em; color: #9a1009; text-shadow: 0 0 6px rgba(200,10,10,.6); }
+
 </style>
 <style>/* tension.css */
 /* 쉬운 연출 — tension.js 가 만든 요소들. 규칙은 하나, "색 = 주인". 모양은 사이렌(명조 · 먹빛 · 핏빛)에 맞춘다.
@@ -1469,6 +1508,44 @@ body.mp-art #mp-cd.n1 { background-image: var(--art-count-n1); }
     <div id="pick"><label for="file">파일 세 개 선택<input id="file" type="file" multiple accept=".glb,.gltf,.fbx"></label></div>
   </div>
 </div>
+<script>/* loadfx.js */
+/* 불러오기 화면 꾸밈(2026-10-13 사용자: 「로딩바도 게임에 어울리는 분위기로 · 게임 내 필터 적용된 것처럼 · 최적화해서」)
+   · 화면: 알갱이(노이즈) · 주사선 · 가장자리 어둠 · 위에서 아래로 흐르는 띠 · 글 깜빡임 · 색 번짐(붉은/푸른 어긋남) — siren.css 「b549」
+   · 막대: 핏빛 · 찢긴 가장자리 · 앞머리 핏방울 · 지나간 자리에서 피가 똑똑 떨어진다 · 아래 한 줄 귀띔(게임 규칙 · 단축키)이 바뀐다
+   · 움직임은 모두 transform · opacity 만(합성 단계) — 셰이더를 굽느라 메인 스레드가 바빠도 멎지 않는다 · 이 파일은 진행 비율만 읽는다(막대는 game.js · ready.js 가 채운다) */
+(() => {
+  const L = document.getElementById('loading'), track = document.getElementById('track'), bar = document.getElementById('bar');
+  if (!L || !track || !bar) return;
+  // 앞머리 · 핏방울 — 진행 비율을 --p 로(막대의 scaleX 를 읽는다)
+  const head = document.createElement('span'); head.className = 'ld-head'; head.setAttribute('aria-hidden', 'true'); track.appendChild(head);
+  const drips = [];
+  const dw = document.createElement('span'); dw.className = 'ld-drips'; dw.setAttribute('aria-hidden', 'true');
+  [[0.08, 0.2], [0.21, 1.3], [0.33, 0.7], [0.47, 1.9], [0.58, 0.4], [0.71, 1.5], [0.84, 0.9], [0.95, 2.2]].forEach(([x, d]) => { const i = document.createElement('i'); i.style.left = (x * 100) + '%'; i.style.animationDelay = d + 's'; i.dataset.x = x; dw.appendChild(i); drips.push(i); });
+  track.appendChild(dw);
+  let lastP = -1;
+  const rd = () => {
+    const m = /scaleX\(([\d.]+)\)/.exec(bar.style.transform || ''), p = m ? Math.min(1, +m[1]) : 0;
+    if (Math.abs(p - lastP) < 0.002) return; lastP = p;
+    track.style.setProperty('--p', p.toFixed(3));
+    for (const d of drips) d.classList.toggle('on', p >= +d.dataset.x);
+  };
+  const mo = new MutationObserver(rd); mo.observe(bar, { attributes: true, attributeFilter: ['style'] }); rd();
+  // 한 줄 귀띔
+  const TIPS = ['시체 셋을 먼저 자기 본진에 모으는 자가 살아남는다', 'G — 시체를 잡고 놓는다 · 들고 가면 걸음이 느려진다', '괴물의 눈에 띄면 쫓아온다 — 멀리 벗어나야 놓친다',
+    '봇도 네 본진의 시체를 훔쳐 간다', '남의 본진에서도 시체를 빼앗아 올 수 있다', 'L — 손전등 · V — 시점 바꾸기', 'Esc — 잠시 멈춤 · 설정 · 타이틀로'];
+  const tip = document.createElement('div'); tip.className = 'ld-tip'; tip.setAttribute('aria-live', 'off');
+  const inner = L.querySelector('.inner'); if (inner) inner.appendChild(tip);
+  let i = Math.floor(Math.random() * TIPS.length);
+  const show = () => { tip.classList.remove('on'); setTimeout(() => { tip.textContent = TIPS[i++ % TIPS.length]; tip.classList.add('on'); }, 450); };
+  show();
+  const iv = setInterval(() => { if (L.classList.contains('done')) { clearInterval(iv); mo.disconnect(); return; } show(); }, 4200);
+  // 화면 효과 층
+  const fx = document.createElement('div'); fx.className = 'ld-fx'; fx.setAttribute('aria-hidden', 'true');
+  fx.innerHTML = '<i class="ld-grain"></i><i class="ld-roll"></i><i class="ld-scan"></i><i class="ld-vig"></i>';
+  L.insertBefore(fx, L.firstChild);
+})();
+
+</script>
 
 <div id="start">
   <!-- 10-13 사용자 타이틀 시안 「시체3구」 — 왼쪽 로고 · 메뉴 · 한 줄 / 오른쪽은 3D(title.js — 시체를 업고 걸어오는 내 캐릭터) -->
@@ -6410,7 +6487,8 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
         document.documentElement.classList.remove('sr-hold');   // 캔버스가 서서히 나타난다
         ui(1, '');
         // 이제 걷는다 — 시작 화면은 이미 "게임 시작" 상태로 밑에 깔려 있다
-        { const L = document.getElementById('loading'); if (L) L.classList.add('done'); }
+        // b549 — 타이틀(3D 배우 · 글꼴 · 로고)까지 다 준비된 뒤에 걷는다(title.js T3.hold · 최대 7초) · 준비 중에 이미 시작을 눌렀으면 바로
+        { const L = document.getElementById('loading'), go = () => { if (L) L.classList.add('done'); }, T3 = window.__title3; if (!want && T3 && T3.hold) T3.hold(go); else go(); }
         if (want) setTimeout(() => { const b = document.getElementById('start-btn'); if (b) b.click(); }, 0);
         return;
       }
@@ -15696,7 +15774,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   }
   function frame() {
     requestAnimationFrame(frame);
-    try { veilTick(performance.now()); } catch (e) { /* */ }
+    try { const n0 = performance.now(); holdTick(n0); veilTick(n0); } catch (e) { /* */ }
     G = window.__G; if (!G || !G.hero || !G.cfg) return;
     if (G.started && !T3.cleaned) cleanup();   // b548 — 게임이 시작되면 타이틀 것은 하나도 남기지 않는다
     if (!st) {
@@ -15854,11 +15932,30 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     const s0 = startEl(); if (!s0 || !fadeEl) return;
     const shown = s0.style.display !== 'none' && getComputedStyle(s0).display !== 'none';
     if (shown && !shownAt) shownAt = now;
-    if (shown && !introDone) { introDone = true; playIntro(0.6); }   // 로딩 화면이 걷히는 0.6초 뒤부터
-    if (veilDone || !shown) return;
-    if (st && st.frames > 2) { veilDone = true; veilOut(CF.vD, CF.vW); }
+    const Ld = document.getElementById('loading'), loadDone = !Ld || Ld.classList.contains('done');   // b549 — 불러오기 화면이 걷히는 순간부터(예전: 그 뒤에 숨어서 미리 끝났다)
+    if (shown && loadDone && !introDone) { introDone = true; playIntro(0.3); }
+    if (veilDone || !shown || !loadDone) return;
+    if (st && st.frames > 2) { veilDone = true; veilOut(CF.vD, CF.vW + 0.6); }   // 불러오기 화면이 다 걷힌 뒤(0.6초) 밝아진다
     else if (!enabled() || now - shownAt > 15000) { veilDone = true; veilOut(0.6, 0); }   // 3D 를 안 쓰거나 못 세우면 그냥 걷는다
   }
+  /* b549 — 불러오기 화면을 걷기 전에 타이틀이 다 준비됐는지(ready.js 가 부른다): 3D 배우가 그려짐 · 메뉴 글꼴 · 로고 그림(풀어 둠) — 최대 7초
+     (사용자 「타이틀 화면의 모든 요소도 로딩이 잘 다 끝나야 잘 나오게」 — 예전엔 등장 연출이 불러오기 화면 뒤에서 이미 끝나 있었다) */
+  let fontsOK = false, logoOK = false, holdCb = null, holdT0 = 0, holdIv = 0;
+  (function pre() {
+    const to = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
+    try { to(Promise.all(['400 30px "Song Myung"', '400 16px UIF'].map((f) => document.fonts.load(f, '싱글플레이 시체'))), 6000).then(() => { fontsOK = true; }, () => { fontsOK = true; }); } catch (e) { fontsOK = true; }
+    const im = logoImg(); if (!im || !im.decode) logoOK = true; else to(im.decode(), 6000).then(() => { logoOK = true; }, () => { logoOK = true; });
+  })();
+  function holdTick(now) {
+    if (!holdCb) return;
+    const g = window.__G, scene = !enabled() || blocked() || (g && g.started) || (st && st.frames >= 3);
+    if ((scene && fontsOK && logoOK) || now - holdT0 > 7000) { const cb = holdCb; holdCb = null; clearInterval(holdIv); try { cb(); } catch (e) { /* */ } }
+  }
+  T3.hold = (cb) => {
+    holdCb = cb; holdT0 = performance.now();
+    const m = document.getElementById('loadmsg'); if (m) m.textContent = '준비하는 중 100% — 타이틀을 세우는 중';
+    holdIv = setInterval(() => holdTick(performance.now()), 200);   // 프레임이 멎은(가려진) 창에서도
+  };
   T3.replay = () => { if (fadeEl && st) { fadeEl.style.transition = 'none'; fadeEl.style.opacity = '1'; void fadeEl.offsetWidth; veilOut(CF.vD, CF.vW); } playIntro(0); };
   function sync() { applyUI(); if (!pan) return; for (const [k] of ROWS) { const i = pan.querySelector(`[data-k="${k}"]`), b = pan.querySelector(`b[data-v="${k}"]`); if (i) i.value = String(CF[k]); if (b) b.textContent = (+CF[k]).toFixed(2).replace(/\.00$/, ''); } }
   function buildPanel(s) {
