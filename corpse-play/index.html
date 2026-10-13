@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-524 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-527 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -32,6 +32,7 @@ html.sa-m #tbtns { right: max(22px, env(safe-area-inset-right)) !important; bott
 html.sa-m #t-grab { width: 92px !important; height: 92px !important; font-size: 16px !important; font-weight: 700; border-width: 2px !important; }
 /* 작게 */
 html.sa-m #start .card { zoom: .52; }
+html.sa-m #start .card.t3 { zoom: .58; width: 78vw; margin-left: 5vw; }   /* 10-13 시체3구 타이틀 */
 html.sa-m #sr-start { zoom: .55; }
 html.sa-m #sr-end, html.sa-m #winmsg { zoom: .6; }
 html.sa-m #deadmsg { font-size: 14px !important; }
@@ -430,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-524'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-527'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -774,6 +775,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
 })();
 
 </script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Black+And+White+Picture&family=Song+Myung&display=swap" rel="stylesheet">
 <script>/* font.js */
 /* UI 글꼴 — 시안 다섯(2026-10-08 사용자: 「지금 UI 폰트 맘에 안 들어」 · 「PS 게임 사이렌 같은 느낌이 우리 컨셉 — 아트 톤만 참고」)
    · 사이렌의 화면 글자는 일본 명조(본문은 가늘고 제목은 굵은 붓 끝 명조) → 한글에서 가장 가까운 것은 본명조(Noto Serif KR · 일본 명조와 같은 뼈대)
@@ -795,7 +797,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
     { key: 'gowun', name: '고운바탕', fam: 'Gowun Batang', q: 'Gowun+Batang:wght@400;700' },
     { key: 'nanum', name: '나눔명조', fam: 'Nanum Myeongjo', q: 'Nanum+Myeongjo:wght@400;700;800' },
   ];
-  let key = 'noto';
+  let key = 'song';   // 10-13 사용자 「게임 안 글꼴도 타이틀 시안 같은 글꼴로」 — 송명(붓 끝 거친 활판체)이 기본
 
   let el = null, seq = 0;
   async function load(k) {
@@ -856,7 +858,8 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
         <div class="grid">${LIST.map((f) => `<button type="button" data-uif="${f.key}" class="${f.key === key ? 'on' : ''}" style="font-family:'${f.fam}', 'UIF', serif">${f.name}</button>`).join('')}</div>
         <div class="row"><button type="button" data-uifpv="1">보기 — 견본 카드</button></div></section>`,
   };
-  if (window.__settings) window.__settings.reg('uiFont', { get: () => key, set: (v) => window.__uiFont.set(v, true) });
+  if (window.__settings) window.__settings.reg('uiFont2', {   // 이름을 바꿔 예전에 저장된 본명조 대신 새 기본(송명)으로 — 고르면 다시 저장된다
+    get: () => key, set: (v) => window.__uiFont.set(v, true) });
 })();
 
 </script>
@@ -1044,6 +1047,44 @@ body.sr-tune-open #btn-view { visibility: hidden; }   /* 패널 뒤로 비친다
 #sr-start .tm i { font-style: normal; margin-left: 1.4em; color: #a39c8c; }
 #sr-start .ob { margin-top: 10px; font: 700 12px var(--serif); letter-spacing: .3em; color: #8d877a; text-shadow: 0 0 6px #000; }
 @keyframes srStartIn { 0% { opacity: 0; } 18% { opacity: 1; } 24% { opacity: .25; } 32% { opacity: 1; } 44% { opacity: .55; } 50% { opacity: 1; } }
+
+/* ── 10-13 사용자 타이틀 시안 「시체3구」 — 왼쪽: 피 묻은 붓 로고 · 붉은 붓 자국 메뉴 · 한 줄 / 오른쪽: 3D(title.js) · 화면 전체에 게임 필터(알갱이 · 주사선 · 세피아 · 흐림) ── */
+#start { background: linear-gradient(90deg, rgba(0,0,0,.88) 0%, rgba(0,0,0,.72) 26%, rgba(0,0,0,.28) 48%, rgba(0,0,0,0) 62%), radial-gradient(ellipse at 66% 50%, rgba(0,0,0,0) 30%, rgba(0,0,0,.65) 100%); place-items: center start; overflow: hidden; }
+#start::before { content: ''; position: absolute; inset: -60px; pointer-events: none; z-index: 3; opacity: .11; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0'/></filter><rect width='160' height='160' filter='url%28%23n%29'/></svg>");
+  animation: grainmove .6s steps(6) infinite; }
+#start::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3; opacity: .16; background: repeating-linear-gradient(0deg, rgba(0,0,0,.6) 0 1px, transparent 1px 3px); }
+#start .t3-fade { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 0; }
+#start .card.t3 { position: relative; z-index: 2; width: min(560px, 44vw); margin-left: clamp(28px, 7vw, 130px); padding: 0; border: 0; text-align: left;
+  filter: sepia(.32) saturate(.82) contrast(1.08) blur(.35px) drop-shadow(1.2px 0 0 rgba(255,0,0,.18)) drop-shadow(-1.2px 0 0 rgba(0,200,255,.12)); }
+#start .card.t3::before { display: none; }
+#start .t3-logo { width: 100%; margin-left: -3%; }
+#start .t3-logo text { font-family: 'Black And White Picture', 'UIF', serif; font-size: 178px; letter-spacing: -2px; }
+#start .t3-logo .t3-w { fill: #ece5da; }
+#start .t3-logo .t3-g { fill: rgba(170, 0, 0, .55); }
+#start .t3-logo .t3-3, #start .t3-logo .t3-3g { font-size: 270px; fill: #c00a0a; font-family: 'Black And White Picture', serif; }
+#start .t3-logo .t3-3g { fill: rgba(255, 20, 10, .6); }
+#start .t3-menu { position: relative; margin: 18px 0 0 6px; padding-left: 26px; }
+#start .t3-menu::before { content: ''; position: absolute; left: 0; top: -10px; bottom: -10px; width: 2px; background: linear-gradient(180deg, transparent, #b10d0d 12%, #6d0707 80%, transparent); box-shadow: 0 0 6px rgba(200,10,10,.6); }
+#start .t3-menu .sr-modes { display: flex; flex-direction: column; gap: 0; align-items: stretch; margin: 0; }
+#start .t3-menu .sr-modes button { position: relative; display: block; width: 100%; margin: 0; padding: 18px 20px 18px 54px; text-align: left; background: none; border: 0; border-radius: 0; cursor: pointer;
+  font: 400 30px/1 'Song Myung', 'UIF', serif; letter-spacing: .06em; text-indent: 0; color: #d9d3c6; text-shadow: 0 2px 6px rgba(0,0,0,.8); transition: color .15s; }
+#start .t3-menu .sr-modes button::before { content: ''; position: absolute; left: 22px; top: 50%; width: 9px; height: 9px; margin-top: -5px; background: #fff; transform: rotate(45deg) scale(0); transition: transform .15s; box-shadow: 0 0 8px rgba(255,60,40,.8); }
+#start .t3-menu .sr-modes button::after { content: ''; position: absolute; left: 0; right: 18%; bottom: 0; height: 1px; background: linear-gradient(90deg, rgba(220,210,190,.45), rgba(220,210,190,.12) 70%, transparent); }
+#start .t3-menu .sr-modes button.on, #start .t3-menu .sr-modes button:focus-visible { outline: none; color: #fff;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 60' preserveAspectRatio='none'><defs><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='.05 .5' numOctaves='3' seed='4'/><feDisplacementMap in='SourceGraphic' scale='14'/></filter></defs><path filter='url(%23r)' fill='%23a30a0a' d='M4 14 C80 6 200 8 330 10 C360 11 385 9 398 4 C390 18 396 30 392 40 C360 48 250 52 120 50 C70 50 30 55 2 52 C8 40 0 26 4 14z'/><path filter='url(%23r)' fill='%23d4140f' opacity='.55' d='M10 20 C120 14 260 16 380 14 L376 30 C250 34 120 36 12 34z'/></svg>") left center / 100% 92% no-repeat; }
+#start .t3-menu .sr-modes button.on::before, #start .t3-menu .sr-modes button:focus-visible::before { transform: rotate(45deg) scale(1); }
+#start .t3-menu .sr-modes button:disabled { color: #6f6a5f; cursor: default; }
+#start .t3-menu #sr-look-btn { font-size: 15px; padding: 12px 20px 10px 54px; color: #8a8478; letter-spacing: .3em; }
+#start .t3-menu #sr-look-btn::after { display: none; }
+#start .t3-menu #start-btn::before { }
+#start .t3-tag { display: flex; align-items: center; gap: 16px; margin: 46px 0 0 0; font: 400 16px 'Song Myung', 'UIF', serif; letter-spacing: .14em; color: #cbc4b4; white-space: nowrap; }
+#start .t3-tag i { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(210,200,180,.5)); min-width: 30px; }
+#start .t3-tag i:last-child { background: linear-gradient(90deg, rgba(210,200,180,.5), transparent); }
+#start .card.t3 .keys { margin-top: 18px; font: 400 11px/1.8 'UIF', serif; letter-spacing: .04em; color: #5f5a50; }
+#start #sr-prep { margin: 10px 0 0 26px; }
+#start.sr-prep #start-btn { color: #7d776a; }
+#start.sr-prep #start-btn::before { animation: none; }
 
 </style>
 <style>/* tension.css */
@@ -1406,13 +1447,25 @@ body.mp-art #mp-cd.n1 { background-image: var(--art-count-n1); }
 </div>
 
 <div id="start">
-  <div class="card">
-    <div class="sr-head"><span><b>경기장</b>신사 터 · 본진 셋</span><span><span class="sr-day">初日</span><span id="sr-clock">--:--:--</span></span></div>
-    <div class="title">시체쟁탈</div>
-    <div class="sub">屍體爭奪</div>
-    <div class="sr-cond"><em>종료 조건</em><span>시체 셋을 먼저 자기 본진에 모은다</span><small>빼앗고, 빼앗겨라 · 괴물의 눈을 피하라</small></div>
-    <div class="sr-modes"><button id="start-btn" type="button">혼자 하기</button><button id="mp-btn" type="button" disabled>같이 하기</button></div>
-    <div class="keys">Enter 혼자 하기 · 같이 하기는 방에서 Enter 로 말하기 · WASD 이동 · 마우스 드래그 시점 · 휠 거리<br>G 시체 잡기·놓기 · V 시점 바꾸기 · J 시야 잠식 · L 손전등 · R 다시 · Tab 조절</div>
+  <!-- 10-13 사용자 타이틀 시안 「시체3구」 — 왼쪽 로고 · 메뉴 · 한 줄 / 오른쪽은 3D(title.js — 시체를 업고 걸어오는 내 캐릭터) -->
+  <div class="card t3">
+    <div class="t3-logo" aria-label="시체3구"><svg viewBox="0 0 700 300" width="100%" aria-hidden="true">
+      <defs>
+        <filter id="t3rough" x="-5%" y="-10%" width="110%" height="125%"><feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="2" seed="3" result="w"/><feDisplacementMap in="SourceGraphic" in2="w" scale="7" result="d"/>
+          <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="8" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 1.55" result="m"/><feComposite in="d" in2="m" operator="in"/></filter>
+        <filter id="t3glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
+      </defs>
+      <g class="t3-spl" fill="#a10606"><circle cx="372" cy="40" r="5"/><circle cx="395" cy="22" r="2.6"/><circle cx="350" cy="58" r="2"/><circle cx="455" cy="66" r="3.4"/><circle cx="470" cy="44" r="1.8"/><circle cx="318" cy="250" r="2.4"/><circle cx="60" cy="236" r="3"/><circle cx="640" cy="120" r="2.2"/><path d="M420 30 l40 -14 l-30 22z"/><path d="M330 230 l-28 30 l36 -22z"/></g>
+      <text class="t3-g" x="350" y="205" text-anchor="middle" filter="url(#t3glow)">시체<tspan class="t3-3g" dx="6">3</tspan><tspan dx="6">구</tspan></text>
+      <text class="t3-w" x="352" y="205" text-anchor="middle" filter="url(#t3rough)">시체<tspan class="t3-3" dx="6">3</tspan><tspan dx="6">구</tspan></text>
+      <g class="t3-drip" fill="#9c0505" filter="url(#t3rough)"><path d="M118 168 q9 60 3 100 q-4 9 -8 0 q-3 -50 5 -100z"/><path d="M206 178 q8 40 2 66 q-4 7 -7 0 q-2 -36 5 -66z"/><path d="M262 172 q7 70 1 112 q-4 8 -8 0 q-2 -60 7 -112z"/><path d="M398 190 q7 50 1 86 q-4 8 -7 0 q-2 -46 6 -86z"/><path d="M548 170 q8 50 2 84 q-4 7 -7 0 q-2 -44 5 -84z"/><path d="M604 168 q6 34 0 56 q-3 6 -6 0 q0 -30 6 -56z"/></g>
+    </svg></div>
+    <div class="t3-menu">
+      <div class="sr-modes"><button id="start-btn" type="button">싱글플레이</button><button id="mp-btn" type="button" disabled>멀티플레이</button><button id="t3-set" type="button">설정</button></div>
+    </div>
+    <div class="t3-tag"><i></i><span>먼저 시체 3구를 모으는 자가 살아남는다</span><i></i></div>
+    <div class="keys">Enter 싱글플레이 · WASD 이동 · 마우스 드래그 시점 · G 시체 잡기·놓기 · V 시점 · L 손전등 · R 다시 · Tab 조절</div>
+    <span id="sr-clock" hidden></span>
   </div>
 </div>
 
@@ -6027,6 +6080,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     const G = window.__G;
     if (G && G.started) return;
     if (PRE.test(e.code) && !(e.target && e.target.closest && e.target.closest('input, textarea'))) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if (window.__title3 && window.__title3.key && window.__title3.key(e)) return;   // 10-13 시작 화면 메뉴(title.js) — ↑↓ · 고른 메뉴로 Enter
     if ((e.code === 'Enter' || e.code === 'Space' || e.code === 'NumpadEnter') && !e.repeat) {
       const s = document.getElementById('start'), b = document.getElementById('start-btn');
       if (s && b && getComputedStyle(s).display !== 'none' && !(e.target && e.target.closest && e.target.closest('input, textarea, button, #sr-tune'))) {
@@ -8335,6 +8389,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'monspasm', name: '괴물 고개 경련(montwitch.js — 서 있으면 4~9초마다 고개가 확 꺾이며 0.35초 떨림 · 10-12 사용자 「괴물이 내 앞에서 부들부들」 → 기본 끔 · 천천히 꺾기 · 시선은 그대로)', def: false },
     { key: 'glowocc', name: '시체 외곽선 — 앞을 가린 사람 · 물건 뒤로는 안 보임(tension.js — 10-12 사용자 「통과해서 보여주는 것 없애」)', def: true },
     { key: 'hudhalf', name: '화면 표지 · 시스템 글 필터 50%(tension.js · index.html — 10-13 사용자 · 끄면 필터 그대로)', def: true },
+    { key: 'titlewalk', name: '시작 화면 — 시체를 업고 걸어오는 내 캐릭터(title.js — 10-13 사용자 · 끄면 예전 위에서 내려다보는 장면)', def: true },
     { key: 'occdots', name: '카메라 앞을 가린 물체 점점이 비치기(camera.js — 10-12 사용자 「점으로 나오는 현상 없애」 · 기본 끔)', def: false },
     { key: 'staircut', name: 'P3 쪽 아래 계단 골 땅 메우기 · 끝 바위벽(mapfix.js — 10-12 사용자)', def: true },
     { key: 'gateblock', name: 'P3 쪽 문 숨김(mapfix.js — 10-12 사용자)', def: true },
@@ -15420,6 +15475,138 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     }
     try { engine(G); } catch (e) { console.warn('[motion]', e); }
   })(0);
+})();
+
+</script>
+<script>/* title.js */
+/* 시작 화면 「시체3구」(2026-10-13 사용자: 타이틀 시안 그림 · 「오른쪽에는 실제 모델링이 시체를 업고 천천히 걸어오는 느낌으로 · 타이틀 전체에도 게임 필터」)
+   · 글(로고 · 메뉴 · 한 줄)은 index.html #start — 이 파일은 그 뒤 3D 장면만 맡는다
+   · 진짜 내 캐릭터가 진짜 시체 하나를 업고(게임의 업기 그대로 — 같이 하기에서 쓰는 __mpForce 잡기) 내 본진 토리이 앞에서 카메라 쪽으로 천천히 걸어온다
+     걷는 동작 · 손 · 시체 자세는 게임이 하는 그대로 · 6m 걸으면 어둡게 사라졌다 처음부터
+   · 그리는 순간만: 카메라(낮게 · 앞에서 · 사람은 화면 오른쪽) · 본진 표지/빛기둥/바닥 선 숨김 · 사람 자체 밝기 조금 더 — 그린 뒤 되돌린다
+   · 메뉴(싱글플레이 · 멀티플레이 · 설정 · 둘러보기)를 누르는 순간(또는 Enter) 시체를 제자리에 내려놓고 사람도 처음 자리로 돌려놓은 뒤 게임이 시작된다
+   · 새 셰이더 없음(빛 수 · 재질 그대로) · 끄기: 시연실 연출 「titlewalk」 */
+(() => {
+  const T3 = (window.__title3 = { on: false });
+  const WALK = 6, SPEED = 0.78, FADE = 0.6;
+  let G = null, st = null, fadeEl = null;
+  const enabled = () => { const X = window.__fx; return !(X && X.on && X.on.titlewalk === false); };
+  const startShown = () => { const s = document.getElementById('start'); return !!(s && s.style.display !== 'none' && getComputedStyle(s).display !== 'none' && !s.classList.contains('sr-prep')); };
+  const blocked = () => document.body.classList.contains('mp-open') || (window.__mp && window.__mp.on) || window.__explore;
+
+  function zone0() {
+    const zs = G.zones && G.zones.list; if (!zs || !zs.length) return null;
+    let cx = 0, cz = 0; for (const z of zs) { cx += z.cx; cz += z.cz; } cx /= zs.length; cz /= zs.length;
+    const z = zs.find((q) => q.team === 0) || zs[0], dx = cx - z.cx, dz = cz - z.cz, L = Math.hypot(dx, dz) || 1;
+    return { x: z.cx, z: z.cz, ux: dx / L, uz: dz / L };
+  }
+  function begin() {
+    const Z = zone0(); if (!Z) return false;
+    const bs = (G.game && G.game.bodies) || [], b = bs.find((x) => !x.held && !(x.lastZone > 0)) || bs.find((x) => !x.held);
+    if (!b) return false;
+    const h = G.hero;
+    st = { b, hp: h.position.clone(), hr: h.rotation.y, Z, t0: performance.now(), hide: null, sv: null };
+    // 업기로 잡기 — mp.js 와 같은 길(가까이 없어도 이 시체를 잡는다)
+    const cm = G.cfg.carryMode; G.cfg.carryMode = 2; window.__mpForce = b;
+    try { G.set('dragMode', true); } catch (e) { console.warn('[title] 업기', e); } finally { window.__mpForce = null; G.cfg.carryMode = cm; }
+    if (!G.cfg.dragMode) { st = null; return false; }
+    if (window.__charlit) { st.mul = window.__charlit.mul; window.__charlit.mul = 1.7; }
+    T3.on = true; place(0);
+    return true;
+  }
+  // 내려놓기 — 잡은 자리로 사람을 데려가 놓으면 게임이 시체를 원래 자리 · 방향 그대로 눕힌다(qv) · 사람도 처음 자리로
+  function stop() {
+    if (!st) return;
+    const s = st; st = null; T3.on = false;
+    try {
+      const pf = G.carry.pickFrom; if (pf) G.hero.position.set(pf.hx, G.hero.position.y, pf.hz);
+      if (G.cfg.dragMode) G.set('dragMode', false);
+    } catch (e) { console.warn('[title] 내려놓기', e); }
+    G.hero.position.copy(s.hp); G.hero.rotation.y = s.hr;
+    if (window.__charlit) window.__charlit.mul = s.mul;
+    if (fadeEl) fadeEl.style.opacity = '0';
+  }
+  T3.stop = stop;
+  function place(s) {
+    const Z = st.Z, x = Z.x + Z.ux * (6 + s), z = Z.z + Z.uz * (6 + s);   // 토리이를 지난 자리부터 — 토리이는 늘 등 뒤
+    G.hero.position.set(x, G.groundAt(x, z), z);
+    G.hero.rotation.y = Math.atan2(Z.ux, Z.uz);
+  }
+  function frame() {
+    requestAnimationFrame(frame);
+    G = window.__G; if (!G || !G.hero || !G.cfg) return;
+    if (!st) {
+      if (!G.started && enabled() && !blocked() && startShown() && G.game && G.game.bodies && G.game.bodies.length) begin();
+      return;
+    }
+    if (G.started || !startShown() || blocked() || !enabled()) { stop(); return; }
+    const t = (performance.now() - st.t0) / 1000, dur = WALK / SPEED, k = t % dur, s = k * SPEED;
+    place(s);
+    if (fadeEl) fadeEl.style.opacity = String(Math.max(0, 1 - k / FADE, (k - (dur - FADE)) / FADE));
+  }
+  // 메뉴를 누르면(Enter 포함 — ready.js 가 시작 단추를 누른다) 게임보다 먼저 내려놓는다
+  document.addEventListener('click', (e) => { if (st && e.target && e.target.closest && e.target.closest('#start-btn, #mp-btn, #sr-look-btn')) stop(); }, true);
+
+  /* ── 그리는 순간만 ── */
+  const HIDE = new Set(['zonefence', 'objtint', 'carry-blood', 'corpse-pool']);
+  function hideList() {
+    const L = [];
+    for (const o of G.scene.children) {
+      if (HIDE.has(o.name)) { L.push(o); continue; }
+      if (o.type === 'Group' && !o.name) { let f = 0; for (const c of o.children) if (/^(fill|edge|beam|label)$/.test(c.name)) f++; if (f >= 2) L.push(o); }   // 본진 빛기둥 · 이름판(basefx)
+    }
+    for (const z of G.zones.list) if (z.mesh) L.push(z.mesh);
+    return L;
+  }
+  const vsv = [];
+  function apply(cam) {
+    const h = G.hero.position, yaw = G.hero.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw), rx = -fz, rz = fx;   // r = 사람의 왼쪽(카메라에서 보면 오른쪽)
+    st.sv = { p: cam.position.clone(), q: cam.quaternion.clone(), fov: cam.fov };
+    const D = 3.3, side = 0.95, sway = Math.sin(performance.now() / 1000 * 0.4) * 0.06;
+    cam.position.set(h.x + fx * D + rx * (side * 0.35), h.y + 1.32 + sway * 0.5, h.z + fz * D + rz * (side * 0.35));
+    cam.lookAt(h.x + rx * side + fx * 0.2, h.y + 1.38, h.z + rz * side + fz * 0.2);
+    if (cam.fov !== 38) { cam.fov = 38; cam.updateProjectionMatrix(); }
+    cam.updateMatrixWorld(true);
+    if (!st.hide) st.hide = hideList();
+    for (const o of st.hide) if (o.visible) { vsv.push(o); o.visible = false; }
+  }
+  function restore(cam) {
+    for (const o of vsv) o.visible = true; vsv.length = 0;
+    const sv = st && st.sv; if (!sv) return;
+    cam.position.copy(sv.p); cam.quaternion.copy(sv.q); if (cam.fov !== sv.fov) { cam.fov = sv.fov; cam.updateProjectionMatrix(); } cam.updateMatrixWorld(true); st.sv = null;
+  }
+  (function hook() {
+    const g = window.__G; if (!g || !g.scene || !g.cam) { setTimeout(hook, 400); return; }
+    G = g;
+    const Sc = g.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender;
+    Sc.onBeforeRender = function (r, s, cam, ...a) { if (pb) pb.call(this, r, s, cam, ...a); if (st && cam === G.cam) { try { apply(cam); } catch (e) { if (!hook.e) { hook.e = 1; console.warn('[title]', e); } } } };
+    Sc.onAfterRender = function (r, s, cam, ...a) { if (cam === G.cam && st) restore(cam); if (pa) pa.call(this, r, s, cam, ...a); };
+    frame();
+  })();
+  // 걷기 한 바퀴의 처음 · 끝 — 검게 · 메뉴(붉은 붓 자국 = 고른 것 · 마우스 · ↑↓ · Enter)
+  (function mk() {
+    const s = document.getElementById('start'), modes = s && s.querySelector('.t3-menu .sr-modes'); if (!s || !modes) { setTimeout(mk, 300); return; }
+    fadeEl = document.createElement('div'); fadeEl.className = 't3-fade'; s.insertBefore(fadeEl, s.firstChild);
+    const items = () => [...modes.querySelectorAll('button')].filter((b) => !b.disabled && b.offsetParent);
+    let cur = null;
+    const pick = (b) => { if (!b) return; for (const x of modes.querySelectorAll('button')) x.classList.toggle('on', x === b); cur = b; };
+    pick(document.getElementById('start-btn'));
+    modes.addEventListener('mouseover', (e) => { const b = e.target.closest && e.target.closest('button'); if (b && !b.disabled) pick(b); });
+    const set = document.getElementById('t3-set');
+    if (set) set.addEventListener('click', (e) => { e.stopPropagation(); const t = document.getElementById('sr-tune-btn'); if (t) t.click(); });
+    // ready.js 의 keydown(먼저 붙은 것)이 부른다 — true 면 여기서 끝
+    T3.key = (e) => {
+      const g = window.__G; if ((g && g.started) || !startShown() || (e.target && e.target.closest && e.target.closest('input, textarea, select, #sr-tune'))) return false;
+      if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+        const L = items(); if (!L.length) return false; const i = L.indexOf(cur);
+        pick(L[(i + (e.code === 'ArrowDown' ? 1 : -1) + L.length) % L.length]); e.preventDefault(); e.stopImmediatePropagation(); return true;
+      }
+      if ((e.code === 'Enter' || e.code === 'NumpadEnter') && !e.repeat && cur && cur.id !== 'start-btn' && !cur.disabled) {
+        e.preventDefault(); e.stopImmediatePropagation(); cur.click(); return true;   // 싱글플레이는 ready.js 가 그대로(준비 중이면 기다렸다 시작)
+      }
+      return false;
+    };
+  })();
 })();
 
 </script>
