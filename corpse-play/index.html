@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-580 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-581 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-580'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-581'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5962,8 +5962,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
         ['cardTop', '카드 최고 높이(목 아래로)', 0.05, 0.45, 0.01, 0.16, (v) => `${Math.round(v * 100)}cm`], ['front', '카드 몸 앞 최소', 0, 0.12, 0.005, 0.03, (v) => `${(v * 100).toFixed(1)}cm`],
         ['cardGap', '카드 몸에서 띄움', 0, 0.06, 0.002, 0.012, (v) => `${(v * 100).toFixed(1)}cm`],
         ['stiff', '줄 부드러움(꺾임 버팀)', 0, 1, 0.05, 0.6, pct],
-        ['backShow', '뒷목 줄 보이기', 0, 1, 1, 0, (v) => (v > 0.5 ? '켬' : '끔')],
-        ['backY', '뒷목 줄 높이', -0.06, 0.12, 0.005, 0.03, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['backOut', '뒷목 줄 띄움(옷 밖)', 0, 0.04, 0.001, 0.006, (v) => `${(v * 100).toFixed(1)}cm`]]
+        ]
         .map(([k, label, min, max, step, def, fmt]) => ({ k: `badge.${kind}.${k}`, label, min, max, step, def, fmt,
           get: () => { const B = window.__badge, p = B && B.per && B.per[kind]; return p && typeof p[k] === 'number' ? p[k] : def; },
           set: (v) => { const B = (window.__badge = window.__badge || {}), per = (B.per = B.per || {}); (per[kind] = per[kind] || {})[k] = v; } })) })),
@@ -12148,7 +12147,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     return g;
   }
   // ── 목줄 띠(두 면) — 가닥: 앞 왼쪽 N · 앞 오른쪽 N · 목 뒤 고리 9 ──
-  const BACKN = 9, SUB = 4, NS = (N - 1) * SUB + 1, LINES = [NS, NS, BACKN];   // b576 — 앞 줄은 마디 사이를 곡선(캣멀-롬)으로 4칸씩 — 꺾인 선이 안 보이게
+  const BACKN = 9, SUB = 4, NS = (N - 1) * SUB + 1, LINES = [NS, NS];   // b581 — 목 뒤로 감기는 줄 없앰(사용자 「목 뒤로 감기는 부분을 없애자」 · 목에 끼우는 식)   // b576 — 앞 줄은 마디 사이를 곡선(캣멀-롬)으로 4칸씩 — 꺾인 선이 안 보이게
   function strapGeo() {
     const nv = LINES.reduce((s, k) => s + k * 4, 0), g = new BG(), idx = [];
     g.setAttribute('position', new BA(new Float32Array(nv * 3), 3)); g.setAttribute('normal', new BA(new Float32Array(nv * 3), 3)); g.setAttribute('uv', new BA(new Float32Array(nv * 2), 2));
@@ -12257,7 +12256,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   function drop(e) { try { e.card.parent && e.card.parent.remove(e.card); e.strap.parent && e.strap.parent.remove(e.strap); e.card.geometry.dispose(); e.strap.geometry.dispose(); } catch (er) { /* */ } ents.delete(e.sm); }
   const W = (e, x, y, z, out) => out.copy(e.fr.N).addScaledVector(e.fr.r, x).addScaledVector(e.fr.u, y).addScaledVector(e.fr.f, z);
   function anchors(e) {
-    const p = PK(e), s = e.fr.sc, z0 = Math.max(frontZ(e, p.sideX * s, -0.035 * s), 0.0) * 0.7;   // b576 — 목 옆 한가운데가 아니라 쇄골 쪽(조금 앞 · 아래)에서 시작
+    const p = PK(e), s = e.fr.sc, z0 = Math.max(frontZ(e, p.sideX * s, -0.035 * s), 0.0) * 0.45;   // b581 — 깃 안쪽으로 살짝(줄 끝이 옷 속으로 들어가 보이지 않게)   // b576 — 목 옆 한가운데가 아니라 쇄골 쪽(조금 앞 · 아래)에서 시작
     W(e, -p.sideX * s, p.neckY * s - 0.03 * s, z0 + p.neckZ * s, e.aL); W(e, p.sideX * s, p.neckY * s - 0.03 * s, z0 + p.neckZ * s, e.aR);
   }
   function restPose(e) {
@@ -12398,17 +12397,6 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
   function draw(e) {
     const s = e.fr.sc;
-    // 목 뒤 고리 — 목 옆(앞 줄 시작)에서 목 뒤로 돌아 반대편 옆으로
-    while (backPts.length < BACKN) backPts.push(new V());
-    const p = PK(e), za = e.fr.f.dot(tmp.d.subVectors(e.aL, e.fr.N));
-    for (let i = 0; i < BACKN; i++) {   // b571 — 등 표면(깃 포함) 밖으로(사용자 「등에 뚫고 나오는 것」)
-      const th = (i / (BACKN - 1)) * Math.PI, sn = Math.sin(th), R = B.neckR * s, x = -Math.cos(th) * p.sideX * s, y = (p.neckY - 0.012 + sn * p.backY) * s;
-      let z = za * (1 - sn) - sn * R;
-      const bz = backZ(e, x, y); if (bz < 8 && sn > 0.15) { const w = Math.min(1, (sn - 0.15) / 0.35); z = z * (1 - w) + (bz - p.backOut * s) * w; }   // 등 · 깃 표면에 붙인다(밖으로 밀기만 하면 떠 있었다)
-      W(e, x, y, z, backPts[i]);
-    }
-    if (!(p.backShow > 0.5)) for (let i = 0; i < BACKN; i++) backPts[i].copy(e.aL);   // 숨김 — 한 점으로 모아 넓이 0
-    backPts[0].copy(e.aL); backPts[BACKN - 1].copy(e.aR);
     fpL.length = 0; fpR.length = 0; fpL.push(e.aL); fpR.push(e.aR);
     // 끝 두 점은 고리 양옆으로 조금 벌린다(겹치지 않게)
     const cx = tmp.b.subVectors(e.hook, e.bot).normalize(), side = vA.q.crossVectors(cx, e.fr.f).normalize();
@@ -12417,7 +12405,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     fpL[N - 1] = e.hook; fpR[N - 1] = e.hook; void hl; void hr;   // b578 — 두 줄 끝 = 카드 윗변 한가운데 한 점(V자로 붙임 · 사용자 「달릴 때 분리 · 모양이 이상 · 걍 V자로」)
     const g = e.strap.geometry, P = g.attributes.position.array, Nn = g.attributes.normal.array, U = g.attributes.uv.array;
     smooth(fpL, sL); smooth(fpR, sR);
-    let o = line(e, sL, 0, 0, P, Nn, U); o = line(e, sR, o, 0.37, P, Nn, U); line(e, backPts, o, 0.71, P, Nn, U);
+    const o = line(e, sL, 0, 0, P, Nn, U); line(e, sR, o, 0.37, P, Nn, U);
     g.attributes.position.needsUpdate = true; g.attributes.normal.needsUpdate = true; g.attributes.uv.needsUpdate = true;
     e.strap.matrix.identity(); e.strap.matrixWorld.identity();
     // 카드 — 위(고리 쪽)가 +y · 앞면(+z)이 몸 앞으로
