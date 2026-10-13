@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-576 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-577 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-576'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-577'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5960,6 +5960,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
         ['drop', '줄 길이(카드 높이)', 0.18, 0.55, 0.01, 0.34, (v) => `${Math.round(v * 100)}cm`], ['sideX', '목 좌우 간격', 0.02, 0.12, 0.005, 0.062, (v) => `${(v * 200).toFixed(1)}cm`],
         ['neckY', '목 거는 높이', -0.08, 0.1, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['neckZ', '목 앞뒤', -0.06, 0.06, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`],
         ['cardTop', '카드 최고 높이(목 아래로)', 0.05, 0.45, 0.01, 0.16, (v) => `${Math.round(v * 100)}cm`], ['front', '카드 몸 앞 최소', 0, 0.12, 0.005, 0.03, (v) => `${(v * 100).toFixed(1)}cm`],
+        ['cardGap', '카드 몸에서 띄움', 0, 0.06, 0.002, 0.012, (v) => `${(v * 100).toFixed(1)}cm`],
         ['stiff', '줄 부드러움(꺾임 버팀)', 0, 1, 0.05, 0.6, pct],
         ['backShow', '뒷목 줄 보이기', 0, 1, 1, 0, (v) => (v > 0.5 ? '켬' : '끔')],
         ['backY', '뒷목 줄 높이', -0.06, 0.12, 0.005, 0.03, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['backOut', '뒷목 줄 띄움(옷 밖)', 0, 0.04, 0.001, 0.006, (v) => `${(v * 100).toFixed(1)}cm`]]
@@ -12061,12 +12062,12 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
    · 끄기: 시연실 연출 「사원증 목걸이」(fx badge) · 값: window.__badge */
 (() => {
   const B = (window.__badge = Object.assign({
-    on: true, w: 0.072, h: 0.108, t: 0.004, r: 0.0045, strapW: 0.02, drop: 0.34, gap: 0.014, neckR: 0.068, neckY: 0.0, sideX: 0.062,
+    on: true, w: 0.072, h: 0.108, t: 0.004, r: 0.0045, strapW: 0.02, drop: 0.34, gap: 0.003, neckR: 0.068, neckY: 0.0, sideX: 0.062,
     grav: 9.8, drag: 1.6, flutter: 1, damp: 0.988, iters: 8, margin: 0.007, list: [],
   }, window.__badge || {}));   // 조절 창이 먼저 넣은 값(저장값)은 그대로
   // b571 — 캐릭터별(사용자 「캐릭터 별로 수정할 수 있게」) · 조절 창 「사원증 · 조상준 / 손주용 / 허지용」
   B.KINDS = { m17: '조상준(내 캐릭터)', son: '손주용(예전 son)', m16: '허지용(안경)' };
-  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006, cardTop: 0.16, front: 0.03, backShow: 0, stiff: 0.6 };   // b575 — 뒷목 줄 기본 숨김(사용자 「목 뒤로 목줄이 튀어나온다 · 조절해도 안 없어져」)
+  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006, cardTop: 0.16, front: 0.03, backShow: 0, stiff: 0.6, cardGap: 0.012 };   // b575 — 뒷목 줄 기본 숨김(사용자 「목 뒤로 목줄이 튀어나온다 · 조절해도 안 없어져」)
   B.per = B.per || {};
   for (const k in B.KINDS) B.per[k] = Object.assign({}, B.DEF, B.per[k] || {});
   const PK = (e) => B.per[e.kind] || B.DEF;
@@ -12180,8 +12181,9 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
   function measure(sm, fr) {
     const g = sm.geometry, pos = g.attributes.position, n = pos.count, step = Math.max(1, Math.floor(n / 14000)), v = new V(), d = new V();
-    const prof = BANDS.map(() => new Float32Array(NB).fill(-9)), back = BANDS.map(() => new Float32Array(NB).fill(9));
+    const prof = BANDS.map(() => new Float32Array(NB).fill(-9)), back = BANDS.map(() => new Float32Array(NB).fill(9)), cand = [];
     if (!sm.applyBoneTransform && !sm.boneTransform) return null;
+    const si = g.attributes.skinIndex, sw = g.attributes.skinWeight, bones = sm.skeleton.bones, army = (i) => { if (!si || !sw) return false; let bw = -1, bb = 0; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > bw) { bw = w; bb = si.getComponent(i, k); } } const b = bones[bb]; return !!(b && /Arm|Hand/.test(b.name)); };
     for (let i = 0; i < n; i += step) {
       v.fromBufferAttribute(pos, i);
       if (sm.applyBoneTransform) sm.applyBoneTransform(i, v); else sm.boneTransform(i, v);
@@ -12192,13 +12194,33 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       const band = x / fr.sc < BANDS[0] ? 0 : x / fr.sc < BANDS[1] ? 1 : x / fr.sc < BANDS[2] ? 2 : -1; if (band < 0) continue;
       if (z / fr.sc > prof[band][bi]) prof[band][bi] = z / fr.sc;
       if (z / fr.sc < back[band][bi]) back[band][bi] = z / fr.sc;   // b571 — 등 · 목 뒤(깃) 표면
+      if (z / fr.sc > -0.03 && !army(i)) cand.push(i);   // b577 — 몸 앞쪽 점(팔 · 손 제외) — 달리며 숙일 때 다시 잰다
     }
     for (const pr of prof) {   // 빈 칸 메움
       for (let i = 0; i < NB; i++) if (pr[i] < -8) { let a = i - 1, b = i + 1; while (a >= 0 && pr[a] < -8) a--; while (b < NB && pr[b] < -8) b++; pr[i] = a >= 0 && b < NB ? (pr[a] + pr[b]) / 2 : a >= 0 ? pr[a] : b < NB ? pr[b] : -9; }
     }
     for (const pr of back) for (let i = 0; i < NB; i++) if (pr[i] > 8) { let a = i - 1, b = i + 1; while (a >= 0 && pr[a] > 8) a--; while (b < NB && pr[b] > 8) b++; pr[i] = a >= 0 && b < NB ? (pr[a] + pr[b]) / 2 : a >= 0 ? pr[a] : b < NB ? pr[b] : 9; }
     prof.back = back;
+    { const st2 = Math.max(1, Math.ceil(cand.length / 1600)), ids = []; for (let k = 0; k < cand.length; k += st2) ids.push(cand[k]); prof.ids = Int32Array.from(ids); }
     return prof;
+  }
+  // b577 — 앞면 높이표를 지금 자세로 다시(0.12초마다 · 앞쪽 점 1600개만) — 처음 한 번만 재서 달리며 숙이면 카드가 몸을 뚫었다
+  const rv = { v: null, d: null };
+  function refresh(e) {
+    const sm = e.sm, pr = e.prof, ids = pr && pr.ids; if (!ids || !ids.length) return;
+    if (!rv.v) { rv.v = new V(); rv.d = new V(); }
+    const pos = sm.geometry.attributes.position, fr = e.fr, v = rv.v, d = rv.d;
+    for (const a of pr) a.fill(-9);
+    for (let k = 0; k < ids.length; k++) {
+      const i = ids[k]; v.fromBufferAttribute(pos, i);
+      if (sm.applyBoneTransform) sm.applyBoneTransform(i, v); else sm.boneTransform(i, v);
+      v.applyMatrix4(sm.matrixWorld); d.subVectors(v, fr.N);
+      const x = Math.abs(d.dot(fr.r)) / fr.sc, y = d.dot(fr.u) / fr.sc, z = d.dot(fr.f) / fr.sc;
+      const bi = Math.floor((YTOP - y) / YSTEP); if (bi < 0 || bi >= NB) continue;
+      const band = x < BANDS[0] ? 0 : x < BANDS[1] ? 1 : x < BANDS[2] ? 2 : -1; if (band < 0) continue;
+      if (z > pr[band][bi]) pr[band][bi] = z;
+    }
+    for (const a of pr) for (let i = 0; i < NB; i++) if (a[i] < -8) { let p = i - 1, q = i + 1; while (p >= 0 && a[p] < -8) p--; while (q < NB && a[q] < -8) q++; a[i] = p >= 0 && q < NB ? (a[p] + a[q]) / 2 : p >= 0 ? a[p] : q < NB ? a[q] : -9; }
   }
   // 등 표면(가장 뒤 · 음수) — 없으면 9
   function backZ(e, x, y) {
@@ -12257,6 +12279,20 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const zf = frontZ(e, x, y); if (zf < -8) return;
     const want = zf + B.margin * e.fr.sc + (pad || 0);
     if (z < want && z > zf - 0.3 * e.fr.sc) p.addScaledVector(e.fr.f, want - z);
+  }
+  const co = { y: null, x: null, q: null };
+  function cardOut(e, pp, s) {
+    if (!co.y) { co.y = new V(); co.x = new V(); co.q = new V(); }
+    const ks = s * pp.size, y = co.y.subVectors(e.hook, e.bot); if (y.lengthSq() < 1e-10) return; y.normalize();
+    const x = co.x.crossVectors(y, e.fr.f); if (x.lengthSq() < 1e-8) return; x.normalize();
+    const pad = (B.t * 0.5 + pp.cardGap) * s; let top = 0, bot = 0;
+    for (const sx of [-0.5, 0, 0.5]) for (const sy of [0, 1]) {
+      const q = co.q.copy(e.hook).addScaledVector(x, sx * B.w * ks).addScaledVector(y, -(B.gap + sy * B.h) * ks);
+      const d = tmp.d.subVectors(q, e.fr.N), zf = frontZ(e, d.dot(e.fr.r), d.dot(e.fr.u)); if (zf < -8) continue;
+      const z = d.dot(e.fr.f), need = zf + B.margin * s + pad - z; if (need > 0 && z > zf - 0.3 * s) { if (sy) bot = Math.max(bot, need); else top = Math.max(top, need); }
+    }
+    if (top > 0) e.hook.addScaledVector(e.fr.f, top);
+    if (bot > 0) e.bot.addScaledVector(e.fr.f, bot);
   }
   function fence(e, p, yMax, zMin) {   // 몸 틀(목 기준)에서 높이 위로 · 몸 뒤로 못 가게
     const d = tmp.d.subVectors(p, e.fr.N), y = d.dot(e.fr.u), z = d.dot(e.fr.f);
@@ -12319,8 +12355,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       // b574 — 카드 · 고리는 목 아래 · 몸 앞쪽만(사용자 「목 위로 카드가 튀어나온다」 — 펄럭이다 어깨 너머 목 뒤로 넘어갔다)
       fence(e, e.hook, -pp.cardTop * s, pp.front * s); fence(e, e.bot, -(pp.cardTop + 0.04) * s, pp.front * s);
       for (let i = 2; i < N - 2; i++) { fence(e, e.pL[i], 9, -0.01 * s); fence(e, e.pR[i], 9, -0.01 * s); }
-      // 카드 가운데도 몸 밖으로(배가 나온 몸)
-      const c = tmp.b.lerpVectors(e.hook, e.bot, 0.5), c0 = c.clone(); collide(e, c, B.t * 0.5 * s); c.sub(c0); if (c.lengthSq() > 0) { e.hook.addScaledVector(c, 0.5); e.bot.add(c); }
+      cardOut(e, pp, s);   // b577 — 카드 네 모서리 · 위아래 가운데까지 몸 밖으로(사용자 「카드가 몸을 관통」)
     }
   }
   // ── 그리기 ──
@@ -12378,7 +12413,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     // 끝 두 점은 고리 양옆으로 조금 벌린다(겹치지 않게)
     const cx = tmp.b.subVectors(e.hook, e.bot).normalize(), side = vA.q.crossVectors(cx, e.fr.f).normalize();
     for (let i = 0; i < N - 1; i++) { fpL.push(e.pL[i]); fpR.push(e.pR[i]); }
-    const hl = e.hook.clone().addScaledVector(side, 0.006), hr = e.hook.clone().addScaledVector(side, -0.006);
+    const ksd = e.fr.sc * PK(e).size, hl = e.hook.clone().addScaledVector(side, B.w * 0.3 * ksd), hr = e.hook.clone().addScaledVector(side, -B.w * 0.3 * ksd);   // b577 — 줄 끝을 카드 윗변 양쪽에(떠 있지 않게)
     fpL[N - 1] = side.dot(tmp.d.subVectors(e.aL, e.hook)) > 0 ? hl : hr; fpR[N - 1] = fpL[N - 1] === hl ? hr : hl;
     const g = e.strap.geometry, P = g.attributes.position.array, Nn = g.attributes.normal.array, U = g.attributes.uv.array;
     smooth(fpL, sL); smooth(fpR, sR);
@@ -12420,7 +12455,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       const bm = boneMap(sm);
       for (const b of [bm.mixamorigNeck, bm.mixamorigHips, bm.mixamorigLeftArm, bm.mixamorigRightArm]) if (b) b.updateWorldMatrix(true, false);
       if (!frameOf(sm, bm, e.fr)) { e.card.visible = e.strap.visible = false; continue; }
-      if (!e.prof) { sm.updateWorldMatrix(true, false); e.prof = measure(sm, e.fr); if (!e.prof) { e.card.visible = e.strap.visible = false; continue; } }
+      if (!e.prof) { sm.updateWorldMatrix(true, false); e.prof = measure(sm, e.fr); e.profT = now; if (!e.prof) { e.card.visible = e.strap.visible = false; continue; } }
+      else if (now - (e.profT || 0) > 120) { e.profT = now; try { refresh(e); } catch (er) { /* */ } }
       if (!e.init) restPose(e);
       // 몇 번 나눠 푼다(빠르게 돌 때 줄이 몸을 뚫지 않게)
       const n = dt > 0.02 ? 2 : 1; for (let i = 0; i < n; i++) sim(e, dt / n, now);
