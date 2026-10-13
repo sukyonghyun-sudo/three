@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-522 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-523 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -352,7 +352,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
     'sfx/p_strain1.mp3': 'corpse/sfx/p_strain1', 'sfx/p_strain2.mp3': 'corpse/sfx/p_strain2', 'sfx/p_strain3.mp3': 'corpse/sfx/p_strain3', 'sfx/p_strain4.mp3': 'corpse/sfx/p_strain4',
     'sfx/p_strain5.mp3': 'corpse/sfx/p_strain5', 'sfx/p_strain6.mp3': 'corpse/sfx/p_strain6', 'sfx/p_strain7.mp3': 'corpse/sfx/p_strain7',   // 시체 끌기 · 업기 · 들어 올릴 때 힘쓰는 남자 소리
     'sfx/scr_cry_m.mp3': 'corpse/sfx/scr_cry_m',
-    'sfx/end_laugh1.mp3': 'corpse/sfx/end_laugh1', 'sfx/end_laugh2.mp3': 'corpse/sfx/end_laugh2',   // 결말 — 이긴 사람 비열한 웃음(death.js · CREDITS_MON.md)
+    'sfx/end_laugh1.mp3': 'corpse/sfx/end_laugh1', 'sfx/end_laugh2.mp3': 'corpse/sfx/end_laugh2', 'sfx/end_whoosh.mp3': 'corpse/sfx/end_whoosh',   // 결말 — 이긴 사람 비열한 웃음(death.js · CREDITS_MON.md)
     'sfx/scr_big1.mp3': 'corpse/sfx/scr_big1', 'sfx/scr_big2.mp3': 'corpse/sfx/scr_big2', 'sfx/scr_big3.mp3': 'corpse/sfx/scr_big3', 'sfx/scr_big4.mp3': 'corpse/sfx/scr_big4', 'sfx/scr_big5.mp3': 'corpse/sfx/scr_big5', 'sfx/scr_big6.mp3': 'corpse/sfx/scr_big6', 'sfx/scr_big7.mp3': 'corpse/sfx/scr_big7', 'sfx/scr_big8.mp3': 'corpse/sfx/scr_big8', 'sfx/scr_big9.mp3': 'corpse/sfx/scr_big9', 'sfx/scr_big10.mp3': 'corpse/sfx/scr_big10',   // 큰 비명(맞고 날아갈 때 · 2026-10-12 · CREDITS_MON.md)
     'sfx/scr_burst_m.mp3': 'corpse/sfx/scr_burst_m',
     'sfx/scr_cough_m1.mp3': 'corpse/sfx/scr_cough_m1',
@@ -430,12 +430,13 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-522'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-523'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
 </script>
 <link rel="icon" href="data:,">
+
 <title>시체쟁탈 — 屍體爭奪</title>
 <style>
   :root { --ink: #d6d2c2; --dim: #7d7b6c; --line: #3b3d34; --bg: rgba(6, 8, 7, .84); --serif: "UIF", "Noto Serif KR", "Nanum Myeongjo", "Batang", serif; }
@@ -4104,7 +4105,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', speed: 1, aerialZoom: 0.35, bloodGlow: 1, gap: 0.2, squashT: 0.04, dashT: 0.3, dashFrom: 0.7, dashPow: 1.6, hitStop: 0.08, burstEase: 1, hitSnd: 0, burstSnd: 0, squash: 0.35, spurt: 1, winBright: 1, endBright: 1,
     closeD: 1.1, closeFov: 40, trackD: 2.4, trackFov: 56, wideD: 4.2, wideFov: 52, kick: 0.6, fovPunch: 4, shake: 1, winD: 0.7, winFov: 30, bars: 1,
     parts: 1, partF: 1, partSpin: 1, chunks: 45, cloth: 0, skin: 0, bones: 0, chunkSize: 0.55, chunkF: 1, roll: 1, drops: 1400, dropSize: 1, dropF: 1, mist: 1,
-    flash: 0, ring: 0, sound: 1, light: 2.2, wisp: 1.6, wispN: 6, hairLead: 0.45, hairShoot: 0.22, cutV: 0,
+    flash: 0, ring: 0, sound: 1, light: 2.2, wisp: 1.6, wispN: 6, hairLead: 0.45, hairShoot: 0.22, latchA: 0.3, latchB: 0.25, cutV: 0,
   };
   const CF = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('corpse_end_v4') || '{}'); } catch (e) { /* */ } return Object.assign({}, DEF, o); })();
   const saveCF = () => { try { localStorage.setItem('corpse_end_v4', JSON.stringify(CF)); } catch (e) { /* */ } };
@@ -4116,11 +4117,12 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const CUT3 = { hairLead: 0.45, hairShoot: 0.22, accel: 1.8, jerk: 0.9, dashT: 0.18, dashFrom: 0.55, dashPow: 1.3, trackA: 0.5, trackB: 0.4, wide: 0.35, hitStop: 0.07, squashT: 0.01, burst: 0.35, burstRate: 0.7, burstEase: 1, partF: 1.15, kick: 0.9, fovPunch: 7 };
   // b522 — 「상당히 잔혹하고 무섭게」: 피 · 살점 많이 · 세게 · 화면 흔들림 · 비명 표정 세게
   const CUT4 = { drops: 2100, dropF: 1.35, dropSize: 1.15, spurt: 1.5, chunks: 90, chunkSize: 0.7, chunkF: 1.3, partF: 1.3, roll: 1.4, shake: 1.5, faceK: 1.15, writhe: 1.4 };
-  const cut2 = () => { if (CF.cutV === 4) return; if (CF.cutV !== 2 && CF.cutV !== 3) Object.assign(CF, CUT2); if (CF.cutV !== 3) Object.assign(CF, CUT3); Object.assign(CF, CUT4); CF.cutV = 4; saveCF(); };
+  const CUT5 = { closeA: 0.75, closeB: 0.65, latchA: 0.3, latchB: 0.25, aerial: 1.8 };
+  const cut2 = () => { if (CF.cutV === 5) return; if (CF.cutV === 4) { Object.assign(CF, CUT5); CF.cutV = 5; saveCF(); return; } if (CF.cutV !== 2 && CF.cutV !== 3) Object.assign(CF, CUT2); if (CF.cutV !== 3) Object.assign(CF, CUT3); Object.assign(CF, CUT4, CUT5); CF.cutV = 5; saveCF(); };
   cut2();
   D.cf = CF;
   // 모두의 기본값 — 조절창(Tab)의 「저장」(settings.js · MSW 글로벌 저장소)에 함께 실린다 · 저장된 값이 있으면 켤 때 그 값으로
-  (function regSet() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regSet, 300); return; } St.reg('endFx', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; if (v.cutV !== 4) { CF.cutV = v.cutV === 2 || v.cutV === 3 ? v.cutV : 0; cut2(); } saveCF(); if (lab && lab.show) { const c = lab.cur; lab.cur = null; lab.show(c || 'title'); } } } }); })();
+  (function regSet() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regSet, 300); return; } St.reg('endFx', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; if (v.cutV !== 5) { CF.cutV = v.cutV === 2 || v.cutV === 3 || v.cutV === 4 ? v.cutV : 0; cut2(); } saveCF(); if (lab && lab.show) { const c = lab.cur; lab.cur = null; lab.show(c || 'title'); } } } }); })();
   // 시간표(u = 화면 시간) — 슬로모션 구간에서는 사건 시간 τ 가 느리게 흐른다
   const TL = () => {
     const u0 = CF.titleT, uF = u0 + CF.aerial, cA = uF, cB = cA + CF.closeA, tA = cB + CF.closeB, tB = tA + CF.trackA, w0 = tB + CF.trackB, uS = w0 + CF.wide, uH = uS + CF.slowLen, uHs = uH + CF.hitStop, uB = uHs + CF.burst, uW = uB + CF.after, end = uW + CF.winT;
@@ -4239,6 +4241,10 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
      하늘 장면: 가운데 검붉은 덩어리가 꿈틀대며 가닥들이 두 진영 쪽으로 뻗어 나간다 → 닿으면 몸을 칭칭 감고 → 끌려가는 내내 이어져 가운데로 맥박치듯 빨아들인다 → 부딪히는 순간 끊어져 사라짐
      가닥 = 굽은 곡선을 짧은 마디(원기둥)로 이음 · 맥박은 사람 쪽 → 가운데로 흐른다 · 조절: 연출실 「하늘」 탭 · 기괴한 기운 세기 / 가닥 */
   const _w = {};
+  /* b523 — 얼굴 컷마다 연기가 날아와 감는 걸 보여 준다(사용자): ① 얼굴 컷 시작 latchA 초 뒤 · ② 얼굴 컷 시작 latchB 초 뒤에 그 사람이 낚아채인다 · 가닥은 그보다 hairShoot 초 앞에 쏜다 */
+  const yankAt = (i, t) => (i ? t.cB + CF.latchB : t.cA + CF.latchA);
+  const shotAt = (i, t) => yankAt(i, t) - CF.hairShoot;
+  const reachOf = (i, u, t) => { const k = cl((u - shotAt(i, t)) / Math.max(0.05, CF.hairShoot)); return 1 - Math.pow(1 - k, 3); };
   function wisps(u, t, tau) {
     const M = mesh.wisp; if (!M) return;
     const k0 = CF.wisp; if (!(k0 > 0) || !S.L.length || u < t.u0 || tau > t.tauH + 0.15) { M.count = 0; if (SMK) SMK.count = 0; if (HAIR) HAIR.geometry.setDrawRange(0, 0); return; }
@@ -4326,10 +4332,11 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     const sm = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
     const cx = S.cx, cy = S.cy, cz = S.cz;
     const rise = sm((u - t.u0) / Math.max(0.2, CF.aerial * 0.55)) * fade;      // 악마가 솟는 정도
-    const hk = Math.max(0, Math.min(1, (u - (t.uF - CF.hairLead)) / Math.max(0.05, CF.hairShoot))), reachAll = 1 - Math.pow(1 - hk, 3);   // 가닥이 뻗은 정도 — 머리카락 가닥과 같이 쫘악
+    let reachAll = 0;   // 가닥이 뻗은 정도 — 머리카락 가닥과 같이 쫘악
     // ── 가닥 — 악마 가슴에서 사람 몸통으로 · 머리카락처럼 가늘고 곱슬
     S.L.forEach((A, ai) => {
       if (tau >= t.tauH && A.obj && !A.obj.visible) return;
+      reachAll = reachOf(ai, u, t);
       for (let j = 0; j < NS; j++) {
         const reach = Math.max(0, Math.min(1, reachAll * (1.08 - 0.12 * hsh(ai * 31 + j))));
         for (let k = 0; k < K; k++) {
@@ -4349,7 +4356,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     // ── 몸을 감는 연기 — 발끝부터 가슴까지 소용돌이(얼굴 장면엔 목 아래 · 옅게)
     S.L.forEach((A, ai) => {
       if (!A.p || (tau >= t.tauH && A.obj && !A.obj.visible)) return;
-      const wq = sm((reachAll - 0.75) / 0.25), faceCut = u < t.tA, wrap = k0 * fade * wq * (faceCut ? 0.6 : 1), topH = faceCut ? 1.1 : 1.6;
+      const wq = sm((reachOf(ai, u, t) - 0.75) / 0.25), faceCut = u < t.tA, wrap = k0 * fade * wq * (faceCut ? 0.6 : 1), topH = faceCut ? 1.1 : 1.6;
       if (wrap <= 0.01) return;
       for (let c = 0; c < 160; c++) {
         const id = 9000 + ai * 400 + c, h1 = hsh(id), h2 = hsh(id + 0.3), h3 = hsh(id + 0.6), band = c % 5;
@@ -4412,13 +4419,13 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   function hair(u, t, tau, pt) {
     if (!HAIR) return;
     const geo = HAIR.geometry, P = geo.attributes.position, UV = geo.attributes.uv, A = geo.attributes.aA, k0 = CF.wisp, fadeC = tau > t.tauH ? 1 - cl((tau - t.tauH) / 0.12) : 1;
-    const shot0 = t.uF - CF.hairLead, k = cl((u - shot0) / Math.max(0.05, CF.hairShoot)), reachAll = 1 - Math.pow(1 - k, 3);   // 쫘악 — 빠르게 뻗고 끝에서 감김
+    const shot0 = Math.min(shotAt(0, t), shotAt(1, t));   // 쫘악 — 빠르게 뻗고 끝에서 감김
     if (!(k0 > 0) || u < shot0 || fadeC <= 0 || !S.L.length) { geo.setDrawRange(0, 0); return; }
     if (!_h.a) { _h.a = new T.Vector3(); _h.b = new T.Vector3(); _h.d = new T.Vector3(); _h.v = new T.Vector3(); _h.w = new T.Vector3(); }
     const { a, b, d, v, w } = _h, cam = G.cam.position;
     let s = 0;
     S.L.forEach((Ac, ai) => {
-      const gone = tau >= t.tauH && Ac.obj && !Ac.obj.visible;
+      const gone = tau >= t.tauH && Ac.obj && !Ac.obj.visible, reachAll = reachOf(ai, u, t);
       for (let j = 0; j < HN; j++, s++) {
         const id = ai * 131 + j, hr = hsh(id * 1.7 + 3), reach = gone ? 0 : cl(reachAll * (1.12 - 0.22 * hr)), jj = j * 0.37 + ai * 11;
         const wd0 = (0.03 + 0.07 * hsh(id + 9)) * k0 * fadeC;
@@ -4498,7 +4505,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     const cross = (x) => u0 < x && u1 >= x;
     const scr = (A, vol) => { try { const Sc = window.__scream; if (!A || !Sc || !Sc.bigPick || !Sc.say) return; const id = Sc.bigPick(); if (id) Sc.say(id, null, [], { vol: vol * v, rate: 0.93 + Math.random() * 0.14, expr: '' }); } catch (e) { /* */ } };
     const [a, b] = S.L;
-    if (cross(t.uF) && Rf && Rf.play) { Rf.play('mon_hit', { vol: 0.8 * v, rate: 0.55 }); }
+    for (let i = 0; i < S.L.length; i++) { if (cross(shotAt(i, t) - 0.05) && Rf && Rf.play) Rf.play('end_whoosh', { vol: 0.9 * v, rate: 0.95 + 0.1 * i }); if (cross(yankAt(i, t)) && Rf && Rf.play) Rf.play('mon_hit', { vol: 0.7 * v, rate: 0.55 }); }   // b523 — 휙 · 낚아챔
     if (cross(t.cA + 0.08)) scr(a, 1); if (cross(t.cB + 0.05)) scr(b, 1);
     if (cross(t.tA + 0.1)) scr(a, 0.9); if (cross(t.tB + 0.1)) scr(b, 0.9);
     if (cross(t.w0 + 0.1)) { scr(a, 1); scr(b, 1); }
@@ -4704,7 +4711,8 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     // 진 둘 — 등 뒤로 끌려감
     for (let i = 0; i < S.L.length; i++) {
       const A = S.L[i], o = A.obj; keep(o);
-      const k = cl((tau - t.uF) / (t.tauH - t.uF)), td = t.tauH - CF.dashT, f = CF.dashT > 0.01 && tau > td ? CF.dashFrom + (1 - CF.dashFrom) * Math.pow(cl((tau - td) / CF.dashT), CF.dashPow) : CF.dashFrom * Math.pow(cl((tau - t.uF) / Math.max(0.1, td - t.uF)), CF.accel) * (CF.dashT > 0.01 ? 1 : 1 / Math.max(1e-3, CF.dashFrom)), jk = tau > t.uF ? CF.jerk * (1 - Math.exp(-(tau - t.uF) * 7)) * (1 - k) : 0;
+      const st = yankAt(i, t);
+      const k = cl((tau - st) / (t.tauH - st)), td = t.tauH - CF.dashT, f = CF.dashT > 0.01 && tau > td ? CF.dashFrom + (1 - CF.dashFrom) * Math.pow(cl((tau - td) / CF.dashT), CF.dashPow) : CF.dashFrom * Math.pow(cl((tau - st) / Math.max(0.1, td - st)), CF.accel) * (CF.dashT > 0.01 ? 1 : 1 / Math.max(1e-3, CF.dashFrom)), jk = tau > st ? CF.jerk * (1 - Math.exp(-(tau - st) * 7)) * (1 - k) : 0;
       if (tau >= t.tauH) { if (!S.bp) {
           // b472 — 팍 맞닿음: 등과 등이 부딪혀 짓눌리고(squashT 동안 · 부딪힌 쪽으로 납작 · 옆으로 불룩 · 떨림) 그다음 터진다
           const q = cl((tau - t.tauH) / Math.max(0.01, CF.squashT)), sq = Math.sin(Math.PI * Math.min(1, q * 1.4)) * 0.4 + 0.6 * q, push = 0.12 * q;
@@ -4717,13 +4725,13 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
         } else o.visible = false; A.head = V(S.cx, S.cy + 1.4, S.cz); continue; }
       const x = lerp(A.bx, A.hx, f) + A.dir[0] * jk, z = lerp(A.bz, A.hz, f) + A.dir[1] * jk;
       const fl = CF.floatH * ss(k * 4) + Math.sin(tau * 9 + i) * 0.05 * k, y = lerp(A.by, S.cy, f) + fl;
-      const lean = tau > t.uF ? CF.lean * (0.6 + 0.4 * Math.sin(tau * 3 + i)) : 0;
+      const lean = tau > st ? CF.lean * (0.6 + 0.4 * Math.sin(tau * 3 + i)) : 0;
       o.position.set(x, y, z); E.set(lean, A.yaw + Math.sin(tau * 2.3 + i * 2) * 0.12 * k, Math.sin(tau * 3.1 + i) * 0.12 * k, 'YXZ'); o.quaternion.setFromEuler(E); o.visible = true; o.updateMatrixWorld(true);
       const sm = A.sm(); let rr = null;
       if (sm) { neutral(sm); clearFace(sm); (rig(sm).Hips || sm.skeleton.bones[0]).updateMatrixWorld(true); }
-      if (sm) rr = struggle(sm, tau + i * 0.37, tau > t.uF ? CF.writhe * Math.min(1, (tau - t.uF) * 3) : 0, i * 1.9, i ? CF.motionB : CF.motionA);
+      if (sm) rr = struggle(sm, tau + i * 0.37, tau > st ? CF.writhe * Math.min(1, (tau - st) * 3) : 0.35, i * 1.9, i ? CF.motionB : CF.motionA);
       // 표정 — 겁(B 키 4번 「겁」 = 놀라 치켜뜬 눈썹 + 벌린 입 × 0.85)
-      const sc = tau > t.uF ? 1 : 0.55;
+      const sc = tau > st - CF.hairShoot ? 1 : 0.55;
       face(sm, exprVals(i ? CF.faceB : CF.faceA, CF.faceK * sc, tau, i));
       A.head = rr && rr.Head ? rr.Head.getWorldPosition(new T.Vector3()) : V(x, y + 1.55, z);
       A.p = V(x, y, z); A.fwd = [Math.sin(A.yaw), Math.cos(A.yaw)];
@@ -4755,7 +4763,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
       const k = (u - t.u0) / CF.aerial, ang = Math.atan2(S.perp[0], S.perp[1]) + 0.5 * k, z = 1 - CF.aerialZoom * ss(k);   // b478 — 천천히 다가가며(줌인)
       P = V(S.cx + Math.sin(ang) * 10 * z, S.cy + (15 - 2 * k) * z, S.cz + Math.cos(ang) * 10 * z); L = C.clone().add(V(0, 0.5, 0)); fov = 55 - 10 * CF.aerialZoom * ss(k);
     } else if (u < t.cB && a) {   // A 얼굴 정면 — 끌려가는 순간 카메라는 그 자리(얼굴이 확 멀어진다) → 따라붙음
-      const k = ss((u - t.cA - 0.12) / 0.55); const fix = V(a.bx + a.fwd[0] * CF.closeD, a.by + 1.55, a.bz + a.fwd[1] * CF.closeD);
+      const k = ss((u - t.cA - CF.latchA + 0.02) / 0.5); const fix = V(a.bx + a.fwd[0] * CF.closeD, a.by + 1.55, a.bz + a.fwd[1] * CF.closeD);
       P = fix.clone().lerp(front(a, CF.closeD, 0.02), k); L = a.head; fov = CF.closeFov; sh = 0.012;
     } else if (u < t.tA && b) {   // B 얼굴 정면 — 이미 끌려가는 중
       P = front(b, CF.closeD * 1.1, 0.03, 0.15); L = b.head; fov = CF.closeFov; sh = 0.014;
@@ -4863,9 +4871,9 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   const FACE_OPT = () => [['cycle', '번갈아(겁 · 비명 · 공포 · 경악)'], ...(((window.__cast && window.__cast.EXPRS) || []).map((e) => [e.key, e.name.split(' — ')[0]]))];
   const SC = [
     { k: 'title', name: '승리 글', at: (t) => 0, rows: [['titleT', '길이', 0, 5, 0.1, 's'], ['bars', '위아래 검은 띠', 0, 2, 0.05, '%']] },
-    { k: 'aerial', name: '하늘', at: (t) => t.u0, rows: [['wisp', '기괴한 기운 세기', 0, 2.5, 0.05, '%'], ['hairLead', '가닥이 뻗는 때(하늘 끝 몇 초 전)', 0.1, 2, 0.05, 's'], ['hairShoot', '가닥이 뻗는 빠르기(걸리는 초)', 0.08, 1.2, 0.02, 's'], ['wispN', '기운 가닥(한 사람당)', 1, 8, 1, ''], ['aerial', '길이', 0.3, 4, 0.1, 's'], ['aerialZoom', '다가가는(줌인) 정도', 0, 0.8, 0.02, '%']] },
-    { k: 'faceA', name: '① 얼굴', at: (t) => t.cA, rows: [['closeA', '길이', 0.3, 3, 0.05, 's'], ['faceA', '표정', 'sel', FACE_OPT], ['motionA', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
-    { k: 'faceB', name: '② 얼굴', at: (t) => t.cB, rows: [['closeB', '길이', 0.3, 3, 0.05, 's'], ['faceB', '표정', 'sel', FACE_OPT], ['motionB', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
+    { k: 'aerial', name: '하늘', at: (t) => t.u0, rows: [['wisp', '기괴한 기운 세기', 0, 2.5, 0.05, '%'], ['hairShoot', '가닥이 뻗는 빠르기(걸리는 초)', 0.08, 1.2, 0.02, 's'], ['wispN', '기운 가닥(한 사람당)', 1, 8, 1, ''], ['aerial', '길이', 0.3, 4, 0.1, 's'], ['aerialZoom', '다가가는(줌인) 정도', 0, 0.8, 0.02, '%']] },
+    { k: 'faceA', name: '① 얼굴', at: (t) => t.cA, rows: [['closeA', '길이', 0.3, 3, 0.05, 's'], ['latchA', '연기가 감아 낚아채는 때', 0.05, 1.5, 0.01, 's'], ['faceA', '표정', 'sel', FACE_OPT], ['motionA', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
+    { k: 'faceB', name: '② 얼굴', at: (t) => t.cB, rows: [['closeB', '길이', 0.3, 3, 0.05, 's'], ['latchB', '연기가 감아 낚아채는 때', 0.05, 1.5, 0.01, 's'], ['faceB', '표정', 'sel', FACE_OPT], ['motionB', '동작', 'sel', () => MOTIONS], ['faceK', '표정 세기(둘 다)', 0, 1.3, 0.02, '%'], ['closeD', '얼굴 거리', 0.5, 3, 0.05, 'm'], ['closeFov', '화각', 18, 70, 1, '°']] },
     { k: 'track', name: '끌려감', at: (t) => t.tA, rows: [['trackA', '① 따라가는 길이', 0.2, 3, 0.05, 's'], ['trackB', '② 따라가는 길이', 0.2, 3, 0.05, 's'], ['motionA', '① 동작', 'sel', () => MOTIONS], ['motionB', '② 동작', 'sel', () => MOTIONS], ['writhe', '버둥 세기', 0, 2, 0.05, '%'], ['wSpd', '버둥 빠르기', 0.2, 2.5, 0.05, '×'], ['armR', '팔', 0, 2, 0.05, '%'], ['legK', '다리', 0, 2, 0.05, '%'], ['accel', '점점 빨라짐', 1, 6, 0.05, ''], ['jerk', '처음 확 낚아채임', 0, 2, 0.05, 'm'], ['floatH', '떠서 끌려가는 높이', 0, 1.5, 0.02, 'm'], ['lean', '버티며 숙임', 0, 0.9, 0.02, ''], ['trackD', '카메라 거리', 1, 6, 0.1, 'm'], ['trackFov', '화각', 30, 90, 1, '°']] },
     { k: 'hit', name: '날아듦', at: (t) => t.w0, rows: [['wide', '옆에서 보는 길이', 0.2, 3, 0.05, 's'], ['dashT', '마지막 돌진 시간', 0, 1.5, 0.01, 's'], ['dashFrom', '돌진 전까지 온 거리', 0.2, 0.98, 0.01, '%'], ['dashPow', '돌진 가속(클수록 끝에 확)', 0.5, 4, 0.05, ''], ['gap', '맞닿는 거리(가운데에서)', 0, 0.5, 0.01, 'm'], ['_h', '— 카메라'], ['wideD', '카메라 거리', 2, 16, 0.1, 'm'], ['wideFov', '화각', 20, 80, 1, '°']] },
     // b477 — 부딪혀 터지는 순간만(사용자 「부딪힘 항목에선 몸이 안 부딪히고 조각으로 넘어가면 부딪힘 조절이 없다 · 부딪히고 터지는 타이밍을 잡아야」)
@@ -9161,7 +9169,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     sys_danger: 0, sys_score: 0, sys_tick: 0, sys_win: 0, sys_lose: 0, sys_heart: 2, sys_creak: 4, sys_gore: 2,
     sys_fire_loop: 0, sys_fire_ign: 2, sys_fire_boom: 0,
     fly_loop: 0, p_bodydrop: 5,
-    mon_crack: 4, mon_creak: 2, p_squelch: 8, amb_pond: 0, p_gag: 2, mus_reveal: 3, amb_flock: 3, amb_crow: 3, amb_bell: 2, amb_owl: 2, amb_dog: 2, amb_gust: 2, amb_snap: 2, amb_moan: 2, amb_ema: 2, amb_suzu: 1, end_laugh: 2,
+    mon_crack: 4, mon_creak: 2, p_squelch: 8, amb_pond: 0, p_gag: 2, mus_reveal: 3, amb_flock: 3, amb_crow: 3, amb_bell: 2, amb_owl: 2, amb_dog: 2, amb_gust: 2, amb_snap: 2, amb_moan: 2, amb_ema: 2, amb_suzu: 1, end_laugh: 2, end_whoosh: 0,
   };
   const FILES = {};
   for (const [k, n] of Object.entries(N)) { if (n === 0) FILES[k] = 'sfx/' + k + '.mp3'; else for (let i = 1; i <= n; i++) FILES[k + i] = 'sfx/' + k + i + '.mp3'; }
