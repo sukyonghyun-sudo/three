@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-606 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-607 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-606'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-607'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6033,7 +6033,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     ...[['m17', '조상준 — 내 캐릭터'], ['son', '손주용 — 예전 son'], ['m16', '허지용 — 안경']].map(([kind, who]) => ({ title: '사원증 · ' + who, sub: '그 몸을 입은 나 · 봇 모두 · 끄기는 시연실 「사원증 목걸이」', save: true, rows:
       [['bright', '카드 밝기', 0, 1.5, 0.05, 0.55, pct], ['size', '카드 크기', 0.5, 2, 0.05, 1, pct], ['flap', '펄럭임(달릴 때)', 0, 2, 0.05, 0.35, pct], ['swing', '흔들림', 0.1, 2, 0.05, 0.6, pct],
         ['drop', '줄 길이(카드 높이)', 0.18, 0.55, 0.01, 0.34, (v) => `${Math.round(v * 100)}cm`], ['sideX', '목 좌우 간격', 0.02, 0.12, 0.005, 0.062, (v) => `${(v * 200).toFixed(1)}cm`],
-        ['neckY', '목 거는 높이', -0.08, 0.1, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['neckZ', '목 앞뒤', -0.06, 0.06, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`],
+        ['neckY', '목 거는 높이', -0.08, 0.1, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['neckZ', '목 앞뒤', -0.2, 0.06, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`],
         ['cardTop', '카드 최고 높이(목 아래로)', 0.05, 0.45, 0.01, 0.16, (v) => `${Math.round(v * 100)}cm`], ['front', '카드 몸 앞 최소', 0, 0.12, 0.005, 0.03, (v) => `${(v * 100).toFixed(1)}cm`],
         ['stick', '목줄 가슴에 붙는 정도', 0, 1, 0.05, 0, pct],
         ['strapBright', '목줄 밝기(무늬)', 0, 2, 0.05, 1, pct],
