@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-555 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-556 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-555'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-556'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3225,7 +3225,7 @@ var MeshoptDecoder = (function () {
    · 끄기: 시연실 연출 「본진 바닥 표시 또렷하게」 — 끄면 원래 판 · 그림 · 섞기로 */
 (() => {
   const ZF = (window.__zonefence = { ready: false, list: [] });
-  let G = null, T = null, texF = null, texE = null;
+  let G = null, T = null, texF = null, texE = null, texM = null, texG = null;
   const K = 0.75, KF = 0.6;   // 보통 섞기 투명도 배율 — 테두리 0.39 → 0.96 · 바닥 판 0.17 그대로(2.5배는 파란 판이 덮은 듯 진했다)
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.zonefence === false); };
   const canvasTex = (draw) => { const S = 512, c = document.createElement('canvas'); c.width = c.height = S; draw(c.getContext('2d'), S); const t = new T.CanvasTexture(c); t.anisotropy = Math.min(8, (G.renderer && G.renderer.capabilities.getMaxAnisotropy()) || 4); return t; };
@@ -3238,6 +3238,22 @@ var MeshoptDecoder = (function () {
     // 바깥 실선 한 줄만(2026-10-12 사용자: 「왜 삐뚤한 두 줄인 거야 · 한 줄로」 — 안쪽 가는 선 · 꺾쇠 · 눈금은 뺐다)
     n.strokeStyle = '#fff'; n.lineWidth = 10; n.strokeRect(5, 5, S - 10, S - 10);
   });
+  // b556 — 안쪽 표식(본진 네모 전체 = 그림 한 장 · 둥근 영역 밖은 데칼이 없어 저절로 잘린다): 네 귀 꺾쇠 · 변 가운데 눈금 · + 표시 · 옅은 점선(화살표는 뺐다 — 사용자)
+  const markTex = () => canvasTex((g, S) => {
+    g.clearRect(0, 0, S, S); g.strokeStyle = '#fff'; g.lineCap = 'square';
+    const I = 0.15 * S, L = 0.075 * S;
+    g.lineWidth = 5; g.globalAlpha = 0.95;
+    for (const [x, y, sx, sy] of [[I, I, 1, 1], [S - I, I, -1, 1], [I, S - I, 1, -1], [S - I, S - I, -1, -1]]) { g.beginPath(); g.moveTo(x, y + sy * L); g.lineTo(x, y); g.lineTo(x + sx * L, y); g.stroke(); }
+    g.lineWidth = 3; g.globalAlpha = 0.85; const m = 0.1 * S, t = 0.035 * S;
+    for (const [x0, y0, x1, y1] of [[S / 2, m, S / 2, m + t], [S / 2, S - m, S / 2, S - m - t], [m, S / 2, m + t, S / 2], [S - m, S / 2, S - m - t, S / 2]]) { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
+    g.lineWidth = 2.5; g.globalAlpha = 0.8; const c = 0.022 * S;
+    for (const [u, v] of [[0.32, 0.36], [0.68, 0.3], [0.5, 0.52], [0.36, 0.7], [0.72, 0.68]]) { const x = u * S, y = v * S; g.beginPath(); g.moveTo(x - c, y); g.lineTo(x + c, y); g.moveTo(x, y - c); g.lineTo(x, y + c); g.stroke(); }
+    g.setLineDash([16, 14]); g.lineWidth = 2; g.globalAlpha = 0.38;
+    for (const [x0, y0, x1, y1] of [[0.2, 0.22, 0.48, 0.5], [0.56, 0.58, 0.82, 0.8], [0.24, 0.8, 0.44, 0.6]]) { g.beginPath(); g.moveTo(x0 * S, y0 * S); g.lineTo(x1 * S, y1 * S); g.stroke(); }
+    g.globalAlpha = 0.2; g.strokeRect(0.24 * S, 0.24 * S, 0.52 * S, 0.52 * S);
+  });
+  // 테두리 번짐 — 띠의 가로(0 → 1)로 가운데가 밝고 양쪽으로 사라짐
+  const glowTex = () => canvasTex((g, S) => { const gr = g.createLinearGradient(0, 0, S, 0); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.clearRect(0, 0, S, S); g.fillStyle = gr; g.fillRect(0, 0, S, S); });
   // 맨 윗면 높이 — 본진 네모 둘레까지 20cm 칸마다 위에서 아래로 쏴 처음 닿는 맵 면(풀 · 투명한 것 빼고)
   function topGrid(z, meshes) {
     const W = (G.cfg.zoneWidth || 7) / 2 + 0.4, D = (G.cfg.zoneDepth || 6) / 2 + 0.4, C = 0.2, fx = z.fx, fz = z.fz, sx = fz, sz = -fx;
@@ -3288,7 +3304,8 @@ var MeshoptDecoder = (function () {
     return { F, at, LV: 0.5, y0 };
   }
   // 경계선 — 둥근 영역의 가장자리 한 줄(마칭 스퀘어) · 높이는 그 자리 맨 윗면(양 끝 높이가 0.35m 넘게 다르면 그리지 않는다 — 절벽에 늘어지던 줄)
-  function contour2(z, mat, top, uv, R) {
+  function contour2(z, mat, top, uv, R, opt) {
+    opt = opt || {};
     const { nu, nv, C, sx, sz, fx, fz } = top, W0 = top.W, D0 = top.D, F = R.F, LV = R.LV;
     const P = (u, v) => [z.cx + sx * u + fx * v, z.cz + sz * u + fz * v];
     const segs = [];
@@ -3308,7 +3325,7 @@ var MeshoptDecoder = (function () {
       for (let guard = 0; guard < 5000; guard++) { const tail = key(pts[pts.length - 1]), nx = (adj.get(tail) || []).find((k) => !used[k]); if (nx === undefined) break; used[nx] = 1; const sg = segs[nx]; pts.push(key(sg[0]) === tail ? sg[1] : sg[0]); }
       if (pts.length > 6) loops.push(pts);
     }
-    const w = 0.045, pos = [], uvs = [], idx = [];
+    const w = opt.w || 0.045, pos = [], uvs = [], idx = [];
     for (const lp of loops) {
       const closed = key(lp[0]) === key(lp[lp.length - 1]), n = lp.length, W3 = lp.map(([u, v]) => P(u, v));
       let ys = W3.map(([x, zz]) => { const y = top.exact(x, zz); return isFinite(y) ? Math.min(Math.max(y, R.y0 - 0.3), R.y0 + 1.6) : R.y0; });   // 바위 위는 올라타고 · 절벽 아래로는 안 내려감
@@ -3316,7 +3333,7 @@ var MeshoptDecoder = (function () {
       const base = pos.length / 3;
       for (let i = 0; i < n; i++) {
         const pr = W3[closed ? (i - 1 + n) % n : Math.max(0, i - 1)], nx2 = W3[closed ? (i + 1) % n : Math.min(n - 1, i + 1)], dx = nx2[0] - pr[0], dz = nx2[1] - pr[1], L = Math.hypot(dx, dz) || 1, ox = -dz / L * w / 2, oz = dx / L * w / 2, y = ys[i] + 0.06;
-        pos.push(W3[i][0] + ox, y, W3[i][1] + oz, W3[i][0] - ox, y, W3[i][1] - oz); uvs.push(uv[0], uv[1], uv[0], uv[1]);
+        pos.push(W3[i][0] + ox, y, W3[i][1] + oz, W3[i][0] - ox, y, W3[i][1] - oz); if (opt.across) uvs.push(0, 0.5, 1, 0.5); else uvs.push(uv[0], uv[1], uv[0], uv[1]);
         if (i < n - 1) idx.push(base + i * 2, base + i * 2 + 1, base + i * 2 + 2, base + i * 2 + 1, base + i * 2 + 3, base + i * 2 + 2);
       }
     }
@@ -3324,6 +3341,7 @@ var MeshoptDecoder = (function () {
     const geo = new BG(); geo.setAttribute('position', new BA(new Float32Array(pos), 3)); geo.setAttribute('uv', new BA(new Float32Array(uvs), 2)); geo.setAttribute('color', new BA(new Float32Array(pos.length).fill(1), 3)); geo.setIndex(idx);
     geo.computeVertexNormals(); geo.computeBoundingSphere();
     const m = new T.Mesh(geo, mat); m.renderOrder = 5; m.frustumCulled = false; m.userData.loops = loops.length;
+    if (opt.noBeam) return m;
     // 빛 커튼 — 테두리에서 하늘로 뻗는 빛(b443 사용자: 「본진 테두리에 빛이 하늘로 뻗쳐 있게 · 시체를 가져오면 빛이 하늘로 올라가는 것처럼」) · 위로 갈수록 사라짐 · 더하기 섞기
     const bp = [], bu = [], bi = [], H = 2.6;
     for (const lp of loops) {
@@ -3482,7 +3500,16 @@ var MeshoptDecoder = (function () {
     { const og = objDecal(z, fill, meshes, top, y0b, RG); if (og) { const mo = new T.Mesh(og, fill.material); mo.renderOrder = 3; mo.frustumCulled = false; mo.name = 'objtint'; mo.userData.objtint = true; grp.add(mo); console.log('[zonefence] 본진', z.team, '둘레 바위 · 소품 물들임 삼각형', og.attributes.position.count / 3); } }   // 바닥 판 — 재질은 원래 판 것 그대로(고른 칠)
     // 경계선 — 테두리 재질 복제(같은 프로그램) · 그림은 테두리 그림의 흰 줄 한 점(uv) · 팀 색 · 늘 또렷하게
     const lineM = edge.material.clone(); lineM.map = texE; lineM.alphaMap = texE; lineM.color.setHex((G.colors && G.colors[z.team]) || 0xffffff); lineM.opacity = 0.5; lineM.blending = 1; lineM.vertexColors = true; lineM.polygonOffset = true; lineM.polygonOffsetFactor = -6; lineM.polygonOffsetUnits = -6;
-    { const ln = contour2(z, lineM, top, [5 / 512, 0.5], RG); grp.add(ln); if (ln.userData.beam) grp.add(ln.userData.beam); }   // 흰 줄 한가운데(0~10px) · 둥근 영역 가장자리
+    // b556 — 사용자 그림(「바닥 영역 표시 이런 느낌 · 화살표는 빼고」): 밝은 흰빛 테두리 + 은은한 번짐 · 안쪽에 꺾쇠 · 눈금 · + 표시 · 옅은 점선(새 셰이더 없음 — 테두리 재질 복제)
+    const tc = new T.Color((G.colors && G.colors[z.team]) || 0xffffff).lerp(new T.Color(0xffffff), 0.5);
+    if (ZF.look !== false) { lineM.color.copy(tc); lineM.opacity = 0.92; }
+    { const ln = contour2(z, lineM, top, [5 / 512, 0.5], RG, { w: ZF.look !== false ? 0.07 : 0.045 }); grp.add(ln); if (ln.userData.beam) grp.add(ln.userData.beam); }
+    if (ZF.look !== false) {
+      const gm = lineM.clone(); gm.map = texG; gm.alphaMap = texG; gm.opacity = 0.55; gm.polygonOffsetFactor = -5; gm.polygonOffsetUnits = -5;
+      const gl = contour2(z, gm, top, [0.5, 0.5], RG, { w: 0.42, across: true, noBeam: true }); gl.renderOrder = 4; gl.name = 'zglow'; grp.add(gl);
+      const mm = lineM.clone(); mm.map = texM; mm.alphaMap = texM; mm.color.copy(tc); mm.opacity = 0.62; mm.polygonOffsetFactor = -4; mm.polygonOffsetUnits = -4;
+      const mk = new T.Mesh(d.geo, mm); mk.renderOrder = 4; mk.frustumCulled = false; mk.name = 'zmarks'; grp.add(mk);
+    }   // 흰 줄 한가운데(0~10px) · 둥근 영역 가장자리
     G.scene.add(grp);
     console.log('[zonefence] 본진', z.team, '데칼 삼각형', d.tris, Math.round(performance.now() - T0) + 'ms');
     const keep = (m) => ({ map: m.material.map, alphaMap: m.material.alphaMap, blending: m.material.blending });
@@ -3501,7 +3528,7 @@ var MeshoptDecoder = (function () {
     G = window.__G; if (!G || !G.THREE || !G.zones || !G.zones.list.length || !G.map || !G.map.loaded) return;
     T = G.THREE;
     const N = window.__nav; if (N && !N.settled) return;                 // 길찾기 높이가 맞은 뒤
-    if (!texF) { texF = fillTex(); texE = edgeTex(); }
+    if (!texF) { texF = fillTex(); texE = edgeTex(); texM = markTex(); texG = glowTex(); }
     if (G.cfg.zoneShape === 0) return;                                    // 둥근 본진(조절값)은 원래대로
     // 세 본진 같은 넓이 — 먼저 갈 수 있는 칸 수를 세어 가장 적은 본진에 맞춘다(최대 7×6m 의 80%)
     if (!ZF.target) { const ms = [...new Set([...(G.map.grounds || []), ...(G.map.solids || [])])].filter((m) => !(m.material && (m.material.transparent || m.material.alphaTest > 0))); ZF.target = 1e9; for (const z of G.zones.list) { const tp = topGrid(z, ms); region(z, tp, floorY(z)); } const c = Object.values(ZF.counts || {}); ZF.target = Math.min(Math.round((G.cfg.zoneWidth || 7) * (G.cfg.zoneDepth || 6) * 0.8 / 0.04), ...c); console.log('[zonefence] 본진 넓이 맞춤', c, '→', ZF.target, '칸'); }
@@ -3526,6 +3553,7 @@ var MeshoptDecoder = (function () {
         bm.material.opacity = 0.09 + 0.03 * Math.sin(tn * 1.7 + b.z.team) + 0.8 * f * f;   // b444 — 평소엔 아주 옅게(0.22 는 벽처럼 진했다)
       }
       b.grp.visible = vis; apply(b, vis);
+      { const mk = b.grp.getObjectByName('zmarks'), X = window.__fx; if (mk) mk.visible = !(X && X.on && X.on.zonemarks === false); }
       // 내 본진(0)은 basefx 가 매 프레임 정한다 · 나머지는 처음 값에 곱한다
       if (b.z.team !== 0) for (const [m, k] of [[b.fill, KF], [b.edge, K]]) { if (m.userData.op0 === undefined) m.userData.op0 = m.material.opacity; m.material.opacity = m.userData.op0 * (vis ? k : 1); }
     }
@@ -8498,6 +8526,7 @@ vec3 srJawRot(vec3 d, float a) { float c = cos(a), s = sin(a); return vec3(d.x, 
     { key: 'glowocc', name: '시체 외곽선 — 앞을 가린 사람 · 물건 뒤로는 안 보임(tension.js — 10-12 사용자 「통과해서 보여주는 것 없애」)', def: true },
     { key: 'hudhalf', name: '화면 표지 · 시스템 글 필터 50%(tension.js · index.html — 10-13 사용자 · 끄면 필터 그대로)', def: true },
     { key: 'carryarm', name: '시작 화면 — 업힌 시체 오른팔을 업은 사람 어깨 앞으로(grip.js — 10-13 사용자 · 타이틀에서만)', def: true },
+    { key: 'zonemarks', name: '본진 바닥 안쪽 표식 — 꺾쇠 · 눈금 · + 표시 · 점선(zonefence.js — 10-13 사용자 그림)', def: true },
     { key: 'titlewalk', name: '시작 화면 — 시체를 업고 걸어오는 내 캐릭터(title.js — 10-13 사용자 · 끄면 예전 위에서 내려다보는 장면)', def: true },
     { key: 'occdots', name: '카메라 앞을 가린 물체 점점이 비치기(camera.js — 10-12 사용자 「점으로 나오는 현상 없애」 · 기본 끔)', def: false },
     { key: 'staircut', name: 'P3 쪽 아래 계단 골 땅 메우기 · 끝 바위벽(mapfix.js — 10-12 사용자)', def: true },
