@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-623 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-624 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-623'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-624'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -4237,7 +4237,7 @@ var MeshoptDecoder = (function () {
   setInterval(() => {
     const G = window.__G; if (!G || !G.game) return;
     const st = !!G.started, over = !!G.game.over;
-    if (st && !wasStart && !mpOn() && fx('intro')) startIntro(G);
+    if (st && !wasStart && !mpOn() && fx('intro') && !window.__explore) startIntro(G);   // b624 — 둘러보기는 시작 연출 없이 바로 맵
     if (over && !wasOver) { if (!mpOn()) freeze(G, true); if (G.game.winner >= 0 && fx('loseboom') && window.__death) window.__death.real(G.game.winner); }   // b462 — 결말 연출(death.js) · 누가 이겨도
     if (false) { }
     if (!over && wasOver) { freeze(G, false); if (window.__death) window.__death.reset(); }
@@ -16718,6 +16718,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   document.addEventListener('click', (e) => {
     if (!e.target || e.target.id !== 'start-btn') return;
     if (S.pass) { S.pass = false; return; }
+    if (window.__explore) return;   // b624 — 둘러보기는 캐릭터 선택 없이 바로(사용자 「둘러보기 선택하면 캐릭터 선택 · 시작 연출 패스하고 바로 맵에서」)
     const G = window.__G; if (!G || G.started || (window.__mp && window.__mp.on) || S.open) return;
     if (!ready()) return;   // 몸이 아직 — 그냥 예전처럼
     e.stopImmediatePropagation(); e.preventDefault();
