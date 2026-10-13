@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-533 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-536 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-533'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-536'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -15505,9 +15505,9 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   const T3 = (window.__title3 = { on: false });
   const FADE = 0.6, STUDIO = /[?&]preview=1/.test(location.search);
   // b531 — 위치 · 크기 조절(사용자 「타이틀 화면에서 내가 위치랑 크기 잡을 수 있게 패널」) · 이 브라우저에 바로 · 조절창(Tab) 「저장」 = 모두의 기본값('title3')
-  const DEF = { side: 0.95, dist: 3.3, camH: 1.32, lookH: 1.38, fov: 38, scale: 1, speed: 0.78, radius: 11, dir: 1, bright: 1.7, zone: 0 };
+  const DEF = { side: 0.95, dist: 3.3, camH: 1.32, lookH: 1.38, fov: 38, scale: 1, speed: 0.78, radius: 0, dir: 1, bright: 1.7, zone: 0 };
   const ROWS = [['side', '화면 좌우(사람 자리)', -2.5, 2.5, 0.01], ['dist', '카메라 거리', 1.2, 9, 0.05], ['camH', '카메라 높이', 0.2, 4, 0.02], ['lookH', '바라보는 높이', 0.2, 3, 0.02], ['fov', '시야각', 18, 70, 1],
-    ['scale', '사람 크기', 0.5, 2, 0.01], ['speed', '걷는 빠르기(m/s)', 0.1, 2, 0.02], ['radius', '걷는 원 반지름(가운데에서 m)', 4, 26, 0.5], ['dir', '도는 방향(1 · -1)', -1, 1, 2], ['bright', '사람 밝기', 0.5, 4, 0.05], ['zone', '장소(본진 0 · 1 · 2)', 0, 2, 1]];
+    ['scale', '사람 크기', 0.5, 2, 0.01], ['speed', '걷는 빠르기(m/s)', 0.1, 2, 0.02], ['radius', '걷는 원 반지름(0 = 자동 — 막힌 데 없는 원)', 0, 26, 0.5], ['dir', '도는 방향(1 · -1)', -1, 1, 2], ['bright', '사람 밝기', 0.5, 4, 0.05], ['zone', '장소(본진 0 · 1 · 2)', 0, 2, 1]];
   const LKEY = 'corpse_title_v1';
   const CF = Object.assign({}, DEF); try { Object.assign(CF, JSON.parse(localStorage.getItem(LKEY) || '{}')); } catch (e) { /* */ }
   const saveCF = () => { try { localStorage.setItem(LKEY, JSON.stringify(CF)); } catch (e) { /* */ } };
@@ -15554,8 +15554,25 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   }
   T3.stop = stop;
   // b532 — 끊김 없이 계속 걷기(사용자 「제자리 반복 말고 계속 걸어가는 느낌 · 암전됐다 다시 나오는 것 없애」): 경기장 가운데를 크게 도는 원 위를 걷는다 — 배경이 계속 바뀌고 처음으로 돌아가는 자리가 없다
+  // b535 — 반지름 자동: 둘레 전체(사람 폭 ±0.7m)가 설 수 있는 땅(nav 격자 — 석등 · 바위 · 물 없이)인 원 중 11m 에 가까운 것
+  function autoR(Z) {
+    const N = window.__nav; if (!N || !N.okAt) return 11;
+    let best = 11, bs = -1;
+    for (let R = 5; R <= 17; R += 0.5) {
+      let ok = 0, n = 0;
+      for (let i = 0; i < 160; i++) {
+        const a = (i / 160) * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a);
+        for (const o of [-0.7, 0, 0.7]) { n++; if (N.okAt(Z.cx + c * (R + o), Z.cz + sn * (R + o)) != null) ok++; }
+      }
+      const sc = ok / n - Math.abs(R - 11) * 0.002;
+      if (sc > bs) { bs = sc; best = R; }
+    }
+    console.log('[title] 걷는 원 반지름', best, '· 막힘 없음', Math.round((bs + Math.abs(best - 11) * 0.002) * 100) + '%');
+    return best;
+  }
   function place(s) {
-    const Z = st.Z, R = Math.max(2, CF.radius), d = CF.dir < 0 ? -1 : 1, th = Z.a0 + d * s / R;
+    if (!CF.radius && !st.Z.R) st.Z.R = autoR(st.Z);
+    const Z = st.Z, R = Math.max(2, CF.radius || Z.R), d = CF.dir < 0 ? -1 : 1, th = Z.a0 + d * s / R;
     const x = Z.cx + Math.cos(th) * R, z = Z.cz + Math.sin(th) * R, tx = -Math.sin(th) * d, tz = Math.cos(th) * d;
     G.hero.position.set(x, G.groundAt(x, z), z);
     const yaw = Math.atan2(tx, tz); G.hero.rotation.y = yaw;
@@ -15565,7 +15582,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     requestAnimationFrame(frame);
     G = window.__G; if (!G || !G.hero || !G.cfg) return;
     if (!st) {
-      if (!G.started && enabled() && !blocked() && startShown() && G.game && G.game.bodies && G.game.bodies.length) begin();
+      if (!G.started && enabled() && !blocked() && startShown() && G.game && G.game.bodies && G.game.bodies.length && (!window.__cast || window.__cast.settled)) begin();   // b534 — 몸 입히기(cast.js)가 끝난 뒤에(먼저 하면 나중에 내 몸으로 덮였다)
       return;
     }
     if (G.started || !startShown() || blocked() || !enabled()) { stop(); return; }
@@ -15573,6 +15590,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (st.zone !== CF.zone) { st.zone = CF.zone; st.Z = zone0() || st.Z; st.hide = null; }
     if (window.__charlit) window.__charlit.mul = CF.bright;
     place(s);
+    { const C = window.__cast; if (C && C.heroWear && C.heroKind !== 'son' && !st.wearing) { st.wearing = true; Promise.resolve(C.heroWear('son')).finally(() => { if (st) st.wearing = false; }); } }   // 늘 예전 son
   }
   // 메뉴를 누르면(Enter 포함 — ready.js 가 시작 단추를 누른다) 게임보다 먼저 내려놓는다
   document.addEventListener('click', (e) => { if (st && e.target && e.target.closest && e.target.closest('#start-btn, #mp-btn, #sr-look-btn')) stop(); }, true);
@@ -15586,6 +15604,9 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
       if (o.type === 'Group' && !o.name) { let f = 0; for (const c of o.children) if (/^(fill|edge|beam|label)$/.test(c.name)) f++; if (f >= 2) L.push(o); }   // 본진 빛기둥 · 이름판(basefx)
     }
     for (const z of G.zones.list) if (z.mesh) L.push(z.mesh);
+    // b534 — 게임 표지는 모두: 이름판(label — 안쪽 묶음에 든 것까지) · 밑그림 색만 칠한 표지 묶음(바닥 글자 · 화살표 등)
+    G.scene.traverse((o) => { if (o.name === 'label' && o.parent && o.parent !== G.scene) L.push(o.parent); });
+    for (const o of G.scene.children) if (o.type === 'Group' && !o.name && o.children.length && o.children.length <= 6 && o.children.every((c) => c.isMesh && c.material && c.material.type === 'MeshBasicMaterial')) L.push(o);
     return L;
   }
   const vsv = [];
