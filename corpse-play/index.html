@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-536 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-537 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-536'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-537'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -11860,7 +11860,7 @@ vec3 srGN(vec2 p) {
       for (const o of [G.body && G.body.drag, G.body && G.body.main]) { const sm = o && skinOf(o); if (sm) ramp(sm, false); }
     }
     // 봇(같이 하기의 남 포함)
-    for (const b of (G.game && G.game.bots) || []) {
+    for (const b of [...((G.game && G.game.bots) || []), ...(API.extra || [])]) {   // b537 — API.extra: 시작 화면 배우(title.js — 봇과 같은 모양의 가짜 봇)
       const sm = b.__sm || (b.__sm = skinOf(b.model)); if (!sm) continue;
       if (!b.body || !b.body.model || !b.hero || pkBusy(b)) { ramp(sm, false); continue; }
       if (!shown(sm)) continue;
@@ -15494,12 +15494,11 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
 
 </script>
 <script>/* title.js */
-/* 시작 화면 「시체3구」(2026-10-13 사용자: 타이틀 시안 그림 · 「오른쪽에는 실제 모델링이 시체를 업고 천천히 걸어오는 느낌으로 · 타이틀 전체에도 게임 필터」)
+/* 시작 화면 「시체3구」 3D(2026-10-13 사용자: 타이틀 시안 · 「오른쪽에 실제 모델링이 시체를 업고 걸어오게 · 타이틀 전체에 게임 필터」)
    · 글(로고 · 메뉴 · 한 줄)은 index.html #start — 이 파일은 그 뒤 3D 장면만 맡는다
-   · 진짜 내 캐릭터가 진짜 시체 하나를 업고(게임의 업기 그대로 — 같이 하기에서 쓰는 __mpForce 잡기) 내 본진 토리이 앞에서 카메라 쪽으로 천천히 걸어온다
-     걷는 동작 · 손 · 시체 자세는 게임이 하는 그대로 · 6m 걸으면 어둡게 사라졌다 처음부터
-   · 그리는 순간만: 카메라(낮게 · 앞에서 · 사람은 화면 오른쪽) · 본진 표지/빛기둥/바닥 선 숨김 · 사람 자체 밝기 조금 더 — 그린 뒤 되돌린다
-   · 메뉴(싱글플레이 · 멀티플레이 · 설정 · 둘러보기)를 누르는 순간(또는 Enter) 시체를 제자리에 내려놓고 사람도 처음 자리로 돌려놓은 뒤 게임이 시작된다
+   · b537: 게임과 따로 노는 배우 — 「예전 son」이 body1 을 업고(게임이 봇에게 하는 업기 그대로) 경기장 가운데를 크게 돌며 끊김 없이 걷는다
+     내 캐릭터 · 게임 시체 · 봇은 손대지 않고, 그리는 순간만 숨긴다 → 시작해도 게임은 처음 그대로
+   · 그리는 순간만: 카메라(낮게 · 앞에서 · 사람은 화면 오른쪽) · 본진 표지/빛기둥/바닥 선/이름판 숨김 · 시체 외곽선 끔(tension.js) — 그린 뒤 되돌린다
    · 새 셰이더 없음(빛 수 · 재질 그대로) · 끄기: 시연실 연출 「titlewalk」 */
 (() => {
   const T3 = (window.__title3 = { on: false });
@@ -15523,32 +15522,58 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     const z = zs.find((q) => q.team === (CF.zone | 0)) || zs[0], dx = cx - z.cx, dz = cz - z.cz, L = Math.hypot(dx, dz) || 1;
     return { x: z.cx, z: z.cz, ux: dx / L, uz: dz / L, cx, cz, a0: Math.atan2(z.cz - cz, z.cx - cx) };
   }
+  /* b537 — 게임과 따로 노는 배우(사용자 「게임 속 알고리즘을 가져오되 게임플레이 시작과는 연관없게」 · 「시체가 작자나 · 앞에 매달렸다」)
+     · 내 캐릭터 · 게임 시체는 손대지 않는다(예전엔 내 캐릭터가 게임 시체를 잡았다 — 설정에 따라 시체가 손 사이 · 앞에 붙었다)
+     · 「예전 son」 = son 몸 봇의 뼈째 복제 · 「body1」 = body1 시체의 뼈째 복제(재질은 원래 것 — 새 셰이더 없음)
+     · 업기는 게임이 봇에게 하는 그대로: G.mpApi.botHold(가짜 봇, 가짜 시체, 'carry') — 업기 자세(Cm) · 자리(Fh) · 손 · 업기 자리 맞춤(grip.js API.extra)
+     · 걸음 = 봇의 끌기·업기 걸음 동작(빠르기도 게임처럼 걷는 속도 / 1.51) */
+  function cloneRig(o) {
+    const c = o.clone(), a = [], b = [];
+    o.traverse((x) => a.push(x)); c.traverse((x) => b.push(x));
+    const map = new Map(a.map((x, i) => [x, b[i]]));
+    b.forEach((x, i) => { if (x.isSkinnedMesh) { const sk = a[i].skeleton; x.bind(new sk.constructor(sk.bones.map((bn) => map.get(bn) || bn), sk.boneInverses), x.bindMatrix); } });
+    return { c, map };
+  }
+  let A = null;
+  function build() {
+    const bots = (G.game && G.game.bots) || [], bodies = (G.game && G.game.bodies) || [];
+    const bot = bots.find((b) => !b.__cast && (b.team | 0) !== 2) || bots.find((b) => !b.__cast);   // 예전 son 몸 봇(P3 봇은 안경)
+    const isB1 = (e) => { let n = 0; e.root.traverse((o) => { if (o.isSkinnedMesh && o.geometry.attributes.position.count === 38157) n++; }); return n > 0; };
+    const body = bodies.find(isB1) || bodies[2] || bodies[0];
+    if (!bot || !body || !bot.acts || !bot.acts.drag || !G.mpApi || !G.mpApi.botHold) return null;
+    const grp = new bot.hero.constructor(); grp.name = 'title3-hero';
+    const M = cloneRig(bot.model), man = M.c; man.position.copy(bot.model.position); man.quaternion.copy(bot.model.quaternion); man.scale.copy(bot.model.scale); grp.add(man);
+    man.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) o.frustumCulled = false; });
+    const mixer = new bot.mixer.constructor(man), act = mixer.clipAction(bot.acts.drag.getClip()); act.play();
+    const R = cloneRig(body.root), root = R.c, model = R.map.get(body.model);
+    const glow = new Set((body.glow || []).map((g) => R.map.get(g)).filter(Boolean));
+    root.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) { o.frustumCulled = false; if (glow.has(o)) o.visible = false; } });
+    const hips = body.bones && body.bones.hips ? R.map.get(body.bones.hips) : null;
+    const fb = { root, model, bones: { hips }, x: 0, z: 0, yaw: 0 };
+    const fake = { team: 0, hero: grp, model: man, kind: 'carry', body: null, acts: {}, __title: true };
+    G.scene.add(grp);
+    G.mpApi.botHold(fake, fb, 'carry');   // 게임이 봇에게 하는 그대로 — 시체 자세 · 자리
+    if (fb.held) fb.held = '';
+    grp.visible = false;
+    console.log('[title] 시작 화면 배우 — 예전 son 이 body1 을 업음(게임 봇 업기 그대로 · 게임과 따로)');
+    return { grp, man, mixer, act, fake };
+  }
   function begin() {
     const Z = zone0(); if (!Z) return false;
-    const bs = (G.game && G.game.bodies) || [], isB1 = (e) => { let n = 0; e.root.traverse((o) => { if (o.isSkinnedMesh && o.geometry.attributes.position.count === 38157) n++; }); return n > 0; };   // body1(원래 몸 — 사용자 「body1.fbx 를 업고」)
-    const b = bs.find((x) => !x.held && isB1(x)) || bs.find((x) => !x.held && !(x.lastZone > 0)) || bs.find((x) => !x.held);
-    if (!b) return false;
-    const h = G.hero;
-    st = { b, hp: h.position.clone(), hr: h.rotation.y, Z, t0: performance.now(), hide: null, sv: null };
-    const C = window.__cast; st.kind = C && C.heroKind; if (C && C.heroWear && st.kind && st.kind !== 'son') C.heroWear('son');   // 사용자 「예전 son 캐릭터가 업고」 — 시작하면 원래 몸으로
-    // 업기로 잡기 — mp.js 와 같은 길(가까이 없어도 이 시체를 잡는다)
-    const cm = G.cfg.carryMode; G.cfg.carryMode = 2; window.__mpForce = b;
-    try { G.set('dragMode', true); } catch (e) { console.warn('[title] 업기', e); } finally { window.__mpForce = null; G.cfg.carryMode = cm; }
-    if (!G.cfg.dragMode) { st = null; return false; }
+    if (!A) { try { A = build(); } catch (e) { console.warn('[title] 배우', e); A = null; } }
+    if (!A) return false;
+    st = { Z, hide: null, sv: null, s: 0 };
+    const X = window.__grip; if (X) { X.extra = X.extra || []; if (!X.extra.includes(A.fake)) X.extra.push(A.fake); }
+    A.grp.visible = true;
     if (window.__charlit) { st.mul = window.__charlit.mul; window.__charlit.mul = CF.bright; }
     T3.on = true; place(0);
     return true;
   }
-  // 내려놓기 — 잡은 자리로 사람을 데려가 놓으면 게임이 시체를 원래 자리 · 방향 그대로 눕힌다(qv) · 사람도 처음 자리로
   function stop() {
     if (!st) return;
     const s = st; st = null; T3.on = false;
-    try {
-      const pf = G.carry.pickFrom; if (pf) G.hero.position.set(pf.hx, G.hero.position.y, pf.hz);
-      if (G.cfg.dragMode) G.set('dragMode', false);
-    } catch (e) { console.warn('[title] 내려놓기', e); }
-    G.hero.position.copy(s.hp); G.hero.rotation.y = s.hr; try { if (G.mpApi && G.mpApi.setYaw) G.mpApi.setYaw(s.hr); } catch (e) { /* */ }
-    { const C = window.__cast; if (C && C.heroWear && s.kind && s.kind !== 'son') C.heroWear(s.kind); }
+    if (A) A.grp.visible = false;
+    const X = window.__grip; if (X && X.extra && A) X.extra = X.extra.filter((f) => f !== A.fake);
     if (window.__charlit) window.__charlit.mul = s.mul;
     if (fadeEl) fadeEl.style.opacity = '0';
   }
@@ -15574,15 +15599,14 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (!CF.radius && !st.Z.R) st.Z.R = autoR(st.Z);
     const Z = st.Z, R = Math.max(2, CF.radius || Z.R), d = CF.dir < 0 ? -1 : 1, th = Z.a0 + d * s / R;
     const x = Z.cx + Math.cos(th) * R, z = Z.cz + Math.sin(th) * R, tx = -Math.sin(th) * d, tz = Math.cos(th) * d;
-    G.hero.position.set(x, G.groundAt(x, z), z);
-    const yaw = Math.atan2(tx, tz); G.hero.rotation.y = yaw;
-    try { if (G.mpApi && G.mpApi.setYaw) G.mpApi.setYaw(yaw); } catch (e) { /* */ }   // b533 — 게임 안 방향(Fe)도 — 업힌 시체 · 손 자리가 이 방향을 따른다(게임 업기와 똑같이)
+    A.grp.position.set(x, G.groundAt(x, z), z); A.grp.rotation.y = Math.atan2(tx, tz); A.grp.scale.setScalar(CF.scale);
+    A.grp.updateMatrixWorld(true);
   }
   function frame() {
     requestAnimationFrame(frame);
     G = window.__G; if (!G || !G.hero || !G.cfg) return;
     if (!st) {
-      if (!G.started && enabled() && !blocked() && startShown() && G.game && G.game.bodies && G.game.bodies.length && (!window.__cast || window.__cast.settled)) begin();   // b534 — 몸 입히기(cast.js)가 끝난 뒤에(먼저 하면 나중에 내 몸으로 덮였다)
+      if (!G.started && enabled() && !blocked() && startShown() && G.game && G.game.bots && G.game.bots.length && G.game.bodies && G.game.bodies.length && (!window.__cast || window.__cast.settled)) begin();   // b534 — 몸 입히기(cast.js)가 끝난 뒤에(먼저 하면 나중에 내 몸으로 덮였다)
       return;
     }
     if (G.started || !startShown() || blocked() || !enabled()) { stop(); return; }
@@ -15590,7 +15614,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (st.zone !== CF.zone) { st.zone = CF.zone; st.Z = zone0() || st.Z; st.hide = null; }
     if (window.__charlit) window.__charlit.mul = CF.bright;
     place(s);
-    { const C = window.__cast; if (C && C.heroWear && C.heroKind !== 'son' && !st.wearing) { st.wearing = true; Promise.resolve(C.heroWear('son')).finally(() => { if (st) st.wearing = false; }); } }   // 늘 예전 son
+    A.act.timeScale = sp / 1.51; A.mixer.update(dt);   // 게임의 업기 걸음 빠르기와 같은 셈
   }
   // 메뉴를 누르면(Enter 포함 — ready.js 가 시작 단추를 누른다) 게임보다 먼저 내려놓는다
   document.addEventListener('click', (e) => { if (st && e.target && e.target.closest && e.target.closest('#start-btn, #mp-btn, #sr-look-btn')) stop(); }, true);
@@ -15604,6 +15628,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
       if (o.type === 'Group' && !o.name) { let f = 0; for (const c of o.children) if (/^(fill|edge|beam|label)$/.test(c.name)) f++; if (f >= 2) L.push(o); }   // 본진 빛기둥 · 이름판(basefx)
     }
     for (const z of G.zones.list) if (z.mesh) L.push(z.mesh);
+    L.push(G.hero); for (const b of G.game.bots || []) if (b.hero) L.push(b.hero); for (const e of G.game.bodies || []) if (e.root) L.push(e.root); if (G.carry && G.carry.root) L.push(G.carry.root); if (G.monster && G.monster.root) L.push(G.monster.root);   // b537 — 게임 것은 그리지 않는다(배우만)
     // b534 — 게임 표지는 모두: 이름판(label — 안쪽 묶음에 든 것까지) · 밑그림 색만 칠한 표지 묶음(바닥 글자 · 화살표 등)
     G.scene.traverse((o) => { if (o.name === 'label' && o.parent && o.parent !== G.scene) L.push(o.parent); });
     for (const o of G.scene.children) if (o.type === 'Group' && !o.name && o.children.length && o.children.length <= 6 && o.children.every((c) => c.isMesh && c.material && c.material.type === 'MeshBasicMaterial')) L.push(o);
@@ -15611,20 +15636,18 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   }
   const vsv = [];
   function apply(cam) {
-    const h = G.hero.position, yaw = G.hero.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw), rx = -fz, rz = fx;   // r = 사람의 왼쪽(카메라에서 보면 오른쪽)
+    const h = A.grp.position, yaw = A.grp.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw), rx = -fz, rz = fx;   // r = 사람의 왼쪽(카메라에서 보면 오른쪽)
     st.sv = { p: cam.position.clone(), q: cam.quaternion.clone(), fov: cam.fov };
     const D = CF.dist, side = CF.side, sway = Math.sin(performance.now() / 1000 * 0.4) * 0.06;
     cam.position.set(h.x + fx * D + rx * (side * 0.35), h.y + CF.camH + sway * 0.5, h.z + fz * D + rz * (side * 0.35));
     cam.lookAt(h.x + rx * side + fx * 0.2, h.y + CF.lookH, h.z + rz * side + fz * 0.2);
     if (cam.fov !== CF.fov) { cam.fov = CF.fov; cam.updateProjectionMatrix(); }
-    st.sc = G.hero.scale.x; if (CF.scale !== 1) { G.hero.scale.setScalar(st.sc * CF.scale); G.hero.updateMatrixWorld(true); }
     cam.updateMatrixWorld(true);
     if (!st.hide) st.hide = hideList();
     for (const o of st.hide) if (o.visible) { vsv.push(o); o.visible = false; }
   }
   function restore(cam) {
     for (const o of vsv) o.visible = true; vsv.length = 0;
-    if (st && st.sc !== undefined) { G.hero.scale.setScalar(st.sc); st.sc = undefined; }
     const sv = st && st.sv; if (!sv) return;
     cam.position.copy(sv.p); cam.quaternion.copy(sv.q); if (cam.fov !== sv.fov) { cam.fov = sv.fov; cam.updateProjectionMatrix(); } cam.updateMatrixWorld(true); st.sv = null;
   }
