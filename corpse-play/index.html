@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-639 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-641 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-639'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-641'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3952,12 +3952,12 @@ var MeshoptDecoder = (function () {
   addEventListener('pointerdown', block, true); addEventListener('mousedown', block, true);
   // 괴물 시작 잠
   let was = false, until = 0, keep = null;
-  const sleep = () => { if (!fx('monsleep') || (window.__mp && window.__mp.on)) return; const G = window.__G; until = performance.now() + 6000; if (!keep) keep = { peace: G.cfg.monPeace, auto: window.__fire ? window.__fire.auto : undefined }; G.cfg.monPeace = true; if (window.__fire) window.__fire.auto = false; const C = G.monster; if (C) { C.state = 'rest'; C.restT = 6; } };
+  const sleep = () => { if (!fx('monsleep') || (window.__mp && window.__mp.on)) return; const G = window.__G; until = performance.now() + 6000; if (!keep) { keep = { peace: G.cfg.monPeace, auto: window.__fire ? window.__fire.auto : undefined }; if (window.__fire && window.__fire.freeze) window.__fire.freeze(); } G.cfg.monPeace = true; if (window.__fire && !window.__fire.freeze) window.__fire.auto = false; const C = G.monster; if (C) { C.state = 'rest'; C.restT = 6; } };
   setInterval(() => {
     const G = window.__G; if (!G) return; const st = !!G.started && !(G.game && G.game.over);
     if (st && !was) sleep();
     was = st;
-    if (keep && performance.now() > Math.max(until, ((window.__cinema && window.__cinema.introEnd) || 0) + 4000)) { /* 시작 연출이 끝나고 4초 더 */ G.cfg.monPeace = keep.peace || false; if (window.__fire && keep.auto !== undefined) window.__fire.auto = keep.auto; keep = null; }
+    if (keep && performance.now() > Math.max(until, ((window.__cinema && window.__cinema.introEnd) || 0) + 4000)) { /* 시작 연출이 끝나고 4초 더 */ G.cfg.monPeace = keep.peace || false; if (window.__fire && window.__fire.release) window.__fire.release(); else if (window.__fire && keep.auto !== undefined) window.__fire.auto = keep.auto; keep = null; }
   }, 100);
   window.__onRestart = ((prev) => function () { if (prev) prev.apply(this, arguments); setTimeout(sleep, 0); })(window.__onRestart);
   // b454 — 봇 머리 위 「P2 봇」 이름표 숨김(사용자 「원래 표시 안 하지 않았나 · 빼 줘」) · 같이 하기는 mp.js 가 사람 자리만
@@ -4022,8 +4022,8 @@ var MeshoptDecoder = (function () {
   let frozen = null;
   function freeze(G, on) {
     const C = G.monster, mx = [C && C.mixer, ...((G.game && G.game.bots) || []).map((b) => b.mixer)].filter(Boolean);
-    if (on && !frozen) { frozen = { peace: G.cfg.monPeace, auto: window.__fire ? window.__fire.auto : undefined, ts: mx.map((m) => m.timeScale), mx }; G.cfg.monPeace = true; if (window.__fire) { window.__fire.auto = false; if (window.__fire.reset) window.__fire.reset(); } for (const m of mx) { m.__tsv = m.timeScale; Object.defineProperty(m, 'timeScale', { configurable: true, get: () => 0, set: (v) => { m.__tsv = v; } }); } if (C) { C.state = 'rest'; C.restT = 999; } }
-    else if (!on && frozen) { G.cfg.monPeace = frozen.peace || false; if (window.__fire && frozen.auto !== undefined) window.__fire.auto = frozen.auto; frozen.mx.forEach((m, i) => { const v = m.__tsv; delete m.timeScale; m.timeScale = v !== undefined ? v : frozen.ts[i]; }); if (C) C.restT = 0; frozen = null; }
+    if (on && !frozen) { frozen = { peace: G.cfg.monPeace, auto: window.__fire ? window.__fire.auto : undefined, ts: mx.map((m) => m.timeScale), mx }; G.cfg.monPeace = true; if (window.__fire) { if (window.__fire.freeze) window.__fire.freeze(); else window.__fire.auto = false; if (window.__fire.reset) window.__fire.reset(); } for (const m of mx) { m.__tsv = m.timeScale; Object.defineProperty(m, 'timeScale', { configurable: true, get: () => 0, set: (v) => { m.__tsv = v; } }); } if (C) { C.state = 'rest'; C.restT = 999; } }
+    else if (!on && frozen) { G.cfg.monPeace = frozen.peace || false; if (window.__fire && window.__fire.release) window.__fire.release(); else if (window.__fire && frozen.auto !== undefined) window.__fire.auto = frozen.auto;   /* b640 */ frozen.mx.forEach((m, i) => { const v = m.__tsv; delete m.timeScale; m.timeScale = v !== undefined ? v : frozen.ts[i]; }); if (C) C.restT = 0; frozen = null; }
   }
   CN.freeze = freeze;
   CN.active = () => !!(intro || lose || (window.__death && window.__death.active && window.__death.active()));   // 연출 중 — 화면 표지 · 글을 걷는다(tension.js · 아래 CSS)
@@ -8187,7 +8187,12 @@ void main(){
   const F = (window.__fire = { ready: false, motions: MOTIONS.map((m) => ({ key: m.key, name: m.name })), flames: FLAMES.map((f) => ({ key: f.key, name: f.name })), motion: 0, flame: 1, auto: true, breathe, stop, active: null });   // 기본: 지옥불 · 게임 중에도 가끔 뿜기(2026-10-08)
   // (예전: 이 브라우저에 저장한 동작 · 불꽃 — 이제 settings.js 가 모두의 기본값으로)
   F.save = () => {};                                                // 이번 판에만 — 저장은 settings.js 「저장」
-  if (window.__settings) window.__settings.reg('fire', { get: () => ({ motion: F.motion, flame: F.flame, auto: F.auto }), set: (o) => { if (!o) return; if (o.motion >= 0 && o.motion < MOTIONS.length) F.motion = o.motion; if (o.flame >= 0 && o.flame < FLAMES.length) F.flame = o.flame; if (o.auto !== undefined) F.auto = !!o.auto; } });
+  // b640 — 시작 때 · 시작 연출 동안 잠깐 끄는 것(controls.js 잠 · cinema.js 얼림)은 freeze/release 로 — 그동안 저장해도 원래 값이 저장된다
+  //   (사용자 「언제부턴가 괴물이 불을 안 뿜는다」 — 잠깐 꺼진 때 「저장」이 눌려 auto:false 가 모두의 기본값에 들어갔다 · 그 옛 값(autoV 없음)은 읽지 않는다)
+  F.holdN = 0;
+  F.freeze = () => { if (!F.holdN) F.holdAuto = F.auto; F.holdN++; F.auto = false; };
+  F.release = () => { if (F.holdN <= 0) return; F.holdN--; if (!F.holdN) { F.auto = F.holdAuto !== undefined ? F.holdAuto : F.auto; F.holdAuto = undefined; } };
+  if (window.__settings) window.__settings.reg('fire', { get: () => ({ motion: F.motion, flame: F.flame, auto: F.holdN ? !!F.holdAuto : F.auto, autoV: 2 }), set: (o) => { if (!o) return; if (o.motion >= 0 && o.motion < MOTIONS.length) F.motion = o.motion; if (o.flame >= 0 && o.flame < FLAMES.length) F.flame = o.flame; if (o.auto !== undefined && o.autoV === 2) { if (F.holdN) F.holdAuto = !!o.auto; else F.auto = !!o.auto; } } });
   // 땅 높이 — 길 격자(nav.js · 0.5m 칸 · 싸다). 바위·벽 칸은 없음(-∞ — 그냥 지나간다). 광선 땅 찾기(G.groundAt)는 입자마다 쓰기엔 비싸다
   const gAt = (x, z) => { const N = window.__nav, h = N && N.heightAt ? N.heightAt(x, z) : null; return h == null ? -1e9 : h; };
   const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -16835,7 +16840,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
 
   /* b592 — 진짜 나 · 봇은 건드리지 않는다(사용자 「캐릭터 선택창은 그냥 연출 · 게임 시작 전에 뭔가 꼬이게 하지 마」 · 「뒤에 괴물이 보인다 · 배경만」)
      세 몸을 복제(같은 재질 · 같은 셰이더)해 빈 땅에 세우고 서 있기 동작만 · 그리는 동안 진짜 나 · 봇 · 괴물 · 시체는 감춘다(그린 뒤 되돌림) · 닫으면 복제를 버린다 */
-  const CSD = { dist: 1.95, camY: 1.47, lookY: 1.42, side: 0, gap: 1.0, top: 1.78, bot: 1.04, half: 0.3, frameY: 0, light: 1.7, charBright: 1, title: 4.6, name: 4.4, titleY: 6.5, nameY: 2.2, maskOp: 0.97, glow: 1, anim: 2, animDur: 0.9, stagger: 0.18, scale: 1, exp: 1 };   // b599 — 캐릭터 크기 · 노출   // b596 — 등장 모션 · 캐릭터 밝기 · 글자 자리 · 배경 어둡기 · 선택 빛
+  const CSD = { dist: 1.95, camY: 1.47, lookY: 1.42, side: 0, gap: 1.0, top: 1.78, bot: 1.04, half: 0.3, frameY: 0, light: 1.7, charBright: 1, title: 4.6, name: 4.4, titleY: 6.5, nameY: 2.2, maskOp: 0.97, glow: 1, anim: 2, animDur: 0.9, stagger: 0.18, scale: 1, exp: 1, faceCam: 1, face: 0, f0: 0, f1: 0, f2: 0 };   // b641 — 캐릭터 방향(사용자 「캐릭터 선택창에서 캐릭터들이 정면을 안 보고 있어 · 설정하는 패널」)   // b599 — 캐릭터 크기 · 노출   // b596 — 등장 모션 · 캐릭터 밝기 · 글자 자리 · 배경 어둡기 · 선택 빛
   const CS = (S.cf = Object.assign({}, CSD));
   (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 300); return; } St.reg('charSel', { get: () => Object.assign({}, CS), set: (o) => { if (o) for (const k in CSD) if (typeof o[k] === 'number' && isFinite(o[k])) CS[k] = o[k]; } }); })();
   function cloneRig(o) {
@@ -16873,6 +16878,8 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     cam0 = { x: P0.cx + P0.fx * CS.dist, z: P0.cz + P0.fz * CS.dist, lx: P0.cx, lz: P0.cz, y: act.reduce((t, a) => t + a.grp.position.y, 0) / Math.max(1, act.length) };
     if (el) { const sp = (k, v) => el.style.setProperty(k, v); sp('--cs-title', CS.title + 'vh'); sp('--cs-name', CS.name + 'vh'); sp('--cs-ty', CS.titleY + 'vh'); sp('--cs-ny', CS.nameY + 'vh'); sp('--cs-glow', CS.glow); sp('--cs-d', CS.animDur + 's'); sp('--cs-s', CS.stagger + 's'); const bg = el.querySelector('rect.bg'); if (bg) bg.setAttribute('opacity', CS.maskOp); }
     if (P0) { const a = CS.side * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), fx = P0.fx * ca + P0.rx * sa, fz = P0.fz * ca + P0.rz * sa; cam0.x = P0.cx + fx * CS.dist; cam0.z = P0.cz + fz * CS.dist; cam0.fx = fx; cam0.fz = fz; }
+    // b641 — 방향: 「카메라 쪽 보기」면 사람마다 카메라 자리를 본다(칸이 옆으로 벌어져도 · 카메라 좌우 각도를 바꿔도) · + 전체 돌리기 · + 사람마다 돌리기(°)
+    if (P0 && cam0) act.forEach((a, i) => { const p = a.grp.position, base = CS.faceCam >= 0.5 ? Math.atan2(cam0.x - p.x, cam0.z - p.z) : Math.atan2(P0.fx, P0.fz); a.grp.rotation.y = base + ((CS.face || 0) + (CS['f' + i] || 0)) * Math.PI / 180; a.grp.updateMatrixWorld(true); });
   }
   function openSel() {
     const G = window.__G, src = sources(), bot0 = G.game.bots.find((b) => b.mixer && b.acts && b.acts.idle);
@@ -16969,7 +16976,8 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   }
   function draw() { if (!el) return; el.querySelectorAll('.fr').forEach((f) => f.classList.toggle('on', +f.dataset.i === sel)); }
   const ANIMS = ['없음', '서서히', '아래에서 차례로', '깜빡이며(고장 난 화면)', '핏빛 번쩍', '카메라가 다가옴'];
-  const ROWS = [['#', '카메라'], ['dist', '거리', 1, 4, 0.05, 'm'], ['camY', '높이', 0.8, 2.4, 0.02, 'm'], ['lookY', '바라보는 높이', 0.8, 2.2, 0.02, 'm'], ['side', '좌우 각도', -40, 40, 1, '°'],
+  const ROWS = [['#', '캐릭터 방향'], ['faceCam', '카메라 쪽 보기(1 = 예)', 0, 1, 1, ''], ['face', '전체 돌리기', -180, 180, 1, '°'], ...KINDS.map(([, n], i) => ['f' + i, n + ' 돌리기', -180, 180, 1, '°']),
+    ['#', '카메라'], ['dist', '거리', 1, 4, 0.05, 'm'], ['camY', '높이', 0.8, 2.4, 0.02, 'm'], ['lookY', '바라보는 높이', 0.8, 2.2, 0.02, 'm'], ['side', '좌우 각도', -40, 40, 1, '°'],
     ['#', '칸(사람마다 비추는 네모)'], ['gap', '사람 간격', 0.6, 2, 0.05, 'm'], ['top', '칸 위(머리 위)', 1.5, 2.4, 0.01, 'm'], ['bot', '칸 아래', 0.4, 1.7, 0.01, 'm'], ['half', '칸 폭(반)', 0.15, 0.7, 0.01, 'm'], ['frameY', '칸 위아래 옮김', -0.4, 0.4, 0.01, 'm'], ['glow', '고른 칸 붉은 빛', 0, 2.5, 0.05, '×'],
     ['#', '캐릭터 모델 · 밝기'], ['scale', '캐릭터 크기(확대)', 0.6, 2, 0.01, '×'], ['charBright', '캐릭터 자체 밝기', 0, 3, 0.05, '×'], ['light', '주변 조명', 0.3, 4, 0.05, '×'], ['exp', '화면 노출', 0.3, 2.5, 0.05, '×'],
     ['#', '글자 · 배경'], ['title', '제목 크기', 2, 9, 0.1, 'vh'], ['titleY', '제목 높이', 1, 20, 0.1, 'vh'], ['name', '이름 크기', 2, 8, 0.1, 'vh'], ['nameY', '이름 칸 아래 거리', 0, 8, 0.1, 'vh'], ['maskOp', '바깥 어둡기', 0.4, 1, 0.01, ''],
