@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-573 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-575 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-573'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-575'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5959,6 +5959,8 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
       [['bright', '카드 밝기', 0, 1.5, 0.05, 0.55, pct], ['size', '카드 크기', 0.5, 2, 0.05, 1, pct], ['flap', '펄럭임(달릴 때)', 0, 2, 0.05, 0.35, pct], ['swing', '흔들림', 0.1, 2, 0.05, 0.6, pct],
         ['drop', '줄 길이(카드 높이)', 0.18, 0.55, 0.01, 0.34, (v) => `${Math.round(v * 100)}cm`], ['sideX', '목 좌우 간격', 0.02, 0.12, 0.005, 0.062, (v) => `${(v * 200).toFixed(1)}cm`],
         ['neckY', '목 거는 높이', -0.08, 0.1, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['neckZ', '목 앞뒤', -0.06, 0.06, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`],
+        ['cardTop', '카드 최고 높이(목 아래로)', 0.05, 0.45, 0.01, 0.16, (v) => `${Math.round(v * 100)}cm`], ['front', '카드 몸 앞 최소', 0, 0.12, 0.005, 0.03, (v) => `${(v * 100).toFixed(1)}cm`],
+        ['backShow', '뒷목 줄 보이기', 0, 1, 1, 0, (v) => (v > 0.5 ? '켬' : '끔')],
         ['backY', '뒷목 줄 높이', -0.06, 0.12, 0.005, 0.03, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['backOut', '뒷목 줄 띄움(옷 밖)', 0, 0.04, 0.001, 0.006, (v) => `${(v * 100).toFixed(1)}cm`]]
         .map(([k, label, min, max, step, def, fmt]) => ({ k: `badge.${kind}.${k}`, label, min, max, step, def, fmt,
           get: () => { const B = window.__badge, p = B && B.per && B.per[kind]; return p && typeof p[k] === 'number' ? p[k] : def; },
@@ -12063,7 +12065,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }, window.__badge || {}));   // 조절 창이 먼저 넣은 값(저장값)은 그대로
   // b571 — 캐릭터별(사용자 「캐릭터 별로 수정할 수 있게」) · 조절 창 「사원증 · 조상준 / 손주용 / 허지용」
   B.KINDS = { m17: '조상준(내 캐릭터)', son: '손주용(예전 son)', m16: '허지용(안경)' };
-  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006 };
+  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006, cardTop: 0.16, front: 0.03, backShow: 0 };   // b575 — 뒷목 줄 기본 숨김(사용자 「목 뒤로 목줄이 튀어나온다 · 조절해도 안 없어져」)
   B.per = B.per || {};
   for (const k in B.KINDS) B.per[k] = Object.assign({}, B.DEF, B.per[k] || {});
   const PK = (e) => B.per[e.kind] || B.DEF;
@@ -12255,6 +12257,11 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const want = zf + B.margin * e.fr.sc + (pad || 0);
     if (z < want && z > zf - 0.3 * e.fr.sc) p.addScaledVector(e.fr.f, want - z);
   }
+  function fence(e, p, yMax, zMin) {   // 몸 틀(목 기준)에서 높이 위로 · 몸 뒤로 못 가게
+    const d = tmp.d.subVectors(p, e.fr.N), y = d.dot(e.fr.u), z = d.dot(e.fr.f);
+    if (y > yMax) p.addScaledVector(e.fr.u, yMax - y);
+    if (z < zMin) p.addScaledVector(e.fr.f, zMin - z);
+  }
   function rope(a, b, L, wa, wb) {   // 늘어나지 않는 끈(느슨하면 그대로)
     const d = tmp.a.subVectors(b, a), len = d.length(); if (len <= L || len < 1e-6) return;
     const k = (len - L) / len / (wa + wb); a.addScaledVector(d, k * wa); b.addScaledVector(d, -k * wb);
@@ -12292,6 +12299,9 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       rod(e.hook, e.bot, cardL, 0.35, 0.6);
       for (let i = 0; i < N - 2; i++) { collide(e, e.pL[i], 0.001); collide(e, e.pR[i], 0.001); }
       collide(e, e.hook, 0.002 * s); collide(e, e.bot, B.t * s);
+      // b574 — 카드 · 고리는 목 아래 · 몸 앞쪽만(사용자 「목 위로 카드가 튀어나온다」 — 펄럭이다 어깨 너머 목 뒤로 넘어갔다)
+      fence(e, e.hook, -pp.cardTop * s, pp.front * s); fence(e, e.bot, -(pp.cardTop + 0.04) * s, pp.front * s);
+      for (let i = 2; i < N - 2; i++) { fence(e, e.pL[i], 9, -0.01 * s); fence(e, e.pR[i], 9, -0.01 * s); }
       // 카드 가운데도 몸 밖으로(배가 나온 몸)
       const c = tmp.b.lerpVectors(e.hook, e.bot, 0.5), c0 = c.clone(); collide(e, c, B.t * 0.5 * s); c.sub(c0); if (c.lengthSq() > 0) { e.hook.addScaledVector(c, 0.5); e.bot.add(c); }
     }
@@ -12329,9 +12339,10 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     for (let i = 0; i < BACKN; i++) {   // b571 — 등 표면(깃 포함) 밖으로(사용자 「등에 뚫고 나오는 것」)
       const th = (i / (BACKN - 1)) * Math.PI, sn = Math.sin(th), R = B.neckR * s, x = -Math.cos(th) * p.sideX * s, y = (p.neckY - 0.012 + sn * p.backY) * s;
       let z = za * (1 - sn) - sn * R;
-      const bz = backZ(e, x, y); if (bz < 8 && sn > 0.15) z = Math.min(z, bz - p.backOut * s);
+      const bz = backZ(e, x, y); if (bz < 8 && sn > 0.15) { const w = Math.min(1, (sn - 0.15) / 0.35); z = z * (1 - w) + (bz - p.backOut * s) * w; }   // 등 · 깃 표면에 붙인다(밖으로 밀기만 하면 떠 있었다)
       W(e, x, y, z, backPts[i]);
     }
+    if (!(p.backShow > 0.5)) for (let i = 0; i < BACKN; i++) backPts[i].copy(e.aL);   // 숨김 — 한 점으로 모아 넓이 0
     backPts[0].copy(e.aL); backPts[BACKN - 1].copy(e.aR);
     fpL.length = 0; fpR.length = 0; fpL.push(e.aL); fpR.push(e.aR);
     // 끝 두 점은 고리 양옆으로 조금 벌린다(겹치지 않게)
