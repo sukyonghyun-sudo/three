@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-601 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-603 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-601'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-603'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -16989,7 +16989,7 @@ ${KINDS.map(([, n], i) => `<div class="fr" data-i="${i}" style="--i:${i}"><div c
   const IDS = ROWS.filter((r) => r[0] !== '#').map((r) => r[0]);
   const LKEY = 'corpse_hitlab_v1', VKEY = 'corpse_hitlab_view_v1';
   let OV = {}; try { OV = JSON.parse(localStorage.getItem(LKEY) || '{}') || {}; } catch (e) { OV = {}; }
-  const VW = Object.assign({ view: 0, slow: 1, auto: 0, camD: 1, camH: 1, atHit: 0 }, (() => { try { return JSON.parse(localStorage.getItem(VKEY) || '{}'); } catch (e) { return {}; } })());
+  const VW = Object.assign({ view: 0, slow: 1, auto: 0, camD: 1, camH: 1, atHit: 0, easy: 1, guides: 0 }, (() => { try { return JSON.parse(localStorage.getItem(VKEY) || '{}'); } catch (e) { return {}; } })());
   const saveOV = () => { try { localStorage.setItem(LKEY, JSON.stringify(OV)); } catch (e) { /* */ } };
   const saveVW = () => { try { localStorage.setItem(VKEY, JSON.stringify(VW)); } catch (e) { /* */ } };
   const ORIG = {};
@@ -17068,7 +17068,8 @@ ${KINDS.map(([, n], i) => `<div class="fr" data-i="${i}" style="--i:${i}"><div c
     saved = { hp: G.hero.position.clone(), hr: G.hero.rotation.y, mp: C && C.root ? C.root.position.clone() : null, mr: C && C.root ? C.root.rotation.y : 0, my: C ? C.yaw : 0 };
     A = anchor(G); place(G);
     if (G.mpApi && G.mpApi.monAct) G.mpApi.monAct('idle', 0.2, true);
-    LAB.open = true; paused = false; stepLeft = 0; window.__slowmo = VW.slow; setView();
+    litHook(); LAB.open = true; paused = false; stepLeft = 0; window.__slowmo = VW.slow; if (VW.easy) VW.view = 0; setView();
+    { const CC = window.__chaseCam; LAB.shk = { on: G.cfg.camShakeOn, cc: CC ? CC.shake : null }; G.cfg.camShakeOn = false; if (CC && CC.set) CC.set({ shake: 0 }); }   // b602 — 타격실에서는 카메라 흔들림 없음(닫으면 되돌림)
     if (!el) build();
     el.style.display = 'block'; tl.style.display = 'block'; document.body.classList.add('sr-hitlab-open');
     sync(); loop();
@@ -17133,9 +17134,21 @@ ${KINDS.map(([, n], i) => `<div class="fr" data-i="${i}" style="--i:${i}"><div c
     g.font = '700 12px sans-serif'; let y = 18; const lg = [['#ff3b22', '빨간 원 — 맞는 거리(맞는 순간 이 안이면 맞음)'], ['#e8a24a', '점선 원 — 휘두르기 시작 거리 · 주황 길 = 내리치는 구간'], ['#ff2a14', '무기 머리 길 — 빨강은 몸에 닿는 프레임'], ['#ff5a3a', '점선 포물선 — 맞으면 날아갈 길 · 떨어짐 · 멈춤'], ['#78c8ff', '하늘색 — 실제로 날아간 길']];
     for (const [col, t] of lg) { g.fillStyle = 'rgba(8,6,5,.7)'; g.fillRect(12, y - 13, g.measureText(t).width + 26, 18); g.fillStyle = col; g.fillRect(16, y - 8, 10, 8); g.fillStyle = '#e9e1d0'; g.fillText(t, 32, y); y += 20; }
   }
+  // b602 — 타격실 동안 장면을 밝게(있는 조명 세기만 · 그린 뒤 되돌림 · 새 셰이더 없음) — 밤이라 괴물 · 맞는 사람이 잘 안 보였다
+  let litHooked = false;
+  function litHook() {
+    if (litHooked) return; const G = window.__G; if (!G || !G.scene) return; litHooked = true;
+    const Sc = G.scene, pb = Sc.onBeforeRender, pa = Sc.onAfterRender; let sv = null, Ls = null;
+    Sc.onBeforeRender = function (r, s2, cam, ...x) {
+      if (LAB.open && cam === G.cam && VW.lit !== 0) { if (!Ls) { Ls = []; Sc.traverse((o) => { if (o.isLight) Ls.push(o); }); } sv = []; for (const o of Ls) { const f = o.isAmbientLight || o.isHemisphereLight ? 2.4 : o.isDirectionalLight ? 2 : 1; if (f !== 1) { sv.push([o, o.intensity]); o.intensity *= f; } } }
+      if (pb) pb.call(this, r, s2, cam, ...x);
+    };
+    Sc.onAfterRender = function (r, s2, cam, ...x) { if (pa) pa.call(this, r, s2, cam, ...x); if (sv && cam === G.cam) { for (const [o, v] of sv) o.intensity = v; sv = null; } };
+  }
   function close() {
     if (!LAB.open) return;
     const G = window.__G, E = window.__exploreApi, C = G && G.monster;
+    if (LAB.shk) { const G0 = window.__G, CC = window.__chaseCam; if (G0) G0.cfg.camShakeOn = LAB.shk.on; if (CC && CC.set && LAB.shk.cc !== null) CC.set({ shake: LAB.shk.cc }); LAB.shk = null; }
     LAB.open = false; LAB.calm = false; run = null; SC.on = false; SC.drag = null; clearTimeout(autoT); cancelAnimationFrame(raf);
     paused = false; stepLeft = 0; window.__slowmo = 1; window.__camExtra = null;
     if (C && C.mixer) C.mixer.timeScale = 1;
@@ -17368,11 +17381,39 @@ ${KINDS.map(([, n], i) => `<div class="fr" data-i="${i}" style="--i:${i}"><div c
 #hitlab-tl .vt .ph2{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:#ffd27a;box-shadow:0 0 6px #ffd27a;pointer-events:none}
 #hitlab-tl .ax2{position:relative;height:14px;margin-top:2px;color:#8d887a;font-size:10px} #hitlab-tl .ax2 i{position:absolute;transform:translateX(-50%);font-style:normal}
 #hitlab-tl .rn{margin-top:4px;border-top:1px solid #3a2a20;padding-top:5px}
+#hitlab .st{margin:14px 0 4px;padding-top:9px;border-top:1px solid #3a2a20;font:700 14px sans-serif;color:#f2e6d6;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+#hitlab .st i{font-style:normal;display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:50%;background:#a5120c;color:#fff;font-size:12px}
+#hitlab .st span{font:400 11px sans-serif;color:#8d887a}
+#hitlab .ezi{margin:4px 0 2px;padding:8px 10px;background:#1a1210;border-left:3px solid #e8a24a;font:12px/1.6 sans-serif;color:#e9e1d0}
+#hitlab .ezi b{color:#fff} #hitlab .ezi em{font-style:normal;color:#ff7a5a;font-weight:700} #hitlab .ezi .ok{color:#8fd19e;font-weight:700}
+#hitlab button.sv{background:#1d4a2a;border-color:#3f8a55;font-weight:700} #hitlab button.mode{background:none;border-style:dashed;color:#b9ad98}
+#hitlab.easy .full{display:none} #hitlab:not(.easy) .ez{display:none}
+#hitlab-tl.easy .rn,#hitlab-tl.easy .sci,#hitlab-tl.easy [data-sa=contact],#hitlab-tl.easy [data-sa=play]{display:none}
 body.sr-hitlab-open #sr-look, body.sr-hitlab-open #sr-show-btn, body.sr-hitlab-open #sr-expr-cap { display: none !important; }`;
     document.head.appendChild(st);
     el = document.createElement('div'); el.id = 'hitlab';
     const views = [['옆에서 멀리', 0], ['옆에서 가까이', 1], ['괴물 뒤', 2], ['날아가는 쪽', 3], ['게임 시점', 4]];
+    // b602 — 쉽게(기본 · 사용자 「타격실 너무 어렵다 · 뭐가 뭔지 모르겠다 · 쉽고 설정 쉽게 · 카메라도 흔들려서 못 하겠다」): 3단계만 · 자세히는 단추로
+    const RW = (id) => { const r = ROWS.find((q) => q[0] === id); return `<label data-l="${id}">${r[1]}<b data-v="${id}"></b></label><input type="range" min="${r[2]}" max="${r[3]}" step="${r[4]}" data-k="${id}">`; };
     el.innerHTML = `<h4>타격실<button type="button" data-a="close">닫기 · Esc</button></h4>
+      <div class="ez">
+      <div class="r"><button type="button" class="go" data-a="hit">▶ 한 대 맞기 (Enter)</button><button type="button" data-a="auto">계속 반복</button></div>
+      <div class="st"><i>1</i>맞는 순간<span>무기가 몸에 닿을 때 날아가야 자연스럽다</span></div>
+      <div class="ezi"></div>
+      <div class="r"><button type="button" class="go" data-a="autofit">무기 닿는 순간에 자동으로 맞추기</button></div>
+      ${RW('cfg.monHitAt')}
+      <small>아래 프레임 바를 끌면 괴물 · 맞는 사람이 그 순간 자세로 멈춘다 · ← → 로 한 프레임씩</small>
+      <div class="st"><i>2</i>날아가기</div>
+      ${RW('cfg.hitDist')}${RW('cfg.hitHeight')}${RW('cfg.hitSpeed')}
+      <div class="st"><i>3</i>충격</div>
+      ${RW('cfg.hitStop')}${RW('cfg.hitFlash')}${RW('cfg.fxAirBlood')}
+      <div class="st">느리게 보기</div>
+      <div class="r">${[1, 0.5, 0.25, 0.1].map((v) => `<button type="button" data-slow="${v}">${v === 1 ? '보통' : '×' + v}</button>`).join('')}</div>
+      <div class="r"><button type="button" data-a="def">처음 값으로</button><button type="button" class="sv" data-a="gsave">저장</button></div>
+      <small class="gs"></small>
+      </div>
+      <div class="r"><button type="button" data-a="mode" class="mode"></button></div>
+      <div class="full">
       <div class="r"><button type="button" class="go" data-a="hit">▶ 한 대 맞기(Enter)</button><button type="button" data-a="auto">자동 반복</button></div>
       <h6>보기</h6><div class="r">${views.map(([n, v]) => `<button type="button" data-view="${v}">${n}</button>`).join('')}</div>
       <label>카메라 거리<b data-vv="camD"></b></label><input type="range" min="0.4" max="2.5" step="0.05" data-vk="camD">
@@ -17387,7 +17428,8 @@ body.sr-hitlab-open #sr-look, body.sr-hitlab-open #sr-show-btn, body.sr-hitlab-o
       ${ROWS.map(([k, n, a, z, s]) => (k === '#' ? `<h6>${n}</h6>` : `<label data-l="${k}">${n}<b data-v="${k}"></b></label><input type="range" min="${a}" max="${z}" step="${s}" data-k="${k}">`)).join('')}
       <div class="r"><button type="button" data-a="def">기본값(고치기 전)</button>${STUDIO ? '<button type="button" data-a="gsave">모두의 기본값으로 저장</button>' : ''}</div>
       <small class="gs"></small>
-      <small>노란 값 = 고친 값 · 바꾸면 바로 게임에 쓰인다(나 · 봇 같은 값 · 이 브라우저에 기억) · 「모두의 기본값으로 저장」을 눌러야 모두에게 · 같이 하기는 방장 값 · 판이 다시 열리면(R) 실험 자리는 풀린다</small>`;
+      <small>노란 값 = 고친 값 · 바꾸면 바로 게임에 쓰인다(나 · 봇 같은 값 · 이 브라우저에 기억) · 「모두의 기본값으로 저장」을 눌러야 모두에게 · 같이 하기는 방장 값 · 판이 다시 열리면(R) 실험 자리는 풀린다</small>
+      </div>`;
     document.body.appendChild(el);
     tl = document.createElement('div'); tl.id = 'hitlab-tl';
     tl.innerHTML = `<div class="sch"><b>공격 동작 프레임</b>
@@ -17453,6 +17495,8 @@ body.sr-hitlab-open #sr-look, body.sr-hitlab-open #sr-show-btn, body.sr-hitlab-o
       else if (d.step !== undefined) stepFrames(+d.step);
       else if (d.a === 'athit') { VW.atHit = VW.atHit ? 0 : 1; saveVW(); }
       else if (d.a === 'guides') { VW.guides = VW.guides === 0 ? 1 : 0; saveVW(); }
+      else if (d.a === 'mode') { VW.easy = VW.easy ? 0 : 1; saveVW(); if (VW.easy) { VW.view = 0; setView(); } }
+      else if (d.a === 'autofit') { if (!SC.curve) scrubTo(hitT()); const fc = firstContact(); const g = el.querySelector('.gs'); if (fc) { setHitAt(fc.f / FPS); scrubTo(hitT()); if (g) g.textContent = fc.touch ? `맞는 순간을 ${fc.f}프레임(무기가 처음 닿는 때)으로 맞췄다 — 「한 대 맞기」로 확인` : `무기가 몸에 닿지 않는다 — 가장 가까운 ${fc.f}프레임으로 맞췄다(공격 거리를 줄여 보라)`; } }
       else if (d.a === 'def') { for (const id in OV) if (id in ORIG) setV(id, ORIG[id]); OV = {}; saveOV(); }
       else if (d.a === 'gsave') {
         const St = window.__settings, g = el.querySelector('.gs');
@@ -17472,7 +17516,13 @@ body.sr-hitlab-open #sr-look, body.sr-hitlab-open #sr-show-btn, body.sr-hitlab-o
     { const pb = el.querySelector('[data-a="pause"]'); if (pb) { pb.classList.toggle('on', paused); pb.textContent = paused ? '▶ 계속(Space)' : '⏸ 멈춤(Space)'; } const ah = el.querySelector('[data-a="athit"]'); if (ah) ah.classList.toggle('on', !!VW.atHit); }
     el.querySelectorAll('[data-view]').forEach((b) => b.classList.toggle('on', +b.dataset.view === VW.view));
     el.querySelectorAll('[data-slow]').forEach((b) => b.classList.toggle('on', +b.dataset.slow === VW.slow));
-    const ab = el.querySelector('[data-a="auto"]'); if (ab) ab.classList.toggle('on', !!VW.auto);
+    el.querySelectorAll('[data-a="auto"]').forEach((ab) => ab.classList.toggle('on', !!VW.auto));
+    el.querySelectorAll('input[data-k]').forEach((i) => { const v = getV(i.dataset.k); if (v !== undefined && document.activeElement !== i) i.value = v; });
+    el.querySelectorAll('b[data-v]').forEach((b) => { const id = b.dataset.v, r = ROWS.find((q) => q[0] === id); if (r) b.textContent = fmt(getV(id), r[5]); });
+    el.querySelectorAll('label[data-l]').forEach((l) => l.classList.toggle('chg', l.dataset.l in OV));
+    el.classList.toggle('easy', !!VW.easy); if (tl) tl.classList.toggle('easy', !!VW.easy);
+    { const mb = el.querySelector('[data-a="mode"]'); if (mb) mb.textContent = VW.easy ? '자세히 (모든 값 · 보기 · 프레임 넘기기) ▸' : '◂ 쉽게 보기'; }
+    { const ez = el.querySelector('.ezi'); if (ez) { const fc = firstContact(), hf = Math.round(hitT() * FPS); ez.innerHTML = !fc ? '「한 대 맞기」를 눌러 보세요' : !fc.touch ? `지금 맞는 순간 <b>${hf}</b>프레임 · 무기가 몸에 <em>닿지 않음</em>` : `지금 맞는 순간 <b>${hf}</b>프레임 · 무기 닿는 때 <b>${fc.f}</b>프레임 → ` + (hf < fc.f ? `<em>${fc.f - hf}프레임 일찍 날아감</em>` : hf > fc.f ? `<em>${hf - fc.f}프레임 늦게 날아감</em>` : '<span class="ok">딱 맞음</span>'); } }
     if (tl && tl.offsetHeight) el.style.bottom = (tl.offsetHeight + 24) + 'px';
     drawScrub();
   }
