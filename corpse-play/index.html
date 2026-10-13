@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-607 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-608 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-607'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-608'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -12415,7 +12415,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     }
     if (!lead.t) lead.t = new V();
     const t = lead.t.copy(a0).addScaledVector(e.fr.u, -0.85 * e.segL).addScaledVector(e.fr.f, 0.3 * e.segL).addScaledVector(e.fr.r, -sg * 0.2 * e.segL);
-    arr[0].lerp(t, 0.06 * Math.min(1, st));   // b578 — 첫 마디만 살짝(예전 0.35 × 8번 — 붙박였다)
+    void t;   // b608 — 첫 마디 당기기 뺌(깃 위에서 S 자로 접혔다)   // b578 — 첫 마디만 살짝(예전 0.35 × 8번 — 붙박였다)
   }
   function rod(a, b, L, wa, wb) {
     const d = tmp.a.subVectors(b, a), len = d.length(); if (len < 1e-6) return;
@@ -12466,11 +12466,11 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     for (let i = 0; i < k; i++) {
       const p = pts[i], a = pts[Math.max(0, i - 1)], b = pts[Math.min(k - 1, i + 1)];
       vA.t.subVectors(b, a).normalize();
-      // 바깥 방향 = 등뼈 조금 뒤 축에서 이 점으로
-      const d = vA.q.subVectors(p, e.fr.N), y = d.dot(e.fr.u);
-      vA.ax.copy(e.fr.N).addScaledVector(e.fr.u, y).addScaledVector(e.fr.f, -0.03 * e.fr.sc);
-      vA.n.subVectors(p, vA.ax); vA.n.addScaledVector(vA.t, -vA.n.dot(vA.t)); if (vA.n.lengthSq() < 1e-8) vA.n.copy(e.fr.f); vA.n.normalize();
+      // b608 — 띠 앞면은 늘 몸 앞쪽(사용자 「꼬인 거 평생 꼬여 있냐」 — 예전: 등뼈 축에서 점으로의 방향 → 목 근처에서 축과 붙어 방향이 휙 돌며 띠가 뒤집혔다)
+      vA.n.copy(e.fr.f).addScaledVector(vA.t, -e.fr.f.dot(vA.t)); if (vA.n.lengthSq() < 1e-6) vA.n.copy(e.fr.u).addScaledVector(vA.t, -e.fr.u.dot(vA.t)); vA.n.normalize();
       vA.sd.crossVectors(vA.t, vA.n).normalize();
+      if (i > 0 && vA.sd.dot(vA.ps) < 0) { vA.sd.negate(); vA.n.negate(); }   // 이웃 마디와 같은 쪽(뒤집힘 없음)
+      vA.ps.copy(vA.sd);
       if (i > 0) acc += p.distanceTo(pts[i - 1]);
       const v = acc / per;
       for (let s = 0; s < 2; s++) {
@@ -12563,7 +12563,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
   (function boot() {
     if (failed) return;
-    if (!tmp.d && window.__G && window.__G.THREE) { const VV = window.__G.THREE.Vector3; tmp.d = new VV(); tmp.a = new VV(); tmp.b = new VV(); vA.t = new VV(); vA.n = new VV(); vA.sd = new VV(); vA.ax = new VV(); vA.q = new VV(); }
+    if (!tmp.d && window.__G && window.__G.THREE) { const VV = window.__G.THREE.Vector3; tmp.d = new VV(); tmp.a = new VV(); tmp.b = new VV(); vA.t = new VV(); vA.ps = new VV(); vA.n = new VV(); vA.sd = new VV(); vA.ax = new VV(); vA.q = new VV(); }
     if (!ready) { const G = window.__G; if (G && G.scene && G.THREE && G.cam && (G.started || (window.__title3 && window.__title3.on))) { let cnt = 0; G.scene.traverse((o) => { if (o.isMesh) cnt++; }); if (cnt > 50) ready = setup(); } }
     if (ready) hook();
     setTimeout(boot, ready ? 1000 : 400);
