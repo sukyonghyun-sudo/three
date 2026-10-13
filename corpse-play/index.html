@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-520 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-522 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -430,7 +430,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-520'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-522'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -4104,7 +4104,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
     mouth: 1, eyes: 0, brows: 1, relief: 0.7, sneer: 1, faceA: 'fear', faceB: 'fear', faceK: 1, motionA: 'brace', motionB: 'brace', reliefT: 0.6, laugh: 1, laughId: '1', speed: 1, aerialZoom: 0.35, bloodGlow: 1, gap: 0.2, squashT: 0.04, dashT: 0.3, dashFrom: 0.7, dashPow: 1.6, hitStop: 0.08, burstEase: 1, hitSnd: 0, burstSnd: 0, squash: 0.35, spurt: 1, winBright: 1, endBright: 1,
     closeD: 1.1, closeFov: 40, trackD: 2.4, trackFov: 56, wideD: 4.2, wideFov: 52, kick: 0.6, fovPunch: 4, shake: 1, winD: 0.7, winFov: 30, bars: 1,
     parts: 1, partF: 1, partSpin: 1, chunks: 45, cloth: 0, skin: 0, bones: 0, chunkSize: 0.55, chunkF: 1, roll: 1, drops: 1400, dropSize: 1, dropF: 1, mist: 1,
-    flash: 0, ring: 0, sound: 1, light: 2.2, wisp: 1.6, wispN: 6, hairLead: 0.55, hairShoot: 0.35, cutV: 0,
+    flash: 0, ring: 0, sound: 1, light: 2.2, wisp: 1.6, wispN: 6, hairLead: 0.45, hairShoot: 0.22, cutV: 0,
   };
   const CF = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('corpse_end_v4') || '{}'); } catch (e) { /* */ } return Object.assign({}, DEF, o); })();
   const saveCF = () => { try { localStorage.setItem('corpse_end_v4', JSON.stringify(CF)); } catch (e) { /* */ } };
@@ -4112,11 +4112,15 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
   /* b515 — 컷 길이 · 긴장 다시(사용자 「연출 텐션 · 컷 길이 손봐」): 승리 글 짧게 → 하늘(연기가 솟고 끝에 가닥이 쫘악) 길게 → 얼굴 둘 빠르게 → 따라가기 짧게 → 맞닿는 순간 멈칫 → 조각 · 이긴 사람
      저장돼 있던 예전 컷 값에 한 번만 덮어쓴다(cutV) · 그 뒤로 연출실에서 바꾼 값은 그대로 */
   const CUT2 = { titleT: 1.6, aerial: 2.2, closeA: 0.7, closeB: 0.55, trackA: 0.6, trackB: 0.5, wide: 0.5, hitStop: 0.1, after: 2.0, winT: 3.0, reliefT: 0.45, speed: 1, hairLead: 0.55, hairShoot: 0.35 };
-  const cut2 = () => { if (CF.cutV === 2) return; Object.assign(CF, CUT2); CF.cutV = 2; saveCF(); };
+  // b521 — 쫙 뻗어(0.22초) 감자마자 확 낚아채 빠르게 끌고 · 부딪히면 느린 화면 없이 팍(사용자)
+  const CUT3 = { hairLead: 0.45, hairShoot: 0.22, accel: 1.8, jerk: 0.9, dashT: 0.18, dashFrom: 0.55, dashPow: 1.3, trackA: 0.5, trackB: 0.4, wide: 0.35, hitStop: 0.07, squashT: 0.01, burst: 0.35, burstRate: 0.7, burstEase: 1, partF: 1.15, kick: 0.9, fovPunch: 7 };
+  // b522 — 「상당히 잔혹하고 무섭게」: 피 · 살점 많이 · 세게 · 화면 흔들림 · 비명 표정 세게
+  const CUT4 = { drops: 2100, dropF: 1.35, dropSize: 1.15, spurt: 1.5, chunks: 90, chunkSize: 0.7, chunkF: 1.3, partF: 1.3, roll: 1.4, shake: 1.5, faceK: 1.15, writhe: 1.4 };
+  const cut2 = () => { if (CF.cutV === 4) return; if (CF.cutV !== 2 && CF.cutV !== 3) Object.assign(CF, CUT2); if (CF.cutV !== 3) Object.assign(CF, CUT3); Object.assign(CF, CUT4); CF.cutV = 4; saveCF(); };
   cut2();
   D.cf = CF;
   // 모두의 기본값 — 조절창(Tab)의 「저장」(settings.js · MSW 글로벌 저장소)에 함께 실린다 · 저장된 값이 있으면 켤 때 그 값으로
-  (function regSet() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regSet, 300); return; } St.reg('endFx', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; if (v.cutV !== 2) { CF.cutV = 0; cut2(); } saveCF(); if (lab && lab.show) { const c = lab.cur; lab.cur = null; lab.show(c || 'title'); } } } }); })();
+  (function regSet() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regSet, 300); return; } St.reg('endFx', { get: () => Object.assign({}, CF), set: (v) => { if (v && typeof v === 'object') { for (const k in v) if (k in DEF) CF[k] = v[k]; if (v.cutV !== 4) { CF.cutV = v.cutV === 2 || v.cutV === 3 ? v.cutV : 0; cut2(); } saveCF(); if (lab && lab.show) { const c = lab.cur; lab.cur = null; lab.show(c || 'title'); } } } }); })();
   // 시간표(u = 화면 시간) — 슬로모션 구간에서는 사건 시간 τ 가 느리게 흐른다
   const TL = () => {
     const u0 = CF.titleT, uF = u0 + CF.aerial, cA = uF, cB = cA + CF.closeA, tA = cB + CF.closeB, tB = tA + CF.trackA, w0 = tB + CF.trackB, uS = w0 + CF.wide, uH = uS + CF.slowLen, uHs = uH + CF.hitStop, uB = uHs + CF.burst, uW = uB + CF.after, end = uW + CF.winT;
@@ -4129,7 +4133,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
 
   let G = null, T = null, M4 = null, QT = null, EU = null, S = null;
   const mesh = {}, PM = [], WARM = [];
-  const MAXN = { flesh: 200, cloth: 80, skin: 80, bone: 40, drop: 2200, wisp: 560 };
+  const MAXN = { flesh: 260, cloth: 80, skin: 80, bone: 40, drop: 2200, wisp: 560 };
   const skinOf = (o) => { let s = null; if (o) o.traverse((x) => { if (x.isSkinnedMesh && !s) s = x; }); return s; };
 
   /* ── 준비: 조각 메쉬(장면 재질 복제) — ready.js 가 굽기 전에 장면에 넣는다 ── */
@@ -4249,8 +4253,8 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
       let x = g * g * cx + 2 * g * f * mx + f * f * tx, y = g * g * cy + 2 * g * f * my + f * f * ty, z = g * g * cz + 2 * g * f * mz + f * f * tz;
       const w = Math.sin(Math.PI * f) * (0.16 + 0.05 * L * 0.1), wv = Math.sin(f * 11 + tt * 5.5 + ph) * w, wv2 = Math.cos(f * 7 - tt * 4.1 + ph * 1.3) * w;
       x += px * wv; z += pz * wv; y += wv2;
-      const coil = ss2((f - 0.55) / 0.45) * grow;   // 끝은 다리부터 가슴까지 몸을 휘감는다
-      if (coil > 0) { const an = f * 24 + tt * 3.4 + ph, r = (0.3 + 0.1 * Math.sin(ph * 2.3)) * coil; x += Math.cos(an) * r; z += Math.sin(an) * r; y += (((f - 0.55) / 0.45) * 1.5 - 1.0 + 0.25 * Math.sin(ph)) * coil; }
+      const coil = ss2((f - 0.62) / 0.38) * grow;   // b521 — 끝 38% 는 발끝부터 가슴까지 몸을 칭칭 감는다(여러 바퀴)
+      if (coil > 0) { const cf = (f - 0.62) / 0.38, an = cf * 14 + tt * 4.2 + ph * 3, r = (0.26 + 0.08 * Math.sin(ph * 2.3)) * coil; x = x * (1 - coil) + (tx + Math.cos(an) * r) * coil; z = z * (1 - coil) + (tz + Math.sin(an) * r) * coil; y = y * (1 - coil) + (ty - 0.95 + cf * 1.45 + 0.12 * Math.sin(ph)) * coil; }
       out.set(x, y, z);
     };
     smoke(u, t, tau, grow, fade, tt, pt); hair(u, t, tau, pt); M.count = 0; return;   // b509 — 원기둥 촉수 대신 연기 알갱이 가닥만(악마 연기)
@@ -4421,11 +4425,12 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
         for (let q = 0; q <= HS; q++) {
           const f = (q / HS) * reach, f2 = Math.min(1, f + 0.01);
           pt(Ac, jj, f, a); pt(Ac, jj, f2, b);
+          { const o = Math.pow(1 - Math.min(1, f * 4), 2); a.x += (hsh(id + 21) - 0.5) * 1.4 * o; a.y += (hsh(id + 22) - 0.6) * 2.2 * o; a.z += (hsh(id + 23) - 0.5) * 1.4 * o; }   // 검은 덩어리 속 여기저기서 나온다
           const sw = 0.12 * Math.sin(f * 9 + u * 5 + hr * 6) * Math.sin(Math.PI * f);   // 가닥마다 따로 꿈틀
           const spl = Math.sin(Math.PI * f) * (0.9 + 0.6 * hsh(id + 6));   // 가닥마다 따로 벌어졌다 모임
           a.x += sw * (hr - 0.5) * 2 + spl * (hr - 0.5) * 1.6; a.y += sw * 0.6 + spl * (hsh(id + 7) - 0.4) * 1.2; a.z += sw * (0.5 - hsh(id + 4)) * 2 + spl * (hsh(id + 8) - 0.5) * 1.6;
           d.subVectors(b, a).normalize(); v.subVectors(cam, a).normalize(); w.crossVectors(d, v).normalize();
-          const wd = wd0 * (1.25 - 0.85 * f) * (q === HS ? 0.2 : 1), i = (s * (HS + 1) + q) * 2;
+          const wd = wd0 * (1.15 - 0.45 * f) * (q === HS ? 0.3 : 1), i = (s * (HS + 1) + q) * 2;
           P.setXYZ(i, a.x + w.x * wd, a.y + w.y * wd, a.z + w.z * wd); P.setXYZ(i + 1, a.x - w.x * wd, a.y - w.y * wd, a.z - w.z * wd);
           const vv = f * 2.2 + hr; UV.setXY(i, 0, vv); UV.setXY(i + 1, 1, vv);
           const al = Math.min(1, (reach - f) * 12 + 0.15) * (0.55 + 0.45 * hsh(id + 2));
