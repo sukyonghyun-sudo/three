@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-641 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-643 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-641'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-643'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3989,7 +3989,7 @@ var MeshoptDecoder = (function () {
     // b586 — 시작 연출 정면 장면(開戰) 카메라 · 조명(사용자 「이 장면도 조명과 카메라 조정할 수 있게」) — 조명은 있는 조명의 세기만 그 장면 동안 바꾼다(새 셰이더 없음)
     iD: 1, iY: 1.6, iLook: 1.48, iPush: 0.7, iYaw: 0, iAmb: 1, iMoon: 1, iSpot: 1, iPoint: 1, iExp: 1,
     // b597 — 구간마다(사용자 「연출에서 정지할 수 있어야 · 구간마다 조절 · 각각 저장 버튼」) ① 하늘 한 바퀴 ② 내려옴 ③ 얼굴 정면 ④ 등 뒤로 + 開戰 글자
-    s1T: 3.2, s1H: 22, s1R: 24, s1Turn: 0.9, s1Drop: 4, s2T: 2.4, s3T: 2.8, s4T: 1.6, tIn: 1.8, tOut: 1.2 };
+    s1T: 3.2, s1H: 22, s1R: 24, s1Turn: 0.9, s1Drop: 4, s2T: 2.4, s3T: 2.8, s4T: 1.6, tIn: 1.8, tOut: 1.2, iBdC: 1, iBdS: 1 };   // b642 — 시작 연출 동안 사원증 · 목줄 밝기(게임 값의 배 · 사용자 「연출은 게임이 아니다 · 연출 쪽 밝기 따로」)
   const CF = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('corpse_cinema_v3') || '{}'); } catch (e) { /* */ } return Object.assign({}, DEF, o); })();
   const saveCF = () => { try { localStorage.setItem('corpse_cinema_v3', JSON.stringify(CF)); } catch (e) { /* */ } };
   let L = {};
@@ -3997,7 +3997,7 @@ var MeshoptDecoder = (function () {
   TL();
   CN.cf = CF;
   // b586 — 정면 장면 값은 모두의 기본값으로도(settings.js 「저장」) · 나머지 연출 값은 예전처럼 이 브라우저에만
-  const SECK = { s1: ['s1T', 's1H', 's1R', 's1Turn', 's1Drop'], s2: ['s2T'], s3: ['s3T', 'iD', 'iY', 'iLook', 'iPush', 'iYaw', 'tIn', 'iAmb', 'iMoon', 'iSpot', 'iPoint', 'iExp'], s4: ['s4T', 'tOut'] };
+  const SECK = { s1: ['s1T', 's1H', 's1R', 's1Turn', 's1Drop'], s2: ['s2T'], s3: ['s3T', 'iD', 'iY', 'iLook', 'iPush', 'iYaw', 'tIn', 'iAmb', 'iMoon', 'iSpot', 'iPoint', 'iExp'], s4: ['s4T', 'tOut'], sb: ['iBdC', 'iBdS'] };
   const IK = [].concat(...Object.values(SECK));
   const IL = () => CF.s1T + CF.s2T + CF.s3T + CF.s4T;   // 시작 연출 길이
   (function reg() { const S = window.__settings; if (!S || !S.reg) { setTimeout(reg, 300); return; } S.reg('cinemaIntro', { get: () => { const o = {}; for (const k of IK) o[k] = CF[k]; return o; }, set: (o) => { if (!o) return; for (const k of IK) if (typeof o[k] === 'number' && isFinite(o[k])) CF[k] = o[k]; saveCF(); } }); })();
@@ -4026,6 +4026,7 @@ var MeshoptDecoder = (function () {
     else if (!on && frozen) { G.cfg.monPeace = frozen.peace || false; if (window.__fire && window.__fire.release) window.__fire.release(); else if (window.__fire && frozen.auto !== undefined) window.__fire.auto = frozen.auto;   /* b640 */ frozen.mx.forEach((m, i) => { const v = m.__tsv; delete m.timeScale; m.timeScale = v !== undefined ? v : frozen.ts[i]; }); if (C) C.restT = 0; frozen = null; }
   }
   CN.freeze = freeze;
+  CN.introOn = () => !!intro;   // b642 — 시작 연출 중(lanyard.js 가 연출 밝기를 쓴다)
   CN.active = () => !!(intro || lose || (window.__death && window.__death.active && window.__death.active()));   // 연출 중 — 화면 표지 · 글을 걷는다(tension.js · 아래 CSS)
   // 화면 속 몸(보이는 쪽 skinned mesh)
   function heroSm(G) {
@@ -4322,7 +4323,8 @@ body:not(.tz-live) #cin-btn{visibility:hidden}
       ['② 내 앞으로 내려옴'], ['s2T', '길이', 0.3, 6, 0.1, sec], ['@', 's2'],
       ['③ 얼굴 정면(開戰) — 카메라'], ['s3T', '길이', 0.5, 8, 0.1, sec], ['iD', '카메라 거리', 0.4, 2.5, 0.05, x], ['iY', '카메라 높이', 0.6, 3, 0.02, m], ['iLook', '바라보는 높이', 0.6, 2.2, 0.02, m], ['iPush', '다가가는 거리', 0, 1.5, 0.05, m], ['iYaw', '좌우 각도', -90, 90, 1, deg], ['tIn', '開戰 글자 나오는 때(③ 시작부터)', 0, 6, 0.1, sec],
       ['③ 얼굴 정면 — 조명(이 구간 동안만)'], ['iAmb', '주변광 · 하늘광', 0, 3, 0.05, x], ['iMoon', '달빛', 0, 3, 0.05, x], ['iSpot', '손전등', 0, 3, 0.05, x], ['iPoint', '등롱 · 불빛', 0, 3, 0.05, x], ['iExp', '노출', 0.3, 2.5, 0.05, x], ['@', 's3'],
-      ['④ 등 뒤 게임 카메라로'], ['s4T', '길이', 0.3, 5, 0.1, sec], ['tOut', '開戰 글자 사라지는 때(④ 시작부터)', 0, 5, 0.1, sec], ['@', 's4']];   // b597 — 구간마다
+      ['④ 등 뒤 게임 카메라로'], ['s4T', '길이', 0.3, 5, 0.1, sec], ['tOut', '開戰 글자 사라지는 때(④ 시작부터)', 0, 5, 0.1, sec], ['@', 's4'],
+      ['사원증 · 목줄 — 시작 연출 동안만(게임 밝기의 배)'], ['iBdC', '사원증 카드 밝기', 0, 4, 0.05, x], ['iBdS', '목줄 밝기', 0, 4, 0.05, x], ['@', 'sb']];   // b597 — 구간마다
     const F = {};
     p.innerHTML = `<h4>演出 · 연출</h4>
 <div class="bs"><button class="b w" data-a="lab">☠ 결말 연출실 열기(판은 그대로)</button><button class="b" data-a="intro">▶ 시작 연출</button><button class="b" data-a="real">▶ 진짜로 끝내고 보기</button></div>
@@ -12398,6 +12400,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const sm = e.sm, pr = e.prof, ids = pr && pr.ids; if (!ids || !ids.length) return;
     if (!rv.v) { rv.v = new V(); rv.d = new V(); }
     const pos = sm.geometry.attributes.position, fr = e.fr, v = rv.v, d = rv.d;
+    const old = pr.map((a) => Float32Array.from(a));   // b643 — 다시 잰 앞면을 예전 값과 섞는다(0.12초마다 툭툭 바뀌어 줄이 오르내렸다)
     for (const a of pr) a.fill(-9);
     for (let k = 0; k < ids.length; k++) {
       const i = ids[k]; v.fromBufferAttribute(pos, i);
@@ -12409,6 +12412,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       if (z > pr[band][bi]) pr[band][bi] = z;
     }
     for (const a of pr) for (let i = 0; i < NB; i++) if (a[i] < -8) { let p = i - 1, q = i + 1; while (p >= 0 && a[p] < -8) p--; while (q < NB && a[q] < -8) q++; a[i] = p >= 0 && q < NB ? (a[p] + a[q]) / 2 : p >= 0 ? a[p] : q < NB ? a[q] : -9; }
+    pr.forEach((a, b) => { const o = old[b]; for (let i = 0; i < NB; i++) if (o[i] > -8 && a[i] > -8) a[i] = o[i] + (a[i] - o[i]) * 0.3; });
   }
   // 등 표면(가장 뒤 · 음수) — 없으면 9
   function backZ(e, x, y) {
@@ -12429,6 +12433,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
 
   // ── 한 사람 ──
   const ents = new Map();   // sm → 상태
+  B.ents = ents;   // 살펴보기용(읽기만)
   function make(sm, kind) {
     const e = {
       sm, kind, seen: performance.now(), prof: null, init: false, card: null, strap: null,
@@ -12549,6 +12554,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       fence(e, e.hook, -pp.cardTop * s, pp.front * s); fence(e, e.bot, -(pp.cardTop + 0.04) * s, pp.front * s);
       for (let i = 2; i < N - 2; i++) { fence(e, e.pL[i], 9, -0.01 * s); fence(e, e.pR[i], 9, -0.01 * s); }
       cardOut(e, pp, s);
+      { const ay = e.fr.u.dot(tmp.a.subVectors(e.aL, e.fr.N)) - 0.005 * s; for (const arr of [e.pL, e.pR]) for (let i = 0; i < N - 2; i++) { const q = arr[i], y = e.fr.u.dot(tmp.a.subVectors(q, e.fr.N)); if (y > ay) q.addScaledVector(e.fr.u, ay - y); } }   // b643 — 줄은 목에 거는 점보다 위로 못 올라감(사용자 「옆에서 보면 목줄이 올라왔다 내려갔다 · 이상하다」 — 허지용)
       if (pp.stick > 0) for (let i = 0; i < 2; i++) { const w = (1 - i / 2) * pp.stick; stickTo(e, e.pL[i], w, s); stickTo(e, e.pR[i], w, s); }   // b577 — 카드 네 모서리 · 위아래 가운데까지 몸 밖으로(사용자 「카드가 몸을 관통」)   // b605 — 맨 위 두 마디만
     }
   }
@@ -12636,7 +12642,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const C = window.__cast, off = !B.on || fxOff();
     for (const e of ents.values()) { const p = PK(e), key = [p.drop, p.sideX, p.neckY, p.neckZ, p.size].join(); if (key !== e._key) { e._key = key; e.init = false; } }   // 줄 길이 · 목 위치 · 크기가 바뀌면 다시 건다
     const T3 = window.__title3, onT = !!(T3 && T3.on && !(G && G.started)), tc = (T3 && T3.cf) || {};   // b632 — 타이틀 화면이면 빛 영향 없는 재질 + 타이틀 조절 밝기 · 게임은 예전 그대로
-    for (const k in B.KINDS) { const m = mats[k], ms = mats['s_' + k], b = (B.per[k] || B.DEF).bright; if (m && m.color.r !== b) m.color.setScalar(b); const sb = (B.per[k] || B.DEF).strapBright; if (ms && ms.color.r !== sb) ms.color.setScalar(sb); const u = mats['u_' + k]; if (u) u.color.setScalar(tc.bdC ?? 0.85); }
+    const CNi = window.__cinema, onI = !!(CNi && CNi.introOn && CNi.introOn()), ic = onI && CNi.cf ? CNi.cf : null;   // b642 — 시작 연출 동안은 연출 조절의 배(게임 값은 그대로)
+    for (const k in B.KINDS) { const m = mats[k], ms = mats['s_' + k], b = (B.per[k] || B.DEF).bright * (ic ? (ic.iBdC ?? 1) : 1); if (m && m.color.r !== b) m.color.setScalar(b); const sb = (B.per[k] || B.DEF).strapBright * (ic ? (ic.iBdS ?? 1) : 1); if (ms && ms.color.r !== sb) ms.color.setScalar(sb); const u = mats['u_' + k]; if (u) u.color.setScalar(tc.bdC ?? 0.85); }
     if (mats.u_strap) mats.u_strap.color.setScalar(tc.bdS ?? 0.9);
     for (const sm of people(G)) {
       const kind = C && C.badgeKind ? C.badgeKind(sm) : null;
