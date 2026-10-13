@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-619 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-621 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-619'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-621'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6033,9 +6033,8 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     ...[['m17', '조상준 — 내 캐릭터'], ['son', '손주용 — 예전 son'], ['m16', '허지용 — 안경']].map(([kind, who]) => ({ title: '사원증 · ' + who, sub: '그 몸을 입은 나 · 봇 모두 · 끄기는 시연실 「사원증 목걸이」', save: true, rows:
       [['bright', '카드 밝기', 0, 1.5, 0.05, 0.55, pct], ['size', '카드 크기', 0.5, 2, 0.05, 1, pct], ['flap', '펄럭임(달릴 때)', 0, 2, 0.05, 0.35, pct], ['swing', '흔들림', 0.1, 2, 0.05, 0.6, pct],
         ['drop', '줄 길이(카드 높이)', 0.18, 0.55, 0.01, 0.34, (v) => `${Math.round(v * 100)}cm`], ['sideX', '목 좌우 간격', 0.02, 0.12, 0.005, 0.062, (v) => `${(v * 200).toFixed(1)}cm`],
-        ['hangY', '목 거는 높이(어깨 위)', -0.04, 0.06, 0.0025, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['hangZ', '목 앞뒤', -0.04, 0.06, 0.0025, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`],
+        ['neckY', '목 거는 높이', -0.08, 0.1, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`], ['neckZ', '목 앞뒤', -0.2, 0.06, 0.005, 0, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}cm`],
         ['cardTop', '카드 최고 높이(목 아래로)', 0.05, 0.45, 0.01, 0.16, (v) => `${Math.round(v * 100)}cm`], ['front', '카드 몸 앞 최소', 0, 0.12, 0.005, 0.03, (v) => `${(v * 100).toFixed(1)}cm`],
-        ['loopOn', '목 뒤로 두르기', 0, 1, 1, 0, (v) => (v > 0.5 ? '켬' : '끔')], ['backSag', '목 뒤 처짐', 0, 0.06, 0.0025, 0.015, (v) => `${(v * 100).toFixed(1)}cm`], ['backOut', '목 뒤 줄 띄움(옷 밖)', 0, 0.04, 0.001, 0.006, (v) => `${(v * 100).toFixed(1)}cm`],
         ['stick', '목줄 가슴에 붙는 정도', 0, 1, 0.05, 0, pct],
         ['strapBright', '목줄 밝기(무늬)', 0, 2, 0.05, 1, pct],
         ['cardGap', '카드 몸에서 띄움', 0, 0.06, 0.002, 0.012, (v) => `${(v * 100).toFixed(1)}cm`],
@@ -12159,7 +12158,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }, window.__badge || {}));   // 조절 창이 먼저 넣은 값(저장값)은 그대로
   // b571 — 캐릭터별(사용자 「캐릭터 별로 수정할 수 있게」) · 조절 창 「사원증 · 조상준 / 손주용 / 허지용」
   B.KINDS = { m17: '조상준(내 캐릭터)', son: '손주용(예전 son)', m16: '허지용(안경)' };
-  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006, cardTop: 0.16, front: 0.03, backShow: 0, stiff: 0.6, cardGap: 0.012, strapBright: 1, stick: 0, neckLoop: 1, loopOn: 0, loopFit: 1.06, backSag: 0.005, hangY: 0, hangZ: 0 };   // b609 — 목 뒤로 두르는 고리(사용자 「뒷면까지 연결해서 정말 목에 걸린 것처럼」) · 목 둘레 맞춤   // b605 — 붙이기 기본 끔(b604 는 줄을 묶어 카드가 안 출렁였다)   // b604 — 줄 위쪽을 가슴에 붙임(사용자 「목줄이 꺾여 · 맞추기 어렵고 어색하게 떠 있다」)   // b600 — 줄 밝기는 카드와 따로(사용자 「목줄에 무늬가 안 나와」 — 카드 밝기 15% 에 묶여 무늬가 검게 눌렸다)   // b575 — 뒷목 줄 기본 숨김(사용자 「목 뒤로 목줄이 튀어나온다 · 조절해도 안 없어져」)
+  B.DEF = { bright: 0.55, size: 1, flap: 0.35, swing: 0.6, drop: 0.34, sideX: 0.062, neckY: 0, neckZ: 0, backY: 0.03, backOut: 0.006, cardTop: 0.16, front: 0.03, backShow: 0, stiff: 0.6, cardGap: 0.012, strapBright: 1, stick: 0 };   // b605 — 붙이기 기본 끔(b604 는 줄을 묶어 카드가 안 출렁였다)   // b604 — 줄 위쪽을 가슴에 붙임(사용자 「목줄이 꺾여 · 맞추기 어렵고 어색하게 떠 있다」)   // b600 — 줄 밝기는 카드와 따로(사용자 「목줄에 무늬가 안 나와」 — 카드 밝기 15% 에 묶여 무늬가 검게 눌렸다)   // b575 — 뒷목 줄 기본 숨김(사용자 「목 뒤로 목줄이 튀어나온다 · 조절해도 안 없어져」)
   // b582 — 사용자가 저장한 값을 캐릭터별 기본값으로 고정(사용자 「현재 사원증 값은 저장된 걸 기본으로 고정」 · 10-13 저장값)
   B.DEFK = { m17: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.34, sideX: 0.08, neckY: 0.045, neckZ: 0 }, son: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.37, sideX: 0.062, neckY: 0, neckZ: 0 }, m16: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.31, sideX: 0.085, neckY: 0.055, neckZ: -0.015 } };
   B.per = B.per || {};
@@ -12242,7 +12241,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     return g;
   }
   // ── 목줄 띠(두 면) — 가닥: 앞 왼쪽 N · 앞 오른쪽 N · 목 뒤 고리 9 ──
-  const BACKN = 9, SUB = 4, NS = (N - 1) * SUB + 1, LRAW = 15, LSUB = 3, NL = (LRAW - 1) * LSUB + 1, LINES = [NS, NS, NL];   // b609 — 셋째 줄 = 목 뒤 고리   // b581 — 목 뒤로 감기는 줄 없앰(사용자 「목 뒤로 감기는 부분을 없애자」 · 목에 끼우는 식)   // b576 — 앞 줄은 마디 사이를 곡선(캣멀-롬)으로 4칸씩 — 꺾인 선이 안 보이게
+  const BACKN = 9, SUB = 4, NS = (N - 1) * SUB + 1, LINES = [NS, NS];   // b581 — 목 뒤로 감기는 줄 없앰(사용자 「목 뒤로 감기는 부분을 없애자」 · 목에 끼우는 식)   // b576 — 앞 줄은 마디 사이를 곡선(캣멀-롬)으로 4칸씩 — 꺾인 선이 안 보이게
   function strapGeo() {
     const nv = LINES.reduce((s, k) => s + k * 4, 0), g = new BG(), idx = [];
     g.setAttribute('position', new BA(new Float32Array(nv * 3), 3)); g.setAttribute('normal', new BA(new Float32Array(nv * 3), 3)); g.setAttribute('uv', new BA(new Float32Array(nv * 2), 2));
@@ -12262,9 +12261,6 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
 
   // ── 몸 앞면 높이표 — 목뼈 기준(아래로 0 ~ 0.8m · 2.5cm 칸) · 가운데(|x|<5cm) · 중간(5~10) · 바깥(10~17) ──
   const NB = 34, YTOP = 0.05, YSTEP = 0.025, BANDS = [0.05, 0.1, 0.17];
-  const HG = 18, HC = 0.02, HO = 0.17;   // b610 — 위에서 본 몸 높이표(어깨 · 깃 · 목 위 표면) · 2cm 칸 · 옆 앞뒤 ±17cm — 목 뒤 줄이 중력으로 그 위에 얹힌다
-  const topPut = (tp, x, y, z) => { const ix = Math.floor((x + HO) / HC), iz = Math.floor((z + HO) / HC); if (ix < 0 || iz < 0 || ix >= HG || iz >= HG) return; const k = ix * HG + iz; if (y > tp[k]) tp[k] = y; };
-  const topFill = (tp) => { for (let ix = 0; ix < HG; ix++) for (let iz = 0; iz < HG; iz++) { const k = ix * HG + iz; if (tp[k] > -8) continue; let n = 0, sm = 0; for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const x2 = ix + a, z2 = iz + b; if (x2 < 0 || z2 < 0 || x2 >= HG || z2 >= HG) continue; const v = tp[x2 * HG + z2]; if (v > -8) { n++; sm += v; } } if (n >= 3) tp[k] = sm / n - 1e-4; } };
   function frameOf(sm, bm, out) {
     const nk = bm.mixamorigNeck, hp = bm.mixamorigHips, la = bm.mixamorigLeftArm || bm.mixamorigLeftShoulder, ra = bm.mixamorigRightArm || bm.mixamorigRightShoulder;
     if (!nk || !hp || !la || !ra) return null;
@@ -12278,29 +12274,27 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
   function measure(sm, fr) {
     const g = sm.geometry, pos = g.attributes.position, n = pos.count, step = Math.max(1, Math.floor(n / 14000)), v = new V(), d = new V();
-    const prof = BANDS.map(() => new Float32Array(NB).fill(-9)), back = BANDS.map(() => new Float32Array(NB).fill(9)), cand = [], top = new Float32Array(HG * HG).fill(-9);
+    const prof = BANDS.map(() => new Float32Array(NB).fill(-9)), back = BANDS.map(() => new Float32Array(NB).fill(9)), cand = [];
     if (!sm.applyBoneTransform && !sm.boneTransform) return null;
-    const si = g.attributes.skinIndex, sw = g.attributes.skinWeight, bones = sm.skeleton.bones, dom = (i) => { if (!si || !sw) return ''; let bw = -1, bb = 0; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > bw) { bw = w; bb = si.getComponent(i, k); } } const b = bones[bb]; return b ? b.name : ''; }, army = (i) => /Arm|Hand/.test(dom(i));
-    const topI = new Int32Array(HG * HG).fill(-1);   // b612 — 칸마다 가장 높은 점(다시 잴 때 그 점만)
+    const si = g.attributes.skinIndex, sw = g.attributes.skinWeight, bones = sm.skeleton.bones, army = (i) => { if (!si || !sw) return false; let bw = -1, bb = 0; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > bw) { bw = w; bb = si.getComponent(i, k); } } const b = bones[bb]; return !!(b && /Arm|Hand/.test(b.name)); };
     for (let i = 0; i < n; i += step) {
       v.fromBufferAttribute(pos, i);
       if (sm.applyBoneTransform) sm.applyBoneTransform(i, v); else sm.boneTransform(i, v);
       v.applyMatrix4(sm.matrixWorld);
       d.subVectors(v, fr.N);
       const x = Math.abs(d.dot(fr.r)), y = d.dot(fr.u), z = d.dot(fr.f);
-      if (x / fr.sc < HO && Math.abs(z / fr.sc) < HO && y / fr.sc > -0.12 && y / fr.sc < 0.25 && !/Arm|Hand|Head|Neck/.test(dom(i))) { const xs = d.dot(fr.r) / fr.sc, ix = Math.floor((xs + HO) / HC), iz = Math.floor((z / fr.sc + HO) / HC); if (ix >= 0 && iz >= 0 && ix < HG && iz < HG) { const k = ix * HG + iz; if (y / fr.sc > top[k]) { top[k] = y / fr.sc; topI[k] = i; } } }   // b612 — 어깨 · 깃 윗면(머리 · 목 · 팔 빼고 · 목 뼈 위 25cm 까지 — 예전엔 5cm 에서 잘려 어깨 위를 몰랐다)
       const bi = Math.floor((YTOP - y / fr.sc) / YSTEP); if (bi < 0 || bi >= NB) continue;
       const band = x / fr.sc < BANDS[0] ? 0 : x / fr.sc < BANDS[1] ? 1 : x / fr.sc < BANDS[2] ? 2 : -1; if (band < 0) continue;
       if (z / fr.sc > prof[band][bi]) prof[band][bi] = z / fr.sc;
       if (z / fr.sc < back[band][bi]) back[band][bi] = z / fr.sc;   // b571 — 등 · 목 뒤(깃) 표면
-      if (!army(i)) cand.push(i);   // b609 — 앞 · 뒤 모두(목 뒤 고리가 등 · 깃 표면을 지금 자세로 따라가게)   // b577 — 몸 앞쪽 점(팔 · 손 제외) — 달리며 숙일 때 다시 잰다
+      if (z / fr.sc > -0.03 && !army(i)) cand.push(i);   // b577 — 몸 앞쪽 점(팔 · 손 제외) — 달리며 숙일 때 다시 잰다
     }
     for (const pr of prof) {   // 빈 칸 메움
       for (let i = 0; i < NB; i++) if (pr[i] < -8) { let a = i - 1, b = i + 1; while (a >= 0 && pr[a] < -8) a--; while (b < NB && pr[b] < -8) b++; pr[i] = a >= 0 && b < NB ? (pr[a] + pr[b]) / 2 : a >= 0 ? pr[a] : b < NB ? pr[b] : -9; }
     }
     for (const pr of back) for (let i = 0; i < NB; i++) if (pr[i] > 8) { let a = i - 1, b = i + 1; while (a >= 0 && pr[a] > 8) a--; while (b < NB && pr[b] > 8) b++; pr[i] = a >= 0 && b < NB ? (pr[a] + pr[b]) / 2 : a >= 0 ? pr[a] : b < NB ? pr[b] : 9; }
-    prof.back = back; topFill(top); prof.top = top; { const t = []; for (const i of topI) if (i >= 0) t.push(i); prof.tids = Int32Array.from(t); }
-    { const st2 = Math.max(1, Math.ceil(cand.length / 2600)), ids = []; for (let k = 0; k < cand.length; k += st2) ids.push(cand[k]); prof.ids = Int32Array.from(ids); }
+    prof.back = back;
+    { const st2 = Math.max(1, Math.ceil(cand.length / 1600)), ids = []; for (let k = 0; k < cand.length; k += st2) ids.push(cand[k]); prof.ids = Int32Array.from(ids); }
     return prof;
   }
   // b577 — 앞면 높이표를 지금 자세로 다시(0.12초마다 · 앞쪽 점 1600개만) — 처음 한 번만 재서 달리며 숙이면 카드가 몸을 뚫었다
@@ -12310,8 +12304,6 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     if (!rv.v) { rv.v = new V(); rv.d = new V(); }
     const pos = sm.geometry.attributes.position, fr = e.fr, v = rv.v, d = rv.d;
     for (const a of pr) a.fill(-9);
-    const bk = pr.back; for (const a of bk) a.fill(9);
-    const tp = pr.top; if (tp) tp.fill(-9);
     for (let k = 0; k < ids.length; k++) {
       const i = ids[k]; v.fromBufferAttribute(pos, i);
       if (sm.applyBoneTransform) sm.applyBoneTransform(i, v); else sm.boneTransform(i, v);
@@ -12320,47 +12312,28 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       const bi = Math.floor((YTOP - y) / YSTEP); if (bi < 0 || bi >= NB) continue;
       const band = x < BANDS[0] ? 0 : x < BANDS[1] ? 1 : x < BANDS[2] ? 2 : -1; if (band < 0) continue;
       if (z > pr[band][bi]) pr[band][bi] = z;
-      if (z < bk[band][bi]) bk[band][bi] = z;
     }
-    if (tp && pr.tids) { for (let k = 0; k < pr.tids.length; k++) { const i = pr.tids[k]; v.fromBufferAttribute(pos, i); if (sm.applyBoneTransform) sm.applyBoneTransform(i, v); else sm.boneTransform(i, v); v.applyMatrix4(sm.matrixWorld); d.subVectors(v, fr.N); topPut(tp, d.dot(fr.r) / fr.sc, d.dot(fr.u) / fr.sc, d.dot(fr.f) / fr.sc); } topFill(tp); }
-    for (const a of bk) for (let i = 0; i < NB; i++) if (a[i] > 8) { let p = i - 1, q = i + 1; while (p >= 0 && a[p] > 8) p--; while (q < NB && a[q] > 8) q++; a[i] = p >= 0 && q < NB ? (a[p] + a[q]) / 2 : p >= 0 ? a[p] : q < NB ? a[q] : 9; }
     for (const a of pr) for (let i = 0; i < NB; i++) if (a[i] < -8) { let p = i - 1, q = i + 1; while (p >= 0 && a[p] < -8) p--; while (q < NB && a[q] < -8) q++; a[i] = p >= 0 && q < NB ? (a[p] + a[q]) / 2 : p >= 0 ? a[p] : q < NB ? a[q] : -9; }
   }
   // 등 표면(가장 뒤 · 음수) — 없으면 9
-  // b609 — 옆으로도 띠 사이를 이어서(예전: 띠마다 계단 → 고리 · 줄이 꺾였다)
-  const BC = [0.025, 0.075, 0.135];
-  function bandZ(arrs, ax, yy, bad) {
-    const i = Math.floor(yy), t = yy - i, at = (b) => { const pr = arrs[b], a0 = pr[i], a1 = pr[Math.min(NB - 1, i + 1)]; if (bad(a0) || bad(a1)) return bad(a0) ? a1 : a0; return a0 + (a1 - a0) * t; };
-    if (ax <= BC[0]) return at(0);
-    const b = ax <= BC[1] ? 0 : 1, k = Math.min(1, (ax - BC[b]) / (BC[b + 1] - BC[b])), z0 = at(b), z1 = at(b + 1);
-    if (bad(z0)) return z1; if (bad(z1)) return z0; return z0 + (z1 - z0) * k;
-  }
   function backZ(e, x, y) {
     const ax = Math.abs(x) / e.fr.sc, yy = (YTOP - y / e.fr.sc) / YSTEP;
     if (ax >= BANDS[2] || yy < 0 || yy > NB - 1) return 9;
-    const z = bandZ(e.prof.back, ax, yy, (v) => v > 8);
+    const band = ax < BANDS[0] ? 0 : ax < BANDS[1] ? 1 : 2, pr = e.prof.back[band], i = Math.floor(yy), t = yy - i;
+    const z = pr[i] + (pr[Math.min(NB - 1, i + 1)] - pr[i]) * t;
     return z > 8 ? 9 : z * e.fr.sc;
-  }
-  // b610 — 몸 위 표면 높이(미터 · 그 자리에 몸이 없으면 -9) · 이웃 칸이 다 있으면 부드럽게 잇는다
-  function topY(e, x, z) {
-    const tp = e.prof && e.prof.top; if (!tp) return -9;
-    const s = e.fr.sc, gx = (x / s + HO) / HC - 0.5, gz = (z / s + HO) / HC - 0.5, ix = Math.floor(gx), iz = Math.floor(gz), tx = gx - ix, tz = gz - iz;
-    const at = (a, b) => (a < 0 || b < 0 || a >= HG || b >= HG ? -9 : tp[a * HG + b]);
-    const a = at(ix, iz), b = at(ix + 1, iz), c = at(ix, iz + 1), d = at(ix + 1, iz + 1);
-    if (a > -8 && b > -8 && c > -8 && d > -8) return ((a * (1 - tx) + b * tx) * (1 - tz) + (c * (1 - tx) + d * tx) * tz) * s;
-    const n = at(Math.round(gx), Math.round(gz)); return n > -8 ? n * s : -9;
   }
   // 몸 앞면(그 높이 · 옆 위치) — 몸 비율(sc) 단위가 아니라 미터
   function frontZ(e, x, y) {
     const ax = Math.abs(x) / e.fr.sc, yy = (YTOP - y / e.fr.sc) / YSTEP;
     if (ax >= BANDS[2] || yy < 0 || yy > NB - 1) return -9;
-    const z = bandZ(e.prof, ax, yy, (v) => v < -8);
+    const band = ax < BANDS[0] ? 0 : ax < BANDS[1] ? 1 : 2, pr = e.prof[band], i = Math.floor(yy), t = yy - i;
+    const z = pr[i] + (pr[Math.min(NB - 1, i + 1)] - pr[i]) * t;
     return z < -8 ? -9 : z * e.fr.sc;
   }
 
   // ── 한 사람 ──
   const ents = new Map();   // sm → 상태
-  B.ents = ents;   // b610 — 살펴보기용(읽기만)
   function make(sm, kind) {
     const e = {
       sm, kind, seen: performance.now(), prof: null, init: false, card: null, strap: null,
@@ -12377,22 +12350,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
   function drop(e) { try { e.card.parent && e.card.parent.remove(e.card); e.strap.parent && e.strap.parent.remove(e.strap); e.card.geometry.dispose(); e.strap.geometry.dispose(); } catch (er) { /* */ } ents.delete(e.sm); }
   const W = (e, x, y, z, out) => out.copy(e.fr.N).addScaledVector(e.fr.r, x).addScaledVector(e.fr.u, y).addScaledVector(e.fr.f, z);
-  // b617 — 목 굵기(목 뼈 4cm 위 앞 · 뒤 표면) — 고정점 · 고리가 같이 쓴다
-  function neckDims(e, off) {
-    const s = e.fr.sc; let zf = frontZ(e, 0, 0.04 * s), zb = backZ(e, 0, 0.04 * s); if (zf < -8 || zb > 8 || zf - zb < 0.06 * s || zf - zb > 0.18 * s) { zf = 0.065 * s; zb = -0.055 * s; }
-    const rz = (zf - zb) / 2 + off; return { zc: (zf + zb) / 2, rz, rx: rz * 0.95 };
-  }
   function anchors(e) {
-    const snap = !e.init || !e.anS; if (!e.anT) { e.anT = new V(); e.anS = null; }
-    // b617 — 목 옆 어깨 위에 건다(사용자 「왜 앞에 목줄이 떠 있냐 · 처져 있어야지」 — 예전 고정점은 깃 앞면 바깥(목 앞 8~15cm 허공) · 높이도 턱 근처였다)
-    //   옆 = 목 좌우 간격(목보다 1cm 바깥 이상) · 앞뒤 = 목 한가운데 + 「목 앞뒤」 · 높이 = 그 자리 어깨 · 깃 윗면 + 「목 거는 높이」 → 앞 줄은 여기서 가슴으로 늘어진다
-    { const p = PK(e), s = e.fr.sc, off = (p.backOut + 0.004) * s, nd = neckDims(e, off), x = Math.max(p.sideX * s, nd.rx + 0.01 * s);
-      let h = -9, n = 0, sm = 0; for (const sg of [-1, 1]) for (const dz of [-0.01, 0, 0.01]) { const v = topY(e, sg * x, nd.zc + dz * s); if (v > -8) { sm += v; n++; } } h = n ? sm / n : (p.neckY - 0.03) * s;
-      const y = h - 0.004 * s + p.hangY * s, z = nd.zc + p.hangZ * s;   // b618 — 깃 · 어깨 윗면 살짝 안(줄 끝이 옷에 끼워진 듯 숨는다)
-      if (e.prof && e.prof.top) {
-        // b618 — 몸 표를 0.12초마다 다시 재며 고정점이 툭툭 튀어 줄이 부들거렸다 → 몸 기준 자리에서 천천히 따라감
-        e.anT.set(x, y, z); if (snap) e.anS = e.anT.clone(); else e.anS.lerp(e.anT, 0.06);
-        W(e, -e.anS.x, e.anS.y, e.anS.z, e.aL); W(e, e.anS.x, e.anS.y, e.anS.z, e.aR); return; } }
     const p = PK(e), s = e.fr.sc, z0 = Math.max(0, ...[-0.035, -0.06, -0.09, -0.12].map((yy) => frontZ(e, p.sideX * s, yy * s))) + B.margin * s;   /* b605 — 깃이 가장 튀어나온 곳까지(그 아래 12cm) 넘는 높이에서 시작 */   // b576 — 목 옆 한가운데가 아니라 쇄골 쪽(조금 앞 · 아래)에서 시작   // b605 — 깃 표면 위에서 시작(깃 안쪽에서 시작해 깃 위로 넘어오며 꺾였다)
     W(e, -p.sideX * s, p.neckY * s - 0.03 * s, z0 + p.neckZ * s, e.aL); W(e, p.sideX * s, p.neckY * s - 0.03 * s, z0 + p.neckZ * s, e.aR);
   }
@@ -12407,7 +12365,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       e.pL[i].lerpVectors(e.aL, e.hook, t); e.oL[i].copy(e.pL[i]); e.pR[i].lerpVectors(e.aR, e.hook, t); e.oR[i].copy(e.pR[i]);
     }
     e.pL[N - 2] = e.hook; e.pR[N - 2] = e.hook; e.oL[N - 2] = e.hookO; e.oR[N - 2] = e.hookO;   // 두 가닥 끝 = 고리(같은 점)
-    e.lastN.copy(e.fr.N); e.vel.set(0, 0, 0); e.init = true; e.lpI = false;
+    e.lastN.copy(e.fr.N); e.vel.set(0, 0, 0); e.init = true;
   }
   const tmp = { d: null, a: null, b: null };
   function collide(e, p, pad) {
@@ -12456,7 +12414,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     }
     if (!lead.t) lead.t = new V();
     const t = lead.t.copy(a0).addScaledVector(e.fr.u, -0.85 * e.segL).addScaledVector(e.fr.f, 0.3 * e.segL).addScaledVector(e.fr.r, -sg * 0.2 * e.segL);
-    void t;   // b608 — 첫 마디 당기기 뺌(깃 위에서 S 자로 접혔다)   // b578 — 첫 마디만 살짝(예전 0.35 × 8번 — 붙박였다)
+    arr[0].lerp(t, 0.06 * Math.min(1, st));   // b578 — 첫 마디만 살짝(예전 0.35 × 8번 — 붙박였다)
   }
   function rod(a, b, L, wa, wb) {
     const d = tmp.a.subVectors(b, a), len = d.length(); if (len < 1e-6) return;
@@ -12501,18 +12459,17 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
   // ── 그리기 ──
   const vA = { t: null, n: null, sd: null, ax: null, q: null };
-  function line(e, pts, o, uvLen, P, Nn, U, loop) {
+  function line(e, pts, o, uvLen, P, Nn, U) {
     const k = pts.length, w = B.strapW * e.fr.sc, per = w * (328 / 32);   // 띠 무늬 한 마디 길이
     let acc = uvLen || 0;
     for (let i = 0; i < k; i++) {
       const p = pts[i], a = pts[Math.max(0, i - 1)], b = pts[Math.min(k - 1, i + 1)];
       vA.t.subVectors(b, a).normalize();
-      // b608 — 띠 앞면은 늘 몸 앞쪽(사용자 「꼬인 거 평생 꼬여 있냐」 — 예전: 등뼈 축에서 점으로의 방향 → 목 근처에서 축과 붙어 방향이 휙 돌며 띠가 뒤집혔다)
-      if (loop) { const d0 = vA.q.subVectors(p, e.fr.N); vA.n.copy(d0).addScaledVector(e.fr.u, -d0.dot(e.fr.u)); if (vA.n.lengthSq() < 1e-6) vA.n.copy(e.fr.f); vA.n.normalize().addScaledVector(e.fr.u, 0.35).normalize(); const wq = Math.min(1, Math.min(i, k - 1 - i) / (k * 0.14)); vA.n.multiplyScalar(wq).addScaledVector(e.fr.f, 1 - wq); } else vA.n.copy(e.fr.f);   // b609 — 고리는 목 바깥 · 살짝 위를 보게
-      vA.n.addScaledVector(vA.t, -vA.n.dot(vA.t)); if (vA.n.lengthSq() < 1e-6) vA.n.copy(e.fr.u).addScaledVector(vA.t, -e.fr.u.dot(vA.t)); vA.n.normalize();
+      // 바깥 방향 = 등뼈 조금 뒤 축에서 이 점으로
+      const d = vA.q.subVectors(p, e.fr.N), y = d.dot(e.fr.u);
+      vA.ax.copy(e.fr.N).addScaledVector(e.fr.u, y).addScaledVector(e.fr.f, -0.03 * e.fr.sc);
+      vA.n.subVectors(p, vA.ax); vA.n.addScaledVector(vA.t, -vA.n.dot(vA.t)); if (vA.n.lengthSq() < 1e-8) vA.n.copy(e.fr.f); vA.n.normalize();
       vA.sd.crossVectors(vA.t, vA.n).normalize();
-      if (i > 0 && vA.sd.dot(vA.ps) < 0) { vA.sd.negate(); vA.n.negate(); }   // 이웃 마디와 같은 쪽(뒤집힘 없음)
-      vA.ps.copy(vA.sd);
       if (i > 0) acc += p.distanceTo(pts[i - 1]);
       const v = acc / per;
       for (let s = 0; s < 2; s++) {
@@ -12524,50 +12481,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     }
     return o + k * 4;
   }
-  const backPts = [], fpL = [], fpR = [], sL = [], sR = [], lRaw = [], lOut = [];
-  // b609 — 목 뒤 고리: 앞 줄 시작점 → 어깨 위(목 쪽으로) → 목 뒤를 감싸 → 반대편 · 목 둘레는 지금 자세의 앞 · 뒤 표면으로 · 등 쪽은 옷 표면 밖
-  // b610 — 그린 모양이 아니라 진짜 끈(사용자 「자연스럽게 중력에 의해 처져야지」 — b609 는 정해 둔 타원이라 목 옆에서 줄이 서 있었다)
-  //   몸 기준 자리(목 뼈 기준 · 옆 · 위 · 앞)에서 푼다: 두 끝 = 앞 줄 시작점 · 사이 13마디 = 무게로 내려앉아 어깨 · 깃 · 목 뒤 표면 위에 얹힘(위 표면 · 등 · 목 기둥 밖으로 가장 얕게 밀어냄)
-  //   길이 = 목을 딱 감는 길이 × 「목 뒤 줄 여유」 — 여유만큼 목 뒤가 처진다
-  const LC = { d: null, q: null }, hs = [];
-  function loc(e, w, out) { const d = LC.d.subVectors(w, e.fr.N); return out.set(d.dot(e.fr.r), d.dot(e.fr.u), d.dot(e.fr.f)); }
-  function neckLoop(e, p) {
-    // b611 — 목 둘레를 따라(사용자 「목을 자연스럽게 감싸야지」 — b610 은 어깨 위로 넓게 돌았다)
-    //   목 굵기 = 목 뼈 4cm 위(목만 있는 높이)의 앞 · 뒤 표면 · 줄 높이 = 목 바로 바깥 옷/어깨 표면(목 밑동에 얹힘) · 목 뒤는 「목 뒤 처짐」만큼 내려앉되 등 표면 밖
-    const s = e.fr.sc; while (lRaw.length < LRAW) lRaw.push(new V());
-    if (!LC.d) { LC.d = new V(); LC.q = new V(); }
-    if (!e.lp) { e.lp = []; e.lpo = []; for (let i = 0; i < LRAW; i++) { e.lp.push(new V()); e.lpo.push(new V()); } e.lpI = false; }
-    const lp = e.lp, tg = e.lpo, off = (p.backOut + 0.004) * s;
-    loc(e, e.aL, tg[0]); loc(e, e.aR, tg[LRAW - 1]);
-    const { zc, rz, rx } = neckDims(e, off);
-    const aA = (a) => Math.atan2((a.z - zc) / rz, a.x / rx);
-    let tL = aA(tg[0]), tR = aA(tg[LRAW - 1]); if (tL < 0) tL += Math.PI * 2; if (tR > Math.PI) tR -= Math.PI * 2;   // 왼쪽 ≈ 130° · 오른쪽 ≈ 50°
-    const t0 = tL, t1 = tR + Math.PI * 2, NR = LRAW - 2;   // b617 — 고정점이 목 옆이라 거기서 바로 감는다   // 고정점에서 조금 뒤부터 목을 감는다
-    // b616 — 몸 표면을 점마다 따라가지 않는다(사용자 「모델링 개무시하고 자연스럽게 구부러지게」 — 표면 따라 울퉁불퉁 · 꺾였다)
-    //   목 둘레 매끈한 타원 하나 · 높이는 한 숫자(어깨 위로 올라가는 만큼) + 목 뒤 처짐 · 고정점에서 타원으로는 부드럽게 합류 · 끝으로 여러 번 고르게
-    const ya = (tg[0].y + tg[LRAW - 1].y) / 2;
-    const R = Math.max(rx + 0.004 * s, Math.abs(tg[0].x)), RZ = rz + 0.004 * s;   // b617 — 목에 딱(고정점을 지나는 타원)
-    for (let k = 0; k < NR; k++) {
-      const u = (k + 1) / (NR + 1), th = t0 + (t1 - t0) * u, f = Math.sin(Math.PI * u);
-      const x = Math.cos(th) * R, y = ya - p.backSag * s * Math.pow(f, 4); let z = zc + Math.sin(th) * RZ;
-      const bz = backZ(e, x, y); if (z < zc && bz < 8 && z > bz - off) z = bz - off;   // 등 · 깃 표면 밖
-      tg[k + 1].set(x, y, z);
-    }
-    for (let pass = 0; pass < 8; pass++) { for (let k = 1; k <= NR; k++) hs[k] = (hs[k] || new V()).copy(tg[k - 1]).add(tg[k + 1]).multiplyScalar(0.25).addScaledVector(tg[k], 0.5); for (let k = 1; k <= NR; k++) tg[k].copy(hs[k]); }
-    if (!e.lpI) { for (let i = 0; i < LRAW; i++) lp[i].copy(tg[i]); e.lpI = true; }
-    else for (let i = 0; i < LRAW; i++) lp[i].lerp(tg[i], i === 0 || i === LRAW - 1 ? 1 : 0.35);   // 0.12초마다 다시 재는 표에 튀지 않게
-    for (let i = 0; i < LRAW; i++) { const q = lp[i]; if (!isFinite(q.x + q.y + q.z)) { e.lpI = false; q.copy(tg[i]); } W(e, q.x, q.y, q.z, lRaw[i]); }
-    lRaw[0].copy(e.aL); lRaw[LRAW - 1].copy(e.aR);
-    while (lOut.length < NL) lOut.push(new V());
-    for (let i = 0; i < LRAW - 1; i++) {
-      const p0 = lRaw[Math.max(0, i - 1)], p1 = lRaw[i], p2 = lRaw[i + 1], p3 = lRaw[Math.min(LRAW - 1, i + 2)];
-      for (let j = 0; j < LSUB; j++) { const t = j / LSUB, t2 = t * t, t3 = t2 * t, a = -0.5 * t3 + t2 - 0.5 * t, b = 1.5 * t3 - 2.5 * t2 + 1, c = -1.5 * t3 + 2 * t2 + 0.5 * t, d = 0.5 * t3 - 0.5 * t2;
-        lOut[i * LSUB + j].set(p0.x * a + p1.x * b + p2.x * c + p3.x * d, p0.y * a + p1.y * b + p2.y * c + p3.y * d, p0.z * a + p1.z * b + p2.z * c + p3.z * d); }
-    }
-    lOut[NL - 1].copy(lRaw[LRAW - 1]);
-    if (!(p.loopOn > 0.5)) for (const q of lOut) q.copy(e.aL);   // b618 — 기본 끔(사용자 「목 뒤로 가는 줄은 안 보이게 · V 로만 목에 끼우는 느낌」)   // 끔 — 한 점(넓이 0)
-    return lOut;
-  }
+  const backPts = [], fpL = [], fpR = [], sL = [], sR = [];
   function smooth(src, out) {   // 캣멀-롬 — 마디 점을 그대로 지나며 사이를 곡선으로
     while (out.length < NS) out.push(new V());
     const n = src.length;
@@ -12581,30 +12495,6 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     }
     out[NS - 1].copy(src[n - 1]);
   }
-  // b610 — 두 줄이 만나는 점(목 앞 고정점) 양쪽 3cm 를 한 곡선으로 — 곡선은 그 점을 그대로 지나고 몸 쪽으로 파고들지 않는다(조절점을 바깥으로)
-  const FT = { p1: null, p2: null, c: null, q: null };
-  function fillet(a, b, rev, s) {
-    if (!FT.p1) { FT.p1 = new V(); FT.p2 = new V(); FT.c = new V(); FT.q = new V(); }
-    const nb = b.length, B_ = (j) => b[rev ? nb - 1 - j : j], r = 0.055 * s;   // b616 — 5.5cm 로 크게 둥글게
-    let ia = 0, da = 0; while (ia < a.length - 2 && da < r) { da += a[ia].distanceTo(a[ia + 1]); ia++; }
-    let ib = 0, db = 0; while (ib < nb - 2 && db < r) { db += B_(ib).distanceTo(B_(ib + 1)); ib++; }
-    if (ia < 2 || ib < 2) return;
-    const P1 = FT.p1.copy(a[ia]), P2 = FT.p2.copy(B_(ib)), C = FT.c.copy(a[0]), M = FT.q.addVectors(P1, P2).multiplyScalar(0.5);
-    C.multiplyScalar(2).sub(M);   // 곡선 한가운데 = 고정점
-    const bz = (t, o) => { const u = 1 - t; return o.set(u * u * P1.x + 2 * t * u * C.x + t * t * P2.x, u * u * P1.y + 2 * t * u * C.y + t * t * P2.y, u * u * P1.z + 2 * t * u * C.z + t * t * P2.z); };
-    for (let i = 0; i < ia; i++) bz(0.5 * (1 - i / ia), a[i]);
-    for (let j = 0; j < ib; j++) bz(0.5 + 0.5 * j / ib, B_(j));
-  }
-  // b618 — V 끝(목에 끼워진 쪽) 7cm 를 한 곡선으로 — 아래 줄의 방향을 그대로 이어 올라가 꺾이지 않는다(사용자 「V 끝부분만 제발 꺾이지 않게」)
-  const TB = { c: null, p0: null, p2: null };
-  function topBend(a, s) {
-    if (!TB.c) { TB.c = new V(); TB.p0 = new V(); TB.p2 = new V(); }
-    const r = 0.07 * s; let i = 0, d = 0; while (i < a.length - 2 && d < r) { d += a[i].distanceTo(a[i + 1]); i++; }
-    if (i < 2) return;
-    const P0 = TB.p0.copy(a[0]), P2 = TB.p2.copy(a[i]), C = TB.c.subVectors(a[i + 1], a[i - 1]); const L = C.length(); if (L < 1e-6) return;
-    C.multiplyScalar(-d * 0.55 / L).add(P2);   // 아래 줄 방향을 거꾸로 이은 조절점
-    for (let j = 0; j < i; j++) { const t = j / i, u = 1 - t; a[j].set(u * u * P0.x + 2 * t * u * C.x + t * t * P2.x, u * u * P0.y + 2 * t * u * C.y + t * t * P2.y, u * u * P0.z + 2 * t * u * C.z + t * t * P2.z); }
-  }
   function draw(e) {
     const s = e.fr.sc;
     fpL.length = 0; fpR.length = 0; fpL.push(e.aL); fpR.push(e.aR);
@@ -12615,9 +12505,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     fpL[N - 1] = e.hook; fpR[N - 1] = e.hook; void hl; void hr;   // b578 — 두 줄 끝 = 카드 윗변 한가운데 한 점(V자로 붙임 · 사용자 「달릴 때 분리 · 모양이 이상 · 걍 V자로」)
     const g = e.strap.geometry, P = g.attributes.position.array, Nn = g.attributes.normal.array, U = g.attributes.uv.array;
     smooth(fpL, sL); smooth(fpR, sR);
-    const lo = neckLoop(e, PK(e));
-    if (PK(e).loopOn > 0.5) { fillet(sL, lo, false, s); fillet(sR, lo, true, s); } else { topBend(sL, s); topBend(sR, s); }   // b610 — 앞 줄 ↔ 목 뒤 줄 이음매를 둥글게(사용자 「왜 자꾸 목줄을 꺾어 놓냐」 — 한 점에서 직각으로 만났다)
-    const o = line(e, sL, 0, 0, P, Nn, U), o2 = line(e, sR, o, 0.37, P, Nn, U); line(e, lo, o2, 0.71, P, Nn, U, true);
+    const o = line(e, sL, 0, 0, P, Nn, U); line(e, sR, o, 0.37, P, Nn, U);
     g.attributes.position.needsUpdate = true; g.attributes.normal.needsUpdate = true; g.attributes.uv.needsUpdate = true;
     e.strap.matrix.identity(); e.strap.matrixWorld.identity();
     // 카드 — 위(고리 쪽)가 +y · 앞면(+z)이 몸 앞으로
@@ -12641,7 +12529,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const now = performance.now(), raw = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now;
     const sm0 = window.__slowmo === undefined ? 1 : window.__slowmo, dt = raw * sm0;
     const C = window.__cast, off = !B.on || fxOff();
-    for (const e of ents.values()) { const p = PK(e), key = [p.drop, p.sideX, p.neckY, p.neckZ, p.size, p.hangY, p.hangZ].join(); if (key !== e._key) { e._key = key; e.init = false; } }   // 줄 길이 · 목 위치 · 크기가 바뀌면 다시 건다
+    for (const e of ents.values()) { const p = PK(e), key = [p.drop, p.sideX, p.neckY, p.neckZ, p.size].join(); if (key !== e._key) { e._key = key; e.init = false; } }   // 줄 길이 · 목 위치 · 크기가 바뀌면 다시 건다
     for (const k in B.KINDS) { const m = mats[k], ms = mats['s_' + k], b = (B.per[k] || B.DEF).bright; if (m && m.color.r !== b) m.color.setScalar(b); const sb = (B.per[k] || B.DEF).strapBright; if (ms && ms.color.r !== sb) ms.color.setScalar(sb); }
     for (const sm of people(G)) {
       const kind = C && C.badgeKind ? C.badgeKind(sm) : null;
@@ -12674,7 +12562,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
   (function boot() {
     if (failed) return;
-    if (!tmp.d && window.__G && window.__G.THREE) { const VV = window.__G.THREE.Vector3; tmp.d = new VV(); tmp.a = new VV(); tmp.b = new VV(); vA.t = new VV(); vA.ps = new VV(); vA.n = new VV(); vA.sd = new VV(); vA.ax = new VV(); vA.q = new VV(); }
+    if (!tmp.d && window.__G && window.__G.THREE) { const VV = window.__G.THREE.Vector3; tmp.d = new VV(); tmp.a = new VV(); tmp.b = new VV(); vA.t = new VV(); vA.n = new VV(); vA.sd = new VV(); vA.ax = new VV(); vA.q = new VV(); }
     if (!ready) { const G = window.__G; if (G && G.scene && G.THREE && G.cam && (G.started || (window.__title3 && window.__title3.on))) { let cnt = 0; G.scene.traverse((o) => { if (o.isMesh) cnt++; }); if (cnt > 50) ready = setup(); } }
     if (ready) hook();
     setTimeout(boot, ready ? 1000 : 400);
