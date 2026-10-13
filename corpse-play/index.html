@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-556 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-557 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-556'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-557'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3238,16 +3238,10 @@ var MeshoptDecoder = (function () {
     // 바깥 실선 한 줄만(2026-10-12 사용자: 「왜 삐뚤한 두 줄인 거야 · 한 줄로」 — 안쪽 가는 선 · 꺾쇠 · 눈금은 뺐다)
     n.strokeStyle = '#fff'; n.lineWidth = 10; n.strokeRect(5, 5, S - 10, S - 10);
   });
-  // b556 — 안쪽 표식(본진 네모 전체 = 그림 한 장 · 둥근 영역 밖은 데칼이 없어 저절로 잘린다): 네 귀 꺾쇠 · 변 가운데 눈금 · + 표시 · 옅은 점선(화살표는 뺐다 — 사용자)
+  // b556 — 안쪽 표식(본진 네모 전체 = 그림 한 장 · 둥근 영역 밖은 데칼이 없어 저절로 잘린다) · b557 — 옅은 점선 · 안쪽 네모만(기호 같은 것은 모두 뺐다)
   const markTex = () => canvasTex((g, S) => {
     g.clearRect(0, 0, S, S); g.strokeStyle = '#fff'; g.lineCap = 'square';
-    const I = 0.15 * S, L = 0.075 * S;
-    g.lineWidth = 5; g.globalAlpha = 0.95;
-    for (const [x, y, sx, sy] of [[I, I, 1, 1], [S - I, I, -1, 1], [I, S - I, 1, -1], [S - I, S - I, -1, -1]]) { g.beginPath(); g.moveTo(x, y + sy * L); g.lineTo(x, y); g.lineTo(x + sx * L, y); g.stroke(); }
-    g.lineWidth = 3; g.globalAlpha = 0.85; const m = 0.1 * S, t = 0.035 * S;
-    for (const [x0, y0, x1, y1] of [[S / 2, m, S / 2, m + t], [S / 2, S - m, S / 2, S - m - t], [m, S / 2, m + t, S / 2], [S - m, S / 2, S - m - t, S / 2]]) { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
-    g.lineWidth = 2.5; g.globalAlpha = 0.8; const c = 0.022 * S;
-    for (const [u, v] of [[0.32, 0.36], [0.68, 0.3], [0.5, 0.52], [0.36, 0.7], [0.72, 0.68]]) { const x = u * S, y = v * S; g.beginPath(); g.moveTo(x - c, y); g.lineTo(x + c, y); g.moveTo(x, y - c); g.lineTo(x, y + c); g.stroke(); }
+    // b557 — 꺾쇠 · 눈금 · + 표시는 뺐다(사용자 「본진 영역 안에 x 나 화살표 같은 문자는 제거」) — 옅은 점선 · 안쪽 네모만
     g.setLineDash([16, 14]); g.lineWidth = 2; g.globalAlpha = 0.38;
     for (const [x0, y0, x1, y1] of [[0.2, 0.22, 0.48, 0.5], [0.56, 0.58, 0.82, 0.8], [0.24, 0.8, 0.44, 0.6]]) { g.beginPath(); g.moveTo(x0 * S, y0 * S); g.lineTo(x1 * S, y1 * S); g.stroke(); }
     g.globalAlpha = 0.2; g.strokeRect(0.24 * S, 0.24 * S, 0.52 * S, 0.52 * S);
