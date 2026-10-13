@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-596 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-599 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-596'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-599'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3932,7 +3932,7 @@ var MeshoptDecoder = (function () {
   const mpOn = () => !!(window.__mp && window.__mp.on);
   const ss = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
   const now = () => performance.now() / 1000;
-  const INTRO = 10;
+  const INTRO = 10;   // 예전 고정 길이 — b597 부터 구간 길이의 합(IL())
   // b450 졌을 때 시간표(사용자 「너무 빨라서 순식간에 지나가」) — 메시지 MSG 초 → 카메라가 얼굴 앞으로(GO) → RISE_T 초 동안 RISE m 끌려 올라가며 몸부림 · 비명 → PRE 초 부풀며 경련 → 펑 → CARD 초 뒤 카드
   // b458 — 모든 값은 연출 패널에서(사용자 「디테일하게 조절할 수 있는 연출용 패널」) · 이 브라우저에만 저장
   const DEF = { speed: 1, msgT: 2.2, riseT: 4.2, preT: 1.6, holdT: 0.2, riseH: 4.6,
@@ -3940,7 +3940,9 @@ var MeshoptDecoder = (function () {
     close: 0.85, push: 1, kick: 1, shake: 1,
     flash: 0.85, ring: 1, drops: 800, dropSpd: 1.2, chunks: 45, chunkF: 1.4, lens: 1, smear: 34, glow: 1, sound: 1, after: 4.5,
     // b586 — 시작 연출 정면 장면(開戰) 카메라 · 조명(사용자 「이 장면도 조명과 카메라 조정할 수 있게」) — 조명은 있는 조명의 세기만 그 장면 동안 바꾼다(새 셰이더 없음)
-    iD: 1, iY: 1.6, iLook: 1.48, iPush: 0.7, iYaw: 0, iAmb: 1, iMoon: 1, iSpot: 1, iPoint: 1, iExp: 1 };
+    iD: 1, iY: 1.6, iLook: 1.48, iPush: 0.7, iYaw: 0, iAmb: 1, iMoon: 1, iSpot: 1, iPoint: 1, iExp: 1,
+    // b597 — 구간마다(사용자 「연출에서 정지할 수 있어야 · 구간마다 조절 · 각각 저장 버튼」) ① 하늘 한 바퀴 ② 내려옴 ③ 얼굴 정면 ④ 등 뒤로 + 開戰 글자
+    s1T: 3.2, s1H: 22, s1R: 24, s1Turn: 0.9, s1Drop: 4, s2T: 2.4, s3T: 2.8, s4T: 1.6, tIn: 1.8, tOut: 1.2 };
   const CF = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('corpse_cinema_v3') || '{}'); } catch (e) { /* */ } return Object.assign({}, DEF, o); })();
   const saveCF = () => { try { localStorage.setItem('corpse_cinema_v3', JSON.stringify(CF)); } catch (e) { /* */ } };
   let L = {};
@@ -3948,7 +3950,9 @@ var MeshoptDecoder = (function () {
   TL();
   CN.cf = CF;
   // b586 — 정면 장면 값은 모두의 기본값으로도(settings.js 「저장」) · 나머지 연출 값은 예전처럼 이 브라우저에만
-  const IK = ['iD', 'iY', 'iLook', 'iPush', 'iYaw', 'iAmb', 'iMoon', 'iSpot', 'iPoint', 'iExp'];
+  const SECK = { s1: ['s1T', 's1H', 's1R', 's1Turn', 's1Drop'], s2: ['s2T'], s3: ['s3T', 'iD', 'iY', 'iLook', 'iPush', 'iYaw', 'tIn', 'iAmb', 'iMoon', 'iSpot', 'iPoint', 'iExp'], s4: ['s4T', 'tOut'] };
+  const IK = [].concat(...Object.values(SECK));
+  const IL = () => CF.s1T + CF.s2T + CF.s3T + CF.s4T;   // 시작 연출 길이
   (function reg() { const S = window.__settings; if (!S || !S.reg) { setTimeout(reg, 300); return; } S.reg('cinemaIntro', { get: () => { const o = {}; for (const k of IK) o[k] = CF[k]; return o; }, set: (o) => { if (!o) return; for (const k of IK) if (typeof o[k] === 'number' && isFinite(o[k])) CF[k] = o[k]; saveCF(); } }); })();
   const fsv = [];
   let T = null, intro = null, lose = null, sv = null, held = null, flash = null, title = null;
@@ -3957,7 +3961,7 @@ var MeshoptDecoder = (function () {
     const zs = G.zones.list; let cx = 0, cz = 0; for (const z of zs) { cx += z.cx; cz += z.cz; } cx /= zs.length; cz /= zs.length;
     const h = G.hero.position, a0 = Math.atan2(h.x - cx, h.z - cz);
     intro = { t0: now(), cx, cz, gy: G.groundAt ? (G.groundAt(cx, cz) || 0) : 0, a0, hold: [h.x, h.y, h.z], dir: 1 };
-    CN.introEnd = performance.now() + INTRO * 1000;
+    CN.introEnd = performance.now() + IL() * 1000;
     if (!title) title = el('position:absolute;left:0;right:0;top:38%;text-align:center;pointer-events:none;z-index:40;opacity:0;transition:opacity .5s;font:900 64px "UIF","Noto Serif KR",serif;letter-spacing:.5em;color:#e9e1d0;text-shadow:0 0 18px #000,0 0 3px #700', '開 戰');
   }
   // 내 앞 카메라 거리 — 바위 · 벽에 막히면 그 앞까지(카메라가 바위 속에 들어가 반쪽 화면이 막혔다)
@@ -4100,29 +4104,31 @@ var MeshoptDecoder = (function () {
       try {
         const t = now(); if (lose) TL();
         if (intro && cam === G.cam) {
-          const u = t - intro.t0;
-          if (u > INTRO) { intro = null; if (title) title.style.opacity = '0'; }
+          const u = intro.pz !== undefined ? intro.pz : t - intro.t0;   // b597 — 멈춤 · 끌어 보기(intro.pz)
+          if (intro.pz !== undefined) CN.introEnd = performance.now() + (IL() - u) * 1000 + 50;   // 멈춰 있는 동안 판이 먼저 시작되지 않게
+          const b1 = CF.s1T, b2 = b1 + CF.s2T, b3 = b2 + CF.s3T, b4 = b3 + CF.s4T; intro.u = u;
+          if (u > b4) { intro = null; if (title) title.style.opacity = '0'; }
           else {
             sv = { p: cam.position.clone(), q: cam.quaternion.clone() };
             const h = G.hero.position, hy = G.hero.rotation.y, fx2 = Math.sin(hy), fz2 = Math.cos(hy);
             // b446 — 천천히 · 긴장감 있게(사용자 「플레이어 정면 보여 주는 게 너무 빨리 넘어간다」)
             //   0~3.2 하늘에서 한 바퀴 · 3.2~5.6 내 앞으로 천천히 내려옴 · 5.6~8.4 얼굴 정면에서 아주 천천히 다가감(숨소리) · 8.4~10 등 뒤로 천천히 돌아감
             let P, L; const FD = Math.max(0.9, frontD(G, h, fx2, fz2) * CF.iD), ya = hy + CF.iYaw * Math.PI / 180, fxF = Math.sin(ya), fzF = Math.cos(ya);
-            const sky = (k) => { const a = intro.a0 + Math.PI * 2 * ss(k) * 0.9; return [intro.cx + Math.sin(a) * 24, intro.gy + 22 - 4 * k, intro.cz + Math.cos(a) * 24]; };
+            const sky = (k) => { const a = intro.a0 + Math.PI * 2 * ss(k) * CF.s1Turn; return [intro.cx + Math.sin(a) * CF.s1R, intro.gy + CF.s1H - CF.s1Drop * k, intro.cz + Math.cos(a) * CF.s1R]; };
             const front = (d, y) => [h.x + fxF * d, h.y + y, h.z + fzF * d], face = [h.x, h.y + CF.iLook, h.z];
-            if (u < 3.2) { P = sky(u / 3.2); L = [intro.cx, intro.gy, intro.cz]; }
-            else if (u < 5.6) { const k = ss((u - 3.2) / 2.4), S0 = sky(1), F = front(FD, CF.iY); P = S0.map((v, i) => v + (F[i] - v) * k); const L0 = [intro.cx, intro.gy, intro.cz]; L = L0.map((v, i) => v + (face[i] - v) * k); }
-            else { const k = ss((u - 5.6) / 2.8); P = front(FD - Math.max(0, Math.min(FD - 0.9, CF.iPush)) * k, CF.iY - 0.06 * k); L = face; }
+            if (u < b1) { P = sky(u / Math.max(0.01, b1)); L = [intro.cx, intro.gy, intro.cz]; }
+            else if (u < b2) { const k = ss((u - b1) / Math.max(0.01, CF.s2T)), S0 = sky(1), F = front(FD, CF.iY); P = S0.map((v, i) => v + (F[i] - v) * k); const L0 = [intro.cx, intro.gy, intro.cz]; L = L0.map((v, i) => v + (face[i] - v) * k); }
+            else { const k = ss((u - b2) / Math.max(0.01, CF.s3T)); P = front(FD - Math.max(0, Math.min(FD - 0.9, CF.iPush)) * k, CF.iY - 0.06 * k); L = face; }
             // b586 — 정면 장면 동안 조명 세기 · 노출(그린 뒤 되돌림 — fsv)
-            { const w = u < 3.2 ? 0 : ss((u - 3.2) / 1.2) * (1 - ss((u - 8.6) / 1.4));
+            { const w = u < b1 ? 0 : ss((u - b1) / 1.2) * (1 - ss((u - b3 - 0.2) / 1.4));
               if (w > 0) { if (!intro.lights) { intro.lights = []; G.scene.traverse((o) => { if (o.isLight) intro.lights.push(o); }); }
                 const mul = (o) => (o.isAmbientLight || o.isHemisphereLight ? CF.iAmb : o.isDirectionalLight ? CF.iMoon : o.isSpotLight ? CF.iSpot : o.isPointLight ? CF.iPoint : 1);
                 for (const o of intro.lights) { const f = 1 + (mul(o) - 1) * w; if (f !== 1) { fsv.push(o, 'intensity', o.intensity); o.intensity *= f; } }
                 if (CF.iExp !== 1 && r && r.toneMappingExposure !== undefined) { fsv.push(r, 'toneMappingExposure', r.toneMappingExposure); r.toneMappingExposure *= 1 + (CF.iExp - 1) * w; } } }
             cam.position.set(...P); cam.lookAt(...L);
-            if (u >= 8.4) {
+            if (u >= b3) {
               // b454 — 얼굴 앞에서 등 뒤(게임 카메라)로: 내 둘레를 한쪽으로 돌며(하늘에서 돌던 방향과 같게) 거리 · 높이 · 바라보는 곳을 함께 옮긴다
-              const k = ss((u - 8.4) / 1.6), A0 = Math.atan2(P[0] - h.x, P[2] - h.z), A1 = Math.atan2(sv.p.x - h.x, sv.p.z - h.z);
+              const k = ss((u - b3) / Math.max(0.01, CF.s4T)), A0 = Math.atan2(P[0] - h.x, P[2] - h.z), A1 = Math.atan2(sv.p.x - h.x, sv.p.z - h.z);
               let dA = A1 - A0; dA = ((dA % 6.2832) + 6.2832) % 6.2832; if (intro.dir < 0) dA -= 6.2832;
               const R0 = Math.hypot(P[0] - h.x, P[2] - h.z), R1 = Math.hypot(sv.p.x - h.x, sv.p.z - h.z), a = A0 + dA * k, R = R0 + (R1 - R0) * k, Y = P[1] + (sv.p.y - P[1]) * k;
               V4.set(0, 0, -1).applyQuaternion(sv.q).multiplyScalar(6).add(sv.p);   // 게임 카메라가 보는 곳
@@ -4132,7 +4138,7 @@ var MeshoptDecoder = (function () {
             }
             cam.updateMatrixWorld(true);
             zoneDraw(u);
-            if (title) title.style.opacity = u > 7.4 && u < 9.6 ? '1' : '0';
+            if (title) { title.style.transition = intro.pz !== undefined ? 'none' : 'opacity .5s'; title.style.opacity = u > b2 + CF.tIn && u < b3 + CF.tOut ? '1' : '0'; }
           }
         }
         if (lose && !lose.demo) { const ec = document.getElementById('sr-end'), ef = document.getElementById('sr-endfade'), uu = (t - lose.t0) * CF.speed, hide = uu > L.MSG && (!lose.boom || (t - lose.boomT) * CF.speed < L.CARD); for (const x of [ec, ef]) if (x) x.style.visibility = hide ? 'hidden' : ''; }   // 실패 카드 — 먼저 보이고(메시지) · 연출 동안 숨고 · 터진 뒤 다시
@@ -4265,17 +4271,31 @@ body:not(.tz-live) #cin-btn{visibility:hidden}
     const p = document.createElement('div'); p.id = 'cin-p';
     const pct = (v) => `${Math.round(v * 100)}%`, sec = (v) => `${(+v).toFixed(1)}초`, m = (v) => `${(+v).toFixed(2)}m`, x = (v) => `${(+v).toFixed(2)}×`, n = (v) => `${Math.round(v)}`;
     const deg = (v) => `${Math.round(v)}°`;
-    const R = [['시작 연출 — 정면 장면(開戰) 카메라'], ['iD', '카메라 거리', 0.4, 2.5, 0.05, x], ['iY', '카메라 높이', 0.6, 3, 0.02, m], ['iLook', '바라보는 높이', 0.6, 2.2, 0.02, m], ['iPush', '다가가는 거리', 0, 1.5, 0.05, m], ['iYaw', '좌우 각도', -90, 90, 1, deg],
-      ['시작 연출 — 정면 장면 조명(그 장면 동안만)'], ['iAmb', '주변광 · 하늘광', 0, 3, 0.05, x], ['iMoon', '달빛', 0, 3, 0.05, x], ['iSpot', '손전등', 0, 3, 0.05, x], ['iPoint', '등롱 · 불빛', 0, 3, 0.05, x], ['iExp', '노출', 0.3, 2.5, 0.05, x]];   // b462 — 결말 값은 연출실(death.js)로 옮김 · b586 — 정면 장면
+    const R = [['① 하늘에서 한 바퀴'], ['s1T', '길이', 0.5, 8, 0.1, sec], ['s1H', '높이', 6, 50, 0.5, m], ['s1R', '반지름', 6, 50, 0.5, m], ['s1Turn', '도는 양(바퀴)', 0, 2, 0.05, x], ['s1Drop', '도는 동안 내려옴', 0, 20, 0.5, m], ['@', 's1'],
+      ['② 내 앞으로 내려옴'], ['s2T', '길이', 0.3, 6, 0.1, sec], ['@', 's2'],
+      ['③ 얼굴 정면(開戰) — 카메라'], ['s3T', '길이', 0.5, 8, 0.1, sec], ['iD', '카메라 거리', 0.4, 2.5, 0.05, x], ['iY', '카메라 높이', 0.6, 3, 0.02, m], ['iLook', '바라보는 높이', 0.6, 2.2, 0.02, m], ['iPush', '다가가는 거리', 0, 1.5, 0.05, m], ['iYaw', '좌우 각도', -90, 90, 1, deg], ['tIn', '開戰 글자 나오는 때(③ 시작부터)', 0, 6, 0.1, sec],
+      ['③ 얼굴 정면 — 조명(이 구간 동안만)'], ['iAmb', '주변광 · 하늘광', 0, 3, 0.05, x], ['iMoon', '달빛', 0, 3, 0.05, x], ['iSpot', '손전등', 0, 3, 0.05, x], ['iPoint', '등롱 · 불빛', 0, 3, 0.05, x], ['iExp', '노출', 0.3, 2.5, 0.05, x], ['@', 's3'],
+      ['④ 등 뒤 게임 카메라로'], ['s4T', '길이', 0.3, 5, 0.1, sec], ['tOut', '開戰 글자 사라지는 때(④ 시작부터)', 0, 5, 0.1, sec], ['@', 's4']];   // b597 — 구간마다
     const F = {};
     p.innerHTML = `<h4>演出 · 연출</h4>
 <div class="bs"><button class="b w" data-a="lab">☠ 결말 연출실 열기(판은 그대로)</button><button class="b" data-a="intro">▶ 시작 연출</button><button class="b" data-a="real">▶ 진짜로 끝내고 보기</button></div>
-${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn, mx, stp, fm] = r; F[k] = fm; return `<label>${nm}<b id="cin-v-${k}">${fm(CF[k])}</b></label><input type="range" min="${mn}" max="${mx}" step="${stp}" value="${CF[k]}" data-k="${k}">`; }).join('')}
+<h5>시작 연출 재생 — 멈추고 끌어서 보기</h5>
+<div class="bs"><button class="b" data-a="ipause">⏸ 멈춤 / ▶ 계속</button><button class="b" data-a="irestart">⟲ 처음부터</button><button class="b" data-a="iback">◀ 0.1초</button><button class="b" data-a="ifwd">0.1초 ▶</button></div>
+<div class="bs" style="grid-template-columns:repeat(4,1fr);margin-top:5px"><button class="b" data-a="iseg" data-g="0">①</button><button class="b" data-a="iseg" data-g="1">②</button><button class="b" data-a="iseg" data-g="2">③</button><button class="b" data-a="iseg" data-g="3">④</button></div>
+<label>시간 <b id="cin-it">-</b></label><input type="range" min="0" max="10" step="0.02" value="0" id="cin-ts">
+${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@') return `<div class="bs" style="margin-top:6px"><button class="b" data-a="sdef" data-s="${r[1]}">이 구간 기본값</button><span class="svs"></span></div>`; const [k, nm, mn, mx, stp, fm] = r; F[k] = fm; return `<label>${nm}<b id="cin-v-${k}">${fm(CF[k])}</b></label><input type="range" min="${mn}" max="${mx}" step="${stp}" value="${CF[k]}" data-k="${k}">`; }).join('')}
 <h5>켜고 끄기</h5><label><span>시작 연출</span><input type="checkbox" data-f="intro"></label><label><span>결말 연출</span><input type="checkbox" data-f="loseboom"></label>
 <div class="bs" style="margin-top:8px"><button class="b" data-a="idef">정면 장면 기본값</button><span class="svs"></span></div>
 <div class="n">결말 연출실 — 타임라인을 끌고 한 프레임씩 보며 값을 고친다 · 「진짜로 끝내고 보기」는 판이 끝난다(R 로 다시) · Y 로 열고 닫기</div>`;
     document.body.appendChild(btn); document.body.appendChild(p);
-    { const sv = p.querySelector('.svs'); if (sv && window.__settings && window.__settings.button) sv.appendChild(window.__settings.button()); }   // b586 — 저장(모두의 기본값)
+    if (window.__settings && window.__settings.button) p.querySelectorAll('.svs').forEach((sv) => sv.appendChild(window.__settings.button()));   // b586 · b597 — 구간마다 저장(모두의 기본값 · 같은 저장)
+    // b597 — 재생 조절: 멈춤(intro.pz) · 끌기 · 0.1초 · 구간 처음으로 · 시간 표시
+    const ts = p.querySelector('#cin-ts'), it = p.querySelector('#cin-it'), segName = (u) => (u < CF.s1T ? '① 하늘' : u < CF.s1T + CF.s2T ? '② 내려옴' : u < CF.s1T + CF.s2T + CF.s3T ? '③ 얼굴 정면' : '④ 등 뒤로');
+    const ensure = (G) => { if (!intro && !lose && G && G.game) { startIntro(G); intro.pz = 0; } return !!intro; };
+    const seek = (u) => { const G = window.__G; if (!ensure(G)) return; intro.pz = Math.max(0, Math.min(IL() - 0.01, u)); };
+    ts.addEventListener('input', () => seek(+ts.value));
+    (function loop() { requestAnimationFrame(loop); if (!p.classList.contains('on')) return; const L0 = IL(); ts.max = L0.toFixed(2); if (intro) { const u = intro.pz !== undefined ? intro.pz : now() - intro.t0; if (document.activeElement !== ts) ts.value = u; it.textContent = `${u.toFixed(2)} / ${L0.toFixed(1)}초 · ${segName(u)}${intro.pz !== undefined ? ' · ⏸' : ''}`; } else it.textContent = `- / ${L0.toFixed(1)}초 (멈춤 · 끌기로 시작)`; })();
+    CN.introCtl = { seek, pause: () => { if (intro && intro.pz === undefined) intro.pz = now() - intro.t0; }, play: () => { if (intro && intro.pz !== undefined) { intro.t0 = now() - intro.pz; delete intro.pz; } } };
     const sync = () => { const X = window.__fx; for (const c of p.querySelectorAll('input[data-f]')) c.checked = !(X && X.on && X.on[c.dataset.f] === false); for (const i of p.querySelectorAll('input[data-k]')) { i.value = CF[i.dataset.k]; document.getElementById('cin-v-' + i.dataset.k).textContent = F[i.dataset.k](CF[i.dataset.k]); } };
     const tog = () => { p.classList.toggle('on'); sync(); };
     btn.onclick = tog;
@@ -4291,6 +4311,11 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; const [k, nm, mn
       if (a === 'real' && !lose && !G.game.over && !mpOn()) { G.game.winner = 1; G.game.over = true; }
       if (a === 'def') { Object.assign(CF, DEF); saveCF(); sync(); }
       if (a === 'idef') { for (const k of IK) CF[k] = DEF[k]; saveCF(); sync(); }
+      if (a === 'sdef') { for (const k of SECK[e.target.dataset.s] || []) CF[k] = DEF[k]; saveCF(); sync(); }
+      if (a === 'ipause') { if (!intro) { if (!lose) { startIntro(G); intro.pz = 0; } } else if (intro.pz === undefined) CN.introCtl.pause(); else CN.introCtl.play(); }
+      if (a === 'irestart' && !lose) { startIntro(G); }
+      if (a === 'iback' || a === 'ifwd') { const u = intro ? (intro.pz !== undefined ? intro.pz : now() - intro.t0) : 0; seek(u + (a === 'ifwd' ? 0.1 : -0.1)); }
+      if (a === 'iseg') { const g = +e.target.dataset.g, st = [0, CF.s1T, CF.s1T + CF.s2T, CF.s1T + CF.s2T + CF.s3T][g]; seek(st + (g === 2 ? CF.tIn + 0.3 : 0.02)); }
     });
   })();
 })();
@@ -7339,6 +7364,8 @@ if (uBurn > 0.001) {
 `;
   // 달아오름 — 번지는 경계 · 딱지 알갱이와 숯 금(불씨) · 타 들어가는 옷 구멍 가장자리
   const FRAG_EMIT = `
+// b598 — 핏자국 위 「자체 밝기」(charlit — 옷 그림이 스스로 빛남)도 검붉게(사용자 「피가 주황빛 · 원래 검붉은 피」 — 흰 셔츠 빛이 피 위에 더해져 분홍 · 주황으로 보였다)
+totalEmissiveRadiance = mix(totalEmissiveRadiance, totalEmissiveRadiance * vec3(0.32, 0.012, 0.01), sMask * 0.95);
 if (uEmb > 0.001 && bF > -0.12) {
   float edge = smoothstep(-0.05, 0.02, bF) * (1.0 - smoothstep(0.02, 0.1, bF));
   float fl = 0.6 + 0.4 * sin(uFireT * 9.0 + bfbm(vBurnP * 9.0) * 25.0);
@@ -16680,7 +16707,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
 
   /* b592 — 진짜 나 · 봇은 건드리지 않는다(사용자 「캐릭터 선택창은 그냥 연출 · 게임 시작 전에 뭔가 꼬이게 하지 마」 · 「뒤에 괴물이 보인다 · 배경만」)
      세 몸을 복제(같은 재질 · 같은 셰이더)해 빈 땅에 세우고 서 있기 동작만 · 그리는 동안 진짜 나 · 봇 · 괴물 · 시체는 감춘다(그린 뒤 되돌림) · 닫으면 복제를 버린다 */
-  const CSD = { dist: 1.95, camY: 1.47, lookY: 1.42, side: 0, gap: 1.0, top: 1.78, bot: 1.04, half: 0.3, frameY: 0, light: 1.7, charBright: 1, title: 4.6, name: 4.4, titleY: 6.5, nameY: 2.2, maskOp: 0.97, glow: 1, anim: 2, animDur: 0.9, stagger: 0.18 };   // b596 — 등장 모션 · 캐릭터 밝기 · 글자 자리 · 배경 어둡기 · 선택 빛
+  const CSD = { dist: 1.95, camY: 1.47, lookY: 1.42, side: 0, gap: 1.0, top: 1.78, bot: 1.04, half: 0.3, frameY: 0, light: 1.7, charBright: 1, title: 4.6, name: 4.4, titleY: 6.5, nameY: 2.2, maskOp: 0.97, glow: 1, anim: 2, animDur: 0.9, stagger: 0.18, scale: 1, exp: 1 };   // b599 — 캐릭터 크기 · 노출   // b596 — 등장 모션 · 캐릭터 밝기 · 글자 자리 · 배경 어둡기 · 선택 빛
   const CS = (S.cf = Object.assign({}, CSD));
   (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 300); return; } St.reg('charSel', { get: () => Object.assign({}, CS), set: (o) => { if (o) for (const k in CSD) if (typeof o[k] === 'number' && isFinite(o[k])) CS[k] = o[k]; } }); })();
   function cloneRig(o) {
@@ -16714,7 +16741,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   let P0 = null, mixers = [], rafT = 0, lastT = 0;
   function layout() {   // 조절값이 바뀌면 자리 · 카메라를 다시
     const G = window.__G; if (!P0) return;
-    act.forEach((a, i) => { const u = (i - 1) * CS.gap, x = P0.cx + P0.rx * u, z = P0.cz + P0.rz * u; a.grp.position.set(x, G.groundAt(x, z), z); a.grp.rotation.y = Math.atan2(P0.fx, P0.fz); a.grp.updateMatrixWorld(true); });
+    act.forEach((a, i) => { const u = (i - 1) * CS.gap, x = P0.cx + P0.rx * u, z = P0.cz + P0.rz * u; a.grp.position.set(x, G.groundAt(x, z), z); a.grp.rotation.y = Math.atan2(P0.fx, P0.fz); a.grp.scale.setScalar(CS.scale); a.grp.updateMatrixWorld(true); });
     cam0 = { x: P0.cx + P0.fx * CS.dist, z: P0.cz + P0.fz * CS.dist, lx: P0.cx, lz: P0.cz, y: act.reduce((t, a) => t + a.grp.position.y, 0) / Math.max(1, act.length) };
     if (el) { const sp = (k, v) => el.style.setProperty(k, v); sp('--cs-title', CS.title + 'vh'); sp('--cs-name', CS.name + 'vh'); sp('--cs-ty', CS.titleY + 'vh'); sp('--cs-ny', CS.nameY + 'vh'); sp('--cs-glow', CS.glow); sp('--cs-d', CS.animDur + 's'); sp('--cs-s', CS.stagger + 's'); const bg = el.querySelector('rect.bg'); if (bg) bg.setAttribute('opacity', CS.maskOp); }
     if (P0) { const a = CS.side * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a), fx = P0.fx * ca + P0.rx * sa, fz = P0.fz * ca + P0.rz * sa; cam0.x = P0.cx + fx * CS.dist; cam0.z = P0.cz + fz * CS.dist; cam0.fx = fx; cam0.fz = fz; }
@@ -16787,6 +16814,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
           cam.position.set(cam0.lx + (cam0.x - cam0.lx) * dk, cam0.y + CS.camY, cam0.lz + (cam0.z - cam0.lz) * dk); cam.lookAt(cam0.lx, cam0.y + CS.lookY, cam0.lz); cam.updateMatrixWorld(true);
           if (!lights) { lights = []; Sc.traverse((o) => { if (o.isLight) lights.push(o); }); }
           for (const o of lights) { const f = o.isAmbientLight || o.isHemisphereLight ? CS.light : o.isDirectionalLight ? 1 + (CS.light - 1) * 0.6 : 1; if (f !== 1) { save.L.push([o, o.intensity]); o.intensity *= f; } }
+          if (CS.exp !== 1 && r && r.toneMappingExposure !== undefined) { save.X = r.toneMappingExposure; r.toneMappingExposure *= CS.exp; }
           save.V = []; const hide = (o) => { if (o && o.visible) { save.V.push(o); o.visible = false; } };   // 진짜 나 · 봇 · 괴물 · 시체 — 배경만
           hide(G.hero); for (const b of G.game.bots || []) hide(b.hero); if (G.monster) hide(G.monster.root); for (const b of G.game.bodies || []) hide(b.root);
           place(cam);
@@ -16796,14 +16824,14 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     };
     Sc.onAfterRender = function (r, s, cam, ...x) {
       if (pa) pa.call(this, r, s, cam, ...x);
-      if (save && cam === G.cam) { cam.position.copy(save.p); cam.quaternion.copy(save.q); cam.updateMatrixWorld(true); for (const [o, v] of save.L) o.intensity = v; for (const o of save.V || []) o.visible = true; save = null; }
+      if (save && cam === G.cam) { cam.position.copy(save.p); cam.quaternion.copy(save.q); cam.updateMatrixWorld(true); for (const [o, v] of save.L) o.intensity = v; for (const o of save.V || []) o.visible = true; if (save.X !== undefined) r.toneMappingExposure = save.X; save = null; }
     };
   }
   // 칸 자리 — 사람마다 머리 위 ~ 가슴(0.9m 폭)을 화면에 비춰 테 · 가림막 구멍을 맞춘다
   function place(cam) {
     if (!el) return; const G = window.__G, V = G.hero.position.constructor, v = place.v || (place.v = new V()), W = innerWidth, H = innerHeight;
     act.forEach((a, i) => {
-      const r = a.grp.position, pts = [[-CS.half, CS.top + CS.frameY], [CS.half, CS.top + CS.frameY], [-CS.half, CS.bot + CS.frameY], [CS.half, CS.bot + CS.frameY]].map(([u, y]) => { const yaw = a.grp.rotation.y, rx = Math.cos(yaw), rz = -Math.sin(yaw); v.set(r.x + rx * u, r.y + y, r.z + rz * u).project(cam); return [(v.x + 1) / 2 * W, (1 - v.y) / 2 * H]; });
+      const r = a.grp.position, pts = [[-CS.half * CS.scale, CS.top * CS.scale + CS.frameY], [CS.half * CS.scale, CS.top * CS.scale + CS.frameY], [-CS.half * CS.scale, CS.bot * CS.scale + CS.frameY], [CS.half * CS.scale, CS.bot * CS.scale + CS.frameY]].map(([u, y]) => { const yaw = a.grp.rotation.y, rx = Math.cos(yaw), rz = -Math.sin(yaw); v.set(r.x + rx * u, r.y + y, r.z + rz * u).project(cam); return [(v.x + 1) / 2 * W, (1 - v.y) / 2 * H]; });
       const x0 = Math.min(...pts.map((p) => p[0])), x1 = Math.max(...pts.map((p) => p[0])), y0 = Math.min(...pts.map((p) => p[1])), y1 = Math.max(...pts.map((p) => p[1]));
       const f = el.querySelector(`.fr[data-i="${i}"]`), h = el.querySelector(`rect.h${i}`);
       if (f) { f.style.left = x0 + 'px'; f.style.top = y0 + 'px'; f.style.width = (x1 - x0) + 'px'; f.style.height = (y1 - y0) + 'px'; }
@@ -16814,13 +16842,13 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   const ANIMS = ['없음', '서서히', '아래에서 차례로', '깜빡이며(고장 난 화면)', '핏빛 번쩍', '카메라가 다가옴'];
   const ROWS = [['#', '카메라'], ['dist', '거리', 1, 4, 0.05, 'm'], ['camY', '높이', 0.8, 2.4, 0.02, 'm'], ['lookY', '바라보는 높이', 0.8, 2.2, 0.02, 'm'], ['side', '좌우 각도', -40, 40, 1, '°'],
     ['#', '칸(사람마다 비추는 네모)'], ['gap', '사람 간격', 0.6, 2, 0.05, 'm'], ['top', '칸 위(머리 위)', 1.5, 2.4, 0.01, 'm'], ['bot', '칸 아래', 0.4, 1.7, 0.01, 'm'], ['half', '칸 폭(반)', 0.15, 0.7, 0.01, 'm'], ['frameY', '칸 위아래 옮김', -0.4, 0.4, 0.01, 'm'], ['glow', '고른 칸 붉은 빛', 0, 2.5, 0.05, '×'],
-    ['#', '캐릭터 밝기'], ['charBright', '캐릭터 자체 밝기', 0, 3, 0.05, '×'], ['light', '주변 조명', 0.3, 4, 0.05, '×'],
+    ['#', '캐릭터 모델 · 밝기'], ['scale', '캐릭터 크기(확대)', 0.6, 2, 0.01, '×'], ['charBright', '캐릭터 자체 밝기', 0, 3, 0.05, '×'], ['light', '주변 조명', 0.3, 4, 0.05, '×'], ['exp', '화면 노출', 0.3, 2.5, 0.05, '×'],
     ['#', '글자 · 배경'], ['title', '제목 크기', 2, 9, 0.1, 'vh'], ['titleY', '제목 높이', 1, 20, 0.1, 'vh'], ['name', '이름 크기', 2, 8, 0.1, 'vh'], ['nameY', '이름 칸 아래 거리', 0, 8, 0.1, 'vh'], ['maskOp', '바깥 어둡기', 0.4, 1, 0.01, ''],
     ['#', '등장 모션'], ['animDur', '길이', 0.2, 3, 0.05, '초'], ['stagger', '칸마다 늦게', 0, 0.6, 0.01, '초']];
   function build() {
     if (el) return;
     const st = document.createElement('style');
-    st.textContent = `#csel{position:fixed;inset:0;z-index:30;display:none;font-family:'Song Myung','UIF',serif;color:#e8e4dc;overflow:hidden}
+    st.textContent = `#csel{position:fixed;inset:0;z-index:30;display:none;font-family:'Song Myung','UIF',serif;--ca:1.4px 0 rgba(255,30,20,.45),-1.4px 0 rgba(0,190,255,.3);color:#e8e4dc;overflow:hidden}
 #csel.on{display:block}
 #csel svg.mask{position:absolute;inset:0;width:100%;height:100%}
 #csel h1{position:absolute;left:0;right:0;top:var(--cs-ty,6.5vh);margin:0;text-align:center;font:400 var(--cs-title,4.6vh)/1 'Song Myung','UIF',serif;letter-spacing:.18em;color:#e9e4da;text-shadow:0 0 14px rgba(0,0,0,.9)}
@@ -16857,11 +16885,25 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
 @keyframes csFl{0%{background:rgba(190,10,5,.85);opacity:1}100%{background:rgba(190,10,5,0);opacity:.16}}
 #csel.en5 .fr,#csel.en5 h1,#csel.en5 .sub{animation:csIn1 var(--cs-d) ease both;animation-delay:calc(var(--cs-d) * .5)}
 #csel .band{position:absolute;left:0;right:0;bottom:10.5vh;height:1px;background:linear-gradient(90deg,transparent,rgba(160,15,10,.7) 20%,rgba(160,15,10,.7) 80%,transparent)}
-#csel::before{content:'';position:absolute;inset:-60px;pointer-events:none;z-index:5;opacity:.12;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");animation:grainmove .6s steps(6) infinite}
-#csel::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:5;opacity:.16;background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,transparent 1px 3px)}
+#csel::before{content:'';position:absolute;inset:-60px;pointer-events:none;z-index:20;opacity:.12;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");animation:grainmove .6s steps(6) infinite}
+#csel::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:20;opacity:.16;background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,transparent 1px 3px)}
 #csel .adj{position:absolute;right:14px;top:14px;z-index:8;padding:6px 12px;background:rgba(10,8,6,.85);color:#e9e1d0;border:1px solid #6b2a20;font:700 12px sans-serif;cursor:pointer}
 #csel .pan{position:absolute;right:14px;top:50px;z-index:8;width:270px;max-height:80vh;overflow:auto;display:none;padding:10px 12px;background:rgba(12,9,7,.94);border:1px solid #6b2a20;font:12px sans-serif;color:#e9e1d0}
 #csel .pan.on{display:block} #csel .pan h6{margin:10px 0 2px;padding-top:6px;border-top:1px solid #3a2a20;font:700 12px sans-serif;color:#d9a07a} #csel .pan .am{display:grid;grid-template-columns:1fr 1fr;gap:4px} #csel .pan .am button.on{outline:2px solid #e8b04a;background:#5a140c} #csel .pan .replay{width:100%;background:#5a140c} #csel .pan label{display:flex;justify-content:space-between;margin-top:6px;color:#c9bfae} #csel .pan input{width:100%} #csel .pan button{margin-top:8px;padding:5px 8px;background:#2a1712;color:#e9e1d0;border:1px solid #6b2a20;cursor:pointer}
+/* b599 — UI 도 화면 필터(알갱이 · 주사선 · 색 번짐 · 가장자리 어둠) · 타이틀 메뉴 글꼴(Song Myung) · 패널 그래픽 */
+#csel .vig{position:absolute;inset:0;pointer-events:none;z-index:19;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.75) 100%)}
+#csel h1,#csel .sub,#csel .fr .nm,#csel .fr .no,#csel .hint,#csel .pan b,#csel .pan h6{text-shadow:var(--ca),0 2px 6px rgba(0,0,0,.85)}
+#csel .adj,#csel .pan,#csel .pan button,#csel .pan label{font-family:'Song Myung','UIF',serif!important;letter-spacing:.06em}
+#csel .adj{border:0;border-left:3px solid #c0120c;background:linear-gradient(90deg,rgba(120,8,5,.85),rgba(20,6,4,.85));padding:8px 16px;font-size:13px!important;text-shadow:var(--ca)}
+#csel .pan{background:linear-gradient(180deg,rgba(18,7,5,.96),rgba(8,4,3,.96));border:1px solid #5a1410;border-left:3px solid #a3120d;box-shadow:0 0 30px rgba(0,0,0,.8),inset 0 0 40px rgba(90,5,3,.25)}
+#csel .pan::before{content:'';position:absolute;right:-1px;top:-1px;width:26px;height:26px;border-top:2px solid #e0201b;border-right:2px solid #e0201b}
+#csel .pan>b{display:block;font-size:16px;color:#e9e1d0;padding-bottom:6px;margin-bottom:4px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 10' preserveAspectRatio='none'><path d='M0 6 C60 3 140 8 220 4 C260 2 290 5 300 6' stroke='%23a3120d' stroke-width='3' fill='none'/></svg>") bottom/100% 6px no-repeat}
+#csel .pan h6{font-size:13px!important;color:#e06a4a!important;border-top:1px dashed rgba(160,30,20,.45)!important}
+#csel .pan h6::before{content:'◆ ';color:#c0120c;font-size:10px}
+#csel .pan input[type=range]{accent-color:#c0120c}
+#csel .pan button{background:linear-gradient(90deg,#3a0c08,#1a0705)!important;border:1px solid #6b1a12!important;color:#eadfce!important}
+#csel .pan button.on{background:linear-gradient(90deg,#8a1810,#3a0c08)!important;outline:none!important;border-color:#e0201b!important}
+#csel .hint kbd{display:inline-block;min-width:1.6em;padding:2px 6px;margin:0 2px;border:1px solid rgba(200,40,30,.6);background:rgba(60,8,5,.6);color:#eadfce;font:inherit}
 #csel .hint{position:absolute;left:0;right:0;bottom:4.5vh;text-align:center;font:400 1.7vh/1 'Song Myung','UIF',serif;letter-spacing:.2em;color:#8f887c}`;
     document.head.appendChild(st);
     el = document.createElement('div'); el.id = 'csel';
@@ -16881,7 +16923,7 @@ ${KINDS.map(([, n], i) => `<div class="fr" data-i="${i}" style="--i:${i}"><div c
 <button type="button" class="adj">선택창 조절</button><div class="pan"><b>캐릭터 선택창</b>${ROWS.map(([k, n, mn, mx, st]) => (k === '#' ? `<h6>${n}</h6>` : `<label>${n}<span data-v="${k}"></span></label><input type="range" min="${mn}" max="${mx}" step="${st}" data-k="${k}">`)).join('')}
 <h6>등장 모션 고르기</h6><div class="am">${ANIMS.map((n, i) => `<button type="button" data-an="${i}">${n}</button>`).join('')}</div><button type="button" class="replay">▶ 등장 다시 보기</button>
 <div class="row2"><button type="button" class="cdef">기본값</button></div><div class="csv"></div></div>
-<div class="hint">← → 고르기 · Enter · 누르기 = 선택 · Esc 타이틀로</div>`;
+<div class="vig"></div><div class="hint"><kbd>←</kbd><kbd>→</kbd> 고르기 · <kbd>Enter</kbd> 선택 · <kbd>Esc</kbd> 타이틀로</div>`;
     document.body.appendChild(el);
     const pan = el.querySelector('.pan'), syncP = () => { pan.querySelectorAll('[data-an]').forEach((b) => b.classList.toggle('on', +b.dataset.an === CS.anim)); for (const i of pan.querySelectorAll('input[data-k]')) { const k = i.dataset.k; i.value = CS[k]; const r = ROWS.find((q) => q[0] === k); pan.querySelector(`[data-v="${k}"]`).textContent = (+CS[k]).toFixed(2) + r[5]; } };
     el.querySelector('.adj').addEventListener('click', (e) => { e.stopPropagation(); pan.classList.toggle('on'); syncP(); });
