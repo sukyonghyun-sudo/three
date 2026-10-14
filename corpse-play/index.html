@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-717 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-718 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-717'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-718'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3750,7 +3750,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
     document.head.appendChild(st);
     const b = document.createElement('button'); b.id = 'lit-cmp'; b.type = 'button';
     const show = () => { const old = E.fillOn !== 0; b.textContent = old ? '빛: 예전(앞 조명)' : '빛: 지금'; b.classList.toggle('old', old); };
-    b.addEventListener('click', () => { E.fillOn = E.fillOn === 0 ? 1 : 0; show(); });
+    b.addEventListener('click', () => { E.fillOn = E.fillOn === 0 ? 1 : 0; if (window.__charlit && window.__charlit.refresh) window.__charlit.refresh(); show(); });   // b718 — 몸 밝기도 같은 순간에
     document.body.appendChild(b); show(); setInterval(show, 500);
   })();
   E.demo = () => { const X = window.__fx; if (X && X.on) X.on.eyelight = true; const G = window.__G; if (G && G.cfg.torch && G.set) G.set('torch', false); return true; };
@@ -3986,6 +3986,8 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
     if (G.monster && G.monster.model) r.push(G.monster.model);
     return r.filter(Boolean);
   }
+  // b718 — 바로 다시 입히기(빛 비교 단추 — 예전엔 0.25초 늦게 따라와 그 사이 보조등 + 2배 밝기가 겹쳐 「잠깐 번쩍했다 꺼진다」)
+  CL.refresh = () => { const G = window.__G; if (!G || !G.game) return; try { const B = G.body; for (const r of roots(G)) dress(r, !!B && (r === B.main || r === B.drag)); } catch { /* */ } };
   setInterval(() => {
     const G = window.__G; if (!G || !G.game) return;
     try {
