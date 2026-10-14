@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-730 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-736 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-730'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-736'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3664,7 +3664,7 @@ var MeshoptDecoder = (function () {
      손전등을 켜면 손전등 그대로 · 그림자도 함께(이 빛이 움직이는 동안은 그림자 지도를 매 프레임 새로 그린다)
    · 끄기: 시연실 연출 「눈 앞 시야(손전등 없이)」 · 세기는 E.k(기본 1) */
 (() => {
-  const E = (window.__eyelight = { fillOn: 0 /* b706 — 몸 둘레 빛(내 앞 1m 점빛) 끔 — 바닥에 시선 따라 동그란 빛이 생겼다(사용자) · 대신 내 몸 자체 밝기를 올림(charlit hero 1.4 — 가슴 밝기 잰 값이 같다) */, k: 1, ready: false, base: 6.5, decay: 0.4, h: 14, back: 4, ahead: 10, near: 8, dist: 40 });   // b615 — 바로 앞 물체가 하얗게 타지 않게(사용자 「내 눈앞 바위가 눈부시게 빛난다」 — 빛이 카메라 자리라 0.5m 앞 바위가 5m 앞보다 6배 밝았다 → 2.5배) · 5m 밝기는 예전과 같게
+  const E = (window.__eyelight = { fillOn: 1 /* b731 — 다시 켬이 기본(사용자 「섬광 있는 상태를 기본으로」) */ /* b706 — 몸 둘레 빛(내 앞 1m 점빛) 끔 — 바닥에 시선 따라 동그란 빛이 생겼다(사용자) · 대신 내 몸 자체 밝기를 올림(charlit hero 1.4 — 가슴 밝기 잰 값이 같다) */, k: 1, ready: false, base: 6.5, decay: 0.4, h: 14, back: 4, ahead: 10, near: 8, dist: 40 });   // b615 — 바로 앞 물체가 하얗게 타지 않게(사용자 「내 눈앞 바위가 눈부시게 빛난다」 — 빛이 카메라 자리라 0.5m 앞 바위가 5m 앞보다 6배 밝았다 → 2.5배) · 5m 밝기는 예전과 같게
   const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };   // b626 — 다시 켬(사용자 「없애니 이상 · 밝혀는 주되 바닥 아닌 오브젝트는 빛나지 않게」) — b618 끔 줄: const on = () => false;   // b618 — 아예 끔(사용자 「내 시야 앞 오브젝트가 빛난다 · 내 앞을 비추는 조명을 아예 없애」) · 되살리기: 예전 줄 = const on = () => { const X = window.__fx; return !(X && X.on && X.on.eyelight === false); };
   const COL = 0xbcc6d6;           // 차가운 밤빛(달빛과 같은 결)
   let L = null, T = null, sv = null, col = null, Vf = null;
@@ -3749,7 +3749,7 @@ var MeshoptDecoder = (function () {
 body:not(.tz-live) #lit-cmp{visibility:hidden}`;
     document.head.appendChild(st);
     const b = document.createElement('button'); b.id = 'lit-cmp'; b.type = 'button';
-    const show = () => { const old = E.fillOn !== 0; b.textContent = old ? '빛: 예전(앞 조명)' : '빛: 지금'; b.classList.toggle('old', old); };
+    const show = () => { const old = E.fillOn !== 0; b.textContent = old ? '빛: 앞 조명 켬' : '빛: 앞 조명 끔'; b.classList.toggle('old', old); };   // b731 — 켬이 기본
     b.addEventListener('click', () => { E.fillOn = E.fillOn === 0 ? 1 : 0; if (window.__charlit && window.__charlit.refresh) window.__charlit.refresh(); show(); });   // b718 — 몸 밝기도 같은 순간에
     document.body.appendChild(b); show(); setInterval(show, 500);
   })();
@@ -4535,10 +4535,12 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
   /* ── 누가 · 어디 ── */
   const zoneOf = (t) => G.zones.list.find((z) => z.team === t);
   const gyAt = (x, z) => { const N = window.__nav; let h = N && N.heightAt ? N.heightAt(x, z) : null; if (h === null || !isFinite(h)) h = G.groundAt ? G.groundAt(x, z) : null; return h === null || !isFinite(h) ? (S ? S.cy : 0) : h; };
+  const shownUnder = (m, top) => { let o = m; for (; o; o = o.parent) { if (!o.visible) return false; if (o === top) return true; } return false; };
   function actorOf(t) {
     if (t === 0) return { t, obj: G.hero, sm: () => { const B = G.body; let sm = null; for (const m of [B.main, B.drag]) { if (sm || !m) continue; let vis = true; for (let o = m; o; o = o.parent) if (!o.visible) vis = false; if (vis) sm = skinOf(m); } return sm; } };
     const b = G.game.bots.find((q) => q.team === t); if (!b) return null;
-    return { t, obj: b.hero, bot: b, sm: () => b.__sm || (b.__sm = skinOf(b.model)) };
+    // b731 — 이긴 봇의 몸은 지금 보이는 것으로(사용자 「이긴 연출 마지막에 승리한 사람 얼굴이 안 나오는 경우」 — 몸을 갈아입은 뒤 예전 몸(장면 밖)의 머리 뼈를 보고 엉뚱한 데를 찍었다)
+    return { t, obj: b.hero, bot: b, sm: () => { let s = b.__sm; if (!s || !shownUnder(s, b.hero)) { let f = null; b.hero.traverse((x) => { if (!f && x.isSkinnedMesh && shownUnder(x, b.hero)) f = x; }); if (f) s = b.__sm = f; } return s || (b.__sm = skinOf(b.model)); } };
   }
   function setup(winner) {
     const zs = G.zones.list; let cx = 0, cz = 0; for (const z of zs) { cx += z.cx; cz += z.cz; } cx /= zs.length; cz /= zs.length;
@@ -4554,7 +4556,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
     S.perp = [-S.axis[1], S.axis[0]];
     // 끝에서 가운데에 닿는 자리 — 축 위 양쪽 0.32m
     const gp = CF.gap; if (a) { a.hx = cx - S.axis[0] * gp; a.hz = cz - S.axis[1] * gp; } if (b) { b.hx = cx + S.axis[0] * gp; b.hz = cz + S.axis[1] * gp; }
-    const w = S.W; if (w) { w.yaw0 = w.obj.rotation.y; }
+    const w = S.W; if (w) { w.yaw0 = w.obj.rotation.y; const z = zoneOf(winner); if (z) { const dx = cx - z.cx, dz = cz - z.cz, dl = Math.hypot(dx, dz) || 1; w.wx = z.cx + dx / dl * 1.5; w.wz = z.cz + dz / dl * 1.5; w.wy = gyAt(w.wx, w.wz); w.wyaw = Math.atan2(dx, dz); } }   // b735 — 이긴 사람도 자기 본진 앞(가운데를 보고) — 바위 · 벽 옆 · 섬 끝에 서 있으면 얼굴 앞이 막혀 마지막 얼굴이 안 나왔다
     S.title = (window.__teamName ? window.__teamName(winner) : `P${winner + 1}`) + ' 승리';
     S.genKey = '';
   }
@@ -5123,6 +5125,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
     // 이긴 사람 — 안도의 숨 → 비열한 미소
     const W = S.W;
     if (W) {
+      if (W.wx != null && window.__endWinMove !== false) { const o0 = W.obj; keep(o0); o0.position.set(W.wx, W.wy, W.wz); o0.rotation.set(0, W.wyaw, 0); o0.updateMatrixWorld(true); }   // b735 — 되돌리기 __endWinMove = false
       const o = W.obj, sm = W.sm(); const uw = u - t.uW;
       { const q = o.getWorldQuaternion(new QT()), f = new T.Vector3(0, 0, 1).applyQuaternion(q), l = Math.hypot(f.x, f.z) || 1; W.fwd = [f.x / l, f.z / l]; }   // b494 — rotation.y 는 오일러가 (π, a, π) 꼴이면 엉뚱한 쪽 → 웃는 얼굴 정면 카메라가 옆 · 뒤로 갔다 · 실제 바라보는 쪽으로
       if (sm) { neutral(sm); clearFace(sm); (rig(sm).Hips || sm.skeleton.bones[0]).updateMatrixWorld(true); }   // b502 — 이긴 사람도 굳은 게임 자세 대신 서 있기 · 정면
@@ -5133,7 +5136,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
         const hasG = sm.morphTargetDictionary && sm.morphTargetDictionary.grin !== undefined;
         face(sm, { exhaust: CF.relief * ex, gasp: CF.relief * 0.45 * ex * (0.6 + 0.4 * Math.sin(uw * 2.2)), [hasG ? 'grin' : 'sneer']: CF.sneer * sn * (hasG ? 1 : 0.6) });   // 씨익 — 각 몸에 새로 넣은 grin 모프(v5)
       }
-      W.head = (() => { let h = null; if (sm) { const b = sm.skeleton && sm.skeleton.bones.find((q) => /Head$/.test(q.name)); if (b) h = b.getWorldPosition(new T.Vector3()); } return h || V(o.position.x, o.position.y + 1.55, o.position.z); })();
+      W.head = (() => { let h = null; if (sm) { const b = sm.skeleton && sm.skeleton.bones.find((q) => /Head$/.test(q.name)); if (b) h = b.getWorldPosition(new T.Vector3()); } if (h && Math.hypot(h.x - o.position.x, h.z - o.position.z) > 2.5) h = null; return h || V(o.position.x, o.position.y + 1.55, o.position.z); })();   // b731 — 머리가 몸에서 2.5m 넘게 떨어져 있으면 잘못 잡은 것
     }
     // 카메라 — 컷마다
     sv = sv || { p: cam.position.clone(), q: cam.quaternion.clone(), fov: cam.fov };
@@ -5162,7 +5165,9 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
       const w = V(S.cx + S.perp[0] * d, S.cy + 1.4 + 0.4 * kick, S.cz + S.perp[1] * d), low = V(S.cx + S.perp[0] * 3.4 + S.axis[0] * 1.2, S.cy + 0.55, S.cz + S.perp[1] * 3.4 + S.axis[1] * 1.2);
       P = w.lerp(low, dn); L = C.clone().add(V(0, lerp(1.1, 0.1, dn), 0)); fov = lerp(CF.wideFov, 50, dn) + CF.fovPunch * Math.exp(-tb * 5) * Math.min(1, tb * 30); sh = 0.14 * Math.exp(-tb * 3);
     } else if (W) {   // 이긴 사람 얼굴 — 천천히 다가감
-      const k = ss((u - t.uW) / CF.winT); P = front(W, lerp(CF.winD * 2, CF.winD, k), 0.04, 0.05); L = W.head; fov = CF.winFov; sh = 0.003;
+      const k = ss((u - t.uW) / CF.winT); let wd = lerp(CF.winD * 2, CF.winD, k);
+      { const rc = S.rc || (S.rc = new T.Raycaster()), dv = V(W.fwd[0], 0, W.fwd[1]); rc.set(W.head, dv); rc.far = wd + 0.3; const tg = [...((G.map && G.map.grounds) || []), ...(((G.props && G.props.list) || []).map((e) => e.root).filter(Boolean))], hit = rc.intersectObjects(tg, true).find((h) => h.object.visible && !h.object.isSkinnedMesh) || null; if (hit && hit.distance < wd + 0.2) wd = Math.max(0.3, hit.distance - 0.2); }   // b731 — 얼굴 앞에 벽 · 기둥이 있으면 그 앞까지만(가려서 얼굴이 안 보였다)
+      P = front(W, wd, 0.04, 0.05); L = W.head; fov = CF.winFov; sh = 0.003;
     }
     sh *= CF.shake; P.x += noise(u * 2.3, 5) * sh; P.y += noise(u * 2.7, 6) * sh;
     cam.position.copy(P); if (L) cam.lookAt(L);
@@ -5245,7 +5250,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
   const fixEuler = (o) => { const r = o && o.rotation; if (!r || r.order !== 'XYZ') return; if (Math.abs(Math.abs(r.x) - Math.PI) < 1e-3 && Math.abs(Math.abs(r.z) - Math.PI) < 1e-3) { const y = Math.PI - r.y; r.set(0, Math.atan2(Math.sin(y), Math.cos(y)), 0); } };
   D.fixEuler = fixEuler;
   setInterval(() => { const g = window.__G; if (!g || !g.hero || S) return; fixEuler(g.hero); for (const b of (g.game && g.game.bots) || []) fixEuler(b.hero); }, 100);
-  D._dbg = () => S && { cx: S.cx, cz: S.cz, cy: S.cy, L: S.L.map((A) => A.p && [A.p.x, A.p.y, A.p.z, A.bx, A.bz]) };
+  D._dbg = () => S && { cx: S.cx, cz: S.cz, cy: S.cy, L: S.L.map((A) => A.p && [A.p.x, A.p.y, A.p.z, A.bx, A.bz]), W: S.W && { head: S.W.head && [S.W.head.x, S.W.head.y, S.W.head.z], fwd: S.W.fwd, pos: [S.W.obj.position.x, S.W.obj.position.y, S.W.obj.position.z], sm: S.W.sm() && S.W.sm().name, bones: S.W.sm() && S.W.sm().skeleton.bones.length } };
   D.real = (winner) => { if (!G || !D.ready || mpOn() || S || !(winner >= 0)) return; begin('real', winner); };
   D.reset = () => { if (S && S.mode === 'real') end(); };
 
@@ -6398,7 +6403,7 @@ window.__NAVGRID = {"sig":"n8|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     ] },
     // b671 — 내 주변 빛(사용자 「내 앞에 있는 광원을 실제로 켜고 끌 수 있게」) — eyelight.js · perf.js
     { title: '내 주변 빛', sub: '내 앞 땅이 밝게 빛나는 것 = 「몸 둘레 빛」(나와 카메라 사이 점빛) · 끄면 그 둥근 빛 웅덩이가 사라진다', rows: [
-      { k: 'lit.fillOn2', label: '몸 둘레 빛(켜면 바닥에 동그란 빛 · 끄면 내 몸 자체 밝기로)', toggle: true, min: 0, max: 1, step: 1, def: 0, get: () => (window.__eyelight && window.__eyelight.fillOn === 0 ? 0 : 1), set: (v) => { if (window.__eyelight) window.__eyelight.fillOn = v ? 1 : 0; } },
+      { k: 'lit.fillOn3', label: '몸 둘레 빛(켜면 바닥에 동그란 빛 · 끄면 내 몸 자체 밝기로)', toggle: true, min: 0, max: 1, step: 1, def: 1, get: () => (window.__eyelight && window.__eyelight.fillOn === 0 ? 0 : 1), set: (v) => { if (window.__eyelight) window.__eyelight.fillOn = v ? 1 : 0; } },
       { k: 'lit.fillBack', label: '몸 둘레 빛 — 카메라 쪽 거리', min: 0, max: 4, step: 0.05, def: 1, fmt: (v) => v.toFixed(2) + 'm', get: () => { const E = window.__eyelight; return E && E.fillBack != null ? E.fillBack : 1; }, set: (v) => { if (window.__eyelight) window.__eyelight.fillBack = v; } },
       { k: 'lit.fillH', label: '몸 둘레 빛 — 높이', min: 0.3, max: 6, step: 0.05, def: 1.4, fmt: (v) => v.toFixed(2) + 'm', get: () => { const E = window.__eyelight; return E && E.fillH != null ? E.fillH : 1.4; }, set: (v) => { if (window.__eyelight) window.__eyelight.fillH = v; } },
       { k: 'lit.fillD', label: '몸 둘레 빛 — 닿는 거리', min: 1, max: 15, step: 0.1, def: 5, fmt: (v) => v.toFixed(1) + 'm', get: () => { const E = window.__eyelight; return E && E.fillD != null ? E.fillD : 5; }, set: (v) => { if (window.__eyelight) window.__eyelight.fillD = v; } },
@@ -13350,7 +13355,14 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     if (r.__crowHB) r.__crowHB.k = 1 + 1.4 * fl.w;
   }
   // ── 팔 휘젓기 — 그리기 직전에만(그린 뒤 되돌림) · 나 · 봇 모두 ──
-  const flails = new Map(), flSaved = [];
+  const flails = new Map(), flSaved = [], flPos = [];
+  // b731 — 까마귀에 쪼일 때 팔 휘젓기 조절(사용자 「어깨 리깅 위치가 이상해 동작이 이상 · 패널에서 · 까마귀 때만 잠깐 리깅 위치를 바꿀 수 있게」)
+  //   어깨 관절(팔 뼈) 자리를 쪼이는 동안만 옮긴다(위 · 앞 · 바깥 cm — 몸 기준) · 쇄골 들기 · 팔 들기 · 앞으로 · 팔꿈치 · 흔들기 세기 · 빠르기 — 그린 뒤 되돌림(다른 동작은 그대로)
+  const FDEF = { jUp: 0, jFwd: 0, jOut: 0, shLift: 0.3, shSwing: 0.12, shFwd: 0, armUp: 0.85, armSwing: 0.3, armFwd: 0.55, armFwdSw: 0.35, elbow: 0.75, elbowSw: 0.55, hand: 0.45, flK: 1, flSpd: 1 };
+  const FA = (window.__crowArm = Object.assign({}, FDEF));
+  try { const o = JSON.parse(localStorage.getItem('corpse_crowarm_v1') || 'null'); if (o) for (const k in FDEF) if (typeof o[k] === 'number' && isFinite(o[k])) FA[k] = o[k]; } catch { /* */ }
+  const faSave = () => { try { localStorage.setItem('corpse_crowarm_v1', JSON.stringify(FA)); } catch { /* */ } };
+  let faPreview = false;   // 패널 「계속 휘젓기」 — 까마귀 없이 내 몸에서 보기
   let QI = null, QA2 = null, QB2 = null, QP2 = null, VA = null, VB = null;
   function flailSkin(q) {
     if (q.who === 'hero') { const B = G.body; if (!B) return null; const m = B.drag && B.drag.visible && !(B.main && B.main.visible) ? B.drag : B.main; let s = null; if (m) m.traverse((x) => { if (!s && x.isSkinnedMesh) s = x; }); return s; }
@@ -13370,6 +13382,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     b.getWorldQuaternion(QB2); QB2.premultiply(QA2); b.parent.getWorldQuaternion(QP2); b.quaternion.copy(QP2.invert().multiply(QB2)); b.updateMatrixWorld(true);
   }
   function flailApply(dt) {
+    if (faPreview && G.hero) { const q = { who: 'hero', root: G.hero, yaw: () => G.hero.rotation.y }; const fl = flails.get('hero') || { w: 0, want: 1, last: 0, ph: 0, q }; fl.want = 1; fl.last = now(); flails.set('hero', fl); }
     if (!QI) { QI = Q.clone().set(0, 0, 0, 1); QA2 = Q.clone(); QB2 = Q.clone(); QP2 = Q.clone(); VA = new T.Vector3(); VB = new T.Vector3(); }
     const t = now();
     for (const [who, fl] of flails) {
@@ -13381,23 +13394,31 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       // b704 — 결말 연출(death.js 「허우적」)과 같은 뼈 축 규칙으로(예전 방향 맞추기는 팔이 비틀려 관절이 어색했다 — 사용자)
       //   son 뼈 축: 팔 x− 옆으로 들어 올림 · 팔 z 앞뒤(왼 + 앞 / 오른 − 앞) · 아래팔 z 팔꿈치(왼 + / 오른 −) · 손 x
       //   그리기 직전에만 얹고 그린 뒤 되돌린다 — 게임의 다른 동작(걷기 · 달리기 · 맞음 …)은 그대로
-      const s = (f, p) => Math.sin(t * f * 6.2832 + p), pos = (x) => Math.max(0, x), A = w;
+      const s = (f, p) => Math.sin(t * f * FA.flSpd * 6.2832 + p), pos = (x) => Math.max(0, x), A = w * FA.flK, Aj = w;
       for (const [Sh, Ar, F, Hd, sd, p] of [[B.LS, B.LA, B.LF, B.LH, 1, 0], [B.RS, B.RA, B.RF, B.RH, -1, 1.9]]) {
         const w1 = s(2.1, p + ph), w2 = s(3.1, p * 1.7 + ph), w3 = s(4.3, p + ph * 2);
         // b706 — 어깨(쇄골)도 같이 들어 올린다(사용자 「팔 흔들 때 어깨점 위치가 이상」 — 팔만 들려 어깨가 꺾여 보였다) · 쪼일 때만 · 축: 어깨 x− 가 들어 올림(미리보기에서 잼)
-        rotF(Sh, -A * (0.3 + 0.12 * w1), 0, 0);
-        rotF(Ar, -A * (0.85 + 0.3 * w1), 0, sd * A * (0.55 + 0.35 * w2));   // 팔을 들어 앞 · 머리 쪽으로 휘두름(어깨가 들린 만큼 덜)
-        rotF(F, 0, 0, sd * A * (0.75 + 0.55 * pos(w2) + 0.25 * w3));          // 팔꿈치를 굽혀 얼굴 앞을 후려침
-        rotF(Hd, A * 0.45 * w1, 0, 0);
+        if (FA.jUp || FA.jFwd || FA.jOut) moveJ(Ar, fx, fz, lx * sd, lz * sd, Aj);   // b731 — 어깨 관절 자리(쪼일 때만)
+        rotF(Sh, -A * (FA.shLift + FA.shSwing * w1), 0, sd * A * FA.shFwd);
+        rotF(Ar, -A * (FA.armUp + FA.armSwing * w1), 0, sd * A * (FA.armFwd + FA.armFwdSw * w2));   // 팔을 들어 앞 · 머리 쪽으로 휘두름(어깨가 들린 만큼 덜)
+        rotF(F, 0, 0, sd * A * (FA.elbow + FA.elbowSw * pos(w2) + 0.25 * w3));          // 팔꿈치를 굽혀 얼굴 앞을 후려침
+        rotF(Hd, A * FA.hand * w1, 0, 0);
       }
       ((B.LA && B.LA.parent && B.LA.parent.parent) || B.H).updateMatrixWorld(true);   // 두 어깨의 부모(가슴)부터 — 양팔 모두
     }
+  }
+  // 팔 뼈(어깨 관절)를 몸 기준 위 · 앞 · 바깥으로 옮긴다(cm) — 부모(쇄골) 좌표로 바꿔 더한다 · 그린 뒤 되돌림
+  function moveJ(b, fx, fz, ox, oz, w) {
+    if (!b || !b.parent) return; flPos.push([b, b.position.x, b.position.y, b.position.z]);
+    const d = VB.set(fx * FA.jFwd + ox * FA.jOut, FA.jUp, fz * FA.jFwd + oz * FA.jOut).multiplyScalar(0.01 * w);
+    b.parent.updateWorldMatrix(true, false); const e = b.parent.matrixWorld.elements, sx = Math.hypot(e[0], e[1], e[2]) || 1;
+    b.parent.getWorldQuaternion(QP2); d.applyQuaternion(QP2.invert()).multiplyScalar(1 / sx); b.position.add(d);
   }
   function rotF(b, x, y, z) {
     if (!b) return; flSaved.push([b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]);
     if (x) b.quaternion.multiply(QA2.setFromAxisAngle(VA.set(1, 0, 0), x)); if (y) b.quaternion.multiply(QA2.setFromAxisAngle(VA.set(0, 1, 0), y)); if (z) b.quaternion.multiply(QA2.setFromAxisAngle(VA.set(0, 0, 1), z));
   }
-  function flailRestore() { for (let i = flSaved.length - 1; i >= 0; i--) { const e = flSaved[i]; e[0].quaternion.set(e[1], e[2], e[3], e[4]); } flSaved.length = 0; }
+  function flailRestore() { for (let i = flSaved.length - 1; i >= 0; i--) { const e = flSaved[i]; e[0].quaternion.set(e[1], e[2], e[3], e[4]); } flSaved.length = 0; for (let i = flPos.length - 1; i >= 0; i--) { const e = flPos[i]; e[0].position.set(e[1], e[2], e[3]); } flPos.length = 0; }
   let shakeHooked = false;
   function hookShake() {
     if (shakeHooked) return; shakeHooked = true;
@@ -13531,6 +13552,40 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     } catch (e) { if (!loop.err) { loop.err = true; console.warn('[crowflock]', e); } }
     requestAnimationFrame(loop);
   })();
+
+  /* b731 — 패널 「까마귀 팔」 — 오른쪽 아래 · 값은 움직이는 즉시 · 이 브라우저에 남는다 · 「저장」은 모두의 기본값(settings 'crowArm') */
+  (function faPanel() {
+    if (!document.body) { setTimeout(faPanel, 200); return; }
+    const R = [['어깨 관절 자리(쪼일 때만 · cm)'], ['jUp', '위로', -15, 15, 0.5, 'cm'], ['jFwd', '앞으로', -15, 15, 0.5, 'cm'], ['jOut', '바깥으로', -15, 15, 0.5, 'cm'],
+      ['쇄골(어깨)'], ['shLift', '들어 올림', -0.6, 1.2, 0.02, ''], ['shSwing', '들썩임', 0, 0.6, 0.02, ''], ['shFwd', '앞으로 모음', -0.8, 0.8, 0.02, ''],
+      ['팔'], ['armUp', '팔 들기', -0.5, 2, 0.02, ''], ['armSwing', '위아래 휘두름', 0, 1, 0.02, ''], ['armFwd', '앞으로', -1, 1.5, 0.02, ''], ['armFwdSw', '앞뒤 휘두름', 0, 1, 0.02, ''],
+      ['elbow', '팔꿈치 굽힘', -0.5, 2, 0.02, ''], ['elbowSw', '팔꿈치 휘두름', 0, 1.2, 0.02, ''], ['hand', '손목 흔들기', 0, 1, 0.02, ''],
+      ['전체'], ['flK', '세기', 0, 2, 0.05, '%'], ['flSpd', '빠르기', 0.3, 2.5, 0.05, 'x']];
+    const fm = (r, v) => r[5] === 'cm' ? `${(+v).toFixed(1)}cm` : r[5] === '%' ? `${Math.round(v * 100)}%` : r[5] === 'x' ? `${(+v).toFixed(2)}배` : (+v).toFixed(2);
+    const st = document.createElement('style');
+    st.textContent = `#cf-btn{position:fixed;right:400px;bottom:14px;z-index:60;padding:6px 12px;background:rgba(10,8,6,.82);color:#e9e1d0;border:1px solid #5a4a3a;font:700 12px "UIF","Noto Serif KR",serif;letter-spacing:.12em;cursor:pointer}
+body:not(.tz-live) #cf-btn{visibility:hidden}
+#cf-p{position:fixed;right:12px;top:60px;bottom:60px;z-index:61;width:300px;overflow-y:auto;padding:12px 14px;background:rgba(12,9,7,.92);color:#e9e1d0;border:1px solid #5a5a5a;font:12px "UIF","Noto Serif KR",serif;display:none}
+#cf-p.on{display:block} #cf-p h4{margin:0 0 8px;font-size:14px;letter-spacing:.3em;color:#c9c9c9}
+#cf-p h5{margin:12px 0 2px;font-size:12px;color:#c9b8a0;letter-spacing:.12em;border-top:1px solid #3a342c;padding-top:8px}
+#cf-p label{display:flex;justify-content:space-between;margin:6px 0 0;color:#c9bfae} #cf-p label b{color:#f2e6d6} #cf-p input[type=range]{width:100%}
+#cf-p button{padding:6px 8px;background:#1e1c1a;color:#f2e6d6;border:1px solid #6a6a6a;font:700 12px "UIF","Noto Serif KR",serif;cursor:pointer} #cf-p button.on{background:#4a4030;border-color:#c9a24a}
+#cf-p .n{font-size:11px;color:#8d877a;margin-top:10px;line-height:1.5}`;
+    document.head.appendChild(st);
+    const btn = document.createElement('button'); btn.id = 'cf-btn'; btn.type = 'button'; btn.textContent = '까마귀 팔';
+    const p = document.createElement('div'); p.id = 'cf-p';
+    p.innerHTML = `<h4>까마귀 · 팔 휘젓기</h4><div style="display:flex;gap:6px;flex-wrap:wrap"><button data-a="pv">▶ 계속 휘젓기(내 몸으로 보기)</button><button data-a="def">기본값</button><span class="svs"></span></div>` +
+      R.map((r) => r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</span><b data-v="${r[0]}"></b></label><input type="range" data-k="${r[0]}" min="${r[2]}" max="${r[3]}" step="${r[4]}">`).join('') +
+      `<div class="n">쪼일 때만 잠깐 얹는다 · 다른 동작(걷기 · 맞음 · 나르기)의 뼈는 그대로 · 나 · 봇 모두 · 「계속 휘젓기」를 켜고 카메라를 돌려 앞에서 보면 맞추기 쉽다</div>`;
+    document.body.appendChild(btn); document.body.appendChild(p);
+    if (window.__settings && window.__settings.button) p.querySelectorAll('.svs').forEach((sv) => sv.appendChild(window.__settings.button()));
+    const sync = () => { for (const r of R) { if (r.length === 1) continue; const i = p.querySelector(`input[data-k="${r[0]}"]`), b = p.querySelector(`b[data-v="${r[0]}"]`); if (i && document.activeElement !== i) i.value = FA[r[0]]; if (b) b.textContent = fm(r, FA[r[0]]); } p.querySelector('[data-a=pv]').classList.toggle('on', faPreview); };
+    sync(); FA.sync = sync;
+    btn.addEventListener('click', () => { p.classList.toggle('on'); if (!p.classList.contains('on')) faPreview = false; sync(); });
+    p.addEventListener('input', (e) => { const k = e.target.dataset && e.target.dataset.k; if (!k) return; FA[k] = +e.target.value; faSave(); sync(); });
+    p.addEventListener('click', (e) => { const a = e.target.dataset && e.target.dataset.a; if (!a) return; if (a === 'pv') faPreview = !faPreview; if (a === 'def') { Object.assign(FA, FDEF); faSave(); } sync(); e.target.blur(); });
+    (function reg() { if (!window.__settings || !window.__settings.reg) { setTimeout(reg, 500); return; } window.__settings.reg('crowArm', { get: () => { const o = {}; for (const k in FDEF) o[k] = FA[k]; return o; }, set: (o) => { if (!o) return; for (const k in FDEF) if (typeof o[k] === 'number' && isFinite(o[k])) FA[k] = o[k]; if (FA.sync) FA.sync(); } }); })();
+  })();
 })();
 
 </script>
@@ -13554,7 +13609,10 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     height: 14, lift: 2.4, grabScream: 0, landBlood: 1,
     legAmt: 1, legSpd: 0.6, fallG: 22, topHold: 0.45, liftCurve: 1,   // b707 — 떨어지는 빠르기(중력 m/s²) · 꼭대기에서 멈칫 · 올라가는 곡선(0 일정 · 1 천천히 시작해 천천히 멈춤)                                                     // b703 — 다리 움직임(0 = 날개만) · 빠르기
     // b703 — 낚아채기 연출(사용자 「끌려 올라갈 때 아래에서 하늘로 끌려가는 캐릭터를 비추며 다이나믹 · 떨어질 때 떨어지는 캐릭터를 잡아 같이 따라가게 · 발버둥 · 몸 각도」)
-    stMode: 1, stFall: 0, stK: 1, stSpd: 1.2,                                  // 발버둥(0 버팀 · 1 발버둥 · 2 허우적) · 세기 · 빠르기
+    stMode: 1, stFall2: 5, stK: 1, stSpd: 1.2, stArm: 1, stLeg: 1, stHead: 1,   // b731 — stFall → stFall2(기본 5 추락 · 사용자 「떨어질 때는 하늘을 보고 · 옛 격투 게임처럼」) · 팔 · 다리 · 고개 세기 따로
+    grabBone: 0, grabUp: 0.1, grabAlong: 0, grabSide: 0, grabTilt: 0, beeTurn: 0,   // b731 — 잡는 자리(0 등 · 1 어깨 사이 · 2 머리 · 3 허리 · 4 예전 땅 기준) · 위 · 몸 따라 · 옆(m) · 벌 기울기 · 벌 방향(°)
+    fallFace: 0, fallAng2: 88, fallTurn: 10, exLift: 0, exFall: 1, fallLines: 1,
+    aArmUp: 25, aArmFwd: 15, aElbow: 65, aHandUp: 15, aLegOut: 55, aLegFwd: 25, aShinOut: 12, aShinFwd: 0, aHeadBack: 12, fpWiggle: 1,   // b731 — 추락 자세(°) — 팔 들기 · 팔 앞으로 · 팔꿈치 · 손 머리 쪽 · 다리 벌림 · 허벅지 들기 · 정강이 옆 · 앞 · 고개 젖힘 · 흔들림   // b731 — 떨어질 때 얼굴(0 하늘 · 1 땅 · 2 예전) · 몸 각도 · 빙글 · 표정(0 자동 · n 번째) · 속도선                                  // 발버둥(0 버팀 · 1 발버둥 · 2 허우적) · 세기 · 빠르기
     liftAng: 12, fallAng: 60, fallSpin: 80,                                    // 몸 각도(° · 0 = 머리 위로 똑바로 · 90 = 누운 채 · 180 = 거꾸로) · 떨어지며 도는 빠르기(°/초)
     camOn: 1, cIn: 0.6, cOut: 1.2,                                             // 카메라 켬 · 들어가는 · 돌아오는 시간
     cLiftD: 4.2, cLiftH: 0.45, cLiftRise: 0.35, cLiftOrbit: 12, cLiftFov: -12, cLiftShake: 0.35, cLiftRoll: 6,
@@ -13937,7 +13995,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       const grabAt = tmpA().set(q.p.x, gy(q.p.x, q.p.z, q.p.y), q.p.z);
       if (u < tG) {
         lifts.delete(q.who);   // 재생바로 앞으로 되돌렸을 때
-        const over = hp.clone(); over.y += 0.55 * sz + 0.35; const k = ss(u / tG), mid = ev.sp.clone().lerp(over, 0.5); mid.y += 3; R.position.copy(bez(ev.sp, mid, over, k)).add(jit.multiplyScalar(0.5));
+        const over = ev.att && Math.round(C.grabBone) !== 4 ? ev.att.clone() : hp.clone().add(tmpA().set(0, 0.55 * sz + 0.35, 0)); const k = ss(u / tG), mid = ev.sp.clone().lerp(over, 0.5); mid.y += 3; R.position.copy(bez(ev.sp, mid, over, k)).add(jit.multiplyScalar(0.5));
       } else if (u < tR) {
         if (!ev.st.grab) {
           ev.st.grab = true;
@@ -14004,7 +14062,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   }
 
   /* ── 잡힌 몸 — 발버둥 · 몸 각도(그리기 직전에만 · 그린 뒤 되돌림 · 사원증 줄은 그다음에 돌아 같이 따라온다) ── */
-  const BN = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm', 'LeftHand', 'RightHand', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot'];
+  const BN = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'RightShoulder', 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm', 'LeftHand', 'RightHand', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot'];
   function rig(sm) { if (sm.__hnRig && sm.__hnRig.sk === sm.skeleton) return sm.__hnRig; const r = { sk: sm.skeleton }; for (const nm of BN) r[nm] = sm.skeleton.bones.find((b) => b.name.replace(/^mixamorig:?/, '') === nm) || null; return (sm.__hnRig = r); }
   function visSkin(who) {
     if (who === 'hero') { const Bd = G.body; if (!Bd) return null; const m = Bd.drag && Bd.drag.visible && !(Bd.main && Bd.main.visible) ? Bd.drag : Bd.main; return skinOf(m); }
@@ -14013,10 +14071,78 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const bsv = [], rsv = []; let QAx = null, AXV = null, QI2 = null, QR = null;
   function rotB(b, x, y, z) { if (!b) return; bsv.push([b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]); if (x) b.quaternion.multiply(QAx.setFromAxisAngle(AXV.set(1, 0, 0), x)); if (y) b.quaternion.multiply(QAx.setFromAxisAngle(AXV.set(0, 1, 0), y)); if (z) b.quaternion.multiply(QAx.setFromAxisAngle(AXV.set(0, 0, 1), z)); }
   // 결말 연출(death.js)의 버팀 · 발버둥 · 허우적과 같은 뼈 축 규칙(son: 몸통 x+ 숙임 · 팔 x− 옆으로 · 팔 z 앞뒤 · 아래팔 z 팔꿈치 · 허벅지 x+ 앞 · 정강이 x− 굽힘)
-  function struggle(r, t, W, ph, mode) {
-    const s = (f, p) => Math.sin(t * f * 6.2832 + (p || 0)), pos = (x) => Math.max(0, x), fa = 1.35 * C.stSpd, fl = 1.7 * C.stSpd, A = W, Lg = W;
-    if (mode === 1) {   // 발버둥 — 다리를 마구 차고 팔은 감쌈
-      rotB(r.Spine, W * 0.35, 0, W * 0.08 * s(fl, ph)); rotB(r.Spine1, W * 0.15, 0, 0); rotB(r.Neck, W * 0.1, W * 0.15 * s(0.7, ph), 0); rotB(r.Head, W * 0.1, W * 0.15 * s(0.6, ph + 2), 0);
+  // b731 — 묶음 자세(T) 뼈 회전 — 「추락」 자세는 지금 동작 위에 얹지 않고 이 자세에서 시작한다(동작마다 팔다리가 달라 그림이 안 맞았다)
+  const RESTB = ['Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'RightShoulder', 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm', 'LeftHand', 'RightHand', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot'];
+  function restOf(r) {
+    if (r.rest) return r.rest;
+    const sk = r.sk, out = new Map(), P3 = new T.Vector3(), S3 = new T.Vector3();
+    sk.bones.forEach((b, i) => {
+      const bw = new M4().copy(sk.boneInverses[i]).invert(), pi = b.parent && b.parent.isBone ? sk.bones.indexOf(b.parent) : -1;
+      const lm = pi >= 0 ? new M4().copy(sk.boneInverses[pi]).multiply(bw) : bw, q = Q.clone(); lm.decompose(P3, q, S3); out.set(b, q);
+    });
+    return (r.rest = out);
+  }
+  function setRest(b, R0, k) { if (!b) return; const q = R0.get(b); if (!q) return; bsv.push([b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]); b.quaternion.slerp(q, k); }
+  // b731 — 추락 자세 — 몸의 위(엉덩이 → 머리) · 왼쪽(오른 어깨 → 왼 어깨) · 앞(가슴)을 재서 그 기준 각도로 팔 · 아래팔 · 허벅지 · 정강이를 겨눈다(°)
+  const AV = [];
+  function aimB(b, child, dir, w) {
+    if (!b || !child || !b.parent || w <= 0) return;
+    if (!AV.length) for (let i = 0; i < 6; i++) AV.push(i < 3 ? new T.Vector3() : Q.clone());
+    b.updateWorldMatrix(true, false); child.updateWorldMatrix(false, false);
+    const p0 = b.getWorldPosition(AV[0]), cur = child.getWorldPosition(AV[1]).sub(p0); if (cur.lengthSq() < 1e-8) return; cur.normalize();
+    AV[3].setFromUnitVectors(cur, AV[2].copy(dir).normalize()); AV[3].slerp(QI2, 1 - w);
+    bsv.push([b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]);
+    b.getWorldQuaternion(AV[4]); AV[4].premultiply(AV[3]); b.parent.getWorldQuaternion(AV[5]); b.quaternion.copy(AV[5].invert().multiply(AV[4])); b.updateMatrixWorld(true);
+  }
+  function fallAim(r, t, W, ph, Hd) {
+    if (!r.LeftArm || !r.RightArm || !r.LeftForeArm || !r.RightForeArm) return;
+    const D = Math.PI / 180, s = (f, p) => Math.sin(t * f * C.stSpd * 6.2832 + p), V3 = () => new T.Vector3();
+    const hp = r.Hips.getWorldPosition(V3()), up = r.Head.getWorldPosition(V3()).sub(hp).normalize();
+    const sl = r.LeftArm.getWorldPosition(V3()).sub(r.RightArm.getWorldPosition(V3())); sl.addScaledVector(up, -sl.dot(up)); if (sl.lengthSq() < 1e-8) return; sl.normalize();
+    const fr = V3().crossVectors(sl, up).normalize(), dn = up.clone().negate();
+    const mix = (a, b, ang) => a.clone().multiplyScalar(Math.cos(ang)).addScaledVector(b, Math.sin(ang));
+    const perp = (v, base) => { const o = v.clone().addScaledVector(base, -v.dot(base)); return o.lengthSq() > 1e-8 ? o.normalize() : o; };
+    const wa = Math.min(1, W * C.stArm), wl = Math.min(1, W * C.stLeg), wg = C.fpWiggle;
+    for (const [Lr, sg, p] of [['Left', 1, 0], ['Right', -1, 1.1]]) {
+      const sd = sl.clone().multiplyScalar(sg), a1 = s(1.7, p + ph), a2 = s(2.3, p + ph + 0.7), k1 = s(1.4, p + ph + 1.6);
+      // 팔 — 옆으로 뻗어 머리 쪽으로(팔 들기) · 가슴 쪽으로(팔 앞으로)
+      const arm = mix(mix(sd, up, (C.aArmUp + 6 * wg * a1) * D), fr, (C.aArmFwd + 4 * wg * a2) * D).normalize();
+      aimB(r[Lr + 'Arm'], r[Lr + 'ForeArm'], arm, wa);
+      // 아래팔 — 팔꿈치를 가슴 쪽(하늘)으로 굽히고 손을 머리 쪽으로
+      const fa = mix(mix(arm, perp(fr, arm), (C.aElbow + 8 * wg * a2) * D), up, C.aHandUp * D).normalize();
+      aimB(r[Lr + 'ForeArm'], r[Lr + 'Hand'], fa, wa);
+      // 허벅지 — 아래에서 옆으로 벌리고(다리 벌림) 가슴 쪽으로(허벅지 들기)
+      const th = mix(mix(dn, sd, (C.aLegOut + 4 * wg * k1) * D), fr, (C.aLegFwd + 5 * wg * k1) * D).normalize();
+      aimB(r[Lr + 'UpLeg'], r[Lr + 'Leg'], th, wl);
+      // 정강이 — 아래로(옆 · 앞으로 조금) — 허벅지와의 차이가 무릎 굽힘
+      const sh = mix(mix(dn, sd, C.aShinOut * D), fr, (C.aShinFwd - 6 * wg * k1) * D).normalize();
+      aimB(r[Lr + 'Leg'], r[Lr + 'Foot'], sh, wl);
+    }
+    rotB(r.Head, -Hd * C.aHeadBack * D, Hd * 0.08 * s(0.5, ph), 0);
+    (r.Hips || r.sk.bones[0]).updateMatrixWorld(true);
+  }
+  function struggle(r, t, W, ph, mode, wb) {
+    const s = (f, p) => Math.sin(t * f * 6.2832 + (p || 0)), pos = (x) => Math.max(0, x), fa = 1.35 * C.stSpd, fl = 1.7 * C.stSpd, A = W * C.stArm, Lg = W * C.stLeg, Hd = W * C.stHead;
+    if (mode === 5) {   // b731 — 추락 — 하늘을 보고 팔다리를 쫙(옛 격투 게임에서 떨어질 때 · 사용자 그림) — 몸 기준 방향(옆 · 머리 쪽 · 가슴 쪽)으로 팔다리를 직접 겨눈다(뼈 축이 몸마다 달라도 같은 모양)
+      fallAim(r, t, Math.min(1, W), ph, Hd);
+    } else if (mode === 3) {   // b731 — 매달림 — 두 팔을 위로 뻗어 벌 다리를 붙잡고 다리는 늘어져 흔들림
+      const sw = s(0.45 * C.stSpd, ph);
+      rotB(r.Spine, -W * 0.12, 0, W * 0.05 * sw); rotB(r.Spine1, -W * 0.06, 0, 0); rotB(r.Neck, -Hd * 0.25, 0, 0); rotB(r.Head, -Hd * 0.35, Hd * 0.1 * s(0.3, ph), 0);
+      for (const [Lr, sd, p] of [['Left', 1, 0], ['Right', -1, 0.7]]) {
+        const g = s(fa * 0.9, p + ph), k = s(0.6 * C.stSpd, p + ph + 1);
+        rotB(r[Lr + 'Arm'], -A * (1.45 + 0.08 * g), 0, sd * A * 0.25); rotB(r[Lr + 'ForeArm'], 0, 0, sd * A * (0.35 + 0.15 * pos(g))); rotB(r[Lr + 'Hand'], A * 0.5, 0, 0);
+        rotB(r[Lr + 'UpLeg'], Lg * (0.12 + 0.18 * k), 0, sd * Lg * 0.05); rotB(r[Lr + 'Leg'], -Lg * (0.15 + 0.2 * pos(-k)), 0, 0); rotB(r[Lr + 'Foot'], Lg * 0.3, 0, 0);
+      }
+    } else if (mode === 4) {   // b731 — 축 늘어짐 — 힘이 빠져 팔다리가 늘어진 채 흔들림
+      const sw = s(0.35 * C.stSpd, ph);
+      rotB(r.Spine, W * 0.15, 0, W * 0.06 * sw); rotB(r.Neck, Hd * 0.3, 0, Hd * 0.08 * sw); rotB(r.Head, Hd * 0.35, Hd * 0.1 * sw, 0);
+      for (const [Lr, sd, p] of [['Left', 1, 0], ['Right', -1, 1.3]]) {
+        const k = s(0.35 * C.stSpd, p + ph);
+        rotB(r[Lr + 'Arm'], A * (0.35 + 0.1 * k), 0, sd * A * 0.1 * k); rotB(r[Lr + 'ForeArm'], 0, 0, sd * A * 0.25); rotB(r[Lr + 'Hand'], A * 0.3, 0, 0);
+        rotB(r[Lr + 'UpLeg'], Lg * (0.08 + 0.1 * k), 0, 0); rotB(r[Lr + 'Leg'], -Lg * 0.3, 0, 0); rotB(r[Lr + 'Foot'], Lg * 0.35, 0, 0);
+      }
+    } else if (mode === 1) {   // 발버둥 — 다리를 마구 차고 팔은 감쌈
+      rotB(r.Spine, W * 0.35, 0, W * 0.08 * s(fl, ph)); rotB(r.Spine1, W * 0.15, 0, 0); rotB(r.Neck, Hd * 0.1, Hd * 0.15 * s(0.7, ph), 0); rotB(r.Head, Hd * 0.1, Hd * 0.15 * s(0.6, ph + 2), 0);
       for (const [L, sd, p] of [['Left', 1, 0], ['Right', -1, Math.PI]]) {
         const a = s(fa * 1.2, p + ph);
         rotB(r[L + 'Arm'], -A * (0.35 + 0.25 * a), 0, sd * A * (1.05 + 0.25 * a)); rotB(r[L + 'ForeArm'], 0, 0, sd * A * (1.5 + 0.3 * pos(-a))); rotB(r[L + 'Hand'], A * 0.6, 0, 0);
@@ -14024,7 +14150,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       }
     } else if (mode === 2) {   // 허우적 — 두 팔 머리 위로 마구 휘저음
       rotB(r.Spine, -W * 0.1, W * 0.2 * s(fa * 0.7, ph), W * 0.1 * s(fa, ph)); rotB(r.Spine1, -W * 0.05, W * 0.12 * s(fa * 0.7, ph + 1), 0);
-      rotB(r.Neck, -W * 0.15, W * 0.2 * s(fa * 0.6, ph), 0); rotB(r.Head, -W * 0.2, W * 0.2 * s(fa * 0.5, ph + 2), W * 0.1 * s(fa, ph));
+      rotB(r.Neck, -Hd * 0.15, Hd * 0.2 * s(fa * 0.6, ph), 0); rotB(r.Head, -Hd * 0.2, Hd * 0.2 * s(fa * 0.5, ph + 2), Hd * 0.1 * s(fa, ph));
       for (const [L, sd, p] of [['Left', 1, 0], ['Right', -1, 1.9]]) {
         const w1 = s(fa * 1.3, p + ph), w2 = s(fa * 1.9, p * 1.7 + ph);
         rotB(r[L + 'Arm'], -A * (1.3 + 0.35 * w1), 0, sd * A * (0.6 * w2)); rotB(r[L + 'ForeArm'], 0, 0, sd * A * (0.5 + 0.5 * pos(w2))); rotB(r[L + 'Hand'], A * 0.4 * w1, 0, 0);
@@ -14032,7 +14158,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       }
     } else {   // 버팀 — 팔을 뻗어 허공을 할퀴고 다리를 번갈아 찬다
       rotB(r.Spine, W * 0.22, W * 0.12 * s(fa * 0.5, ph), 0); rotB(r.Spine1, W * 0.1, W * 0.1 * s(fa * 0.5, ph + 1), W * 0.05 * s(fa, ph));
-      rotB(r.Neck, -W * 0.22, W * 0.12 * s(0.6, ph), 0); rotB(r.Head, -W * 0.28, W * 0.15 * s(0.45, ph + 2), W * 0.06 * s(0.8, ph));
+      rotB(r.Neck, -Hd * 0.22, Hd * 0.12 * s(0.6, ph), 0); rotB(r.Head, -Hd * 0.28, Hd * 0.15 * s(0.45, ph + 2), Hd * 0.06 * s(0.8, ph));
       for (const [L, sd, p] of [['Left', 1, 0], ['Right', -1, Math.PI]]) {
         const reach = pos(s(fa, p + ph)), back = pos(-s(fa, p + ph));
         rotB(r[L + 'Arm'], -A * (0.25 + 0.25 * reach), 0, sd * A * (0.75 + 0.75 * reach - 0.2 * back)); rotB(r[L + 'ForeArm'], 0, 0, sd * A * (0.15 + 1.0 * back)); rotB(r[L + 'Hand'], A * (0.2 + 0.5 * back), 0, 0);
@@ -14050,24 +14176,94 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       const r = rig(sm); if (!r.Hips || !r.Head) continue;
       const w = L.ph === 'land' ? 1 : L.ph === 'lift' ? ss(Math.min(1, (L.k * L.ev.lift) / 0.35)) : L.ev.studio ? 1 : 1 - ss(((L.fu || 0) - (L.tf - 0.14)) / 0.14);
       if (w <= 0.001) continue;
+      // b731 — 「추락」은 지금 동작(맞음 · 서 있기)을 지우고 묶음 자세(T)에서 — 몸 각도를 재기 전에(그래야 하늘을 똑바로 본다 · 어깨도 좌우 같게)
+      if (L.ph !== 'land' && Math.round(L.ph === 'lift' ? C.stMode : C.stFall2) === 5) { const R0 = restOf(r); for (const nm of RESTB) setRest(r[nm], R0, w); r.Hips.updateMatrixWorld(true); }
       // 몸 각도 — 엉덩이를 축으로 몸 전체를 돌린다(엉덩이 → 머리 방향을 원하는 각도로)
       root.updateMatrixWorld(true);
       const hp = r.Hips.getWorldPosition(new T.Vector3()), axis = r.Head.getWorldPosition(new T.Vector3()).sub(hp);
       if (axis.lengthSq() > 1e-6) {
         axis.normalize();
-        const hd = new T.Vector3(axis.x, 0, axis.z); if (hd.lengthSq() < 1e-6) { const y = root.rotation.y; hd.set(-Math.sin(y), 0, -Math.cos(y)); } hd.normalize();
-        const fa = C.fallAng + C.fallSpin * (L.ph === 'land' ? L.tf || fallT(L.ev.h, L.ev.fg) : L.fu || 0), la = 92 + 360 * Math.round((fa - 92) / 360);
-        const ang = (L.ph === 'lift' ? C.liftAng : L.ph === 'land' ? fa + (la - fa) * ss((L.lu || 0) / 0.12) : fa) * Math.PI / 180;   // 연출실 땅 — 떨어지던 각도에서 0.12초에 누운 자세(92°)로
+        const fm = Math.round(C.fallFace), faceMode = L.ph !== 'lift' && fm !== 2;
+        let hd, ang;
+        if (faceMode) {   // b731 — 하늘을 보고(0) · 땅을 보고(1) 떨어진다(사용자 「떨어질 때는 하늘을 보고 떨어지는 방향으로」) — 머리 쪽은 떨어지기 시작할 때 몸의 뒤쪽 · 「빙글」만큼 수평으로 돈다
+          if (L.ev.fhd == null) { const f = new T.Vector3(0, 0, 1).applyQuaternion(root.quaternion); L.ev.fhd = Math.atan2(-f.x, -f.z); }
+          const ft = L.ph === 'land' ? L.tf || fallT(L.ev.h, L.ev.fg) : L.fu || 0, a0 = L.ev.fhd + C.fallTurn * Math.PI / 180 * ft;
+          hd = new T.Vector3(Math.sin(a0), 0, Math.cos(a0));
+          ang = (L.ph === 'land' ? C.fallAng2 + (92 - C.fallAng2) * ss((L.lu || 0) / 0.12) : C.fallAng2) * Math.PI / 180;
+        } else {
+          hd = new T.Vector3(axis.x, 0, axis.z); if (hd.lengthSq() < 1e-6) { const y = root.rotation.y; hd.set(-Math.sin(y), 0, -Math.cos(y)); } hd.normalize();
+          const fa = C.fallAng + C.fallSpin * (L.ph === 'land' ? L.tf || fallT(L.ev.h, L.ev.fg) : L.fu || 0), la = 92 + 360 * Math.round((fa - 92) / 360);
+          ang = (L.ph === 'lift' ? C.liftAng : L.ph === 'land' ? fa + (la - fa) * ss((L.lu || 0) / 0.12) : fa) * Math.PI / 180;   // 연출실 땅 — 떨어지던 각도에서 0.12초에 누운 자세(92°)로
+        }
         const dd = new T.Vector3(hd.x * Math.sin(ang), Math.cos(ang), hd.z * Math.sin(ang)).normalize();
-        QR.setFromUnitVectors(axis, dd); QR.slerp(QI2, 1 - w);
+        QR.setFromUnitVectors(axis, dd);
+        if (faceMode) {   // 몸 앞(가슴)을 하늘(또는 땅)로 — 머리 축을 맞춘 다음 그 축을 돌려 앞을 맞춘다
+          const f1 = (r.LeftArm && r.RightArm ? new T.Vector3().crossVectors(r.LeftArm.getWorldPosition(new T.Vector3()).sub(r.RightArm.getWorldPosition(new T.Vector3())), axis) : new T.Vector3(0, 0, 1).applyQuaternion(root.quaternion)).applyQuaternion(QR); f1.addScaledVector(dd, -f1.dot(dd));   // 가슴 앞 = 어깨선 × 머리 축(엉덩이가 동작으로 비틀려 있어도 가슴이 하늘을 보게)
+          const tg = new T.Vector3(0, fm === 1 ? -1 : 1, 0); tg.addScaledVector(dd, -tg.dot(dd));
+          if (f1.lengthSq() > 1e-6 && tg.lengthSq() > 1e-6) { f1.normalize(); tg.normalize(); const an = Math.atan2(dd.dot(new T.Vector3().crossVectors(f1, tg)), f1.dot(tg)); QR.premultiply(QAx.setFromAxisAngle(dd, an)); }
+        }
+        QR.slerp(QI2, 1 - w);
         rsv.push([root, root.position.x, root.position.y, root.position.z, root.quaternion.x, root.quaternion.y, root.quaternion.z, root.quaternion.w]);
         root.quaternion.premultiply(QR); root.position.sub(hp).applyQuaternion(QR).add(hp);
         if (L.ph === 'land') root.position.y -= (hp.y - gy(hp.x, hp.z, hp.y) - 0.13) * ss((L.lu || 0) / 0.12);   // 엉덩이를 땅으로(누운 몸이 공중에 뜨지 않게)
         root.updateMatrixWorld(true);
       }
       // 발버둥
-      const mode = Math.round(L.ph === 'lift' ? C.stMode : C.stFall);
-      if (L.ph !== 'land') struggle(r, t, w * C.stK, (L.ev.side || 1) * 1.3, mode);
+      const mode = Math.round(L.ph === 'lift' ? C.stMode : C.stFall2);
+      if (L.ph !== 'land') struggle(r, t, w * C.stK, (L.ev.side || 1) * 1.3, mode, w);
+    }
+  }
+  /* b731 — 잡는 자리 맞추기(사용자 「왕벌과 캐릭터가 잡힌 모습이 잘 안 맞는다」) — 몸짓 · 몸 각도를 얹은 뒤의 뼈 자리에 벌을 붙인다
+     · 자리: 등(가슴 뒤) · 어깨 사이 · 머리 · 허리 · 예전(땅 기준) — 거기서 위로 · 몸을 따라 · 옆으로(m) · 벌 기울기 · 벌 방향(°)
+     · 날아오는 동안에도 이 자리를 목표로(잡는 순간 튀지 않게) · 나 · 봇 모두 */
+  const VA = [null, null, null];
+  function beeAttach() {
+    const gb = Math.round(C.grabBone); if (gb === 4) return;
+    if (!VA[0]) for (let i = 0; i < 3; i++) VA[i] = new T.Vector3();
+    const t = hnow();
+    for (const ev of H.events) {
+      if (ev.g !== 'grab' || !ev.bee) continue;
+      const u = t - ev.t0, tR = ev.app + ev.lift + ev.ho; if (u >= tR) { ev.att = null; continue; }
+      const sm = visSkin(ev.q.who); if (!sm || !sm.skeleton) continue; const r = rig(sm); if (!r.Hips || !r.Head) continue;
+      let p;
+      if (gb === 1 && r.LeftArm && r.RightArm) p = r.LeftArm.getWorldPosition(VA[0]).add(r.RightArm.getWorldPosition(VA[1])).multiplyScalar(0.5);
+      else { const bn = gb === 2 ? r.Head : gb === 3 ? r.Hips : r.Spine2 || r.Spine1 || r.Spine; if (!bn) continue; p = bn.getWorldPosition(VA[0]); }
+      const ax = r.Head.getWorldPosition(VA[1]).sub(r.Hips.getWorldPosition(VA[2])); ax.y = 0;
+      if (ax.lengthSq() < 1e-4) { const root = ev.q.who === 'hero' ? G.hero : ev.q.who.hero, f = new T.Vector3(0, 0, 1).applyQuaternion(root.quaternion); ax.set(f.x, 0, f.z); }
+      ax.normalize(); const sd = new T.Vector3(ax.z, 0, -ax.x), sz = C.size;
+      const pos = p.clone().add(new T.Vector3(0, C.grabUp + 0.35 * sz, 0)).addScaledVector(ax, C.grabAlong).addScaledVector(sd, C.grabSide);
+      ev.att = pos;
+      if (!lifts.has(ev.q.who) || u < ev.app) continue;   // 날아오는 중 — 목표만 알려 준다
+      const R = ev.bee.root; R.position.copy(pos);
+      const bt = C.beeTurn * Math.PI / 180, d = new T.Vector3(ax.x * Math.cos(bt) + ax.z * Math.sin(bt), 0, -ax.x * Math.sin(bt) + ax.z * Math.cos(bt));
+      orient(ev.bee, d); R.rotateX(C.grabTilt * Math.PI / 180); R.updateMatrixWorld(true);
+    }
+  }
+  // b731 — 떨어지는 동안 속도선(사용자 그림 — 화면 가운데에서 바깥으로 뻗는 흰 줄) · 내가 떨어질 때만 · 카메라를 켰을 때만 · 「속도선」 0 이면 없음
+  let SL = null;
+  function speedLines() {
+    const L = lifts.get('hero'), on = L && L.ph === 'fall' && C.fallLines > 0.01 && C.camOn > 0.5 && !(window.__death && window.__death.active && window.__death.active());
+    if (!on) { if (SL && SL.style.display !== 'none') SL.style.display = 'none'; return; }
+    if (!SL) { SL = document.createElement('canvas'); SL.id = 'hn-lines'; SL.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:4'; document.body.appendChild(SL); }
+    const w = innerWidth, h = innerHeight; if (SL.width !== w || SL.height !== h) { SL.width = w; SL.height = h; }
+    SL.style.display = 'block';
+    const g = SL.getContext('2d'); g.clearRect(0, 0, w, h);
+    const k = Math.min(1, (L.fu || 0) / 0.15) * C.fallLines, cx = w / 2, cy = h * 0.47, R0 = Math.min(w, h), FR = Math.max(w, h) * 0.75;
+    let sd = (Math.floor(hnow() * 24) * 9301 + 49297) % 233280; const rn = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
+    const n = Math.round(70 * Math.min(1.6, C.fallLines));
+    for (let i = 0; i < n; i++) {
+      const a = rn() * 6.2832, r0 = R0 * (0.24 + 0.22 * rn()), r1 = r0 + FR * (0.25 + 0.75 * rn());
+      g.strokeStyle = `rgba(255,246,228,${(0.18 + 0.42 * rn()) * Math.min(1, k)})`; g.lineWidth = 1 + 2.4 * rn();
+      g.beginPath(); g.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); g.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); g.stroke();
+    }
+  }
+  // b731 — 끌려 올라갈 때 · 떨어질 때 표정(0 = 자동 — 비명 소리 따라) · 나 · 봇 모두
+  function faceDrive() {
+    const Cc = window.__cast; if (!Cc || !Cc.drive || !Cc.EXPRS) return;
+    for (const ev of H.events) {
+      if (ev.g !== 'grab') continue; const L = lifts.get(ev.q.who); if (!L) continue;
+      const i = Math.round(L.ph === 'lift' ? C.exLift : L.ph === 'fall' || L.ph === 'land' ? C.exFall : 0), e = i > 0 && Cc.EXPRS[i - 1];
+      if (e) try { Cc.drive(meshesOf(ev.q.who), e.key); } catch { /* */ }
     }
   }
   function poseRestore() {
@@ -14160,7 +14356,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   function hook() {
     hooked = true;
     const S = G.scene, pb = S.onBeforeRender, pa = S.onAfterRender;
-    S.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { liftApply(); poseApply(); swellApply(); } catch (e) { poseRestore(); if (!hook.err) { hook.err = true; console.warn('[hornet]', e); } } };
+    S.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { liftApply(); poseApply(); beeAttach(); swellApply(); } catch (e) { poseRestore(); if (!hook.err) { hook.err = true; console.warn('[hornet]', e); } } };
     S.onAfterRender = function (...a) { swellRestore(); poseRestore(); if (pa) pa.apply(this, a); };
     // 카메라가 나를 따라가도록 — 높이를 카메라 계산 전에도(knock.js __camPost 앞)
     const wrapCam = () => { const cp = window.__camPost; if (!cp || cp.__hn) return false; const f = function (cam, target) { try { if (lifts.has('hero')) liftApply(); } catch { /* */ } const r = cp.call(this, cam, target); try { cine(cam, target); } catch (e) { if (!cine.err) { cine.err = true; console.warn('[hornet] 카메라', e); } } return r; }; f.__hn = true; window.__camPost = f; return true; };
@@ -14180,7 +14376,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       const rt = now(), rdt = Math.min(0.1, rt - (last || rt)); last = rt;
       const sp = H.ck.paused ? 0 : Math.max(0, H.ck.speed); H.ck.t += rdt * sp;
       const t = hnow(), dt = rdt * sp;
-      schedule(rdt); dropsStep(dt); holdGame();
+      schedule(rdt); dropsStep(dt); holdGame(); faceDrive();
       for (let i = H.events.length - 1; i >= 0; i--) {
         const ev = H.events[i];
         if (ev.studio && SS && SS.ev === ev) studioTick(ev, t);
@@ -14188,6 +14384,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
         if (ev.studio && SS && SS.ev === ev) continue;   // 연출실 — 끝나도 지우지 않는다(처음으로 돌아가 반복)
         if (!alive || t - ev.t0 > 30) { lifts.delete(ev.q.who); freeBee(ev.bee); H.events.splice(i, 1); }
       }
+      speedLines();
     } catch (e) { if (!loop.err) { loop.err = true; console.warn('[hornet]', e); } }
   })();
   const prevR = window.__onRestart;   // 다시 시작 — 다 치운다
@@ -14195,7 +14392,10 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
 
   /* ── 패널 — 오른쪽 아래 「왕벌」 ───────────────────────── */
   const PCT = (v) => `${Math.round(v * 100)}%`, SEC = (v) => `${(+v).toFixed(1)}초`, M2 = (v) => `${(+v).toFixed(2)}m`, M1 = (v) => `${(+v).toFixed(1)}m`, DEG = (v) => `${Math.round(v)}°`;
-  const MODES = ['버팀 — 팔 뻗어 할퀴고 다리 버팀', '발버둥 — 다리를 마구 차고 팔은 감쌈', '허우적 — 두 팔을 머리 위로 휘저음'];
+  const MODES = ['버팀 — 팔 뻗어 할퀴고 다리 버팀', '발버둥 — 다리를 마구 차고 팔은 감쌈', '허우적 — 두 팔을 머리 위로 휘저음', '매달림 — 두 팔로 벌을 붙잡고 다리는 늘어짐', '축 늘어짐 — 힘이 빠져 흔들림', '추락 — 하늘 보고 팔다리 쫙(옛 격투 게임처럼)'];
+  const GBN = ['등(가슴 뒤)', '어깨 사이', '머리', '허리(엉덩이)', '예전(땅 기준 · 맞춤 없음)'], FFN = ['하늘을 보고', '땅을 보고', '예전(자유롭게 굴러)'];
+  const NEX = ((window.__cast && window.__cast.EXPRS) || []).length || 22;
+  const EXF = (v) => { const i = Math.round(v); if (!i) return '자동(비명 소리 따라)'; const E = window.__cast && window.__cast.EXPRS, e = E && E[i - 1]; return e ? `${i} · ${e.name.split(' — ')[0]}` : `${i}`; };
   const ROWS_A = [
     ['등장'], ['on', '나타남(1 = 켬)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['every', '나타나는 간격(평균)', 10, 240, 1, (v) => `${Math.round(v)}초`],
     ['app', '날아오는 시간', 1, 6, 0.1, SEC],
@@ -14209,9 +14409,15 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const ROWS_B = [
     ['낚아채기 — 올라가기 · 떨어지기'], ['height', '올라가는 높이', 4, 40, 0.5, M1], ['lift', '올라가는 시간', 0.6, 8, 0.1, SEC], ['liftCurve', '올라가는 곡선(0 일정 · 1 천천히 시작해 멈춤)', 0, 1, 0.05, PCT],
     ['topHold', '꼭대기에서 멈칫', 0, 3, 0.05, SEC], ['fallG', '떨어지는 빠르기(중력)', 4, 60, 0.5, (v) => `${(+v).toFixed(1)} (${Math.sqrt(2 * Math.max(1, C.height) / Math.max(1, v)).toFixed(2)}초에 땅)`],
-    ['잡힌 몸 — 발버둥 · 몸 각도'], ['stMode', '올라갈 때 몸짓', 0, 2, 1, (v) => MODES[Math.round(v)]], ['stFall', '떨어질 때 몸짓', 0, 2, 1, (v) => MODES[Math.round(v)]],
-    ['stK', '몸짓 세기', 0, 2, 0.05, PCT], ['stSpd', '몸짓 빠르기', 0.3, 3, 0.05, (v) => `${(+v).toFixed(2)}배`],
-    ['liftAng', '올라갈 때 몸 각도(0° 머리 위로 · 90° 누운 채 · 180° 거꾸로)', 0, 180, 1, DEG], ['fallAng', '떨어질 때 몸 각도(처음)', 0, 180, 1, DEG], ['fallSpin', '떨어지며 도는 빠르기', -360, 360, 5, (v) => `${Math.round(v)}°/초`],
+    ['잡는 자리 — 벌과 몸 맞추기'], ['grabBone', '잡는 자리', 0, 4, 1, (v) => GBN[Math.round(v)]], ['grabUp', '위로', -1, 2, 0.01, M2], ['grabAlong', '몸을 따라(+ 머리 쪽)', -1.5, 1.5, 0.01, M2], ['grabSide', '옆으로', -1, 1, 0.01, M2],
+    ['grabTilt', '벌 기울기', -90, 90, 1, DEG], ['beeTurn', '벌 방향', -180, 180, 1, DEG],
+    ['잡힌 몸 — 몸짓 · 표정 · 몸 각도'], ['stMode', '올라갈 때 몸짓', 0, 5, 1, (v) => MODES[Math.round(v)]], ['exLift', '올라갈 때 표정', 0, NEX, 1, EXF], ['stFall2', '떨어질 때 몸짓', 0, 5, 1, (v) => MODES[Math.round(v)]], ['exFall', '떨어질 때 표정', 0, NEX, 1, EXF],
+    ['stK', '몸짓 세기', 0, 2, 0.05, PCT], ['stArm', '팔 움직임', 0, 2, 0.05, PCT], ['stLeg', '다리 움직임', 0, 2, 0.05, PCT], ['stHead', '고개 움직임', 0, 2, 0.05, PCT], ['stSpd', '몸짓 빠르기', 0.3, 3, 0.05, (v) => `${(+v).toFixed(2)}배`],
+    ['추락 자세(떨어질 때 몸짓 「추락」 · 몸 기준 °)'], ['aArmUp', '팔 들기(옆 → 머리 쪽)', -60, 90, 1, DEG], ['aArmFwd', '팔 앞으로(가슴 쪽)', -60, 80, 1, DEG], ['aElbow', '팔꿈치 굽힘(손을 하늘로)', 0, 150, 1, DEG], ['aHandUp', '손을 머리 쪽으로', -60, 60, 1, DEG],
+    ['aLegOut', '다리 벌림(아래 → 옆)', 0, 110, 1, DEG], ['aLegFwd', '허벅지 들기(가슴 쪽)', -40, 100, 1, DEG], ['aShinOut', '정강이 바깥으로', -40, 60, 1, DEG], ['aShinFwd', '정강이 앞으로(− 무릎 더 굽힘)', -90, 60, 1, DEG],
+    ['aHeadBack', '고개 젖힘', -40, 60, 1, DEG], ['fpWiggle', '팔다리 흔들림', 0, 2, 0.05, PCT],
+    ['liftAng', '올라갈 때 몸 각도(0° 머리 위로 · 90° 누운 채 · 180° 거꾸로)', 0, 180, 1, DEG], ['fallFace', '떨어질 때 얼굴', 0, 2, 1, (v) => FFN[Math.round(v)]], ['fallAng2', '떨어질 때 몸 각도(90° 누운 채 · 0° 선 채)', 0, 180, 1, DEG], ['fallTurn', '하늘 본 채 빙글 도는 빠르기', -180, 180, 1, (v) => `${Math.round(v)}°/초`], ['fallLines', '떨어질 때 속도선', 0, 1.5, 0.05, PCT],
+    ['fallAng', '(예전 방식) 떨어질 때 몸 각도', 0, 180, 1, DEG], ['fallSpin', '(예전 방식) 굴러 떨어지는 빠르기', -360, 360, 5, (v) => `${Math.round(v)}°/초`],
     ['카메라 — 들어가고 돌아오기'], ['camOn', '낚아채기 카메라(1 = 켬)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['cIn', '들어가는 시간', 0.1, 3, 0.05, SEC], ['cOut', '돌아오는 시간', 0.1, 4, 0.05, SEC],
     ['카메라 — 끌려 올라갈 때(땅에서 올려다봄)'], ['cLiftD', '나와의 거리(작을수록 바로 밑에서 올려다봄)', 0.3, 15, 0.1, M1], ['cLiftH', '카메라 높이(땅에서)', 0.2, 6, 0.05, M2], ['cLiftRise', '따라 올라가는 정도', 0, 1, 0.02, PCT],
     ['cLiftOrbit', '돌아 들어가는 빠르기', -90, 90, 1, (v) => `${Math.round(v)}°/초`], ['cLiftFov', '확대(−) · 넓게(+)', -30, 30, 1, DEG], ['cLiftShake', '잔떨림', 0, 2, 0.05, PCT], ['cLiftRoll', '기울기 흔들림', 0, 25, 0.5, DEG],
@@ -14309,11 +14515,11 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
     { k: 'app', name: '① 날아옴', col: '#8a7a3a', a: (e) => 0, b: (e) => e.app,
       rows: ['날아오기', 'app', 'size', 'buzz', '날개 · 다리', 'wingHz', 'wingAmp', 'ghost', 'legAmt', 'legSpd', '카메라 — 들어가기', 'camOn', 'cIn'] },
     { k: 'lift', name: '② 끌려 올라감', col: '#b08a2a', a: (e) => e.app, b: (e) => e.app + e.lift,
-      rows: ['올라가기', 'height', 'lift', 'liftCurve', '잡힌 몸', 'stMode', 'liftAng', 'stK', 'stSpd', 'grabScream', 'screamVol', '카메라 — 땅에서 올려다봄', 'camOn', 'cLiftD', 'cLiftH', 'cLiftRise', 'cLiftOrbit', 'cLiftFov', 'cLiftShake', 'cLiftRoll'] },
+      rows: ['올라가기', 'height', 'lift', 'liftCurve', '잡는 자리 — 벌과 몸 맞추기', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', 'grabScream', 'screamVol', '카메라 — 땅에서 올려다봄', 'camOn', 'cLiftD', 'cLiftH', 'cLiftRise', 'cLiftOrbit', 'cLiftFov', 'cLiftShake', 'cLiftRoll'] },
     { k: 'top', name: '③ 꼭대기', col: '#c9a64a', a: (e) => e.app + e.lift, b: (e) => e.app + e.lift + e.ho,
-      rows: ['꼭대기', 'topHold', 'height', '잡힌 몸', 'liftAng', 'stK'] },
+      rows: ['꼭대기', 'topHold', 'height', '잡는 자리', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK'] },
     { k: 'fall', name: '④ 떨어짐', col: '#c0603c', a: (e) => e.app + e.lift + e.ho, b: (e) => e.app + e.lift + e.ho + fallT(e.h, e.fg),
-      rows: ['떨어지기', 'fallG', '잡힌 몸', 'stFall', 'fallAng', 'fallSpin', 'stK', 'stSpd', '카메라 — 떨어질 때', 'camOn', 'cFallTop', 'cFallBlend', '하늘에서 내려다봄', 'cFallAbove', 'cFallOff', '옆에서 같이 떨어짐', 'cFallD', 'cFallUp', '둘 다', 'cFallSide', 'cFallLead', 'cFallLag', 'cFallFov'] },
+      rows: ['떨어지기', 'fallG', '떨어지는 몸', 'fallFace', 'fallAng2', 'fallTurn', 'stFall2', 'exFall', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', '추락 자세', 'aArmUp', 'aArmFwd', 'aElbow', 'aHandUp', 'aLegOut', 'aLegFwd', 'aShinOut', 'aShinFwd', 'aHeadBack', 'fpWiggle', '화면', 'fallLines', '(예전 방식 — 얼굴 「예전」일 때)', 'fallAng', 'fallSpin', '카메라 — 떨어질 때', 'camOn', 'cFallTop', 'cFallBlend', '하늘에서 내려다봄', 'cFallAbove', 'cFallOff', '옆에서 같이 떨어짐', 'cFallD', 'cFallUp', '둘 다', 'cFallSide', 'cFallLead', 'cFallLag', 'cFallFov'] },
     { k: 'land', name: '⑤ 땅 · 돌아옴', col: '#7a2a1c', a: (e) => e.app + e.lift + e.ho + fallT(e.h, e.fg), b: (e) => evDur(e),
       rows: ['부딪힘', 'landBlood', '카메라', 'camOn', 'cLandShake', 'cLandHold', 'cOut'] },
     { k: 'all', name: '전체', rows: ['게임에서', 'on', 'every', '카메라', 'camOn', 'cIn', 'cOut', '왕벌', 'size', 'buzz', 'screamVol'] },
@@ -14360,7 +14566,7 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
     if (u < 0) { ev.t0 = t; u = 0; }
     const tR = ev.app + ev.lift + ev.ho;
     if (u < ev.app) ev.st.grab = false;
-    if (u < tR) { ev.st.rel = false; ev.away = null; }
+    if (u < tR) { ev.st.rel = false; ev.away = null; ev.fhd = null; }
     if (u < tR + fallT(ev.h, ev.fg)) ev.st.land = false;
   }
   const sU = () => (SS ? Math.max(0, H.ck.t - SS.ev.t0) : 0);
@@ -14644,7 +14850,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     st.textContent = `:root{--uilift:56px}
 #hud{bottom:calc(14px + var(--uilift))!important}
 #sr-stamp{bottom:calc(18px + var(--uilift))!important}
-#sr-tune-btn,#sr-show-btn,#lit-cmp,#cin-btn,#hn-btn{bottom:calc(14px + var(--uilift))!important}
+#sr-tune-btn,#sr-show-btn,#lit-cmp,#cin-btn,#hn-btn,#cf-btn{bottom:calc(14px + var(--uilift))!important}
 #cin-p,#hn-p{bottom:calc(52px + var(--uilift))!important}
 #sr-look{bottom:calc(46px + var(--uilift))!important}
 #sr-tour{bottom:calc(58px + var(--uilift))!important}
