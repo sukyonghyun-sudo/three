@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-685 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-688 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-685'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-688'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -17689,9 +17689,9 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   const LEGACY_DEFAULT = { dist: 1.95, camY: 1.47, lookY: 1.42, side: 0, gap: 1.0, top: 1.78, bot: 1.04, half: 0.3, frameY: 0, light: 1.7, charBright: 1, title: 4.6, name: 4.4, titleY: 6.5, nameY: 2.2, maskOp: 0.97, glow: 1, anim: 2, animDur: 0.9, stagger: 0.18, scale: 1, exp: 1, faceCam: 1, face: 0, f0: 0, f1: 0, f2: 0 };   // b641 — 캐릭터 방향(사용자 「캐릭터 선택창에서 캐릭터들이 정면을 안 보고 있어 · 설정하는 패널」)   // b599 — 캐릭터 크기 · 노출   // b596 — 등장 모션 · 캐릭터 밝기 · 글자 자리 · 배경 어둡기 · 선택 빛
   const CSD = Object.assign({}, LEGACY_DEFAULT, { dist: 2.65, camY: 1.21, lookY: 1.22, gap: 0.86, top: 1.84, bot: 0.45, half: 0.38, light: 1.1, title: 4.6, titleY: 4, name: 3.5, nameY: 0, maskOp: 0.85, anim: 1, fov: 34, advance: 0.22, badgeBright: 0.82, strapBright: 0.7,
     lowOn: 1, lowCamY: 0.3, lowLookY: 1.75, lowDist: 1.9, lowFov: 50, lookDown: 0.9, lean: 0.25, tight: 0.45, sly: 1, giggleRate: 1.35,
-    introOn: 1, introDur: 2.4, introPush: 0.9, introLook: 0, introStag: 0.12, contempt: 1, introSnd: 0,   /* b683 — 다가오는 동안 고개를 숙이며(사용자 「등장하고 나서가 아니라 숙이면서 등장」) · 끌려 나오는 듯한 바람 소리 없앰 */
+    introOn: 1, introDur: 2.4, introPush: 0.9, introLook: 0, introStag: 0.12, introBow: 0.75, laughSq: 0.15,   /* b686 웃을 때 눈 가늘게(0.38 은 눈이 풀려 보였다) */ contempt: 1, introSnd: 0,   /* b683 — 다가오는 동안 고개를 숙이며(사용자 「등장하고 나서가 아니라 숙이면서 등장」) · 끌려 나오는 듯한 바람 소리 없앰 */
     pickDur: 0.9, pickDist: 0.8, pickDown: 0.3, pickZoom: 1,   /* b683 — 시작 누르면 얼굴로 다가가기 */
-    gl_son: 1, gp_son: 1.1,   /* b683 — 손주용 웃음 2번 녹음이 이상(사용자) → 1번 · 조금 높게 */ gl_m16: 1, gp_m16: 0.9, gl_m17: 1, gp_m17: 1.04 });   // b682 — 사람마다 키키키: 녹음(1 · 2) · 높낮이   // b682 — 열릴 때 카메라가 멀리서 스윽 다가오고 · 다가오는 동안 세 사람이 하나씩 고개를 내려 나를 깔보듯 내려다봄(사용자)
+    gl_son: 1, gp_son: 0.8,   /* b686 — 손주용: 같은 녹음 · 낮고 굵은 톤(1.1 은 너무 높아 이상) */   /* b683 — 손주용 웃음 2번 녹음이 이상(사용자) → 1번 · 조금 높게 */ gl_m16: 1, gp_m16: 0.9, gl_m17: 1, gp_m17: 1.04 });   // b682 — 사람마다 키키키: 녹음(1 · 2) · 높낮이   // b682 — 열릴 때 카메라가 멀리서 스윽 다가오고 · 다가오는 동안 세 사람이 하나씩 고개를 내려 나를 깔보듯 내려다봄(사용자)
   // b679 — 선택창에서만 사원증 목줄 고치기(사용자 「안경 캐릭터 목줄이 이상 · 선택창에서만」) — 게임 값(조절 「사원증 · …」)에 더하는 값 · lanyard.js PK 가 선택창 복제에만 쓴다
   const BDP = [['drop', '줄 길이(카드 높이)', -15, 15, 0.5, 'cm'], ['sideX', '목 좌우(한쪽)', -5, 5, 0.1, 'cm'], ['neckY', '목 거는 높이', -10, 10, 0.25, 'cm'], ['neckZ', '목 앞뒤', -10, 10, 0.25, 'cm'], ['cardTop', '카드 최고 높이(목 아래로)', -15, 15, 0.5, 'cm'], ['front', '카드 몸 앞 최소', -5, 8, 0.25, 'cm'], ['cardGap', '카드 몸에서 띄움', -2, 5, 0.1, 'cm'], ['freeTop', '줄 위쪽 옷 무시(꺾임 펴기)', -10, 15, 0.25, 'cm'], ['bendR', '줄 위쪽 둥글기', -8, 8, 0.25, 'cm'], ['stiff', '줄 부드러움(꺾임 버팀)', -0.6, 0.4, 0.05, '']];
   for (const [k] of KINDS) for (const [p] of BDP) CSD['bd_' + k + '_' + p] = 0;   // b676 — tight: 더 타이트하게(가까이 · 사람 간격 좁게) · sly: 비열하게 쳐다보는 얼굴   // b674 — 아래에서 올려다보는 포스터 구도(사용자 「위에서 날 내려다보는 시점」 · 0 = 예전 B 구도)
@@ -17736,8 +17736,8 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   // b682 — 등장: 0 → 1(사람마다 늦게) · 꺼져 있으면 늘 1
   const ss = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
   const introT = () => (performance.now() - (openT || 0)) / 1000;
-  const lookK = (i) => (CS.introOn >= 0.5 ? ss((introT() - CS.introLook - i * CS.introStag) / Math.max(0.3, CS.introDur * 0.85)) : 1);   // b683 — 카메라가 다가오는 시간 동안 함께 숙임
-  const scornK = (i) => (CS.introOn >= 0.5 ? ss((introT() - CS.introLook - i * CS.introStag - CS.introDur * 0.35) / Math.max(0.3, CS.introDur * 0.75)) : 1);   // 내려다본 다음 턱을 들고 비스듬히
+  const lookK = (i) => (CS.introOn >= 0.5 ? CS.introBow + (1 - CS.introBow) * ss((introT() - CS.introLook - i * CS.introStag) / Math.max(0.3, CS.introDur * 0.85)) : 1);   // b686 — 처음부터 이미 숙인 채(introBow) 나타나 다가오며 끝까지 숙임(사용자 「등장할 때 이미 고개를 숙이면서 나와야」)   // b683 — 카메라가 다가오는 시간 동안 함께 숙임
+  const scornK = (i) => (CS.introOn >= 0.5 ? CS.introBow * 0.6 + (1 - CS.introBow * 0.6) * ss((introT() - CS.introLook - i * CS.introStag - CS.introDur * 0.35) / Math.max(0.3, CS.introDur * 0.75)) : 1);   // 내려다본 다음 턱을 들고 비스듬히
   const TI = () => (LOW() ? clamp(CS.tight, 0, 1) : 0), eGap = () => CS.gap * (1 - 0.35 * TI());
   const eCamY = () => (LOW() ? CS.lowCamY : CS.camY), eLookY = () => (LOW() ? CS.lowLookY : CS.lookY), eDist = () => (LOW() ? CS.lowDist * (1 - 0.4 * TI()) : CS.dist), eFov = () => (LOW() ? clamp(CS.lowFov, 25, 75) : clamp(CS.fov, 25, 55));
   function layout() {
@@ -17771,9 +17771,13 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
         const set = (n, v) => { const j = D[n]; if (j !== undefined) I[j] = clamp(v, 0, 1); };
         const md = a.mode && t < a.modeEnd ? a.mode : 'idle', u = t - (a.modeT || 0);
         let g = 0.38 * k, sn = (0.42 + br) * k, ew = 0.18 * k, jd = 0;
-        if (md === 'giggle') { const kk = Math.min(1, u / 0.15); g = 0.85 * kk + g * (1 - kk); sn = 0.4; ew = 0.12; jd = (0.08 + 0.2 * Math.abs(Math.sin(u * 15))) * kk; }        // 키키키 — 빠르게 들썩
-        else if (md === 'win') { const kk = Math.min(1, u / 0.3); g = 1 * kk + g * (1 - kk); sn = 0.25; ew = 0.22; jd = (0.12 + 0.28 * Math.abs(Math.sin(u * 8.5))) * kk; }   // 흐흐흐 — 크게
-        set(hasG ? 'grin' : 'sneer', hasG ? g : Math.max(g, sn)); if (hasG) set('sneer', sn); set('eyes_wide', ew); set('strain_eyes', 0); set('clench', 0); set('jaw_drop', jd); set('scream_mouth', 0); set('scream_eyes', 0); }
+        // b686 — 웃음 얼굴을 사람처럼(사용자 「시작 눌렀을 때 표정이 좀 더 리얼하게」): 웃을 땐 눈이 가늘어지고(볼이 올라감) · 입은 숨 박자로 짧게 끊어 열렸다 닫히고(흐 · 흐 · 흐) · 박자가 고르지 않고 점점 잦아든다
+        const pulse = (rate, len) => { const env = Math.max(0, 1 - u / len), ph = u * rate + 0.6 * Math.sin(u * 3.1 + i), w = Math.max(0, Math.sin(ph * Math.PI * 2)); return Math.pow(w, 2.2) * (0.6 + 0.4 * env) * (0.75 + 0.25 * Math.sin(u * 7.3 + i * 1.7)); };
+        let sq = 0, lp = 0;
+        if (md === 'giggle') { const kk = Math.min(1, u / 0.12); lp = pulse(6.2, 1.2) * kk; g = (0.58 + 0.12 * lp) * kk + g * (1 - kk); sn = 0.35; ew = 0.14; sq = (0.5 + 0.2 * lp) * CS.laughSq * kk; jd = (0.03 + 0.12 * lp) * kk; }   // 키키키 — 작게 빠르게
+        else if (md === 'win') { const kk = ss(u / 0.35); lp = pulse(4.6, 2.2) * kk; g = (0.62 + 0.12 * lp) * kk + g * (1 - kk); sn = 0.32 * kk + sn * (1 - kk); ew = 0.16;   /* 눈은 또렷하게(grin 이 볼을 올려 눈이 풀려 보였다) */ sq = (0.6 + 0.2 * lp) * CS.laughSq * kk; jd = (0.06 + 0.2 * lp) * kk; }   // 흐흐흐 — 깔보며 낮게 웃음
+        a.laughP = lp;
+        set(hasG ? 'grin' : 'sneer', hasG ? g : Math.max(g, sn)); if (hasG) set('sneer', sn); set('eyes_wide', ew); set('strain_eyes', sq); set('clench', 0); set('jaw_drop', jd); set('scream_mouth', 0); set('scream_eyes', 0); }
       for (const m of a.mats) if (m.emissive) { m.emissive.setRGB(1, 0.96 + 0.02 * a.focus, 0.90 + 0.05 * a.focus); m.emissiveIntensity = m.userData.csEmission * CS.charBright * (0.8 + 0.42 * a.focus); }
     });
   }
@@ -17823,7 +17827,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (reacting && window.__cast && window.__cast.clearOn) window.__cast.clearOn([reacting.sm]);
     reacting = null;
   }
-  const GIG = { son: { off: 0.12 }, m16: { off: 0.05 }, m17: { off: 0.2 } };
+  const GIG = { son: { off: 0.2, win: 0.9 }, m16: { off: 0.05, win: 0.95 }, m17: { off: 0.2, win: 1.02 } };
   const laughId = () => { try { const o = JSON.parse(localStorage.getItem('corpse_end_v4') || '{}'); return o.laughId || '1'; } catch { return '1'; } };   // 이긴 연출(death.js)에서 고른 웃음
   function react(i) {
     if (reacting === act[i]) return; stopReaction();
@@ -17858,7 +17862,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   function choose(i) {
     if (!S.open || lock) return; sel = i;
     if (reacting !== act[i]) react(i);
-    { const a = act[i], t = performance.now() / 1000; if (a) { a.mode = 'win'; a.modeT = t; a.modeEnd = t + 2.2; } const R = window.__rsfx; try { if (R && R.play) R.play('end_laugh' + laughId(), { vol: 1, rate: 1 }); } catch { /* */ } }   // b678 — 고르면 이긴 연출 웃음
+    { const a = act[i], t = performance.now() / 1000; if (a) { a.mode = 'win'; a.modeT = t; a.modeEnd = t + 2.2; } const R = window.__rsfx; try { if (R && R.play) R.play('end_laugh' + laughId(), { vol: 1, rate: (GIG[KINDS[i][0]] || GIG.m17).win });   /* b686 — 사람마다 톤 */ } catch { /* */ } }   // b678 — 고르면 이긴 연출 웃음
     pickZ = { i, t0: performance.now() };   // b683
     if (!document.getElementById('csel-pickcss')) { const st = document.createElement('style'); st.id = 'csel-pickcss'; st.textContent = '#csel.picked .fr:not(.on) .nm{opacity:0;transition:opacity .25s}'; document.head.appendChild(st); }   // 다가가는 동안 다른 이름표는 숨김
     lock = true; draw(); el.classList.add('picked');
@@ -17959,6 +17963,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
         if (roll) { rq.setFromAxisAngle(des, roll); wq.premultiply(rq); }
         b.quaternion.copy(pq.invert().multiply(wq)); b.updateMatrixWorld(true);
       };
+      if (a.laughP > 0.01) { looked.push([L.hd, L.hd.quaternion.clone()]); L.hd.parent.updateWorldMatrix(true, false); L.hd.parent.getWorldQuaternion(pq); L.hd.getWorldQuaternion(wq); rq.setFromAxisAngle(ax, -0.07 * a.laughP); wq.premultiply(rq); L.hd.quaternion.copy(pq.invert().multiply(wq)); L.hd.updateMatrixWorld(true); }   // b686 — 웃음 박자에 고개가 살짝 들썩
       aim(L.hd, L.fwd, Math.min(1, lk * CS.lookDown), CS.sly > 0 ? side * (0.1 + 0.07 * sk) * Math.min(1.5, CS.sly) * (0.3 + 0.7 * lk) : 0);
       L.eyes.forEach((e, j) => aim(e, L.efwd[j], lk, 0));   // 눈알 뼈가 있으면 눈도 나를
     }
@@ -17993,8 +17998,8 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (el) return;
     for (const [k, n] of [KINDS[1], KINDS[0], KINDS[2]]) { ROWS.push(['#', '선택창 사원증 — ' + n + (k === 'm16' ? '(안경)' : '') + ' · 게임 값에 더하기(선택창에서만)']); for (const [p, l, mn, mx, st, u] of BDP) ROWS.push(['bd_' + k + '_' + p, l, mn, mx, st, u]); }   // b679
     ROWS.push(['#', '아래에서 올려다보기(포스터 구도)'], ['lowOn', '켜기(1 = 예 · 0 = 예전 B 구도)', 0, 1, 1, ''], ['lowCamY', '카메라 높이(땅에서)', 0.05, 1.2, 0.01, 'm'], ['lowLookY', '바라보는 높이', 0.8, 2.6, 0.01, 'm'], ['lowDist', '거리', 1, 4, 0.05, 'm'], ['lowFov', '시야각', 30, 75, 1, '°'], ['lookDown', '내려다보는 정도(고개 숙임)', 0, 1.5, 0.05, '×'], ['lean', '허리로 숙이는 몫', 0, 0.8, 0.01, ''], ['tight', '타이트하게(가까이 · 간격 좁게)', 0, 1, 0.01, ''], ['sly', '썩소 세기', 0, 1.5, 0.05, '×'], ['giggleRate', '누를 때 웃음 빠르기(키키키)', 0.8, 2, 0.05, '×']);
-    ROWS.push(['#', '등장 — 카메라가 다가오며 깔보기'], ['introOn', '켜기(1 = 예)', 0, 1, 1, ''], ['introDur', '다가오는 시간', 0.5, 5, 0.1, '초'], ['introPush', '처음 거리(배 더 멀리)', 0, 2.5, 0.05, '×'], ['introLook', '고개 숙이기 시작', 0, 3, 0.05, '초'], ['introStag', '사람마다 늦게', 0, 1, 0.05, '초'], ['contempt', '깔보는 정도(턱 들기 · 비스듬히)', 0, 2, 0.05, '×'], ['introSnd', '다가오는 바람 소리', 0, 1.5, 0.05, '×']);   // b682
-    ROWS.push(['#', '시작 누르면 — 고른 얼굴로 다가가기'], ['pickZoom', '다가가는 정도(0 = 안 함)', 0, 1, 0.05, ''], ['pickDur', '다가가는 시간', 0.2, 3, 0.05, '초'], ['pickDist', '얼굴 앞 거리', 0.3, 2, 0.05, 'm'], ['pickDown', '얼굴보다 아래로', -0.3, 0.6, 0.01, 'm']);   // b683
+    ROWS.push(['#', '등장 — 카메라가 다가오며 깔보기'], ['introOn', '켜기(1 = 예)', 0, 1, 1, ''], ['introDur', '다가오는 시간', 0.5, 5, 0.1, '초'], ['introPush', '처음 거리(배 더 멀리)', 0, 2.5, 0.05, '×'], ['introLook', '고개 숙이기 시작', 0, 3, 0.05, '초'], ['introStag', '사람마다 늦게', 0, 1, 0.05, '초'], ['introBow', '나타날 때 이미 숙인 정도', 0, 1, 0.05, ''], ['contempt', '깔보는 정도(턱 들기 · 비스듬히)', 0, 2, 0.05, '×'], ['introSnd', '다가오는 바람 소리', 0, 1.5, 0.05, '×']);   // b682
+    ROWS.push(['#', '시작 누르면 — 고른 얼굴로 다가가기'], ['pickZoom', '다가가는 정도(0 = 안 함)', 0, 1, 0.05, ''], ['laughSq', '웃을 때 눈 가늘게', 0, 1, 0.02, ''], ['pickDur', '다가가는 시간', 0.2, 3, 0.05, '초'], ['pickDist', '얼굴 앞 거리', 0.3, 2, 0.05, 'm'], ['pickDown', '얼굴보다 아래로', -0.3, 0.6, 0.01, 'm']);   // b683
     ROWS.push(['#', '사람마다 키키키(누를 때)']); for (const [k, n] of KINDS) ROWS.push(['gl_' + k, n + ' — 웃음 녹음(1 · 2)', 1, 2, 1, ''], ['gp_' + k, n + ' — 높낮이', 0.6, 1.6, 0.02, '×']);   // b674
     ROWS.push(['#', 'B 집결 구도'], ['fov', '시야각', 25, 55, 1, '°'], ['advance', '선택 인물 앞으로', 0, 0.4, 0.01, 'm'], ['badgeBright', '선택창 사원증 밝기', 0.2, 1.5, 0.02, '×'], ['strapBright', '선택창 목줄 밝기', 0.2, 1.5, 0.02, '×']);
     const st = document.createElement('style');
