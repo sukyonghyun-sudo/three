@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-659 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-660 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-659'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-660'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5485,7 +5485,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
       if (tpass) continue;                               // 토리이 기둥 · 받침 바위 — 지나간다
       return null;                                       // 바위·벽·탁자 속
     }
-    return w;
+    return window.__matLift ? window.__matLift(x, z, w) : w;   // b660 — 돗자리 위면 돗자리 윗면에 선다(mat.js · 다리가 파묻히던 것)
   }
   /* ── 연못 — 맵의 물(재질 이름 Water) 가운데 땅보다 높은 곳(물이 보이는 곳)만 0.25m 칸으로 적어 둔다 ──
      · 사람·봇·괴물 모두 그 칸에 설 수 있다(물높이 WADE 아래 — 물가는 실제 바닥이라 얕고, 깊은 곳에 들어서면 쑥 빠진다) · 봇 길찾기는 미리 구운 격자를 써서 연못으로 가지 않는다
@@ -12824,6 +12824,13 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     return true;
   }
   const hsl = (h, s, l) => { const a = s * Math.min(l, 1 - l), f = (n) => { const k = (n + h / 30) % 12; return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); }; return [f(0), f(8), f(4)]; };
+  // b660 — 돗자리 위에 서는 높이(nav.js canStand 가 부른다 · 사람 · 봇 · 괴물 · 시체 모두) — 사용자 「돗자리에 내 다리가 파묻히는데」
+  const R = [null, null, null];
+  window.__matLift = (x, z, y) => {
+    for (const r of R) { if (!r) continue; const dx = x - r.cx, dz = z - r.cz, u = r.ca * dx - r.sa * dz, v = r.sa * dx + r.ca * dz;
+      if (Math.abs(u) < r.hx && Math.abs(v) < r.hz) { const t = r.top + u * r.su + v * r.sv; if (t > y && t - y < 0.6) return t; } }
+    return y;
+  };
   function place(G) {
     const ZF = window.__zonefence, zs = G.zones && G.zones.list; if (!zs || !ZF || !ZF.torii || !ZF.dims) return;
     const d = ZF.dims(), on = M.on > 0.5 && G.started && !(window.__death && window.__death.active && window.__death.active());
@@ -12831,7 +12838,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const O = window.__occ, cut = O && O.uMS && O.uMS.value; if (cut) cut.fill(0);
     for (const z of zs) {
       const o = M.list[z.team]; if (!o) continue;
-      o.visible = on && (z.team === 0 || M.all > 0.5); if (!o.visible) continue;
+      o.visible = on && (z.team === 0 || M.all > 0.5); if (!o.visible) { R[z.team] = null; continue; }
       const T = ZF.torii(z), rx = z.fz, rz = -z.fx, cx = T.x + z.fx * (d.C + M.oz) + rx * M.ox, cz = T.z + z.fz * (d.C + M.oz) + rz * M.ox;
       const yaw = Math.atan2(-rz, rx) + M.rot * Math.PI / 180,   /* 긴 쪽 = 문 가로 */ W = M.w, D = W * src.d * M.ar;
       // 땅 높이 · 경사(네 귀 평균) — 기울기 1 이면 경사를 따른다
@@ -12843,6 +12850,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       o.rotation.order = 'YXZ'; o.rotation.set(ok && M.tilt > 0.5 ? -Math.atan2(yF - yB, hz * 1.6) : 0, yaw, ok && M.tilt > 0.5 ? Math.atan2(yR - yL, hx * 1.6) : 0);
       o.scale.set(W, W, W * M.ar);
       // b656 — 이 돗자리 위로 솟은 풀 · 땅 지우기 값(camera.js) — 네모 안쪽 4% · 윗면 = 바닥 + 두께 · 경사
+      R[z.team] = { cx, cz, ca, sa, hx, hz, top: o.position.y + src.th * W, su: ok && M.tilt > 0.5 ? (yR - yL) / (hx * 1.6) : 0, sv: ok && M.tilt > 0.5 ? (yF - yB) / (hz * 1.6) : 0 };
       if (cut && z.team < 3 && M.cutH > 0) { const i = z.team, su = ok && M.tilt > 0.5 ? (yR - yL) / (hx * 1.6) : 0, sv = ok && M.tilt > 0.5 ? (yF - yB) / (hz * 1.6) : 0;
         O.uMR.value.set([cx, cz, ca, sa], i * 4); O.uMS.value.set([hx * 0.995, hz * 0.995, o.position.y + src.th * W, M.cutH], i * 4); O.uMT.value.set([su, sv], i * 2); }
     }
@@ -13909,7 +13917,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const ZONE_HEAD = ['uniform vec4 uMR[3];', 'uniform vec4 uMS[3];', 'uniform vec2 uMT[3];', 'uniform float uMOff;', 'uniform vec4 uZT[3];', 'uniform vec4 uZP[3];', 'uniform vec3 uZC[3];', 'uniform vec4 uZO;', 'uniform float uZL;', ''].join(NL);
   // b656 — 돗자리 네모(안쪽 4%) 안에서 돗자리 윗면 ~ 그 위 H 사이의 맵 · 소품 조각은 그리지 않는다(사용자 「잔디나 바닥이 돗자리 위로 안 보이게 · 떠 보이면 안 되고 아래를 안 그리게」) · 돗자리 자신은 uMOff = 1
   const MAT_FS = ['if (uMOff < 0.5) { for (int mi = 0; mi < 3; mi++) { vec4 mr = uMR[mi]; vec4 ms = uMS[mi]; if (ms.x <= 0.0) continue; vec2 md = vOccW.xz - mr.xy; float mu = mr.z * md.x - mr.w * md.y; float mv = mr.w * md.x + mr.z * md.y;',
-    '  if (abs(mu) < ms.x && abs(mv) < ms.y) { float mt = ms.z + mu * uMT[mi].x + mv * uMT[mi].y; if (vOccW.y > mt - 0.6 && vOccW.y < mt + ms.w) discard;   /* b659 — 윗면 아래도 전부(돗자리가 가린다) — 가장자리 · 처진 곳 풀 조각이 남던 것 */ } } }'].join(NL);
+    '  if (abs(mu) < ms.x && abs(mv) < ms.y) { float mt = ms.z + mu * uMT[mi].x + mv * uMT[mi].y; float mlo = 0.015;', '#ifdef USE_ALPHATEST', 'mlo = 0.6;', '#endif', 'if (vOccW.y > mt - mlo && vOccW.y < mt + ms.w) discard; } } }'].join(NL);   // b660 — 윗면 아래까지 지우는 건 풀(잎 그림 · 알파 자르기)만 · 땅 · 바위는 윗면 위만(b659 에 땅까지 지워 돗자리 밑이 뚫려 보였다)
   const ZONE_FS = ['#include <map_fragment>', MAT_FS, 'if (uZO.x > 0.5) { for (int zi = 0; zi < 3; zi++) {', '  vec2 zd = vOccW.xz - uZT[zi].xy; vec2 zf = uZT[zi].zw; float zv = dot(zd, zf); float zu = dot(zd, vec2(zf.y, -zf.x)); vec4 zp = uZP[zi];',
     '  float ea = zu / zp.x, eb = (zv - zp.z) / zp.y, ze = sqrt(ea * ea + eb * eb);',
     '  float zin = (1.0 - smoothstep(1.0 - uZO.z, 1.0, ze)) * smoothstep(-0.2, 0.15, zv) * (1.0 - smoothstep(zp.w + uZO.w * 0.7, zp.w + uZO.w, vOccW.y));',
