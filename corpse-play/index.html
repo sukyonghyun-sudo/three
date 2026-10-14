@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-711 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-715 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-711'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-715'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -13895,8 +13895,13 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     // 몸 동작(뼈를 직접 — 다리 · 배 · 더듬이 · 턱) · 날개
     const mode = ev.g === 'venom' ? (u >= ev.app - 0.3 && u < ev.app + 1.45 ? 'aim' : 'fly') : (u >= ev.app - 0.5 && u < ev.app + ev.lift + ev.ho ? 'grab' : 'fly');
     poseBee(b, u + (b.ph || 0) * 10, mode);   // 연출 시간으로 — 재생바로 끌면 다리 · 날개도 따라 움직인다
-    const wph = (u + (b.ph || 0) * 10) * Math.PI * 2 * C.wingHz, ang = C.wingAmp * Math.sin(wph), sw = 0.22 * Math.cos(wph);
-    for (const k of ['L', 'R']) { const w = b.w[k]; w.piv.rotation.set(0, sw * w.sgn, ang * w.sgn); w.pu.rotation.set(0, 0, C.wingAmp * w.sgn); w.pd.rotation.set(0, 0, -C.wingAmp * 0.8 * w.sgn); w.gm.opacity = C.ghost; w.pu.visible = w.pd.visible = C.ghost > 0.01; }
+    // b712 — 날갯짓이 화면에 보이게(사용자 「아무리 봐도 날갯짓을 안 하는 것으로 보인다」)
+    //   진짜 28번/초는 화면(30 ~ 60장/초)이 따라가지 못해 한 장씩 같은 자리 · 반대 자리를 번갈아 찍어 멈춘 날개 둘로 보였다(줄무늬 효과)
+    //   → 한 장에 많아야 0.3바퀴만 돌린다(60장이면 초당 18번 · 30장이면 9번 — 늘 퍼덕이는 게 보인다) + 지나온 자리에 옅은 잔상 둘(빠른 날개의 번짐)
+    b.wph = (b.wph || Math.random()) + Math.min(C.wingHz * dt, 0.3) + (dt > 0 ? (Math.random() - 0.5) * 0.02 : 0);
+    const W2 = Math.PI * 2, wp0 = b.wph * W2, ang = C.wingAmp * Math.sin(wp0), sw = 0.22 * Math.cos(wp0);
+    const g1 = C.wingAmp * Math.sin(wp0 - 0.09 * W2), g2 = C.wingAmp * Math.sin(wp0 - 0.18 * W2);
+    for (const k of ['L', 'R']) { const w = b.w[k]; w.piv.rotation.set(0, sw * w.sgn, ang * w.sgn); w.pu.rotation.set(0, 0, g1 * w.sgn); w.pd.rotation.set(0, 0, g2 * w.sgn); w.gm.opacity = C.ghost; w.pu.visible = w.pd.visible = C.ghost > 0.01; }
     buzzSet(b, R.position);
     return true;
   }
@@ -13997,14 +14002,16 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     if (ev && C.camOn > 0.5) {
       const u = t - ev.t0, tG = ev.app, tR = tG + ev.lift + ev.ho, tf = fallT(ev.h, ev.fg), tL = tR + tf;
       const h = G.hero.position;
-      if (CS.ev !== ev) { CS.ev = ev; const dx = cam.x - h.x, dz = cam.z - h.z, l = Math.hypot(dx, dz) || 1; CS.d0 = { x: dx / l, z: dz / l }; CS.g0 = { x: h.x, y: gy(h.x, h.z, h.y), z: h.z }; CS.pos = new T.Vector3(cam.x, cam.y, cam.z); CS.tgt = new T.Vector3(target.x, target.y, target.z); }
+      const cy = G.mpApi && G.mpApi.camYaw ? G.mpApi.camYaw() : 0;
+      if (CS.ev !== ev) { CS.ev = ev; CS.y0 = cy; const dx = cam.x - h.x, dz = cam.z - h.z, l = Math.hypot(dx, dz) || 1; CS.d0 = { x: dx / l, z: dz / l }; CS.g0 = { x: h.x, y: gy(h.x, h.z, h.y), z: h.z }; CS.pos = new T.Vector3(cam.x, cam.y, cam.z); CS.tgt = new T.Vector3(target.x, target.y, target.z); }
       if (u < tL + C.cLandHold) {
         const g0 = CS.g0;
         if (u < tR) {
-          const a = C.cLiftOrbit * Math.PI / 180 * (u - tG), ca = Math.cos(a), sa = Math.sin(a), dx = CS.d0.x * ca - CS.d0.z * sa, dz = CS.d0.x * sa + CS.d0.z * ca, lift = Math.max(0, h.y - g0.y);
+          const my = Math.atan2(Math.sin(cy - CS.y0), Math.cos(cy - CS.y0));   // b712 — 마우스로 끌어 돌린 만큼(멈춰 있을 때도 · 사용자 「카메라 각도도 실시간으로 안 돌아간다」)
+          const a = C.cLiftOrbit * Math.PI / 180 * (u - tG) - my, ca = Math.cos(a), sa = Math.sin(a), dx = CS.d0.x * ca - CS.d0.z * sa, dz = CS.d0.x * sa + CS.d0.z * ca, lift = Math.max(0, h.y - g0.y);
           shot = { x: g0.x + dx * C.cLiftD, y: g0.y + C.cLiftH + lift * C.cLiftRise, z: g0.z + dz * C.cLiftD, tx: h.x, ty: h.y + 0.9, tz: h.z, fov: C.cLiftFov * ss((u - tG) / Math.max(0.3, ev.lift)), shake: C.cLiftShake, roll: C.cLiftRoll, lag: 0.08 };
         } else {
-          const sd = C.cFallSide * Math.PI / 180, dx = CS.d0.x * Math.cos(sd) - CS.d0.z * Math.sin(sd), dz = CS.d0.x * Math.sin(sd) + CS.d0.z * Math.cos(sd), fu = u - tR, vy = fu < tf ? -ev.fg * fu : 0;
+          const sd = C.cFallSide * Math.PI / 180 - Math.atan2(Math.sin(cy - CS.y0), Math.cos(cy - CS.y0)), dx = CS.d0.x * Math.cos(sd) - CS.d0.z * Math.sin(sd), dz = CS.d0.x * Math.sin(sd) + CS.d0.z * Math.cos(sd), fu = u - tR, vy = fu < tf ? -ev.fg * fu : 0;
           shot = { x: h.x + dx * C.cFallD, y: h.y + 0.9 + C.cFallUp, z: h.z + dz * C.cFallD, tx: h.x, ty: h.y + 0.9 + vy * 0.04 * C.cFallLead, tz: h.z, fov: fu < tf ? C.cFallFov : C.cFallFov * 0.4, shake: 0, roll: 0, lag: fu < tf ? C.cFallLag : 0.25 };
           if (!ev.st.camLand && fu >= tf) { ev.st.camLand = true; CS.shake = C.cLandShake; }
         }
@@ -14013,7 +14020,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     CS.p = Math.max(0, Math.min(1, CS.p + (shot ? dt / Math.max(0.05, C.cIn) : -dt / Math.max(0.05, C.cOut))));
     if (CS.p <= 0 || !CS.pos) { CS.ev = null; window.__hnFov = 0; window.__hnRoll = 0; CS.shake = 0; return; }
     if (shot) {
-      const kp = 1 - Math.exp(-dt / Math.max(0.01, shot.lag));
+      const kp = H.ck.paused ? 1 - Math.exp(-dt / 0.06) : 1 - Math.exp(-dt / Math.max(0.01, shot.lag));   // 멈춰 있을 땐 바로 따라온다(조절 · 마우스가 곧장 보이게)
       CS.pos.x += (shot.x - CS.pos.x) * kp; CS.pos.y += (shot.y - CS.pos.y) * kp; CS.pos.z += (shot.z - CS.pos.z) * kp;
       CS.tgt.x += (shot.tx - CS.tgt.x) * kp; CS.tgt.y += (shot.ty - CS.tgt.y) * kp; CS.tgt.z += (shot.tz - CS.tgt.z) * kp;
       CS.fov = shot.fov; CS.roll = shot.roll; CS.sh = shot.shake;
@@ -14397,15 +14404,51 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
 #mp-feed{bottom:calc(100px + var(--uilift))!important}
 #sr-tune,#sr-show{padding-bottom:calc(20px + var(--uilift))!important}
 #csel .scene-start,#csel .scene-back{outline:none!important}
-#csel .scene-start{translate:-40px calc(22px - var(--uilift) - 14px);scale:1.3;transform-origin:100% 100%;text-shadow:0 2px 6px #000,0 0 16px rgba(255,70,50,.5)}
+#csel .scene-start{translate:-40px calc(22px - var(--uilift) - 14px - var(--cs-btny, 0px));scale:var(--cs-sk, 1.3);transform-origin:100% 100%;text-shadow:0 2px 6px #000,0 0 16px rgba(255,70,50,.5)}
 #csel .scene-start::before{filter:brightness(1.4) drop-shadow(0 0 12px rgba(230,40,25,.8))}
-#csel .scene-back{translate:40px calc(22px - var(--uilift) - 14px);scale:1.25;transform-origin:0 100%;padding-left:34px!important;text-shadow:0 2px 6px #000}
+#csel .scene-back{translate:40px calc(22px - var(--uilift) - 14px - var(--cs-btny, 0px));scale:var(--cs-bk, 1.25);transform-origin:0 100%;padding-left:34px!important;text-shadow:0 2px 6px #000}
 #csel .scene-back::after{content:'';position:absolute;left:6px;right:-6px;top:52%;height:62%;transform:translateY(-50%) skewX(-12deg);background:linear-gradient(90deg,rgba(122,23,18,0),rgba(122,23,18,.85) 18%,rgba(122,23,18,.75) 80%,rgba(122,23,18,0));z-index:-1;filter:drop-shadow(0 0 8px rgba(200,30,20,.6))}
-#csel .hint{bottom:calc(24px + var(--uilift))!important;top:auto!important;z-index:6;opacity:.85}
-#csel .fr .nm{translate:0 calc(-1 * var(--uilift))}
+#csel .hint{bottom:calc(24px + var(--uilift) + var(--cs-hinty, 0px))!important;top:auto!important;z-index:6;opacity:.85}
+#csel .fr{translate:0 calc(-1 * var(--cs-lift, 0px))}
+#csel .fr .nm{translate:0 calc(-1 * var(--uilift) - var(--cs-nm, 0px))}
 #csel .cs-band{position:absolute;left:0;right:0;bottom:0;height:calc(112px + var(--uilift));background:linear-gradient(to bottom,rgba(0,0,0,0),rgba(0,0,0,.8) 45%,#000 75%);pointer-events:none;z-index:1}`;
     document.head.appendChild(st);
   }
+  // b713 — 캐릭터 선택 배치 조절(사용자 「시작 단추와 이름이 너무 붙어 이상 · 아래 단추 · 설명 빼고 나머지를 위로 올리든지 · 조절창」)
+  //   lift = 캐릭터(3D 화면) · 이름 · 클릭 자리를 함께 위로(화면 그림을 통째로 올린다 · 맨 아래는 어두운 띠가 덮는다) · nm = 이름만 더 · btnY = 단추 · sk / bk = 시작 · 뒤로 크기 · hintY = 조작 안내
+  //   값은 이 브라우저에 바로 남고 · 「저장」은 모두의 기본값(settings 'csLayout') · 선택창 오른쪽 위 「배치」 단추
+  const LD = { lift: 28, nm: 26, btnY: 0, sk: 1.3, bk: 1.25, hintY: 0 };
+  const CL = (window.__csLayout = Object.assign({}, LD));
+  try { const sv = JSON.parse(localStorage.getItem('corpse_cslayout_v1') || 'null'); if (sv) for (const k in LD) if (typeof sv[k] === 'number' && isFinite(sv[k])) CL[k] = sv[k]; } catch { /* */ }
+  const clSave = () => { try { localStorage.setItem('corpse_cslayout_v1', JSON.stringify(CL)); } catch { /* */ } };
+  function clApply(c, on) {
+    if (c) { c.style.setProperty('--cs-lift', CL.lift + 'px'); c.style.setProperty('--cs-nm', CL.nm + 'px'); c.style.setProperty('--cs-btny', CL.btnY + 'px'); c.style.setProperty('--cs-sk', CL.sk); c.style.setProperty('--cs-bk', CL.bk); c.style.setProperty('--cs-hinty', CL.hintY + 'px'); }
+    const G = window.__G, cv = G && G.renderer && G.renderer.domElement; if (!cv) return;
+    const want = on && CL.lift ? `0 ${-CL.lift}px` : '';
+    if (cv.style.translate !== want) cv.style.translate = want;   // 3D 화면을 그 만큼 위로(선택창이 닫히면 그대로)
+  }
+  const CLR = [['lift', '캐릭터 · 이름 함께 위로', 0, 160, 1, 'px'], ['nm', '이름만 더 위로', -40, 120, 1, 'px'], ['btnY', '시작 · 뒤로 위로', -40, 120, 1, 'px'], ['sk', '시작 크기', 0.6, 2.2, 0.05, '배'], ['bk', '뒤로 크기', 0.6, 2.2, 0.05, '배'], ['hintY', '조작 안내 위로', -40, 120, 1, 'px']];
+  function clPanel(c) {
+    if (c.querySelector('.cl-btn')) return;
+    const st = document.createElement('style');
+    st.textContent = `#csel .cl-btn{position:absolute;top:68px;right:118px;z-index:30;padding:5px 10px;background:rgba(10,8,6,.82);color:#e9e1d0;border:1px solid #5a4a3a;font:700 11px "UIF","Noto Serif KR",serif;letter-spacing:.15em;cursor:pointer}
+#csel .cl-p{position:absolute;top:100px;right:118px;z-index:31;width:280px;padding:10px 12px;background:rgba(12,9,7,.92);border:1px solid #6b2a20;color:#e9e1d0;font:12px "UIF","Noto Serif KR",serif;display:none}
+#csel .cl-p.on{display:block} #csel .cl-p label{display:flex;justify-content:space-between;margin:6px 0 0;color:#c9bfae} #csel .cl-p label b{color:#f2e6d6}
+#csel .cl-p input{width:100%} #csel .cl-p .bs{display:flex;gap:6px;margin-top:8px;align-items:center} #csel .cl-p button.d{padding:5px 10px;background:#2a0f0b;color:#f2e6d6;border:1px solid #8a2a1c;font:700 11px "UIF",serif;cursor:pointer}`;
+    document.head.appendChild(st);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'cl-btn'; b.textContent = '배치';
+    const p = document.createElement('div'); p.className = 'cl-p';
+    p.innerHTML = CLR.map(([k, n, mn, mx, sp]) => `<label><span>${n}</span><b data-v="${k}"></b></label><input type="range" data-k="${k}" min="${mn}" max="${mx}" step="${sp}">`).join('') + '<div class="bs"><button type="button" class="d">기본값</button><span class="sv"></span></div>';
+    c.appendChild(b); c.appendChild(p);
+    if (window.__settings && window.__settings.button) p.querySelector('.sv').appendChild(window.__settings.button());
+    const sync = () => { for (const [k, , , , , u] of CLR) { const i = p.querySelector(`input[data-k="${k}"]`), v = p.querySelector(`b[data-v="${k}"]`); if (document.activeElement !== i) i.value = CL[k]; v.textContent = u === 'px' ? `${CL[k] > 0 ? '+' : ''}${Math.round(CL[k])}px` : `${(+CL[k]).toFixed(2)}배`; } };
+    sync(); clPanel.sync = sync;
+    b.addEventListener('click', (e) => { e.stopPropagation(); p.classList.toggle('on'); sync(); });
+    p.addEventListener('click', (e) => { e.stopPropagation(); if (e.target.classList.contains('d')) { Object.assign(CL, LD); clSave(); sync(); clApply(c, true); } });
+    p.addEventListener('input', (e) => { const k = e.target.dataset && e.target.dataset.k; if (!k) return; CL[k] = +e.target.value; clSave(); sync(); clApply(c, true); });
+    for (const ty of ['pointerdown', 'keydown']) p.addEventListener(ty, (e) => e.stopPropagation());
+  }
+  (function reg() { const S = window.__settings; if (!S || !S.reg) { setTimeout(reg, 400); return; } S.reg('csLayout', { get: () => Object.assign({}, CL), set: (o) => { if (!o) return; for (const k in LD) if (typeof o[k] === 'number' && isFinite(o[k])) CL[k] = o[k]; if (clPanel.sync) clPanel.sync(); } }); })();
   window.__uiLift = (px) => { document.documentElement.style.setProperty('--uilift', (+px || 0) + 'px'); };
   function style() {
     styled = true;
@@ -14421,7 +14464,8 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     try {
       if (document.body) {
         if (!styled) { style(); liftStyle(); }
-        { const c0 = document.getElementById('csel'); if (c0 && !c0.querySelector('.cs-band')) { const d = document.createElement('div'); d.className = 'cs-band'; c0.appendChild(d); } }
+        { const c0 = document.getElementById('csel'); if (c0 && !c0.querySelector('.cs-band')) { const d = document.createElement('div'); d.className = 'cs-band'; c0.appendChild(d); }
+          if (c0) { clPanel(c0); clApply(c0, c0.classList.contains('on')); } }
         const c = document.getElementById('csel'), s = document.getElementById('start'), on = U.on > 0.5 && !!c && c.classList.contains('on');
         if (on && !wasOn) openT = performance.now(); wasOn = on;
         document.body.classList.toggle('uif', on);
