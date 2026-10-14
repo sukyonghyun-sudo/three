@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-702 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-705 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-702'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-705'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6252,6 +6252,7 @@ window.__NAVGRID = {"sig":"n8|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
       { k: 'crowScream', label: '쪼일 때 비명(0 = 없음 · 움직이면 들려줌)', min: 0, max: 40, step: 1, def: 0, fmt: (v) => { const L = window.__scream && window.__scream.list, i = Math.round(v); if (!i) return '없음'; const it = L && L[i - 1]; if (it && window.__crowScreamPrev !== i) { const first = window.__crowScreamPrev === undefined; window.__crowScreamPrev = i; if (!first) try { const G = window.__G; window.__scream.play(it.key, G.hero.position, { vol: 0.7 }); } catch { /* */ } } return it ? it.name : '—'; } },
       { k: 'crowScreamVol', label: '비명 크기', min: 0, max: 1.5, step: 0.05, def: 0.8, fmt: pct },
       { k: 'crowCam', label: '쪼일 때 카메라 다가감(0 = 끔)', min: 0, max: 1.5, step: 0.05, def: 1, fmt: pct },   // b695
+      { k: 'crowStain', label: '쫄 때 얼굴에 핏자국 남는 빈도(쌓인다)', min: 0, max: 1, step: 0.05, def: 0.25, fmt: pct },   // b703
     ] },
     { title: '피', sub: '업고 갈 때 흐르는 피', rows: [
       { k: 'carryDrip', label: '떨어지는 양', min: 0, max: 4, step: 0.05, def: 2.7, fmt: (v) => `${Math.round(v * 100)}%` },
@@ -10465,6 +10466,14 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     if (kind === 'carry') for (const v of pickVerts(p.mesh, [0, 0.6, 0.4], 0.45, 0.75, 1)) add(p, v[1], v[2], v[3], rnd(0.05, 0.08), rnd(0.3, 0.45), 1.2);
     else for (const v of pickVerts(p.mesh, null, 0.35, 0.72, 1, 'hand')) add(p, v[1], v[2], v[3], rnd(0.035, 0.06), rnd(0.3, 0.5), 1.0);
   }
+  // b703 — 까마귀에게 쪼이면 얼굴(앞쪽)에 작은 핏자국 — 쪼일수록 겹쳐 짙어지고 늘어난다(사용자 「쪼이고 나면 작은 핏자국들이 얼굴에 남게 · 누적」) · crowflock.js 가 부른다 · 나 · 봇 모두
+  P.peck = (who, yaw) => {
+    const G = window.__G; if (!G || !on()) return false;
+    const p = who === 'hero' ? heroP(G) : person(who, [who.__sm || (who.__sm = skinOf(who.model))]); if (!p || !p.mesh) return false;
+    const dir = toBind(p.mesh, Math.sin(yaw || 0), Math.cos(yaw || 0));
+    for (const v of pickVerts(p.mesh, dir, 0.8, 0.93, 1)) add(p, v[1], v[2], v[3], rnd(0.012, 0.024), rnd(0.55, 0.85), 0.1);
+    return true;
+  };
   P.preview = () => { const G = window.__G; if (!G) return; const p = heroP(G); const f = G.hero.position, y = G.hero.rotation.y; splatHit(p, { x: f.x + Math.sin(y) * 3, z: f.z + Math.cos(y) * 3 }); };
   P.wetDemo = () => {                                                   // 보기 — 가슴까지 젖은 채로(40초에 마름)
     const G = window.__G; if (!G || !G.started) return false; const p = heroP(G), h0 = p && p.holders[0]; if (!h0 || !h0.uWet || !p.mesh) return false;
@@ -13195,7 +13204,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const attacks = [];
   // b695 — 까마귀가 나를 쪼는 동안 카메라가 자연스럽게 다가간다(camera.js · 사용자 「까마귀한테 공격당할 때는 카메라를 이 정도로 자연스럽게 클로즈업」)
   //   내리꽂기 0.8초 전부터 쪼기가 끝날 때까지 · 세기 = 조절 「쪼일 때 카메라 다가감」(0 = 끔)
-  window.__crowCam = () => { const t = now(); for (const A of attacks) { if (!A.q || A.q.who !== 'hero') continue; const u = t - A.t0; if (u > DIN() - 0.8 && u < DIN() + DUR_ATK + 0.15) return Math.max(0, cfg('crowCam', 1)); } return 0; };
+  window.__crowCam = () => { const t = now(); for (const A of attacks) { if (!A.q || A.q.who !== 'hero') continue; const u = t - A.t0; if (u > DIN() - 1.3 && u < DIN() + DUR_ATK + 0.15) return Math.max(0, cfg('crowCam', 1));   /* b703 — 1.3초 전부터(다가가는 1.4초가 쪼기 시작과 맞게) */ } return 0; };
   F.attack = (who) => {
     const ps = people().filter((q) => !downOf(q));   // b699 — 쓰러져 있거나 · 맞는 중 · 불타는 사람은 노리지 않는다
     const q = who ? ps.find((x) => x.who === who) : ps[(Math.random() * ps.length) | 0];
@@ -13230,13 +13239,65 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     if (!r.__crowSM) { r.__crowSM = []; const scan = (o) => o && o.traverse((x) => { if (x.isSkinnedMesh && x.morphTargetDictionary && x.morphTargetDictionary.scream_mouth !== undefined && !r.__crowSM.includes(x)) r.__crowSM.push(x); }); scan(r); if (q.who === 'hero' && G.body) { scan(G.body.main); scan(G.body.drag); } }
     if (C && C.drive && r.__crowSM.length) try { C.drive(r.__crowSM, 'silent', 0.75 + 0.25 * Math.sin(t * 37)); } catch { /* */ }
     if (r.__crowHead) { r.__crowHB = r.__crowHB || { b: r.__crowHead, on: false, q: null }; r.__crowHB.on = true; shakes.add(r.__crowHB); }
+    // b703 — 시체를 들고 있지 않으면 두 팔로 머리 둘레를 마구 휘저어 쫓고 · 머리도 더 세게 흔든다(사용자) — 들고 있으면(업기 · 끌기) 손이 시체를 잡고 있어 머리만
+    const holding = q.who === 'hero' ? !!(G.carry && G.carry.heldBody) : !!q.who.body;
+    const fl = flails.get(q.who) || { w: 0, want: 0, last: 0, ph: rnd(0, 6.28), q }; fl.q = q; fl.want = holding ? 0 : 1; fl.last = now(); flails.set(q.who, fl);
+    if (r.__crowHB) r.__crowHB.k = 1 + 1.4 * fl.w;
   }
+  // ── 팔 휘젓기 — 그리기 직전에만(그린 뒤 되돌림) · 나 · 봇 모두 ──
+  const flails = new Map(), flSaved = [];
+  let QI = null, QA2 = null, QB2 = null, QP2 = null, VA = null, VB = null;
+  function flailSkin(q) {
+    if (q.who === 'hero') { const B = G.body; if (!B) return null; const m = B.drag && B.drag.visible && !(B.main && B.main.visible) ? B.drag : B.main; let s = null; if (m) m.traverse((x) => { if (!s && x.isSkinnedMesh) s = x; }); return s; }
+    const b = q.who; if (!b.__flSm) b.model && b.model.traverse((x) => { if (!b.__flSm && x.isSkinnedMesh) b.__flSm = x; }); return b.__flSm || null;
+  }
+  function flBones(sm) {
+    if (sm.__flB && sm.__flB.sk === sm.skeleton) return sm.__flB;
+    const f = (re) => sm.skeleton.bones.find((b) => re.test(b.name));
+    return (sm.__flB = { sk: sm.skeleton, LA: f(/LeftArm$/), LF: f(/LeftForeArm$/), LH: f(/LeftHand$/), RA: f(/RightArm$/), RF: f(/RightForeArm$/), RH: f(/RightHand$/), H: f(/Head$/) });
+  }
+  function aimTo(b, child, dir, w) {   // b 의 자식 방향을 세상 dir 쪽으로 w 만큼
+    if (!b || !child || w <= 0) return;
+    b.updateWorldMatrix(true, false); child.updateWorldMatrix(false, false);
+    const p0 = b.getWorldPosition(VA), cur = child.getWorldPosition(VB).sub(p0); if (cur.lengthSq() < 1e-8) return; cur.normalize();
+    QA2.setFromUnitVectors(cur, dir); QA2.slerp(QI, 1 - w);   // 0 이면 그대로
+    flSaved.push([b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]);
+    b.getWorldQuaternion(QB2); QB2.premultiply(QA2); b.parent.getWorldQuaternion(QP2); b.quaternion.copy(QP2.invert().multiply(QB2)); b.updateMatrixWorld(true);
+  }
+  function flailApply(dt) {
+    if (!QI) { QI = Q.clone().set(0, 0, 0, 1); QA2 = Q.clone(); QB2 = Q.clone(); QP2 = Q.clone(); VA = new T.Vector3(); VB = new T.Vector3(); }
+    const t = now();
+    for (const [who, fl] of flails) {
+      if (t - fl.last > 0.15) fl.want = 0;
+      fl.w += (fl.want - fl.w) * Math.min(1, dt * (fl.want > fl.w ? 7 : 4));
+      if (fl.want === 0 && fl.w < 0.01) { flails.delete(who); continue; }
+      const sm = flailSkin(fl.q); if (!sm || !sm.skeleton) continue; const B = flBones(sm); if (!B.H) continue;
+      const y = fl.q.yaw(), fx = Math.sin(y), fz = Math.cos(y), lx = fz, lz = -fx, w = Math.min(1, fl.w), ph = fl.ph;
+      // b704 — 결말 연출(death.js 「허우적」)과 같은 뼈 축 규칙으로(예전 방향 맞추기는 팔이 비틀려 관절이 어색했다 — 사용자)
+      //   son 뼈 축: 팔 x− 옆으로 들어 올림 · 팔 z 앞뒤(왼 + 앞 / 오른 − 앞) · 아래팔 z 팔꿈치(왼 + / 오른 −) · 손 x
+      //   그리기 직전에만 얹고 그린 뒤 되돌린다 — 게임의 다른 동작(걷기 · 달리기 · 맞음 …)은 그대로
+      const s = (f, p) => Math.sin(t * f * 6.2832 + p), pos = (x) => Math.max(0, x), A = w;
+      for (const [Ar, F, Hd, sd, p] of [[B.LA, B.LF, B.LH, 1, 0], [B.RA, B.RF, B.RH, -1, 1.9]]) {
+        const w1 = s(2.1, p + ph), w2 = s(3.1, p * 1.7 + ph), w3 = s(4.3, p + ph * 2);
+        rotF(Ar, -A * (1.05 + 0.35 * w1), 0, sd * A * (0.55 + 0.35 * w2));   // 팔을 들어 앞 · 머리 쪽으로 휘두름
+        rotF(F, 0, 0, sd * A * (0.75 + 0.55 * pos(w2) + 0.25 * w3));          // 팔꿈치를 굽혀 얼굴 앞을 후려침
+        rotF(Hd, A * 0.45 * w1, 0, 0);
+      }
+      ((B.LA && B.LA.parent && B.LA.parent.parent) || B.H).updateMatrixWorld(true);   // 두 어깨의 부모(가슴)부터 — 양팔 모두
+    }
+  }
+  function rotF(b, x, y, z) {
+    if (!b) return; flSaved.push([b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]);
+    if (x) b.quaternion.multiply(QA2.setFromAxisAngle(VA.set(1, 0, 0), x)); if (y) b.quaternion.multiply(QA2.setFromAxisAngle(VA.set(0, 1, 0), y)); if (z) b.quaternion.multiply(QA2.setFromAxisAngle(VA.set(0, 0, 1), z));
+  }
+  function flailRestore() { for (let i = flSaved.length - 1; i >= 0; i--) { const e = flSaved[i]; e[0].quaternion.set(e[1], e[2], e[3], e[4]); } flSaved.length = 0; }
   let shakeHooked = false;
   function hookShake() {
     if (shakeHooked) return; shakeHooked = true;
     const S = G.scene, pb = S.onBeforeRender, pa = S.onAfterRender, ax = new T.Vector3(1, 0, 0), ay = new T.Vector3(0, 1, 0), az = new T.Vector3(0, 0, 1), qq = Q.clone();
-    S.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); const t = now(); for (const h of shakes) { if (!h.on) continue; h.q = h.b.quaternion.clone(); h.b.quaternion.multiply(qq.setFromAxisAngle(ax, Math.sin(t * 41) * 0.09 + Math.sin(t * 23) * 0.06)).multiply(qq.setFromAxisAngle(ay, Math.sin(t * 33 + 1) * 0.12)).multiply(qq.setFromAxisAngle(az, Math.sin(t * 29 + 2) * 0.07)); h.b.updateMatrixWorld(true); } };
-    S.onAfterRender = function (...a) { for (const h of shakes) { if (h.q) { h.b.quaternion.copy(h.q); h.q = null; } if (!h.on) shakes.delete(h); } if (pa) pa.apply(this, a); };
+    let lt = now();
+    S.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); const t = now(), dt = Math.min(0.1, t - lt); lt = t; try { flailApply(dt); } catch (e) { flailRestore(); } for (const h of shakes) { if (!h.on) continue; const k = h.k || 1; h.q = h.b.quaternion.clone(); h.b.quaternion.multiply(qq.setFromAxisAngle(ax, (Math.sin(t * 41) * 0.09 + Math.sin(t * 23) * 0.06) * k)).multiply(qq.setFromAxisAngle(ay, Math.sin(t * 33 + 1) * 0.12 * k)).multiply(qq.setFromAxisAngle(az, Math.sin(t * 29 + 2) * 0.07 * k)); h.b.updateMatrixWorld(true); } };
+    S.onAfterRender = function (...a) { for (const h of shakes) { if (h.q) { h.b.quaternion.copy(h.q); h.q = null; } if (!h.on) shakes.delete(h); } flailRestore(); if (pa) pa.apply(this, a); };
   }
   let atkT = rnd(20, 40);
   function step(dt) {
@@ -13312,7 +13373,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
         //   마리마다 자리(정면 · 옆 · 위) · 흔들림 빠르기 · 찌르는 박자가 다르다(사용자 「여러 마리일 때 다 똑같이 움직여 이상」)
         const hd = headOf(c.q), fy = c.q.yaw() + c.sa;
         c.peck = Math.max(0, (c.peck || 0) - dt * 9);
-        if ((c.pk -= dt) <= 0) { c.pk = rnd(0.1, 0.22) * c.tempo; c.peck = 1; c.jx = rnd(-0.12, 0.12); c.jy = rnd(-0.08, 0.1);
+        if ((c.pk -= dt) <= 0) { c.pk = rnd(0.1, 0.22) * c.tempo; c.peck = 1; c.jx = rnd(-0.12, 0.12); c.jy = rnd(-0.08, 0.1); if (Math.random() < cfg('crowStain', 0.25) && window.__stain && window.__stain.peck) try { window.__stain.peck(c.q.who, c.q.yaw()); } catch { /* */ }   /* b703 — 얼굴에 작은 핏자국이 쌓인다 */
           if (G.cfg.fxAirBlood == null || G.cfg.fxAirBlood > 0) spurt(hd.x + Math.sin(fy) * 0.1, hd.y + rnd(-0.05, 0.04), hd.z + Math.cos(fy) * 0.1, Math.sin(fy), Math.cos(fy));   // b675 — 이 파일이 움직이는 방울(둘러보기에서도)
           if (Math.random() < 0.45) play('sys_gore' + (1 + ((Math.random() * 2) | 0)), hd, 0.3); }
         const reach = 0.36 - c.peck * 0.28, j1 = Math.sin(t * c.f1 + c.i) * 0.09 + Math.sin(t * c.f2) * 0.05, j2 = Math.cos(t * c.f1 * 0.8 + c.i * 2) * 0.07 + Math.sin(t * c.f2 * 1.3) * 0.04;
@@ -13384,6 +13445,14 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     wingHz: 28, wingAmp: 0.85, ghost: 0.3,
     swell: 0.75, swellUp: 1.1, swellHold: 9, lump: 0.6, venomScream: 0, screamVol: 1,
     height: 14, lift: 2.4, grabScream: 0, landBlood: 1,
+    legAmt: 1, legSpd: 0.6,                                                     // b703 — 다리 움직임(0 = 날개만) · 빠르기
+    // b703 — 낚아채기 연출(사용자 「끌려 올라갈 때 아래에서 하늘로 끌려가는 캐릭터를 비추며 다이나믹 · 떨어질 때 떨어지는 캐릭터를 잡아 같이 따라가게 · 발버둥 · 몸 각도」)
+    stMode: 1, stFall: 0, stK: 1, stSpd: 1.2,                                  // 발버둥(0 버팀 · 1 발버둥 · 2 허우적) · 세기 · 빠르기
+    liftAng: 12, fallAng: 60, fallSpin: 80,                                    // 몸 각도(° · 0 = 머리 위로 똑바로 · 90 = 누운 채 · 180 = 거꾸로) · 떨어지며 도는 빠르기(°/초)
+    camOn: 1, cIn: 0.6, cOut: 1.2,                                             // 카메라 켬 · 들어가는 · 돌아오는 시간
+    cLiftD: 4.2, cLiftH: 0.45, cLiftRise: 0.35, cLiftOrbit: 12, cLiftFov: -12, cLiftShake: 0.35, cLiftRoll: 6,
+    cFallD: 3.4, cFallUp: 1.6, cFallSide: 35, cFallLead: 0.6, cFallLag: 0.12, cFallFov: 12,
+    cLandShake: 1, cLandHold: 1.4,
   };
   const H = (window.__hornet = { ready: false, cf: Object.assign({}, DEF), DEF, log: [], events: [], swells: new Map() });
   try { const sv = JSON.parse(localStorage.getItem(LS) || 'null'); if (sv) for (const k in DEF) if (typeof sv[k] === 'number' && isFinite(sv[k])) H.cf[k] = sv[k]; } catch { /* 저장 없음 */ }
@@ -13503,7 +13572,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const pool = [];
   function makeBee() {
     const root = new T.Group(); root.name = 'hornet';
-    const body = new T.Mesh(frames[0], matBody); body.castShadow = true; root.add(body);
+    const dyn = frames[0].clone(); dyn.setAttribute('position', frames[0].attributes.position.clone()); dyn.setAttribute('normal', frames[0].attributes.normal.clone());   // b703 — 장 사이를 섞어 부드럽게(뚝뚝 끊기던 다리)
+    const body = new T.Mesh(dyn, matBody); body.castShadow = true; root.add(body);
     const side = (k) => {
       const piv = new T.Group(); piv.position.copy(pivots[k]); root.add(piv);
       const main = new T.Mesh(wingGeo[k], matWing); piv.add(main);
@@ -13691,7 +13761,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       if (!ev.st.drop && u >= tH + VEN.drop) {
         ev.st.drop = true;
         const Rl = window.__roll;
-        if (ev.local || (mpOn() && q.who !== 'hero')) { if (Rl && Rl.dropRoll) Rl.dropRoll(q.who); }
+        if (ev.local || (mpOn() && q.who !== 'hero')) { if (q.who === 'hero') dropHeld(); else if (!mpOn() && q.who.body && G.mpApi && G.mpApi.botBurnDrop) G.mpApi.botBurnDrop(q.who); if (Rl && Rl.dropRoll) Rl.dropRoll(q.who); }
       }
     } else {
       // 낚아채기
@@ -13706,14 +13776,14 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
           scream(Math.round(C.grabScream), hp, q.who, 1); sfx('p_cloth', hp, { vol: 0.8 });
         }
         const k = (u - tG) / ev.lift, lh = ev.h * ss(Math.min(1, k)) + (k > 1 ? Math.sin((u - tG - ev.lift) * 18) * 0.12 : 0);
-        lifts.set(q.who, { h: lh + Math.sin(t * 6) * 0.08 });
+        lifts.set(q.who, { h: lh + Math.sin(t * 6) * 0.08, ph: 'lift', ev, k: Math.min(1, k) });
         R.position.set(grabAt.x + Math.sin(t * 3.1) * 0.15, grabAt.y + lh + 0.55 + 0.42 * sz, grabAt.z + Math.cos(t * 2.7) * 0.15);
       } else {
         if (!ev.st.rel) { ev.st.rel = true; ev.relP = R.position.clone(); sfx('amb_gust', ev.relP, { vol: 0.5 }); }
         const k = (u - tR) / 2.6; if (!ev.away) ev.away = new T.Vector3(grabAt.x + ev.side * 20, grabAt.y + ev.h + 9, grabAt.z + 14);
         R.position.lerpVectors(ev.relP, ev.away, ss(Math.min(1, k)));
         const fu = u - tR;
-        if (fu < tf) lifts.set(q.who, { h: Math.max(0, ev.h - 0.5 * GRAB.g * fu * fu) });
+        if (fu < tf) lifts.set(q.who, { h: Math.max(0, ev.h - 0.5 * GRAB.g * fu * fu), ph: 'fall', ev, fu, tf });
         else {
           lifts.delete(q.who);
           if (!ev.st.land) {
@@ -13733,16 +13803,25 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     else if (look && vel.lengthSq() < 1e-5) { const d = look.clone().sub(R.position); d.y = 0; if (d.lengthSq() > 1e-4) orient(b, d); }
     else if (vel.lengthSq() > 1e-7) { const d = vel.clone(); const pitch = Math.max(-0.6, Math.min(0.6, -Math.atan2(d.y, Math.hypot(d.x, d.z)))); d.y = 0; if (d.lengthSq() > 1e-8) { orient(b, d, null, Math.sin(t * 2.3) * 0.08); b.root.rotateX(pitch * 0.6); } }
     // 몸 동작 · 날개
-    b.body.geometry = frames[Math.floor((t * 2.4) * NF) % NF];
+    legPose(b.body.geometry, t);
     const ang = C.wingAmp * Math.sin(t * Math.PI * 2 * C.wingHz + (Math.random() - 0.5) * 0.6);
     for (const k of ['L', 'R']) { const w = b.w[k]; w.piv.rotation.set(0, 0, ang * w.sgn); w.pu.rotation.set(0, 0, C.wingAmp * w.sgn); w.pd.rotation.set(0, 0, -C.wingAmp * 0.8 * w.sgn); w.gm.opacity = C.ghost; w.pu.visible = w.pd.visible = C.ghost > 0.01; }
     buzzSet(b, R.position);
     return true;
   }
+  // b703 — 다리 — 날기 동작 10장을 오가며(0→9→0) 장 사이를 섞는다 · 세기 0 이면 첫 장(날개만 움직임)
+  function legPose(g, t) {
+    const amt = Math.max(0, Math.min(1, C.legAmt)), P = g.attributes.position.array, N = g.attributes.normal.array, A0 = frames[0].attributes.position.array, N0 = frames[0].attributes.normal.array;
+    const ph = (t * C.legSpd * 2) % (2 * (NF - 1)), u = ph < NF - 1 ? ph : 2 * (NF - 1) - ph, i0 = Math.min(NF - 2, Math.floor(u)), f = u - i0, e = f * f * (3 - 2 * f);
+    const A = frames[i0].attributes.position.array, Bp = frames[i0 + 1].attributes.position.array, NA = frames[i0].attributes.normal.array, NB = frames[i0 + 1].attributes.normal.array;
+    for (let i = 0; i < P.length; i++) { const v = A[i] + (Bp[i] - A[i]) * e; P[i] = A0[i] + (v - A0[i]) * amt; const n = NA[i] + (NB[i] - NA[i]) * e; N[i] = N0[i] + (n - N0[i]) * amt; }
+    g.attributes.position.needsUpdate = true; g.attributes.normal.needsUpdate = true;
+  }
   const bez = (a, m, c, k) => { const o = new T.Vector3(); const u = 1 - k; o.x = u * u * a.x + 2 * u * k * m.x + k * k * c.x; o.y = u * u * a.y + 2 * u * k * m.y + k * k * c.y; o.z = u * u * a.z + 2 * u * k * m.z + k * k * c.z; return o; };
+  const dropHeld = () => { if (G.carry && G.carry.heldBody) G.set('dragMode', false); };   // b703 — 잡혀가거나 쓰러지면 들고 있던 시체를 놓친다(burn.js 와 같은 놓기)
   function grabStart(ev, total) {
     const who = ev.q.who;
-    if (who === 'hero') { if (window.__heroDrop) window.__heroDrop(total); return; }
+    if (who === 'hero') { dropHeld(); if (window.__heroDrop) window.__heroDrop(total); return; }
     if (mpOn()) return;   // 같이 하기 봇은 서버가 쓰러뜨린다
     const b = who; if (!b.acts || !b.hero) return;
     if (b.body && G.mpApi && G.mpApi.botBurnDrop) G.mpApi.botBurnDrop(b);
@@ -13755,6 +13834,116 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     const gore = G.gore || (G.mpApi && G.mpApi.gore); if (!gore || !gore.drop || !(C.landBlood > 0)) return;
     const n = Math.round(30 * C.landBlood), p0 = new T.Vector3(p.x, p.y + 0.3, p.z);
     for (let i = 0; i < n; i++) { const a = rnd(0, 6.28), s = rnd(1, 4.5); gore.drop(p0, new T.Vector3(Math.cos(a) * s, rnd(1.5, 4.5), Math.sin(a) * s)); }
+  }
+
+  /* ── 잡힌 몸 — 발버둥 · 몸 각도(그리기 직전에만 · 그린 뒤 되돌림 · 사원증 줄은 그다음에 돌아 같이 따라온다) ── */
+  const BN = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm', 'LeftHand', 'RightHand', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot'];
+  function rig(sm) { if (sm.__hnRig && sm.__hnRig.sk === sm.skeleton) return sm.__hnRig; const r = { sk: sm.skeleton }; for (const nm of BN) r[nm] = sm.skeleton.bones.find((b) => b.name.replace(/^mixamorig:?/, '') === nm) || null; return (sm.__hnRig = r); }
+  function visSkin(who) {
+    if (who === 'hero') { const Bd = G.body; if (!Bd) return null; const m = Bd.drag && Bd.drag.visible && !(Bd.main && Bd.main.visible) ? Bd.drag : Bd.main; return skinOf(m); }
+    return who.__sm || (who.__sm = skinOf(who.model));
+  }
+  const bsv = [], rsv = []; let QAx = null, AXV = null, QI2 = null, QR = null;
+  function rotB(b, x, y, z) { if (!b) return; bsv.push([b, b.quaternion.x, b.quaternion.y, b.quaternion.z, b.quaternion.w]); if (x) b.quaternion.multiply(QAx.setFromAxisAngle(AXV.set(1, 0, 0), x)); if (y) b.quaternion.multiply(QAx.setFromAxisAngle(AXV.set(0, 1, 0), y)); if (z) b.quaternion.multiply(QAx.setFromAxisAngle(AXV.set(0, 0, 1), z)); }
+  // 결말 연출(death.js)의 버팀 · 발버둥 · 허우적과 같은 뼈 축 규칙(son: 몸통 x+ 숙임 · 팔 x− 옆으로 · 팔 z 앞뒤 · 아래팔 z 팔꿈치 · 허벅지 x+ 앞 · 정강이 x− 굽힘)
+  function struggle(r, t, W, ph, mode) {
+    const s = (f, p) => Math.sin(t * f * 6.2832 + (p || 0)), pos = (x) => Math.max(0, x), fa = 1.35 * C.stSpd, fl = 1.7 * C.stSpd, A = W, Lg = W;
+    if (mode === 1) {   // 발버둥 — 다리를 마구 차고 팔은 감쌈
+      rotB(r.Spine, W * 0.35, 0, W * 0.08 * s(fl, ph)); rotB(r.Spine1, W * 0.15, 0, 0); rotB(r.Neck, W * 0.1, W * 0.15 * s(0.7, ph), 0); rotB(r.Head, W * 0.1, W * 0.15 * s(0.6, ph + 2), 0);
+      for (const [L, sd, p] of [['Left', 1, 0], ['Right', -1, Math.PI]]) {
+        const a = s(fa * 1.2, p + ph);
+        rotB(r[L + 'Arm'], -A * (0.35 + 0.25 * a), 0, sd * A * (1.05 + 0.25 * a)); rotB(r[L + 'ForeArm'], 0, 0, sd * A * (1.5 + 0.3 * pos(-a))); rotB(r[L + 'Hand'], A * 0.6, 0, 0);
+        const k = s(fl * 1.6, p + ph); rotB(r[L + 'UpLeg'], Lg * (0.6 + 0.7 * k), 0, sd * Lg * 0.15); rotB(r[L + 'Leg'], -Lg * (0.2 + 1.2 * pos(-k)), 0, 0); rotB(r[L + 'Foot'], Lg * 0.4 * k, 0, 0);
+      }
+    } else if (mode === 2) {   // 허우적 — 두 팔 머리 위로 마구 휘저음
+      rotB(r.Spine, -W * 0.1, W * 0.2 * s(fa * 0.7, ph), W * 0.1 * s(fa, ph)); rotB(r.Spine1, -W * 0.05, W * 0.12 * s(fa * 0.7, ph + 1), 0);
+      rotB(r.Neck, -W * 0.15, W * 0.2 * s(fa * 0.6, ph), 0); rotB(r.Head, -W * 0.2, W * 0.2 * s(fa * 0.5, ph + 2), W * 0.1 * s(fa, ph));
+      for (const [L, sd, p] of [['Left', 1, 0], ['Right', -1, 1.9]]) {
+        const w1 = s(fa * 1.3, p + ph), w2 = s(fa * 1.9, p * 1.7 + ph);
+        rotB(r[L + 'Arm'], -A * (1.3 + 0.35 * w1), 0, sd * A * (0.6 * w2)); rotB(r[L + 'ForeArm'], 0, 0, sd * A * (0.5 + 0.5 * pos(w2))); rotB(r[L + 'Hand'], A * 0.4 * w1, 0, 0);
+        const k = s(fl, p + ph + 0.6); rotB(r[L + 'UpLeg'], Lg * (0.2 + 0.4 * k), 0, sd * Lg * 0.1); rotB(r[L + 'Leg'], -Lg * (0.3 + 0.6 * pos(-k)), 0, 0);
+      }
+    } else {   // 버팀 — 팔을 뻗어 허공을 할퀴고 다리를 번갈아 찬다
+      rotB(r.Spine, W * 0.22, W * 0.12 * s(fa * 0.5, ph), 0); rotB(r.Spine1, W * 0.1, W * 0.1 * s(fa * 0.5, ph + 1), W * 0.05 * s(fa, ph));
+      rotB(r.Neck, -W * 0.22, W * 0.12 * s(0.6, ph), 0); rotB(r.Head, -W * 0.28, W * 0.15 * s(0.45, ph + 2), W * 0.06 * s(0.8, ph));
+      for (const [L, sd, p] of [['Left', 1, 0], ['Right', -1, Math.PI]]) {
+        const reach = pos(s(fa, p + ph)), back = pos(-s(fa, p + ph));
+        rotB(r[L + 'Arm'], -A * (0.25 + 0.25 * reach), 0, sd * A * (0.75 + 0.75 * reach - 0.2 * back)); rotB(r[L + 'ForeArm'], 0, 0, sd * A * (0.15 + 1.0 * back)); rotB(r[L + 'Hand'], A * (0.2 + 0.5 * back), 0, 0);
+        const kick = s(fl, p * 0.9 + ph + 0.6); rotB(r[L + 'UpLeg'], Lg * (0.25 + 0.55 * kick), 0, sd * Lg * 0.08); rotB(r[L + 'Leg'], -Lg * (0.25 + 0.75 * pos(-kick) + 0.15 * pos(kick)), 0, 0); rotB(r[L + 'Foot'], Lg * 0.25 * kick, 0, 0);
+      }
+    }
+    (r.Hips || r.sk.bones[0]).updateMatrixWorld(true);
+  }
+  function poseApply() {
+    if (!QAx) { QAx = Q.clone(); AXV = new T.Vector3(); QI2 = Q.clone().set(0, 0, 0, 1); QR = Q.clone(); }
+    const t = now();
+    for (const [who, L] of lifts) {
+      if (!L.ev) continue;
+      const root = who === 'hero' ? G.hero : who.hero, sm = visSkin(who); if (!root || !sm || !sm.skeleton) continue;
+      const r = rig(sm); if (!r.Hips || !r.Head) continue;
+      const w = L.ph === 'lift' ? ss(Math.min(1, (L.k * L.ev.lift) / 0.35)) : 1 - ss(((L.fu || 0) - (L.tf - 0.14)) / 0.14);
+      if (w <= 0.001) continue;
+      // 몸 각도 — 엉덩이를 축으로 몸 전체를 돌린다(엉덩이 → 머리 방향을 원하는 각도로)
+      root.updateMatrixWorld(true);
+      const hp = r.Hips.getWorldPosition(new T.Vector3()), axis = r.Head.getWorldPosition(new T.Vector3()).sub(hp);
+      if (axis.lengthSq() > 1e-6) {
+        axis.normalize();
+        const hd = new T.Vector3(axis.x, 0, axis.z); if (hd.lengthSq() < 1e-6) { const y = root.rotation.y; hd.set(-Math.sin(y), 0, -Math.cos(y)); } hd.normalize();
+        const ang = (L.ph === 'lift' ? C.liftAng : C.fallAng + C.fallSpin * (L.fu || 0)) * Math.PI / 180;
+        const dd = new T.Vector3(hd.x * Math.sin(ang), Math.cos(ang), hd.z * Math.sin(ang)).normalize();
+        QR.setFromUnitVectors(axis, dd); QR.slerp(QI2, 1 - w);
+        rsv.push([root, root.position.x, root.position.y, root.position.z, root.quaternion.x, root.quaternion.y, root.quaternion.z, root.quaternion.w]);
+        root.quaternion.premultiply(QR); root.position.sub(hp).applyQuaternion(QR).add(hp); root.updateMatrixWorld(true);
+      }
+      // 발버둥
+      const mode = Math.round(L.ph === 'lift' ? C.stMode : C.stFall);
+      struggle(r, t, w * C.stK, (L.ev.side || 1) * 1.3, mode);
+    }
+  }
+  function poseRestore() {
+    for (let i = bsv.length - 1; i >= 0; i--) { const e = bsv[i]; e[0].quaternion.set(e[1], e[2], e[3], e[4]); } bsv.length = 0;
+    for (let i = rsv.length - 1; i >= 0; i--) { const e = rsv[i]; e[0].position.set(e[1], e[2], e[3]); e[0].quaternion.set(e[4], e[5], e[6], e[7]); e[0].updateMatrixWorld(true); } rsv.length = 0;
+  }
+
+  /* ── 낚아채기 카메라(나) — 올라갈 때: 땅에서 하늘로 끌려가는 나를 올려다봄 · 떨어질 때: 떨어지는 나를 잡아 같이 따라감 · 쿵에 흔들림 ── */
+  const CS = { p: 0, ev: null, pos: null, tgt: null, shake: 0, last: 0 };
+  function cine(cam, target) {
+    const t = now(), dt = Math.min(0.1, t - (CS.last || t)); CS.last = t;
+    const ev = H.events.find((e) => e.g === 'grab' && e.q.who === 'hero' && e.st.grab);
+    let shot = null;
+    if (ev && C.camOn > 0.5) {
+      const u = t - ev.t0, tG = ev.app, tR = tG + ev.lift + GRAB.hold, tf = fallT(ev.h), tL = tR + tf;
+      const h = G.hero.position;
+      if (CS.ev !== ev) { CS.ev = ev; const dx = cam.x - h.x, dz = cam.z - h.z, l = Math.hypot(dx, dz) || 1; CS.d0 = { x: dx / l, z: dz / l }; CS.g0 = { x: h.x, y: gy(h.x, h.z, h.y), z: h.z }; CS.pos = new T.Vector3(cam.x, cam.y, cam.z); CS.tgt = new T.Vector3(target.x, target.y, target.z); }
+      if (u < tL + C.cLandHold) {
+        const g0 = CS.g0;
+        if (u < tR) {
+          const a = C.cLiftOrbit * Math.PI / 180 * (u - tG), ca = Math.cos(a), sa = Math.sin(a), dx = CS.d0.x * ca - CS.d0.z * sa, dz = CS.d0.x * sa + CS.d0.z * ca, lift = Math.max(0, h.y - g0.y);
+          shot = { x: g0.x + dx * C.cLiftD, y: g0.y + C.cLiftH + lift * C.cLiftRise, z: g0.z + dz * C.cLiftD, tx: h.x, ty: h.y + 0.9, tz: h.z, fov: C.cLiftFov * ss((u - tG) / Math.max(0.3, ev.lift)), shake: C.cLiftShake, roll: C.cLiftRoll, lag: 0.08 };
+        } else {
+          const sd = C.cFallSide * Math.PI / 180, dx = CS.d0.x * Math.cos(sd) - CS.d0.z * Math.sin(sd), dz = CS.d0.x * Math.sin(sd) + CS.d0.z * Math.cos(sd), fu = u - tR, vy = fu < tf ? -GRAB.g * fu : 0;
+          shot = { x: h.x + dx * C.cFallD, y: h.y + 0.9 + C.cFallUp, z: h.z + dz * C.cFallD, tx: h.x, ty: h.y + 0.9 + vy * 0.04 * C.cFallLead, tz: h.z, fov: fu < tf ? C.cFallFov : C.cFallFov * 0.4, shake: 0, roll: 0, lag: fu < tf ? C.cFallLag : 0.25 };
+          if (!ev.st.camLand && fu >= tf) { ev.st.camLand = true; CS.shake = C.cLandShake; }
+        }
+      }
+    }
+    CS.p = Math.max(0, Math.min(1, CS.p + (shot ? dt / Math.max(0.05, C.cIn) : -dt / Math.max(0.05, C.cOut))));
+    if (CS.p <= 0 || !CS.pos) { CS.ev = null; window.__hnFov = 0; window.__hnRoll = 0; CS.shake = 0; return; }
+    if (shot) {
+      const kp = 1 - Math.exp(-dt / Math.max(0.01, shot.lag));
+      CS.pos.x += (shot.x - CS.pos.x) * kp; CS.pos.y += (shot.y - CS.pos.y) * kp; CS.pos.z += (shot.z - CS.pos.z) * kp;
+      CS.tgt.x += (shot.tx - CS.tgt.x) * kp; CS.tgt.y += (shot.ty - CS.tgt.y) * kp; CS.tgt.z += (shot.tz - CS.tgt.z) * kp;
+      CS.fov = shot.fov; CS.roll = shot.roll; CS.sh = shot.shake;
+    }
+    const k = ss(CS.p);
+    cam.x += (CS.pos.x - cam.x) * k; cam.y += (CS.pos.y - cam.y) * k; cam.z += (CS.pos.z - cam.z) * k;
+    target.x += (CS.tgt.x - target.x) * k; target.y += (CS.tgt.y - target.y) * k; target.z += (CS.tgt.z - target.z) * k;
+    // 흔들림 — 올라가는 동안 잔떨림 · 떨어져 쿵 하면 크게(0.35초에 잦아듦)
+    CS.shake *= Math.exp(-dt / 0.35);
+    const a = ((CS.sh || 0) * 0.05 + CS.shake * 0.16) * k;
+    if (a > 0.0005) { cam.x += Math.sin(t * 37.1) * a; cam.y += Math.sin(t * 41.3 + 1) * a; cam.z += Math.sin(t * 33.7 + 2) * a; target.y += Math.sin(t * 29.3) * a * 0.6; }
+    window.__hnFov = (CS.fov || 0) * k;
+    window.__hnRoll = ((CS.roll || 0) * Math.PI / 180) * Math.sin(t * 1.3) * k;
   }
 
   /* ── 혼자 할 때 차례 ───────────────────────────────── */
@@ -13776,10 +13965,10 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   function hook() {
     hooked = true;
     const S = G.scene, pb = S.onBeforeRender, pa = S.onAfterRender;
-    S.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { liftApply(); swellApply(); } catch (e) { if (!hook.err) { hook.err = true; console.warn('[hornet]', e); } } };
-    S.onAfterRender = function (...a) { swellRestore(); if (pa) pa.apply(this, a); };
+    S.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { liftApply(); poseApply(); swellApply(); } catch (e) { poseRestore(); if (!hook.err) { hook.err = true; console.warn('[hornet]', e); } } };
+    S.onAfterRender = function (...a) { swellRestore(); poseRestore(); if (pa) pa.apply(this, a); };
     // 카메라가 나를 따라가도록 — 높이를 카메라 계산 전에도(knock.js __camPost 앞)
-    const wrapCam = () => { const cp = window.__camPost; if (!cp || cp.__hn) return false; const f = function (cam, target) { try { if (lifts.has('hero')) liftApply(); } catch { /* */ } return cp.call(this, cam, target); }; f.__hn = true; window.__camPost = f; return true; };
+    const wrapCam = () => { const cp = window.__camPost; if (!cp || cp.__hn) return false; const f = function (cam, target) { try { if (lifts.has('hero')) liftApply(); } catch { /* */ } const r = cp.call(this, cam, target); try { cine(cam, target); } catch (e) { if (!cine.err) { cine.err = true; console.warn('[hornet] 카메라', e); } } return r; }; f.__hn = true; window.__camPost = f; return true; };
     if (!wrapCam()) { const iv = setInterval(() => { if (wrapCam()) clearInterval(iv); }, 500); }
   }
   (function loop() {
@@ -13806,51 +13995,78 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   window.__onRestart = function () { if (prevR) prevR.apply(this, arguments); for (const ev of H.events) { lifts.delete(ev.q.who); freeBee(ev.bee); } H.events.length = 0; for (const [, s] of H.swells) for (const m of s.blobs) if (m.parent) m.parent.remove(m); H.swells.clear(); nextT = null; };
 
   /* ── 패널 — 오른쪽 아래 「왕벌」 ───────────────────────── */
-  const ROWS = [
+  const PCT = (v) => `${Math.round(v * 100)}%`, SEC = (v) => `${(+v).toFixed(1)}초`, M2 = (v) => `${(+v).toFixed(2)}m`, M1 = (v) => `${(+v).toFixed(1)}m`, DEG = (v) => `${Math.round(v)}°`;
+  const MODES = ['버팀 — 팔 뻗어 할퀴고 다리 버팀', '발버둥 — 다리를 마구 차고 팔은 감쌈', '허우적 — 두 팔을 머리 위로 휘저음'];
+  const ROWS_A = [
     ['등장'], ['on', '나타남(1 = 켬)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['every', '나타나는 간격(평균)', 10, 240, 1, (v) => `${Math.round(v)}초`],
-    ['venom', '독 쏘기 비율(나머지는 낚아채기)', 0, 1, 0.05, (v) => `${Math.round(v * 100)}%`], ['app', '날아오는 시간', 1, 6, 0.1, (v) => `${(+v).toFixed(1)}초`],
-    ['size', '크기(몸 길이)', 0.4, 3, 0.05, (v) => `${(+v).toFixed(2)}m`], ['buzz', '붕붕 소리 크기', 0, 2, 0.05, (v) => `${Math.round(v * 100)}%`],
-    ['날개'], ['wingHz', '날갯짓 빠르기', 4, 60, 1, (v) => `${Math.round(v)}번/초`], ['wingAmp', '날갯짓 폭', 0.1, 1.5, 0.05, (v) => `${Math.round(v * 57.3)}°`], ['ghost', '잔상(번짐) 진하기', 0, 0.8, 0.02, (v) => `${Math.round(v * 100)}%`],
-    ['독 — 얼굴이 부풀어 뒹군다'], ['swell', '부푸는 정도', 0, 1.6, 0.05, (v) => `+${Math.round(v * 100)}%`], ['swellUp', '부풀어 오르는 시간', 0.2, 4, 0.1, (v) => `${(+v).toFixed(1)}초`],
-    ['swellHold', '부은 채로 있는 시간', 0, 30, 0.5, (v) => `${(+v).toFixed(1)}초`], ['lump', '울퉁불퉁 꿈틀거림', 0, 2, 0.05, (v) => `${Math.round(v * 100)}%`],
-    ['venomScream', '비명(0 = 큰 비명 아무거나 · 움직이면 들려줌)', 0, 40, 1, 'scream'], ['screamVol', '비명 크기', 0, 1.5, 0.05, (v) => `${Math.round(v * 100)}%`],
-    ['낚아채기 — 하늘 높이 들어 올려 떨군다'], ['height', '올라가는 높이', 4, 30, 0.5, (v) => `${(+v).toFixed(1)}m`], ['lift', '올라가는 시간', 0.8, 6, 0.1, (v) => `${(+v).toFixed(1)}초`],
-    ['grabScream', '잡힐 때 비명(0 = 큰 비명 아무거나)', 0, 40, 1, 'scream'], ['landBlood', '떨어질 때 피', 0, 3, 0.05, (v) => `${Math.round(v * 100)}%`],
+    ['venom', '독 쏘기 비율(나머지는 낚아채기)', 0, 1, 0.05, PCT], ['app', '날아오는 시간', 1, 6, 0.1, SEC],
+    ['size', '크기(몸 길이)', 0.4, 6, 0.05, M2], ['buzz', '붕붕 소리 크기', 0, 2, 0.05, PCT],
+    ['날개 · 다리'], ['wingHz', '날갯짓 빠르기', 4, 60, 1, (v) => `${Math.round(v)}번/초`], ['wingAmp', '날갯짓 폭', 0.1, 1.5, 0.05, (v) => `${Math.round(v * 57.3)}°`], ['ghost', '잔상(번짐) 진하기', 0, 0.8, 0.02, PCT],
+    ['legAmt', '다리 움직임(0 = 날개만)', 0, 1, 0.05, PCT], ['legSpd', '다리 움직임 빠르기', 0.1, 2.5, 0.05, (v) => `${(+v).toFixed(2)}배`],
+    ['독 — 얼굴이 부풀어 뒹군다'], ['swell', '부푸는 정도', 0, 1.6, 0.05, (v) => `+${Math.round(v * 100)}%`], ['swellUp', '부풀어 오르는 시간', 0.2, 4, 0.1, SEC],
+    ['swellHold', '부은 채로 있는 시간', 0, 30, 0.5, SEC], ['lump', '울퉁불퉁 꿈틀거림', 0, 2, 0.05, PCT],
+    ['venomScream', '비명(0 = 큰 비명 아무거나 · 움직이면 들려줌)', 0, 40, 1, 'scream'], ['screamVol', '비명 크기', 0, 1.5, 0.05, PCT],
+    ['낚아채기 — 하늘 높이 들어 올려 떨군다'], ['height', '올라가는 높이', 4, 30, 0.5, M1], ['lift', '올라가는 시간', 0.8, 6, 0.1, SEC],
+    ['grabScream', '잡힐 때 비명(0 = 큰 비명 아무거나)', 0, 40, 1, 'scream'], ['landBlood', '떨어질 때 피', 0, 3, 0.05, PCT],
   ];
+  const ROWS_B = [
+    ['잡힌 몸 — 발버둥 · 몸 각도'], ['stMode', '올라갈 때 몸짓', 0, 2, 1, (v) => MODES[Math.round(v)]], ['stFall', '떨어질 때 몸짓', 0, 2, 1, (v) => MODES[Math.round(v)]],
+    ['stK', '몸짓 세기', 0, 2, 0.05, PCT], ['stSpd', '몸짓 빠르기', 0.3, 3, 0.05, (v) => `${(+v).toFixed(2)}배`],
+    ['liftAng', '올라갈 때 몸 각도(0° 머리 위로 · 90° 누운 채 · 180° 거꾸로)', 0, 180, 1, DEG], ['fallAng', '떨어질 때 몸 각도(처음)', 0, 180, 1, DEG], ['fallSpin', '떨어지며 도는 빠르기', -360, 360, 5, (v) => `${Math.round(v)}°/초`],
+    ['카메라 — 들어가고 돌아오기'], ['camOn', '낚아채기 카메라(1 = 켬)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['cIn', '들어가는 시간', 0.1, 3, 0.05, SEC], ['cOut', '돌아오는 시간', 0.1, 4, 0.05, SEC],
+    ['카메라 — 끌려 올라갈 때(땅에서 올려다봄)'], ['cLiftD', '나와의 거리', 1, 15, 0.1, M1], ['cLiftH', '카메라 높이(땅에서)', 0.2, 6, 0.05, M2], ['cLiftRise', '따라 올라가는 정도', 0, 1, 0.02, PCT],
+    ['cLiftOrbit', '돌아 들어가는 빠르기', -90, 90, 1, (v) => `${Math.round(v)}°/초`], ['cLiftFov', '확대(−) · 넓게(+)', -30, 30, 1, DEG], ['cLiftShake', '잔떨림', 0, 2, 0.05, PCT], ['cLiftRoll', '기울기 흔들림', 0, 25, 0.5, DEG],
+    ['카메라 — 떨어질 때(같이 따라감)'], ['cFallD', '나와의 거리', 1, 12, 0.1, M1], ['cFallUp', '나보다 높이', -4, 6, 0.1, M1], ['cFallSide', '옆으로 도는 각도', -180, 180, 1, DEG],
+    ['cFallLead', '앞(아래)을 내다봄', 0, 2, 0.05, PCT], ['cFallLag', '따라가는 늦음', 0.02, 0.8, 0.01, SEC], ['cFallFov', '넓게(+) · 확대(−)', -30, 30, 1, DEG],
+    ['카메라 — 땅에 부딪힐 때'], ['cLandShake', '쿵 흔들림', 0, 3, 0.05, PCT], ['cLandHold', '부딪힌 뒤 머무는 시간', 0, 5, 0.1, SEC],
+  ];
+  const ROWS = ROWS_A.concat(ROWS_B);
   const MPK = ['on', 'every', 'venom', 'app', 'height', 'lift'];   // 같이 하기는 방장 값(서버 시간표)
   function fmt(r, v) { if (r[5] === 'scream') { const L = window.__scream && window.__scream.list, i = Math.round(v); if (!i) return '아무거나'; const it = L && L[i - 1]; return it ? `${i} · ${it.name}` : `${i}`; } return r[5](v); }
   function panel() {
     const st = document.createElement('style');
     st.textContent = `#hn-btn{position:fixed;right:214px;bottom:14px;z-index:60;padding:6px 12px;background:rgba(10,8,6,.82);color:#e9e1d0;border:1px solid #5a4a3a;font:700 12px "UIF","Noto Serif KR",serif;letter-spacing:.2em;cursor:pointer}
 body:not(.tz-live) #hn-btn{visibility:hidden}
-#hn-p{position:fixed;right:12px;top:60px;bottom:52px;z-index:61;width:320px;overflow-y:auto;padding:12px 14px;background:rgba(12,9,7,.92);color:#e9e1d0;border:1px solid #6b5a1c;font:12px "UIF","Noto Serif KR",serif;display:none}
+#hn-p{position:fixed;right:12px;top:60px;bottom:52px;z-index:61;width:330px;overflow-y:auto;padding:12px 14px;background:rgba(12,9,7,.92);color:#e9e1d0;border:1px solid #6b5a1c;font:12px "UIF","Noto Serif KR",serif;display:none}
 #hn-p.on{display:block} #hn-p h4{margin:0 0 8px;font-size:14px;letter-spacing:.3em;color:#d8a326}
 #hn-p h5{margin:12px 0 2px;font-size:12px;color:#d9b07a;letter-spacing:.12em;border-top:1px solid #3a2f20;padding-top:8px}
 #hn-p .bs{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 #hn-p button.b{padding:7px 4px;background:#2a210b;color:#f2e6d6;border:1px solid #8a6a1c;font:700 12px "UIF","Noto Serif KR",serif;cursor:pointer}
+#hn-p .tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:0 0 8px;border-bottom:1px solid #6b5a1c}
+#hn-p .tabs span{padding:7px 4px;text-align:center;color:#a99a80;cursor:pointer;letter-spacing:.15em;border-bottom:2px solid transparent}
+#hn-p .tabs span.on{color:#f2e6d6;border-bottom-color:#d8a326}
+#hn-p .pg{display:none} #hn-p .pg.on{display:block}
 #hn-p label{display:flex;justify-content:space-between;align-items:center;margin:6px 0 0;color:#c9bfae;gap:8px} #hn-p label b{color:#f2e6d6;font-weight:600;white-space:nowrap}
 #hn-p input[type=range]{width:100%;margin:2px 0 0}
 #hn-p .n{font-size:11px;color:#8d877a;margin-top:10px;line-height:1.5}`;
     document.head.appendChild(st);
     const btn = document.createElement('button'); btn.id = 'hn-btn'; btn.type = 'button'; btn.textContent = '왕벌';
     const p = document.createElement('div'); p.id = 'hn-p';
+    const rows = (R) => R.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</span><b data-v="${r[0]}"></b></label><input type="range" data-k="${r[0]}" min="${r[2]}" max="${r[3]}" step="${r[4]}">`)).join('');
     p.innerHTML = `<h4>雀蜂 · 왕벌</h4>
+<div class="tabs"><span data-tab="a" class="on">기믹</span><span data-tab="b">연출 · 카메라</span></div>
 <div class="bs"><button class="b" data-a="v0">▶ 독 쏘기 — 나</button><button class="b" data-a="g0">▶ 낚아채기 — 나</button><button class="b" data-a="v1">▶ 독 쏘기 — 가까운 봇</button><button class="b" data-a="g1">▶ 낚아채기 — 가까운 봇</button></div>
-${ROWS.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</span><b data-v="${r[0]}"></b></label><input type="range" data-k="${r[0]}" min="${r[2]}" max="${r[3]}" step="${r[4]}">`)).join('')}
-<div class="bs" style="margin-top:10px"><button class="b" data-a="def">기본값</button><span class="svs"></span></div>
+<div class="pg on" data-pg="a">${rows(ROWS_A)}</div>
+<div class="pg" data-pg="b">${rows(ROWS_B)}<div class="n">카메라는 내가 잡혔을 때만 · 몸짓 · 몸 각도는 나 · 봇 모두</div></div>
+<div class="bs" style="margin-top:10px"><button class="b" data-a="def">이 쪽 기본값</button><span class="svs"></span></div>
 <div class="n">값은 움직이는 즉시 이 브라우저에 남는다 · 「저장」은 모두의 기본값 · 같이 하기에선 나타남 · 간격 · 비율 · 날아오는 시간 · 높이 · 올라가는 시간은 방장 값 · 쓰러져 있거나 · 맞는 중 · 불타는 사람은 노리지 않는다</div>`;
     document.body.appendChild(btn); document.body.appendChild(p);
     if (window.__settings && window.__settings.button) p.querySelectorAll('.svs').forEach((sv) => sv.appendChild(window.__settings.button()));
     const sync = () => { for (const r of ROWS) { if (r.length === 1) continue; const i = p.querySelector(`input[data-k="${r[0]}"]`), b = p.querySelector(`b[data-v="${r[0]}"]`); if (i && document.activeElement !== i) i.value = C[r[0]]; if (b) b.textContent = fmt(r, C[r[0]]); } };
     sync(); H.sync = sync;
+    let tab = 'a';
+    try { const t0 = localStorage.getItem('corpse_hornet_tab'); if (t0 === 'b') tab = 'b'; } catch { /* */ }
+    const setTab = (x) => { tab = x; p.querySelectorAll('.tabs span').forEach((e) => e.classList.toggle('on', e.dataset.tab === x)); p.querySelectorAll('.pg').forEach((e) => e.classList.toggle('on', e.dataset.pg === x)); try { localStorage.setItem('corpse_hornet_tab', x); } catch { /* */ } };
+    setTab(tab);
     btn.addEventListener('click', () => { p.classList.toggle('on'); sync(); });
     p.addEventListener('input', (e) => {
       const k = e.target && e.target.dataset && e.target.dataset.k; if (!k) return; const r = ROWS.find((x) => x[0] === k); C[k] = +e.target.value; save(); sync();
       if (r && r[5] === 'scream' && C[k] > 0) { const Sc = window.__scream, it = Sc && Sc.list[Math.round(C[k]) - 1]; if (it && Sc.play) try { Sc.play(it.key, null, { vol: 0.8 * C.screamVol }); } catch { /* */ } }
     });
     p.addEventListener('click', (e) => {
+      const tb = e.target && e.target.dataset && e.target.dataset.tab; if (tb) { setTab(tb); return; }
       const a = e.target && e.target.dataset && e.target.dataset.a; if (!a) return;
-      if (a === 'def') { Object.assign(C, DEF); save(); sync(); return; }
+      if (a === 'def') { for (const r of tab === 'a' ? ROWS_A : ROWS_B) if (r.length > 1) C[r[0]] = DEF[r[0]]; save(); sync(); return; }
       const ok = H.demo(a[0] === 'v' ? 'venom' : 'grab', a[1] === '1');
       if (!ok) { e.target.textContent = H.ready ? '지금은 못 함(쓰러짐 · 이미 공격 중)' : '왕벌을 받는 중…'; setTimeout(sync, 10); setTimeout(() => { const lab = { v0: '▶ 독 쏘기 — 나', g0: '▶ 낚아채기 — 나', v1: '▶ 독 쏘기 — 가까운 봇', g1: '▶ 낚아채기 — 가까운 봇' }; e.target.textContent = lab[a]; }, 1600); }
     });
@@ -15042,10 +15258,13 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
       S.active = false; S.sm = null; S.cd = null; S.lb = 0; S.fovAdd *= 0.8; window.__camSkipClip = false;
       // b701 — 둘러보기 · 다른 시점에서도 까마귀가 나를 쪼는 동안 다가간다(사용자 「까마귀가 쪼을 때 카메라 연출은?」 — 둘러보기 카메라는 이 파일을 안 거쳤다) · 보는 방향은 그대로 · 머리 뒤 1.8m
       if (G && G.hero && (window.__explore || G.started)) {
-        const cw = window.__crowCam ? clamp(+window.__crowCam() || 0, 0, 1.5) : 0; S.ex = (S.ex || 0) + (cw - (S.ex || 0)) * ex(dt, cw > (S.ex || 0) ? 0.5 : 1.0);
+        const cw = window.__crowCam ? clamp(+window.__crowCam() || 0, 0, 1.5) : 0; if (cw > 0) S.exS = cw; S.exP = clamp((S.exP || 0) + (cw > 0 ? dt / 1.4 : -dt / 1.2), 0, 1); S.ex = ss(S.exP) * (S.exS || 1);   // b703 — 천천히
         if (S.ex > 0.003) {
-          const h = G.hero.position, dx = cam.x - h.x, dz = cam.z - h.z, l = Math.hypot(dx, dz) || 1, k = Math.min(1, S.ex), D = Math.max(1.2, 3.4 * (1 - 0.47 * S.ex)), py = h.y + 1.55;
-          cam.x += (h.x + dx / l * D - cam.x) * k; cam.y += (py + 0.25 - cam.y) * k; cam.z += (h.z + dz / l * D - cam.z) * k;
+          const h = G.hero.position, k = Math.min(1, S.ex), D = Math.max(1.2, 3.4 * (1 - 0.47 * S.ex)), py = h.y + 1.55;
+          const fy0 = G.hero.rotation.y; S.fy = S.fy === undefined ? fy0 : S.fy + wrap(fy0 - S.fy) * ex(dt, 0.35);
+          if (S.fside === undefined || S.ex < 0.05) S.fside = wrap(Math.atan2(cam.x - h.x, cam.z - h.z) - S.fy) >= 0 ? 1 : -1;
+          const a = S.fy + S.fside * (+conf.crowFaceSide || 0.55);   // b703 — 얼굴 쪽(3/4)에서
+          cam.x += (h.x + Math.sin(a) * D - cam.x) * k; cam.y += (py + 0.2 - cam.y) * k; cam.z += (h.z + Math.cos(a) * D - cam.z) * k;
           target.x += (h.x - target.x) * k; target.y += (py - target.y) * k; target.z += (h.z - target.z) * k;
         }
       }
@@ -15078,7 +15297,9 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     K.carry += ((carry ? 1 : 0) - K.carry) * ex(dt, 0.6);
     K.chase += (chase - K.chase) * ex(dt, chase > K.chase ? 0.6 : 1.5);
     K.monF += (monF - K.monF) * ex(dt, 0.8);
-    { const cw = window.__crowCam ? clamp(+window.__crowCam() || 0, 0, 1.5) : 0; K.crow = (K.crow || 0) + (cw - (K.crow || 0)) * ex(dt, cw > (K.crow || 0) ? 0.5 : 1.0); }   // b695 — 까마귀가 나를 쪼는 동안 다가감(crowflock.js)
+    { const cw = window.__crowCam ? clamp(+window.__crowCam() || 0, 0, 1.5) : 0;   // b695 — 까마귀가 나를 쪼는 동안 다가감(crowflock.js)
+      // b703 — 한 번에 확 다가가지 않게(사용자 「확 한번에 부자연스럽게 확대」): 들어갈 때 1.4초 · 나올 때 1.2초 같은 빠르기로 · 처음과 끝은 천천히(ss)
+      if (cw > 0) K.crowS = cw; K.crowP = clamp((K.crowP || 0) + (cw > 0 ? dt / 1.4 : -dt / 1.2), 0, 1); K.crow = ss(K.crowP) * (K.crowS || 1); }
     // 내 본진 가까이 — 13m 안에 들어서면 천천히 물러나며(최대 40%) 조금 더 내려다봐(+9°) 본진 바닥 · 토리이가 한눈에 들어온다 · 5m 안이면 가득 · 쫓기는 동안은 쉰다
     //   (2026-10-12 사용자: 「내 본진에 가까워질수록 천천히 자연스럽게 줌아웃하면서 내 본진을 보여주는 카메라 · 본진 위치 파악이 쉽게」) · 끄기: 시연실 연출 「내 본진 가까이 카메라」
     { let want = 0; const X = window.__fx, zb = G.zones && G.zones.list && G.zones.list.find((z) => z.team === 0);
@@ -15150,7 +15371,11 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     const lbS = ss(S.lb);
     let pitch = sm.pitch + (0.12 - sm.pitch) * lbS, dist = sm.dist + (2.5 - sm.dist) * lbS;
     dist = Math.max(0.8, dist);
-    const yc = sm.yaw + Math.PI * lbS, cx = Math.sin(yc), cz = Math.cos(yc), rx = cz, rz = -cx;   // rx·rz = 화면 오른쪽
+    let yc = sm.yaw + Math.PI * lbS;
+    // b703 — 까마귀가 쪼는 동안은 뒤통수 말고 얼굴이 보이게 — 몸이 보는 쪽(앞)에서 카메라 쪽으로 비스듬히(3/4) 천천히 돌아 들어간다(보기만 · 조작 방향은 그대로)
+    { const fy0 = G.hero.rotation.y; S.fy = S.fy === undefined ? fy0 : S.fy + wrap(fy0 - S.fy) * ex(dt, 0.35);
+      if (kC > 0.003) { if (S.fside === undefined || kC < 0.05) S.fside = wrap(sm.yaw - S.fy) >= 0 ? 1 : -1; const want = S.fy + S.fside * (+conf.crowFaceSide || 0.55); yc += wrap(want - yc) * ss(Math.min(1, kC)); } }
+    const cx = Math.sin(yc), cz = Math.cos(yc), rx = cz, rz = -cx;   // rx·rz = 화면 오른쪽
     const sh = 0.5 * lbS;
     // 업기 구도 — 시체 머리 반대 어깨로 22cm
     let side = 0;
@@ -15244,7 +15469,8 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
   window.__stepCamDemo = () => { S.stepDemoUntil = performance.now() + 3200; for (let i = 0; i < 6; i++) setTimeout(() => { window.__stepT = performance.now(); window.__stepSide = -(window.__stepSide || 1); }, i * 480); };
   window.__camBaseFx = (cam) => {
     if (S.active && S.stepRoll) cam.rotateZ(S.stepRoll);
-    const f = S.fovAdd + (S.active ? S.pulse || 0 : 0);
+    { const hr = +window.__hnRoll || 0; if (hr) cam.rotateZ(hr); }   // b703 — 왕벌 낚아채기 카메라 기울기(hornet.js)
+    const f = S.fovAdd + (S.active ? S.pulse || 0 : 0) + (+window.__hnFov || 0);   // b703 — 왕벌 카메라 시야각
     if (Math.abs(f) > 0.01) { cam.fov += f; S.fovApplied += f; cam.updateProjectionMatrix(); }
   };
   /* ── 가림 비추기 — 맵·소품 재질(MeshStandard 등)에 붙인다 · 같은 균일값을 모두 나눠 쓴다 ── */
