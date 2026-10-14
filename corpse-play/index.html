@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-688 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-693 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,12 +431,13 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-688'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-693'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
 </script>
 <link rel="icon" href="data:,">
+
 <title>시체쟁탈 — 屍體爭奪</title>
 <style>
   :root { --ink: #d6d2c2; --dim: #7d7b6c; --line: #3b3d34; --bg: rgba(6, 8, 7, .84); --serif: "UIF", "Noto Serif KR", "Nanum Myeongjo", "Batang", serif; }
@@ -3624,7 +3625,7 @@ var MeshoptDecoder = (function () {
       }
       b.grp.visible = vis; apply(b, vis);
       { const mk = b.grp.getObjectByName('zmarks'), X = window.__fx; if (mk && X && X.on && X.on.zonemarks === false) mk.visible = false; }
-      { const MT = window.__mat; if (MT && MT.zoneOn && MT.zoneOn()) { b.grp.visible = false; b.fill.visible = b.edge.visible = false; if (b.z.mesh) b.z.mesh.visible = false; continue; } }   // b663 — 돗자리가 본진이면 예전 영역(바닥 판 · 테두리 · 솟는 빛) 아예 없음 — 빛은 돗자리 테두리가 대신
+      { const MT = window.__mat; if (MT && MT.zoneOn && MT.zoneOn()) { b.grp.visible = false; b.fill.visible = b.edge.visible = false; if (b.z.mesh) for (const c of b.z.mesh.children) if (c.name !== 'label') c.visible = false; continue; }   /* b690 — 시체 수 푯말(label)은 남김(b663 에 본진 판과 같이 숨겨 사라졌다 — 사용자) */ }   // b663 — 돗자리가 본진이면 예전 영역(바닥 판 · 테두리 · 솟는 빛) 아예 없음 — 빛은 돗자리 테두리가 대신
       if (ZF.paint > 0.5 || !(ZF.show > 0.5)) { for (const c of b.grp.children) if (c.name !== 'beam') c.visible = false; b.fill.visible = b.edge.visible = false; }   // b654 — 영역 표시 끔(사용자 「본진 영역 기존 것 없애고 돗자리」) · 판정은 그대로   // b648 — 칠 방식이면 예전 바닥 판 · 데칼 · 줄은 숨김(빛 커튼만)
       // 내 본진(0)은 basefx 가 매 프레임 정한다 · 나머지는 처음 값에 곱한다
       if (b.z.team !== 0) for (const [m, k] of [[b.fill, KF], [b.edge, K]]) { if (m.userData.op0 === undefined) m.userData.op0 = m.material.opacity; m.material.opacity = m.userData.op0 * (vis ? k : 1) * (m === b.fill ? ZF.fillMul : 1); }
@@ -6323,8 +6324,11 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
       { k: 'lit.fillD', label: '몸 둘레 빛 — 닿는 거리', min: 1, max: 15, step: 0.1, def: 5, fmt: (v) => v.toFixed(1) + 'm', get: () => { const E = window.__eyelight; return E && E.fillD != null ? E.fillD : 5; }, set: (v) => { if (window.__eyelight) window.__eyelight.fillD = v; } },
       { k: 'lit.eye', label: '눈 앞 시야 빛', toggle: true, min: 0, max: 1, step: 1, def: 1, get: () => { const X = window.__fx; return X && X.on && X.on.eyelight === false ? 0 : 1; }, set: (v) => { const X = window.__fx; if (X && X.on) X.on.eyelight = !!v; } },
       { k: 'lit.eyeK', label: '눈 앞 시야 빛 — 세기', min: 0, max: 3, step: 0.05, def: 1, fmt: pct, get: () => (window.__eyelight ? window.__eyelight.k : 1), set: (v) => { if (window.__eyelight) window.__eyelight.k = v; } },
-      { k: 'lit.eyeShadow', label: '캐릭터 그림자(눈 앞 시야 빛)', toggle: true, min: 0, max: 1, step: 1, def: 1, get: () => (window.__perf && window.__perf.eyeShadow > 0.5 ? 1 : 0), set: (v) => { if (window.__perf) window.__perf.eyeShadow = v ? 1 : 0; } },
+      { k: 'lit.eyeShadow2', label: '캐릭터 그림자(눈 앞 시야 빛)',   /* b689 — 열쇠 이름을 바꿈: 예전에 끈 채(0) 저장된 값이 새 기본(켬)을 덮어 그림자가 안 나왔다 */ toggle: true, min: 0, max: 1, step: 1, def: 1, get: () => (window.__perf && window.__perf.eyeShadow > 0.5 ? 1 : 0), set: (v) => { if (window.__perf) window.__perf.eyeShadow = v ? 1 : 0; } },
       { k: 'lit.eyeFocus', label: '눈 앞 시야 빛 그림자 선명도(작을수록 선명 · 좁은 범위)', min: 0.1, max: 1, step: 0.01, def: 0.35, fmt: pct, get: () => (window.__perf ? window.__perf.eyeFocus : 0.35), set: (v) => { if (window.__perf) window.__perf.eyeFocus = v; } },   // b675
+      { k: 'blob.on', label: '발밑 그림자(사람 · 괴물)', toggle: true, min: 0, max: 1, step: 1, def: 1, get: () => (window.__blobShadow && window.__blobShadow.on > 0.5 ? 1 : 0), set: (v) => { if (window.__blobShadow) window.__blobShadow.on = v ? 1 : 0; } },   // b693
+      { k: 'blob.k', label: '발밑 그림자 진하기', min: 0, max: 2.5, step: 0.05, def: 1, fmt: pct, get: () => (window.__blobShadow ? window.__blobShadow.k : 1), set: (v) => { if (window.__blobShadow) window.__blobShadow.k = v; } },
+      { k: 'blob.len', label: '발밑 그림자 길이(달 반대쪽)', min: 0, max: 2.5, step: 0.05, def: 1, fmt: pct, get: () => (window.__blobShadow ? window.__blobShadow.len : 1), set: (v) => { if (window.__blobShadow) window.__blobShadow.len = v; } },
       { k: 'auraOn', label: '머리 위 빛', toggle: true, min: 0, max: 1, step: 1, def: 0 },
     ] },
     { title: '화면', sub: '해상도 · 시야 · 화면 필터', rows: [
@@ -13502,6 +13506,123 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
 })();
 
 </script>
+<script>/* screenfade.js */
+/* 화면이 바뀔 때 뚝 바뀌지 않게(2026-10-14 사용자: 「메뉴나 esc 같은 걸로 다른 화면으로 전환될 때 뚝 바뀌지 말고 · 어둡게 변했다가 나타나던지」)
+   · 타이틀 ↔ 캐릭터 선택 ↔ 게임 · 둘러보기 · 같이 하기 방 — 바뀌는 순간 검게 덮었다가 천천히 걷힌다(0.65초)
+   · Esc 잠시 멈춤 창 · 같이 하기 창처럼 위에 얹히는 창은 반만 어둡게 · 더 짧게
+   · 보기만(게임 판단 무관) · 끄기: __screenFade.on = 0 */
+(() => {
+  const F = (window.__screenFade = { on: 1, dur: 0.7, outDur: 0.3, dark: 1, lite: 0.55, liteDur: 0.35 });
+  let el = null, sig = null, ready = false;
+  function state() {
+    const s = document.getElementById('start'), c = document.getElementById('csel'), p = document.getElementById('sr-pause'), G = window.__G;
+    return {
+      screen: [s && getComputedStyle(s).display !== 'none' ? 'T' : '', c && c.classList.contains('on') ? 'C' : '', G && G.started ? 'G' : '', window.__explore ? 'E' : '', document.body.classList.contains('mp-open') ? 'M' : ''].join(''),
+      over: (p && p.classList.contains('on') ? 'P' : ''),
+    };
+  }
+  // 브라우저가 따로 돌리는 애니메이션(Web Animations) — 화면을 새로 짓느라 스크립트가 잠깐 멎어도 걷히는 건 매끄럽게
+  let anim = null;
+  function curOp() { try { return el ? +getComputedStyle(el).opacity || 0 : 0; } catch { return 0; } }
+  function kick(k, d) {
+    if (!(F.on > 0.5) || !el) return; const o = Math.max(k, curOp()); if (anim) anim.cancel();
+    anim = el.animate([{ opacity: o }, { opacity: o * 0.92, offset: 0.12 }, { opacity: 0 }], { duration: d * 1000, easing: 'cubic-bezier(.3,.0,.4,1)', fill: 'forwards' });
+  }
+  F.kick = kick;
+  function loop() {
+    requestAnimationFrame(loop);
+    try {
+      if (!document.body) return;
+      if (!el) { el = document.createElement('div'); el.id = 'screen-fade'; el.style.cssText = 'position:fixed;inset:0;background:#000;pointer-events:none;z-index:2147483000;opacity:0'; document.body.appendChild(el); }
+      if (!ready) { if (window.__gate && window.__gate.ok && window.__gate.ok()) { ready = true; sig = state(); } return; }   // 처음 불러오기 → 타이틀은 그대로(불러오기 화면이 따로 걷힌다)
+      const st = state();
+      if (st.screen !== sig.screen) kick(F.dark, F.dur);
+      else if (st.over !== sig.over) kick(F.lite, F.liteDur);
+      sig = st;
+    } catch (e) { if (!loop.err) { loop.err = true; console.warn('[screenfade]', e); } }
+  }
+  // b690 — 화면을 바꾸는 단추: 누르면 먼저 0.3초에 걸쳐 어두워진 다음 · 다 어두워지면 그 단추를 그대로 눌러 화면을 바꾸고 · 새 화면이 천천히 밝아진다
+  //   (b689 는 바뀐 뒤에 검게 덮기만 해 새 화면을 짓는 동안 멎은 옛 화면 → 뚝 검정 → 걷힘으로 「전혀 부드럽지 않다」 — 사용자)
+  let passing = false;
+  let pending = false;
+  function fadeOut(cb) {
+    if (pending) return; pending = true;
+    if (anim) anim.cancel(); const o = curOp(), ms = Math.max(30, F.outDur * 1000 * (1 - o));
+    anim = el.animate([{ opacity: o }, { opacity: 1 }], { duration: ms, easing: 'cubic-bezier(.4,0,.7,1)', fill: 'forwards' });
+    setTimeout(() => {   // 애니메이션 끝 알림(onfinish)에 기대지 않는다 — 가려진 창에서는 오지 않을 수 있다
+      pending = false; passing = true; try { cb(); } catch (e) { console.warn('[screenfade]', e); } finally { passing = false; }
+      setTimeout(() => kick(F.dark, F.dur), 30);
+    }, ms + 20);
+  }
+  const SEL = '#start-btn, #mp-btn, #csel .scene-back, .sr-modes button, #sr-pause button';
+  window.addEventListener('click', (e) => {   // 창(window) 잡기 단계 — 선택창 가로채기(문서 잡기 단계)보다 먼저
+    if (passing || !ready || !(F.on > 0.5) || !el) return;
+    const b = e.target && e.target.closest && e.target.closest(SEL); if (!b || b.disabled) return;
+    if (b.closest('#sr-pause') && !/타이틀|처음|나가/.test(b.textContent || '')) return;   // 잠시 멈춤 창은 「타이틀로」만
+    e.preventDefault(); e.stopImmediatePropagation(); fadeOut(() => b.click());
+  }, true);
+  // 선택창 Esc(뒤로)도 같이
+  window.addEventListener('keydown', (e) => {
+    if (passing || !ready || !(F.on > 0.5) || e.code !== 'Escape' || e.repeat) return;
+    const c = document.getElementById('csel'); if (!(c && c.classList.contains('on')) || !window.__charSel || !window.__charSel.esc) return;
+    e.preventDefault(); e.stopImmediatePropagation(); fadeOut(() => window.__charSel.esc());
+  }, true);
+  requestAnimationFrame(loop);
+})();
+
+</script>
+<script>/* shadowblob.js */
+/* 사람 · 괴물 발밑 그림자(2026-10-14 사용자: 「게임 플레이할 때 아직도 캐릭터랑 괴물에 그림자가 없는데」)
+   · 원인: 그림자를 드리우는 빛 둘 — 달빛은 아주 약하고(세기 0.1 남짓 → 그림자가 보이지 않음) · 「눈 앞 시야」 빛은 카메라 바로 뒤 위에 있어 그림자가 늘 몸 뒤(카메라 반대쪽)로 숨는다
+     (그림자 지도에는 사람 · 괴물이 그려져 있었다 — 잰 값 · 화면에서 안 보일 뿐)
+   · 그래서 발밑에 부드러운 그림자: 발에 붙은 진한 원 + 달 반대쪽으로 길게 늘어진 옅은 그림자(키만큼 · 달 높이에 따라) — 원 세 겹을 겹쳐 가장자리가 흐리게
+   · 나 · 봇 · 괴물 · 판이 시작된 뒤에만 · 돗자리 · 땅 높이를 따라감 · 물 위엔 없음
+   · 새 셰이더 없음(시체 밑 피 pool.js 와 같은 재질 종류) · 끄기: 조절 「내 주변 빛 → 발밑 그림자」 · __blobShadow.on = 0 */
+(() => {
+  const B = (window.__blobShadow = { on: 1, k: 1, len: 1 });
+  let G = null, T = null, Std = null, geo = null, ents = new Map(), ready = false;
+  const LAY = [[1.0, 0.34], [1.45, 0.14], [2.1, 0.07]];   // [크기 배, 진하기] — 안쪽이 진하고 바깥은 옅게
+  function make(key) {
+    const parts = LAY.map(([s, a], i) => {
+      const m = new T.Mesh(geo, new Std({ color: 0x000000, roughness: 1, metalness: 0, transparent: true, opacity: a, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 - i }));
+      m.renderOrder = 1; m.name = 'blob-shadow'; m.frustumCulled = true; m.castShadow = false; m.receiveShadow = false; G.scene.add(m); return { m, s, a };
+    });
+    const tail = LAY.map(([s, a], i) => {
+      const m = new T.Mesh(geo, new Std({ color: 0x000000, roughness: 1, metalness: 0, transparent: true, opacity: a * 0.55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 - i }));
+      m.renderOrder = 1; m.name = 'blob-shadow'; m.castShadow = false; m.receiveShadow = false; G.scene.add(m); return { m, s, a };
+    });
+    const e = { parts, tail }; ents.set(key, e); return e;
+  }
+  function place(e, x, z, gy, r, h, vis) {
+    const cf = G.cfg || {}, az = isFinite(cf.moonAz) ? cf.moonAz : 0.9, el = Math.max(0.25, isFinite(cf.moonElev) ? cf.moonElev : 0.6);
+    const dx = -Math.sin(az), dz = -Math.cos(az), L = Math.min(2.2, h / Math.tan(el)) * 0.55 * B.len, yaw = Math.atan2(dx, dz), k = B.k;
+    for (const p of e.parts) { p.m.visible = vis; if (!vis) continue; p.m.position.set(x, gy + 0.012, z); p.m.scale.set(r * p.s, 1, r * p.s); p.m.material.opacity = p.a * k; }
+    for (const p of e.tail) { p.m.visible = vis; if (!vis) continue; p.m.position.set(x + dx * L * 0.5, gy + 0.011, z + dz * L * 0.5); p.m.rotation.set(0, yaw, 0); p.m.scale.set(r * 0.8 * p.s, 1, (L * 0.5 + r * 0.6) * p.s); p.m.material.opacity = p.a * 0.55 * k; }
+  }
+  const gyAt = (x, z, y0) => { const N = window.__nav; if (N && N.waterAt && N.waterAt(x, z)) return null; const g = G.groundAt ? G.groundAt(x, z) : y0; return isFinite(g) && Math.abs(g - y0) < 0.8 ? g : null; };
+  (function loop() {
+    requestAnimationFrame(loop);
+    try {
+      G = window.__G; if (!G || !G.scene || !G.THREE || !G.hero) return;
+      if (!ready) { T = G.THREE; G.scene.traverse((o) => { if (!Std && o.material && o.material.type === 'MeshStandardMaterial') Std = o.material.constructor; }); if (!Std) return; geo = new T.CylinderGeometry(1, 1, 0, 20, 1, false); ready = true; }
+      const on = B.on > 0.5 && G.started && !(window.__death && window.__death.active && window.__death.active());
+      const want = [];
+      if (on) {
+        if (G.hero.visible !== false) want.push(['hero', G.hero.position, 0.32, 1.75]);
+        for (const b of (G.game && G.game.bots) || []) if (b.hero && b.hero.visible) want.push([b, b.hero.position, 0.32, 1.75]);
+        const M = G.monster; if (M && M.root && M.root.visible) { const h = (G.cfg && G.cfg.monHeight) || 4; want.push(['mon', M.root.position, 0.36 * h / 1.75 * 0.55, h]); }
+      }
+      const seen = new Set();
+      for (const [key, p, r, h] of want) {
+        seen.add(key); const e = ents.get(key) || make(key), gy = gyAt(p.x, p.z, p.y);
+        place(e, p.x, p.z, gy == null ? p.y : gy, r, h, gy != null);
+      }
+      for (const [key, e] of ents) if (!seen.has(key)) for (const p of [...e.parts, ...e.tail]) p.m.visible = false;
+    } catch (e) { if (!loop.err) { loop.err = true; console.warn('[blobshadow]', e); } }
+  })();
+})();
+
+</script>
 <script>/* knock.js */
 /* 맞고 날아가기(2026-10-08 사용자: 「괴물한테 맞고 날아가는 거 다이나믹하게 · 맞는 방향 잘 계산 · 타격감 · 날아가면서 피를 뿜게」)
    · 방향: 괴물 → 나(수평) 72% + 괴물이 휘두른 쪽(괴물 정면) 28% · 조금 흔들림 — 예전: 괴물이 어디 있든 "내가 보던 반대쪽"으로 날아갔다
@@ -17688,10 +17809,10 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
      세 몸을 복제(같은 재질 · 같은 셰이더)해 빈 땅에 세우고 서 있기 동작만 · 그리는 동안 진짜 나 · 봇 · 괴물 · 시체는 감춘다(그린 뒤 되돌림) · 닫으면 복제를 버린다 */
   const LEGACY_DEFAULT = { dist: 1.95, camY: 1.47, lookY: 1.42, side: 0, gap: 1.0, top: 1.78, bot: 1.04, half: 0.3, frameY: 0, light: 1.7, charBright: 1, title: 4.6, name: 4.4, titleY: 6.5, nameY: 2.2, maskOp: 0.97, glow: 1, anim: 2, animDur: 0.9, stagger: 0.18, scale: 1, exp: 1, faceCam: 1, face: 0, f0: 0, f1: 0, f2: 0 };   // b641 — 캐릭터 방향(사용자 「캐릭터 선택창에서 캐릭터들이 정면을 안 보고 있어 · 설정하는 패널」)   // b599 — 캐릭터 크기 · 노출   // b596 — 등장 모션 · 캐릭터 밝기 · 글자 자리 · 배경 어둡기 · 선택 빛
   const CSD = Object.assign({}, LEGACY_DEFAULT, { dist: 2.65, camY: 1.21, lookY: 1.22, gap: 0.86, top: 1.84, bot: 0.45, half: 0.38, light: 1.1, title: 4.6, titleY: 4, name: 3.5, nameY: 0, maskOp: 0.85, anim: 1, fov: 34, advance: 0.22, badgeBright: 0.82, strapBright: 0.7,
-    lowOn: 1, lowCamY: 0.3, lowLookY: 1.75, lowDist: 1.9, lowFov: 50, lookDown: 0.9, lean: 0.25, tight: 0.45, sly: 1, giggleRate: 1.35,
+    lowOn: 1, lowCamY: 0.3, lowLookY: 1.75, lowDist: 1.9, lowFov: 50, lookDown: 0.9, lean: 0.25, tight: 0.45, sly: 1, giggleRate: 1.2, faceEase: 7, drift: 1,
     introOn: 1, introDur: 2.4, introPush: 0.9, introLook: 0, introStag: 0.12, introBow: 0.75, laughSq: 0.15,   /* b686 웃을 때 눈 가늘게(0.38 은 눈이 풀려 보였다) */ contempt: 1, introSnd: 0,   /* b683 — 다가오는 동안 고개를 숙이며(사용자 「등장하고 나서가 아니라 숙이면서 등장」) · 끌려 나오는 듯한 바람 소리 없앰 */
     pickDur: 0.9, pickDist: 0.8, pickDown: 0.3, pickZoom: 1,   /* b683 — 시작 누르면 얼굴로 다가가기 */
-    gl_son: 1, gp_son: 0.8,   /* b686 — 손주용: 같은 녹음 · 낮고 굵은 톤(1.1 은 너무 높아 이상) */   /* b683 — 손주용 웃음 2번 녹음이 이상(사용자) → 1번 · 조금 높게 */ gl_m16: 1, gp_m16: 0.9, gl_m17: 1, gp_m17: 1.04 });   // b682 — 사람마다 키키키: 녹음(1 · 2) · 높낮이   // b682 — 열릴 때 카메라가 멀리서 스윽 다가오고 · 다가오는 동안 세 사람이 하나씩 고개를 내려 나를 깔보듯 내려다봄(사용자)
+    csVer: 689, gl_son: 1, gp_son: 0.8,   /* b686 — 손주용: 같은 녹음 · 낮고 굵은 톤(1.1 은 너무 높아 이상) */   /* b683 — 손주용 웃음 2번 녹음이 이상(사용자) → 1번 · 조금 높게 */ gl_m16: 1, gp_m16: 0.9, gl_m17: 1, gp_m17: 1.04 });   // b682 — 사람마다 키키키: 녹음(1 · 2) · 높낮이   // b682 — 열릴 때 카메라가 멀리서 스윽 다가오고 · 다가오는 동안 세 사람이 하나씩 고개를 내려 나를 깔보듯 내려다봄(사용자)
   // b679 — 선택창에서만 사원증 목줄 고치기(사용자 「안경 캐릭터 목줄이 이상 · 선택창에서만」) — 게임 값(조절 「사원증 · …」)에 더하는 값 · lanyard.js PK 가 선택창 복제에만 쓴다
   const BDP = [['drop', '줄 길이(카드 높이)', -15, 15, 0.5, 'cm'], ['sideX', '목 좌우(한쪽)', -5, 5, 0.1, 'cm'], ['neckY', '목 거는 높이', -10, 10, 0.25, 'cm'], ['neckZ', '목 앞뒤', -10, 10, 0.25, 'cm'], ['cardTop', '카드 최고 높이(목 아래로)', -15, 15, 0.5, 'cm'], ['front', '카드 몸 앞 최소', -5, 8, 0.25, 'cm'], ['cardGap', '카드 몸에서 띄움', -2, 5, 0.1, 'cm'], ['freeTop', '줄 위쪽 옷 무시(꺾임 펴기)', -10, 15, 0.25, 'cm'], ['bendR', '줄 위쪽 둥글기', -8, 8, 0.25, 'cm'], ['stiff', '줄 부드러움(꺾임 버팀)', -0.6, 0.4, 0.05, '']];
   for (const [k] of KINDS) for (const [p] of BDP) CSD['bd_' + k + '_' + p] = 0;   // b676 — tight: 더 타이트하게(가까이 · 사람 간격 좁게) · sly: 비열하게 쳐다보는 얼굴   // b674 — 아래에서 올려다보는 포스터 구도(사용자 「위에서 날 내려다보는 시점」 · 0 = 예전 B 구도)
@@ -17700,7 +17821,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 300); return; }
     St.reg('charSel', { get: () => Object.assign({}, legacy), set: (o) => { if (o) for (const k in LEGACY_DEFAULT) if (typeof o[k] === 'number' && isFinite(o[k])) legacy[k] = o[k];
       if (!sceneLoaded) for (const k of ['faceCam', 'face', 'f0', 'f1', 'f2', 'charBright']) CS[k] = legacy[k]; } });
-    St.reg('charSelScene', { get: () => Object.assign({}, CS), set: (o) => { if (!o) return; sceneLoaded = true; for (const k in CSD) if (typeof o[k] === 'number' && isFinite(o[k])) CS[k] = o[k]; if (S.open) layout(); } });
+    St.reg('charSelScene', { get: () => Object.assign({}, CS), set: (o) => { if (!o) return; sceneLoaded = true; const old = !(o.csVer >= 689); for (const k in CSD) { if (old && STALE.has(k)) continue; if (typeof o[k] === 'number' && isFinite(o[k])) CS[k] = o[k]; } CS.csVer = 689; if (S.open) layout(); } });   // b689 — 예전에 저장된 값 중 그 뒤 기본을 바꾼 것은 버림(저장값이 새 기본을 덮어 손주용 「큭」 · 늦게 숙이기 · 바람 소리가 남았다)
   })();
   function cloneRig(o) {
     const c = o.clone(), a = [], b = [];
@@ -17732,6 +17853,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   }
   let P0 = null, mixers = [], rafT = 0, lastT = 0;
   // b674 — 올려다보기 켜면 카메라 값을 그쪽으로(저장된 B 값은 그대로 둔다)
+  const STALE = new Set(['gl_son', 'gp_son', 'introLook', 'introSnd', 'introStag', 'giggleRate']);
   const LOW = () => CS.lowOn >= 0.5;
   // b682 — 등장: 0 → 1(사람마다 늦게) · 꺼져 있으면 늘 1
   const ss = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
@@ -17768,14 +17890,14 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
       // b676 — 비열하게 쳐다보는 얼굴(사용자) — 입꼬리 한쪽 비틀기(sneer) · 눈 가늘게(strain_eyes) · 이 살짝 악묾 · 비명 반응 중엔 그 얼굴
       // b678 — 눈은 또렷하게 뜨고 썩소(사용자) · 누르면 「키키키」 비열한 웃음 얼굴 · 고르면 이긴 연출 웃음 얼굴(grin 모프 · 없으면 sneer)
       if (a.sm && a.sm.morphTargetDictionary) { const D = a.sm.morphTargetDictionary, I = a.sm.morphTargetInfluences, k = clamp(CS.sly, 0, 1.5) * (0.25 + 0.75 * scornK(i)) * (1 + 0.25 * Math.max(0, CS.contempt - 1)), t = performance.now() / 1000, br = 0.05 * Math.sin(t * 1.1 + i * 2.1), hasG = D.grin !== undefined;
-        const set = (n, v) => { const j = D[n]; if (j !== undefined) I[j] = clamp(v, 0, 1); };
+        const fe = Math.min(1, (dt || 0.016) * CS.faceEase), set = (n, v) => { const j = D[n]; if (j !== undefined) I[j] = clamp(I[j] + (clamp(v, 0, 1) - I[j]) * fe, 0, 1); };   // b689 — 얼굴이 뚝뚝 바뀌지 않고 천천히 따라감(사용자 「뻣뻣」)
         const md = a.mode && t < a.modeEnd ? a.mode : 'idle', u = t - (a.modeT || 0);
         let g = 0.38 * k, sn = (0.42 + br) * k, ew = 0.18 * k, jd = 0;
         // b686 — 웃음 얼굴을 사람처럼(사용자 「시작 눌렀을 때 표정이 좀 더 리얼하게」): 웃을 땐 눈이 가늘어지고(볼이 올라감) · 입은 숨 박자로 짧게 끊어 열렸다 닫히고(흐 · 흐 · 흐) · 박자가 고르지 않고 점점 잦아든다
         const pulse = (rate, len) => { const env = Math.max(0, 1 - u / len), ph = u * rate + 0.6 * Math.sin(u * 3.1 + i), w = Math.max(0, Math.sin(ph * Math.PI * 2)); return Math.pow(w, 2.2) * (0.6 + 0.4 * env) * (0.75 + 0.25 * Math.sin(u * 7.3 + i * 1.7)); };
         let sq = 0, lp = 0;
-        if (md === 'giggle') { const kk = Math.min(1, u / 0.12); lp = pulse(6.2, 1.2) * kk; g = (0.58 + 0.12 * lp) * kk + g * (1 - kk); sn = 0.35; ew = 0.14; sq = (0.5 + 0.2 * lp) * CS.laughSq * kk; jd = (0.03 + 0.12 * lp) * kk; }   // 키키키 — 작게 빠르게
-        else if (md === 'win') { const kk = ss(u / 0.35); lp = pulse(4.6, 2.2) * kk; g = (0.62 + 0.12 * lp) * kk + g * (1 - kk); sn = 0.32 * kk + sn * (1 - kk); ew = 0.16;   /* 눈은 또렷하게(grin 이 볼을 올려 눈이 풀려 보였다) */ sq = (0.6 + 0.2 * lp) * CS.laughSq * kk; jd = (0.06 + 0.2 * lp) * kk; }   // 흐흐흐 — 깔보며 낮게 웃음
+        if (md === 'giggle') { const kk = Math.min(1, u / 0.12); lp = pulse(5, 1.4) * kk; g = (0.58 + 0.12 * lp) * kk + g * (1 - kk); sn = 0.35; ew = 0.14; sq = (0.5 + 0.2 * lp) * CS.laughSq * kk; jd = (0.03 + 0.12 * lp) * kk; }   // 키키키 — 작게 빠르게
+        else if (md === 'win') { const kk = ss(u / 0.35); lp = pulse(3.2, 2.8) * kk; g = (0.62 + 0.12 * lp) * kk + g * (1 - kk); sn = 0.32 * kk + sn * (1 - kk); ew = 0.16;   /* 눈은 또렷하게(grin 이 볼을 올려 눈이 풀려 보였다) */ sq = (0.6 + 0.2 * lp) * CS.laughSq * kk; jd = (0.06 + 0.2 * lp) * kk; }   // 흐흐흐 — 깔보며 낮게 웃음
         a.laughP = lp;
         set(hasG ? 'grin' : 'sneer', hasG ? g : Math.max(g, sn)); if (hasG) set('sneer', sn); set('eyes_wide', ew); set('strain_eyes', sq); set('clench', 0); set('jaw_drop', jd); set('scream_mouth', 0); set('scream_eyes', 0); }
       for (const m of a.mats) if (m.emissive) { m.emissive.setRGB(1, 0.96 + 0.02 * a.focus, 0.90 + 0.05 * a.focus); m.emissiveIntensity = m.userData.csEmission * CS.charBright * (0.8 + 0.42 * a.focus); }
@@ -17964,7 +18086,9 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
         b.quaternion.copy(pq.invert().multiply(wq)); b.updateMatrixWorld(true);
       };
       if (a.laughP > 0.01) { looked.push([L.hd, L.hd.quaternion.clone()]); L.hd.parent.updateWorldMatrix(true, false); L.hd.parent.getWorldQuaternion(pq); L.hd.getWorldQuaternion(wq); rq.setFromAxisAngle(ax, -0.07 * a.laughP); wq.premultiply(rq); L.hd.quaternion.copy(pq.invert().multiply(wq)); L.hd.updateMatrixWorld(true); }   // b686 — 웃음 박자에 고개가 살짝 들썩
-      aim(L.hd, L.fwd, Math.min(1, lk * CS.lookDown), CS.sly > 0 ? side * (0.1 + 0.07 * sk) * Math.min(1.5, CS.sly) * (0.3 + 0.7 * lk) : 0);
+      { const tt = performance.now() / 1000, dr = CS.drift, w = a.mode === 'win' && tt < a.modeEnd ? ss((tt - a.modeT) / 0.6) : 0;   // b689 — 가만있지 않게: 고개가 천천히 흔들리고 · 웃을 땐 어깨부터 뒤로 젖혔다 다시 숙임
+        if (L.sp && (dr > 0 || w > 0)) { looked.push([L.sp, L.sp.quaternion.clone()]); L.sp.parent.updateWorldMatrix(true, false); L.sp.parent.getWorldQuaternion(pq); L.sp.getWorldQuaternion(wq); rq.setFromAxisAngle(ax, (-0.05 * (a.laughP || 0) - 0.06 * w * (0.5 + 0.5 * Math.sin((tt - (a.modeT || 0)) * 1.7))) ); wq.premultiply(rq); rq.setFromAxisAngle(up, dr * 0.03 * Math.sin(tt * 0.31 + ai * 1.9)); wq.premultiply(rq); L.sp.quaternion.copy(pq.invert().multiply(wq)); L.sp.updateMatrixWorld(true); } }
+      aim(L.hd, L.fwd, Math.min(1, lk * CS.lookDown), CS.drift * 0.05 * Math.sin(performance.now() / 1000 * 0.43 + ai * 2.3) + (CS.sly > 0 ? side * (0.1 + 0.07 * sk) * Math.min(1.5, CS.sly) * (0.3 + 0.7 * lk) : 0));
       L.eyes.forEach((e, j) => aim(e, L.efwd[j], lk, 0));   // 눈알 뼈가 있으면 눈도 나를
     }
   }
@@ -17999,7 +18123,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     for (const [k, n] of [KINDS[1], KINDS[0], KINDS[2]]) { ROWS.push(['#', '선택창 사원증 — ' + n + (k === 'm16' ? '(안경)' : '') + ' · 게임 값에 더하기(선택창에서만)']); for (const [p, l, mn, mx, st, u] of BDP) ROWS.push(['bd_' + k + '_' + p, l, mn, mx, st, u]); }   // b679
     ROWS.push(['#', '아래에서 올려다보기(포스터 구도)'], ['lowOn', '켜기(1 = 예 · 0 = 예전 B 구도)', 0, 1, 1, ''], ['lowCamY', '카메라 높이(땅에서)', 0.05, 1.2, 0.01, 'm'], ['lowLookY', '바라보는 높이', 0.8, 2.6, 0.01, 'm'], ['lowDist', '거리', 1, 4, 0.05, 'm'], ['lowFov', '시야각', 30, 75, 1, '°'], ['lookDown', '내려다보는 정도(고개 숙임)', 0, 1.5, 0.05, '×'], ['lean', '허리로 숙이는 몫', 0, 0.8, 0.01, ''], ['tight', '타이트하게(가까이 · 간격 좁게)', 0, 1, 0.01, ''], ['sly', '썩소 세기', 0, 1.5, 0.05, '×'], ['giggleRate', '누를 때 웃음 빠르기(키키키)', 0.8, 2, 0.05, '×']);
     ROWS.push(['#', '등장 — 카메라가 다가오며 깔보기'], ['introOn', '켜기(1 = 예)', 0, 1, 1, ''], ['introDur', '다가오는 시간', 0.5, 5, 0.1, '초'], ['introPush', '처음 거리(배 더 멀리)', 0, 2.5, 0.05, '×'], ['introLook', '고개 숙이기 시작', 0, 3, 0.05, '초'], ['introStag', '사람마다 늦게', 0, 1, 0.05, '초'], ['introBow', '나타날 때 이미 숙인 정도', 0, 1, 0.05, ''], ['contempt', '깔보는 정도(턱 들기 · 비스듬히)', 0, 2, 0.05, '×'], ['introSnd', '다가오는 바람 소리', 0, 1.5, 0.05, '×']);   // b682
-    ROWS.push(['#', '시작 누르면 — 고른 얼굴로 다가가기'], ['pickZoom', '다가가는 정도(0 = 안 함)', 0, 1, 0.05, ''], ['laughSq', '웃을 때 눈 가늘게', 0, 1, 0.02, ''], ['pickDur', '다가가는 시간', 0.2, 3, 0.05, '초'], ['pickDist', '얼굴 앞 거리', 0.3, 2, 0.05, 'm'], ['pickDown', '얼굴보다 아래로', -0.3, 0.6, 0.01, 'm']);   // b683
+    ROWS.push(['#', '시작 누르면 — 고른 얼굴로 다가가기'], ['pickZoom', '다가가는 정도(0 = 안 함)', 0, 1, 0.05, ''], ['laughSq', '웃을 때 눈 가늘게', 0, 1, 0.02, ''], ['faceEase', '표정 바뀌는 빠르기(작을수록 천천히)', 1, 20, 0.5, ''], ['drift', '가만있을 때 고개 · 어깨 흔들림', 0, 3, 0.05, '×'], ['pickDur', '다가가는 시간', 0.2, 3, 0.05, '초'], ['pickDist', '얼굴 앞 거리', 0.3, 2, 0.05, 'm'], ['pickDown', '얼굴보다 아래로', -0.3, 0.6, 0.01, 'm']);   // b683
     ROWS.push(['#', '사람마다 키키키(누를 때)']); for (const [k, n] of KINDS) ROWS.push(['gl_' + k, n + ' — 웃음 녹음(1 · 2)', 1, 2, 1, ''], ['gp_' + k, n + ' — 높낮이', 0.6, 1.6, 0.02, '×']);   // b674
     ROWS.push(['#', 'B 집결 구도'], ['fov', '시야각', 25, 55, 1, '°'], ['advance', '선택 인물 앞으로', 0, 0.4, 0.01, 'm'], ['badgeBright', '선택창 사원증 밝기', 0.2, 1.5, 0.02, '×'], ['strapBright', '선택창 목줄 밝기', 0.2, 1.5, 0.02, '×']);
     const st = document.createElement('style');
