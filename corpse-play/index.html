@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-653 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-654 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-653'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-654'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3243,7 +3243,7 @@ var MeshoptDecoder = (function () {
    · 새 셰이더 없음 — 데칼은 원래 판의 재질을 그대로 쓴다(그림만 바꾸고 · 섞기는 셰이더가 아니다) · basefx 의 맥박 · 밝기도 그대로
    · 끄기: 시연실 연출 「본진 바닥 표시 또렷하게」 — 끄면 원래 판 · 그림 · 섞기로 */
 (() => {
-  const ZF = (window.__zonefence = { ready: false, list: [], fillMul: 1, lineMul: 0, paint: 1, sA: 3.5, sB: 3.9, sC: 0.55, soft: 0.12, sH: 0.8 });
+  const ZF = (window.__zonefence = { ready: false, list: [], fillMul: 1, lineMul: 0, show: 0, paint: 1, sA: 3.5, sB: 3.9, sC: 0.55, soft: 0.12, sH: 0.8 });
   // b648 — 둥근 방패 모양 본진(사용자 그림 · 「토리이가 커진 만큼 · 제각각 모양 말고 이런 형태로」): 토리이(옮긴 자리 · 크기 그대로)에서 문 안쪽으로
   //   반폭 sA · 반깊이 sB(× 토리이 크기) · 타원 중심 = 토리이에서 sC × 반깊이 → 토리이 줄에서의 폭이 기둥 간격과 맞는다 · 토리이 줄 앞은 잘림
   //   보이는 칠(camera.js 셰이더) · 시체 판정(game.js 본진 판정) · 같이 하기 서버(game.server.js inZone)가 모두 같은 모양 · 끄기 paint = 0(예전 바닥 판 · 판정)
@@ -3601,7 +3601,6 @@ var MeshoptDecoder = (function () {
     const BF = window.__basefx; if (BF) { BF.fillK = vis ? KF : 1; BF.edgeK = vis ? K : 1; }
     const sc = G.scores ? G.scores() : null, tn = performance.now() / 1000;
     for (const b of ZF.list) {
-      if (ZF.paint > 0.5) { for (const c of b.grp.children) if (c.name !== 'beam') c.visible = false; b.fill.visible = b.edge.visible = false; }   // b648 — 칠 방식이면 예전 바닥 판 · 데칼 · 줄은 숨김(빛 커튼만)
       // b627 — 테두리 빛(줄 · 번짐 · 꺾쇠) 기본 끔 · 영역 색만(사용자 「본진 영역 발광하는 색 빼고 영역만 색으로」) · 켜기: __zonefence.outline = true
       for (const nm of ['zline', 'zglow', 'zmarks']) { const o = b.grp.getObjectByName(nm); if (!o) continue; const lm = ZF.outline === true ? Math.max(1, ZF.lineMul) : ZF.lineMul; if (o.userData.op0 === undefined) o.userData.op0 = o.material.opacity; o.visible = lm > 0; o.material.opacity = Math.min(1, o.userData.op0 * lm); }
       const bm = b.grp.getObjectByName('beam');
@@ -3614,6 +3613,7 @@ var MeshoptDecoder = (function () {
       }
       b.grp.visible = vis; apply(b, vis);
       { const mk = b.grp.getObjectByName('zmarks'), X = window.__fx; if (mk && X && X.on && X.on.zonemarks === false) mk.visible = false; }
+      if (ZF.paint > 0.5 || !(ZF.show > 0.5)) { for (const c of b.grp.children) if (c.name !== 'beam') c.visible = false; b.fill.visible = b.edge.visible = false; }   // b654 — 영역 표시 끔(사용자 「본진 영역 기존 것 없애고 돗자리」) · 판정은 그대로   // b648 — 칠 방식이면 예전 바닥 판 · 데칼 · 줄은 숨김(빛 커튼만)
       // 내 본진(0)은 basefx 가 매 프레임 정한다 · 나머지는 처음 값에 곱한다
       if (b.z.team !== 0) for (const [m, k] of [[b.fill, KF], [b.edge, K]]) { if (m.userData.op0 === undefined) m.userData.op0 = m.material.opacity; m.material.opacity = m.userData.op0 * (vis ? k : 1) * (m === b.fill ? ZF.fillMul : 1); }
     }
@@ -3623,7 +3623,7 @@ var MeshoptDecoder = (function () {
     try {
       const G2 = window.__G, O = window.__occ;
       if (G2 && O && O.uZT && O.uZT.value && G2.zones && G2.zones.list.length) {
-        const on = ZF.paint > 0.5 && G2.started && !(window.__death && window.__death.active && window.__death.active()) && !(window.__fx && window.__fx.on && window.__fx.on.zonefence === false);
+        const on = ZF.show > 0.5 && ZF.paint > 0.5 && G2.started && !(window.__death && window.__death.active && window.__death.active()) && !(window.__fx && window.__fx.on && window.__fx.on.zonefence === false);
         O.uZO.value.set([on ? 1 : 0, 0.75 * ZF.fillMul, Math.max(0.01, ZF.soft), ZF.sH]); O.uZL.value = ZF.lineMul * 0.6;
         const d = ZF.dims();
         G2.zones.list.forEach((q, i) => { if (i > 2) return; const T = ZF.torii(q), gy = G2.groundAt(T.x, T.z); O.uZT.value.set([T.x, T.z, q.fx, q.fz], i * 4); O.uZP.value.set([d.A, d.B, d.C, isFinite(gy) ? gy : 0], i * 4); const c = (G2.colors && G2.colors[q.team]) || 0xffffff; O.uZC.value.set([((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255], i * 3); });
@@ -6238,6 +6238,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     // b628 — 본진 영역 색 · 테두리 라인 진하기(사용자 「본진 영역 색과 테두리 라인 진하기 조절하는 패널」) — zonefence.js · 셋 모두
     { title: '본진 영역', sub: '바닥 색 · 테두리 라인 진하기 · 본진 셋 모두', save: true, rows: [
       // b648 — 둥근 방패 모양 칠(토리이 크기를 따라감) · 끄면 예전 바닥 판
+      { k: 'zone.show', label: '영역 표시(색 · 1 = 보임)', min: 0, max: 1, step: 1, def: 0, fmt: (v) => (v > 0.5 ? '보임' : '숨김(돗자리만)'), get: () => ZG('show', 0), set: (v) => ZS('show', v) },   // b654
       { k: 'zone.paint', label: '둥근 칠(1 = 켬 · 0 = 예전 바닥 판)', min: 0, max: 1, step: 1, def: 1, fmt: (v) => (v > 0.5 ? '켬' : '끔'), get: () => ZG('paint', 1), set: (v) => ZS('paint', v) },
       { k: 'zone.sA', label: '영역 반폭(토리이 크기 배)', min: 1.5, max: 8, step: 0.05, def: 3.5, fmt: (v) => `${v.toFixed(2)}m`, get: () => ZG('sA', 3.5), set: (v) => ZS('sA', v) },
       { k: 'zone.sB', label: '영역 반깊이(토리이 크기 배)', min: 1.5, max: 10, step: 0.05, def: 3.9, fmt: (v) => `${v.toFixed(2)}m`, get: () => ZG('sB', 3.9), set: (v) => ZS('sB', v) },
