@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-678 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-679 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-678'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-679'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -12385,7 +12385,11 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   B.DEFK = { m17: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.34, sideX: 0.08, neckY: 0.045, neckZ: 0 }, son: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.37, sideX: 0.062, neckY: 0, neckZ: 0 }, m16: { bright: 0.15, flap: 0.1, swing: 0.1, drop: 0.31, sideX: 0.085, neckY: 0.055, neckZ: -0.015 } };
   B.per = B.per || {};
   for (const k in B.KINDS) B.per[k] = Object.assign({}, B.DEF, B.DEFK[k], B.per[k] || {});
-  const PK = (e) => B.per[e.kind] || Object.assign({}, B.DEF, B.DEFK[e.kind] || {});
+  const PK0 = (e) => B.per[e.kind] || Object.assign({}, B.DEF, B.DEFK[e.kind] || {});
+  // b679 — 캐릭터 선택창의 복제에만 선택창 조절의 더하기 값(cm · 부드러움은 그대로) — 게임 · 타이틀 값은 그대로
+  const PK = (e) => { const p = PK0(e), cs = window.__charSel; if (!(cs && cs.open && cs.owns && cs.cf && e.sm && cs.owns(e.sm))) return p;
+    let o = null; for (const k of ['drop', 'sideX', 'neckY', 'neckZ', 'cardTop', 'front', 'cardGap', 'freeTop', 'bendR', 'stiff']) { const d = cs.cf['bd_' + e.kind + '_' + k]; if (typeof d === 'number' && d) { o = o || Object.assign({}, p); const v = (p[k] || 0) + (k === 'stiff' ? d : d / 100); o[k] = k === 'neckY' || k === 'neckZ' ? v : Math.max(0, v); /* 목 높이 · 앞뒤만 음수 가능 */ } }
+    return o || p; };
   const IMG = window.__badgeImg || {};
   const N = 8;                                                       // 앞 줄 한 가닥 마디 수(점)
   let unlitSrc = null, T = null, V = null, M4 = null, BG = null, BA = null, TEX = null, srcMat = null, srcMesh = null, ready = false, failed = false, hooked = null;
@@ -17693,7 +17697,10 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
      세 몸을 복제(같은 재질 · 같은 셰이더)해 빈 땅에 세우고 서 있기 동작만 · 그리는 동안 진짜 나 · 봇 · 괴물 · 시체는 감춘다(그린 뒤 되돌림) · 닫으면 복제를 버린다 */
   const LEGACY_DEFAULT = { dist: 1.95, camY: 1.47, lookY: 1.42, side: 0, gap: 1.0, top: 1.78, bot: 1.04, half: 0.3, frameY: 0, light: 1.7, charBright: 1, title: 4.6, name: 4.4, titleY: 6.5, nameY: 2.2, maskOp: 0.97, glow: 1, anim: 2, animDur: 0.9, stagger: 0.18, scale: 1, exp: 1, faceCam: 1, face: 0, f0: 0, f1: 0, f2: 0 };   // b641 — 캐릭터 방향(사용자 「캐릭터 선택창에서 캐릭터들이 정면을 안 보고 있어 · 설정하는 패널」)   // b599 — 캐릭터 크기 · 노출   // b596 — 등장 모션 · 캐릭터 밝기 · 글자 자리 · 배경 어둡기 · 선택 빛
   const CSD = Object.assign({}, LEGACY_DEFAULT, { dist: 2.65, camY: 1.21, lookY: 1.22, gap: 0.86, top: 1.84, bot: 0.45, half: 0.38, light: 1.1, title: 4.6, titleY: 4, name: 3.5, nameY: 0, maskOp: 0.85, anim: 1, fov: 34, advance: 0.22, badgeBright: 0.82, strapBright: 0.7,
-    lowOn: 1, lowCamY: 0.3, lowLookY: 1.75, lowDist: 1.9, lowFov: 50, lookDown: 0.9, lean: 0.25, tight: 0.45, sly: 1, giggleRate: 1.35 });   // b676 — tight: 더 타이트하게(가까이 · 사람 간격 좁게) · sly: 비열하게 쳐다보는 얼굴   // b674 — 아래에서 올려다보는 포스터 구도(사용자 「위에서 날 내려다보는 시점」 · 0 = 예전 B 구도)
+    lowOn: 1, lowCamY: 0.3, lowLookY: 1.75, lowDist: 1.9, lowFov: 50, lookDown: 0.9, lean: 0.25, tight: 0.45, sly: 1, giggleRate: 1.35 });
+  // b679 — 선택창에서만 사원증 목줄 고치기(사용자 「안경 캐릭터 목줄이 이상 · 선택창에서만」) — 게임 값(조절 「사원증 · …」)에 더하는 값 · lanyard.js PK 가 선택창 복제에만 쓴다
+  const BDP = [['drop', '줄 길이(카드 높이)', -15, 15, 0.5, 'cm'], ['sideX', '목 좌우(한쪽)', -5, 5, 0.1, 'cm'], ['neckY', '목 거는 높이', -10, 10, 0.25, 'cm'], ['neckZ', '목 앞뒤', -10, 10, 0.25, 'cm'], ['cardTop', '카드 최고 높이(목 아래로)', -15, 15, 0.5, 'cm'], ['front', '카드 몸 앞 최소', -5, 8, 0.25, 'cm'], ['cardGap', '카드 몸에서 띄움', -2, 5, 0.1, 'cm'], ['freeTop', '줄 위쪽 옷 무시(꺾임 펴기)', -10, 15, 0.25, 'cm'], ['bendR', '줄 위쪽 둥글기', -8, 8, 0.25, 'cm'], ['stiff', '줄 부드러움(꺾임 버팀)', -0.6, 0.4, 0.05, '']];
+  for (const [k] of KINDS) for (const [p] of BDP) CSD['bd_' + k + '_' + p] = 0;   // b676 — tight: 더 타이트하게(가까이 · 사람 간격 좁게) · sly: 비열하게 쳐다보는 얼굴   // b674 — 아래에서 올려다보는 포스터 구도(사용자 「위에서 날 내려다보는 시점」 · 0 = 예전 B 구도)
   const CS = (S.cf = Object.assign({}, CSD)), legacy = Object.assign({}, LEGACY_DEFAULT);
   let sceneLoaded = false;
   (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 300); return; }
@@ -17954,6 +17961,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     ['#', '등장 모션'], ['animDur', '길이', 0.2, 3, 0.05, '초'], ['stagger', '칸마다 늦게', 0, 0.6, 0.01, '초']];
   function build() {
     if (el) return;
+    for (const [k, n] of [KINDS[1], KINDS[0], KINDS[2]]) { ROWS.push(['#', '선택창 사원증 — ' + n + (k === 'm16' ? '(안경)' : '') + ' · 게임 값에 더하기(선택창에서만)']); for (const [p, l, mn, mx, st, u] of BDP) ROWS.push(['bd_' + k + '_' + p, l, mn, mx, st, u]); }   // b679
     ROWS.push(['#', '아래에서 올려다보기(포스터 구도)'], ['lowOn', '켜기(1 = 예 · 0 = 예전 B 구도)', 0, 1, 1, ''], ['lowCamY', '카메라 높이(땅에서)', 0.05, 1.2, 0.01, 'm'], ['lowLookY', '바라보는 높이', 0.8, 2.6, 0.01, 'm'], ['lowDist', '거리', 1, 4, 0.05, 'm'], ['lowFov', '시야각', 30, 75, 1, '°'], ['lookDown', '내려다보는 정도(고개 숙임)', 0, 1.5, 0.05, '×'], ['lean', '허리로 숙이는 몫', 0, 0.8, 0.01, ''], ['tight', '타이트하게(가까이 · 간격 좁게)', 0, 1, 0.01, ''], ['sly', '썩소 세기', 0, 1.5, 0.05, '×'], ['giggleRate', '누를 때 웃음 빠르기(키키키)', 0.8, 2, 0.05, '×']);   // b674
     ROWS.push(['#', 'B 집결 구도'], ['fov', '시야각', 25, 55, 1, '°'], ['advance', '선택 인물 앞으로', 0, 0.4, 0.01, 'm'], ['badgeBright', '선택창 사원증 밝기', 0.2, 1.5, 0.02, '×'], ['strapBright', '선택창 목줄 밝기', 0.2, 1.5, 0.02, '×']);
     const st = document.createElement('style');
