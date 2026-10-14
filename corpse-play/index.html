@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-671 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-672 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-671'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-672'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6049,7 +6049,7 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     return camMeshes;
   }
   window.__camClip = (cam, target) => {
-    if (!G || !G.map.loaded || !rc || window.__camSkipClip) return;     // 추격 카메라(camera.js)가 스스로 가림을 처리한 프레임은 쉰다
+    if (!G || !G.map.loaded || !rc || window.__camSkipClip) { camHold.d = null; return; }     // 추격 카메라(camera.js)가 스스로 가림을 처리한 프레임은 쉰다
     const d = cdir.v || (cdir.v = new V.Vector3());
     d.subVectors(cam, target);
     const dist = d.length();
@@ -6058,8 +6058,17 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     rc.set(target, d); rc.far = dist; rc.firstHitOnly = true;
     const hit = rc.intersectObjects(camTargets(), false)[0];
     rc.firstHitOnly = false;
-    if (hit) cam.copy(target).addScaledVector(d, Math.max(0.4, hit.distance - 0.28));
+    // b672 — 당길 땐 바로 · 풀 땐 천천히(사용자 「이 자리에 서면 카메라가 확대 축소하며 부들부들」 — 카메라가 땅 · 둑을 스치는 자리에서
+    //   맞으면 확 당기고 → 다음 프레임 다시 멀어져 안 맞고 → 또 당기기를 되풀이했다) · 막힌 뒤 0.6초는 그대로 · 그 뒤 초당 1.2m 로만 물러남
+    const now = performance.now(), cdt = Math.min(0.1, Math.max(0, (now - (camHold.t || now)) / 1000)); camHold.t = now;
+    const want = hit ? Math.max(0.4, hit.distance - 0.28) : dist;
+    if (hit) camHold.until = now + 600;
+    if (camHold.d === null || want < camHold.d || Math.abs(want - camHold.last) > 2.5) camHold.d = want;
+    else if (now > camHold.until) camHold.d = Math.min(want, camHold.d + cdt * 1.2);
+    camHold.last = want;
+    if (camHold.d < dist - 0.005) cam.copy(target).addScaledVector(d, camHold.d);
   };
+  const camHold = { d: null, t: 0, until: 0, last: 0 };
 
   window.__nav = {
     canStand: (x, z) => (G ? canStand(x, z) : null),
