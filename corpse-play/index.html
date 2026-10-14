@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-697 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-702 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-697'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-702'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2055,7 +2055,8 @@ var MeshoptDecoder = (function () {
         }
       });
     }
-    const stand = (x, zz) => (window.__nav ? window.__nav.canStand(x, zz) : G.walkAt(x, zz, null)) !== null;
+    // b701 — 바위 위 못 올라감(b695 nav)과 상관없이 예전 자리 그대로(사용자 「왜 자꾸 토리이 푯말 위치가 바뀌냐」 — 돌 위였던 옆자리가 「설 수 없음」이 되어 문 앞으로 옮겨졌다)
+    const stand = (x, zz) => { const rc = window.__rockClimb; window.__rockClimb = true; try { return (window.__nav ? window.__nav.canStand(x, zz) : G.walkAt(x, zz, null)) !== null; } finally { if (rc === undefined) delete window.__rockClimb; else window.__rockClimb = rc; } };
     for (const off of [mx + SIDE, mn - SIDE, mx + SIDE * 1.8, mn - SIDE * 1.8]) {
       const x = tx + lx * off - z.fx * FRONT, zz = tz + lz * off - z.fz * FRONT;
       if (stand(x, zz)) return { x, z: zz };
@@ -2469,12 +2470,12 @@ var MeshoptDecoder = (function () {
     mg.font = fsub; mg.letterSpacing = '1px'; const dw = mg.measureText(dist).width;
     const W = Math.ceil(P + SEAL + 6 + nw + P + 3 * SL + 2 * GAP + P + dw + P + 2);
     const [c, g] = hcanvas(W, H), R = rnd(401 + t * 17);
-    plank(g, W, H, true, col, R);
+    plank(g, W, H, false, col, R);   // b701 — 「시체를 가져간다」 표찰과 같은 검붉은 옻칠 판(사용자 「본진을 가리키는 UI 도 같은 스타일 톤으로 · 색감은 유지」) · 테 · 이름은 팀 색 그대로(예전 나무 판)
     g.textBaseline = 'middle'; g.textAlign = 'left';
     g.font = font; g.letterSpacing = '2px'; inkText(g, name, P + SEAL + 6, H / 2 + 1.5, tint(col, t === 0 ? 0.55 : 0.4), t === 0 ? 5 : 4);
     let x = P + SEAL + 6 + nw + P;
     for (let k = 0; k < 3; k++) { slotArt(g, x, (H - SL) / 2, SL, col, k < n, t, k); x += SL + GAP; }
-    g.font = fsub; g.letterSpacing = '1px'; inkText(g, dist, x - GAP + P, H / 2 + 2, '#e8d9ba', 3.2);
+    g.font = fsub; g.letterSpacing = '1px'; inkText(g, dist, x - GAP + P, H / 2 + 2, '#efdccf', 3.2);
     return c;
   }
   // 인장 칸 — 찍힌 칸은 에마 판과 같은 인장, 빈 칸은 파인 네모 + 팀 색 테(필터를 먹어도 □ 로 읽히게 또렷이)
@@ -2519,7 +2520,7 @@ var MeshoptDecoder = (function () {
     const glow = tex(glowArt());
     HUD.base = [0, 1, 2].map((t) => ({ t, arrow: quad(tex(arrowArt(soft(hex(G.colors[t])), 91 + t, true)), 4), label: quad(blank(), 5), glow: quad(glow, 3), key: '', w: 0, h: 0, slamT: -9 }));
     HUD.warn = { arrow: quad(tex(arrowArt(red, 71)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: red, glyph: '奪', seed: 301 };
-    HUD.home = { arrow: quad(tex(arrowArt(mine, 53)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'wood', color: mine, glyph: '歸', seed: 211 };
+    HUD.home = { arrow: quad(tex(arrowArt(mine, 53)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: mine, glyph: '歸', seed: 211 };   // b701 — 내 본진 길잡이도 옻칠 판(같은 톤)
     HUD.water = { arrow: quad(tex(arrowArt('#6fb6e6', 41)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: '#6fb6e6', glyph: '水', seed: 401 };   // 불붙었을 때 가장 가까운 연못(b442)
     // 본진 표지 셋은 시작하자마자 뜬다 — 지금(준비 중) 그려 둬서 시작 첫 프레임에 캔버스를 그리고 올리지 않게
     try {
@@ -4054,7 +4055,9 @@ var MeshoptDecoder = (function () {
   function el(css, html) { const d = document.createElement('div'); d.style.cssText = css; d.innerHTML = html || ''; (document.getElementById('game-root') || document.body).appendChild(d); return d; }
   function startIntro(G) {
     const zs = G.zones.list; let cx = 0, cz = 0; for (const z of zs) { cx += z.cx; cz += z.cz; } cx /= zs.length; cz /= zs.length;
-    const h = G.hero.position, a0 = Math.atan2(h.x - cx, h.z - cz);
+    const h = G.hero.position;
+    { const N = window.__nav; if (N && N.ready && N.okAt && N.okAt(h.x, h.z) === null && N.nearestOpen) { const o = N.nearestOpen(h.x, h.z); if (o) { h.x = o.x; h.z = o.z; if (isFinite(o.y)) h.y = o.y; } } }   // b700 — 설 수 없는 자리(맵 바위 — b695)에 붙잡지 않게(지킴이와 0.5초마다 다투었다)
+    const a0 = Math.atan2(h.x - cx, h.z - cz);
     intro = { t0: now(), cx, cz, gy: G.groundAt ? (G.groundAt(cx, cz) || 0) : 0, a0, hold: [h.x, h.y, h.z], dir: 1 };
     CN.introEnd = performance.now() + IL() * 1000;
     if (!title) title = el('position:absolute;left:0;right:0;top:38%;text-align:center;pointer-events:none;z-index:40;opacity:0;transition:opacity .5s;font:900 64px "UIF","Noto Serif KR",serif;letter-spacing:.5em;color:#e9e1d0;text-shadow:0 0 18px #000,0 0 3px #700', '開 戰');
@@ -12610,7 +12613,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     return e;
   }
   function drop(e) { try { e.card.parent && e.card.parent.remove(e.card); e.strap.parent && e.strap.parent.remove(e.strap); e.card.geometry.dispose(); e.strap.geometry.dispose(); if (e.selectMats) for (const m of e.selectMats) m.dispose(); } catch (er) { /* */ } ents.delete(e.sm); }
-  B.release = (sm) => { const e = ents.get(sm); if (e) drop(e); };   // 닫힌 선택창 복제의 사원증만 즉시 회수
+  B.release = (sm) => { const e = ents.get(sm); if (e) drop(e); };
+  B.restAll = () => { for (const e of ents.values()) { try { if (e.fr && e.fr.N) restPose(e); } catch { /* 아직 자리 없음 */ } } };   // b699 — 선택창 → 게임 시작 연출: 줄을 처음 자세로(screenfade.js 가 검은 화면 동안 부른다 · 사용자 「시작 연출 때 카드 목줄이 길게 늘어진다」)   // 닫힌 선택창 복제의 사원증만 즉시 회수
   const W = (e, x, y, z, out) => out.copy(e.fr.N).addScaledVector(e.fr.r, x).addScaledVector(e.fr.u, y).addScaledVector(e.fr.f, z);
   function anchors(e) {
     const p = PK(e), s = e.fr.sc, z0 = Math.max(0, ...[-0.035, -0.06, -0.09, -0.12].map((yy) => frontZ(e, p.sideX * s, yy * s))) + B.margin * s;   /* b605 — 깃이 가장 튀어나온 곳까지(그 아래 12cm) 넘는 높이에서 시작 */   // b576 — 목 옆 한가운데가 아니라 쇄골 쪽(조금 앞 · 아래)에서 시작   // b605 — 깃 표면 위에서 시작(깃 안쪽에서 시작해 깃 위로 넘어오며 꺾였다)
@@ -12687,6 +12691,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     anchors(e);
     // 몸 빠르기(펄럭임 세기) · 순간이동(다시 시작 · 시점 이동)이면 처음 자세로
     const jump = e.fr.N.distanceTo(e.lastN);
+    { const cs = window.__charSel, own = !!(cs && cs.open && cs.owns && e.sm && cs.owns(e.sm));   // b699 — 선택창 몫(더하기 값)이 붙었다 · 떨어지면 그 값으로 처음 자세부터(시작 연출에 선택창 길이로 늘어진 줄이 남던 것)
+      if (e.__own !== undefined && e.__own !== own) { e.__own = own; restPose(e); return; } e.__own = own; }
     if (jump > 1.5 || !isFinite(e.hook.x)) { restPose(e); return; }
     if (dt > 0) { e.vel.subVectors(e.fr.N, e.lastN).multiplyScalar(1 / dt); }
     e.lastN.copy(e.fr.N);
@@ -13169,12 +13175,29 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     return null;
   }
   // ── 공격 ── lt: 'hero' 또는 봇
+  // b699 — 맞아 누워 있거나 · 맞는 동작 중이거나 · 불타는(구르는) 사람은 까마귀가 노리지 않는다 · 쪼는 중에 그렇게 되면 날아가 버린다(사용자)
+  function downOf(q) {
+    try {
+      const Bn = window.__burn, rl = window.__roll && window.__roll.rolls, Hn = window.__hornet;
+      if (Hn && Hn.busy && Hn.busy(q.who)) return true;   // 왕벌에게 잡혔거나 쏘이는 중
+      if (q.who === 'hero') {
+        if (G.hit && G.hit.active) return true;
+        if (window.__death && window.__death.active && window.__death.active()) return true;
+        return !!(Bn && Bn.burning && Bn.burning('hero'));
+      }
+      const b = q.who;
+      if (b.stun > 0 || (b.knockT || 0) > 0 || b.a === 6 || b.a === 7) return true;
+      if (rl && rl.has && rl.has(b)) return true;
+      return !!(Bn && Bn.burning && Bn.burning(b));
+    } catch { return false; }
+  }
+  F.downOf = downOf;
   const attacks = [];
   // b695 — 까마귀가 나를 쪼는 동안 카메라가 자연스럽게 다가간다(camera.js · 사용자 「까마귀한테 공격당할 때는 카메라를 이 정도로 자연스럽게 클로즈업」)
   //   내리꽂기 0.8초 전부터 쪼기가 끝날 때까지 · 세기 = 조절 「쪼일 때 카메라 다가감」(0 = 끔)
   window.__crowCam = () => { const t = now(); for (const A of attacks) { if (!A.q || A.q.who !== 'hero') continue; const u = t - A.t0; if (u > DIN() - 0.8 && u < DIN() + DUR_ATK + 0.15) return Math.max(0, cfg('crowCam', 1)); } return 0; };
   F.attack = (who) => {
-    const ps = people().filter((q) => !(q.who !== 'hero' && q.who.stun > 0));
+    const ps = people().filter((q) => !downOf(q));   // b699 — 쓰러져 있거나 · 맞는 중 · 불타는 사람은 노리지 않는다
     const q = who ? ps.find((x) => x.who === who) : ps[(Math.random() * ps.length) | 0];
     if (!q || !F.list.length) return false;
     const n = Math.max(1, Math.min(3, Math.round(cfg('crowN', 2) + rnd(-0.5, 0.5)))), hd = headOf(q);
@@ -13225,6 +13248,11 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     if (playing && !mp && cfg('crowOn', 1) > 0.5) { if ((atkT -= dt) <= 0) { const e = cfg('crowEvery', 30); atkT = rnd(e * 0.65, e * 1.35); F.attack(); } }
     // 맞는 효과 — 내리꽂은 뒤 DUR_ATK 동안(서버와 같은 시간표)
     for (let k = attacks.length - 1; k >= 0; k--) { const A = attacks[k], u = t - A.t0;
+      if (u < DIN() + DUR_ATK && downOf(A.q)) {   // b699 — 쓰러졌다 · 맞았다 · 불붙었다 → 쪼기를 그만두고 흩어진다
+        for (const c of F.list) if (c.q === A.q && (c.st === 'dive' || c.st === 'attack')) { c.st = 'return'; c.vx = rnd(-4, 4); c.vz = rnd(-4, 4); c.vy = rnd(5, 8); }
+        const e = fxs.get(A.q.who); if (e) e.until = Math.min(e.until, now()); if (A.q.root && A.q.root.__crowHB) A.q.root.__crowHB.on = false;
+        attacks.splice(k, 1); continue;
+      }
       if (u >= DIN() && u < DIN() + DUR_ATK) { hit(A.q.who, LINGER + 0.1); victim(A.q, t); if (!A.sc) { A.sc = true; const Sc = window.__scream, si = Math.round(cfg('crowScream', 0)); try { if (Sc && Sc.list && si > 0 && Sc.list[si - 1]) Sc.play(Sc.list[si - 1].key, headOf(A.q), { vol: cfg('crowScreamVol', 0.8) }); } catch { /* */ } } } else if (A.q.root.__crowHB) A.q.root.__crowHB.on = false;   // b673 — 쪼이기 시작할 때 비명(조절에서 고름 · 0 = 없음)
       if (u > DIN() + DUR_ATK + 0.2) attacks.splice(k, 1); }
     // 떼 가운데 — 맵 가운데 둘레를 천천히 맴돈다 · 가끔 내려앉는다
@@ -13335,6 +13363,506 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     } catch (e) { if (!loop.err) { loop.err = true; console.warn('[crowflock]', e); } }
     requestAnimationFrame(loop);
   })();
+})();
+
+</script>
+<script>/* hornet.js */
+/* 왕벌(2026-10-14 사용자: 「이 왕벌을 최적화해서 게임에 넣어줘 · 가끔 등장해서 캐릭터 얼굴에 독을 쏴 얼굴이 기형적으로 부풀어 올라 비명을 지르며 누워 뒹굴게 하거나 ·
+     캐릭터를 낚아채 하늘 높이 올라가 지상으로 떨궈 버리는 두 가지 기믹 · 따로 패널 · 아예 새로 · 날개가 엄청 빨리 움직여야」)
+   · 모델: corpse-props/hornet.glb — Sketchfab 「Bee」 7SkyArtist · CC-BY-4.0(CREDITS.md) · 털 뺌 · 그림 512px · 움직이지 않는 동작 줄 뺌(4.7MB → 0.49MB)
+   · 가볍게: 몸은 날기 동작을 10장으로 구워 두고(뼈 계산 없음) · 날개는 몸에서 떼어 경첩에서 돌린다(초당 28번 · 위아래 끝에 옅은 잔상 — 빠른 날갯짓의 번짐)
+   · 새 셰이더 없음 — 장면에 이미 있는 재질을 빌린다(몸: 돗자리 · 날개 막: 반투명 표준 재질 · 독: 맵 없는 표준 재질)
+   · 기믹 ① 독 — 날아와 얼굴 앞에서 꽁무니를 들이대고 독을 쏜다 → 얼굴(머리뼈)이 울퉁불퉁 부풀며 비명 → 쓰러져 뒹군다(roll.js 와 같은 구르기) → 일어나도 한동안 부어 있다
+   · 기믹 ② 낚아채기 — 머리 위로 내려와 움켜쥐고 하늘 높이(14m) 올라갔다가 놓는다 → 떨어져 쿵(피 · 털썩) → 누웠다 일어난다
+   · 나 · 봇 모두(봇 = 사람) · 같이 하기는 서버가 고르고(server hornetTick · S.H) 봇을 같은 시간표로 쓰러뜨린다 · 화면은 각자
+   · 쓰러져 있거나 · 맞는 중 · 불타는 사람은 노리지 않는다(까마귀와 같은 downOf)
+   · 패널: 오른쪽 아래 「왕벌」 — 값은 바로 이 브라우저에 저장(「저장」을 누르면 모두의 기본값) · 시연 단추 · 끄기: 패널 「등장」 */
+(() => {
+  const FILE = 'corpse-props/hornet.glb', NF = 10, LS = 'corpse_hornet_v1';
+  const DEF = {
+    on: 1, every: 55, venom: 0.5, app: 2.6, size: 1.3, buzz: 1,
+    wingHz: 28, wingAmp: 0.85, ghost: 0.3,
+    swell: 0.75, swellUp: 1.1, swellHold: 9, lump: 0.6, venomScream: 0, screamVol: 1,
+    height: 14, lift: 2.4, grabScream: 0, landBlood: 1,
+  };
+  const H = (window.__hornet = { ready: false, cf: Object.assign({}, DEF), DEF, log: [], events: [], swells: new Map() });
+  try { const sv = JSON.parse(localStorage.getItem(LS) || 'null'); if (sv) for (const k in DEF) if (typeof sv[k] === 'number' && isFinite(sv[k])) H.cf[k] = sv[k]; } catch { /* 저장 없음 */ }
+  const save = () => { try { localStorage.setItem(LS, JSON.stringify(H.cf)); } catch { /* 저장 못 함 */ } };
+  const C = H.cf;
+  const mpOn = () => !!(window.__mp && window.__mp.on);
+  const now = () => performance.now() / 1000;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const ss = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+  const VEN = { aim: 0.9, spit: 0.35, hit: 1.25, drop: 0.7 };          // 독 — 날아온 뒤 겨눔 0.9 · 쏨 0.35 · 맞음 1.25 · 쓰러짐 맞고 0.7초(서버와 같다)
+  const GRAB = { hold: 0.45, g: 22, lie: 1.4 };                        // 낚아채기 — 꼭대기에서 0.45초 · 떨어짐 중력 22 · 떨어진 뒤 누움 1.4초(서버와 같다)
+  const fallT = (h) => Math.sqrt(2 * Math.max(1, h) / GRAB.g);
+  let G = null, T = null, V = null, Q = null, M4 = null, loading = false, failed = false;   // __G.THREE 에는 Matrix4 · SphereGeometry 가 없다
+  let frames = null, wingGeo = null, matBody = null, matVein = null, matWing = null, matVen = null, pivots = null, tailTip = null;
+
+  /* ── 굽기 ───────────────────────────────────────────── */
+  function bake(gl) {
+    const sc = gl.scene, clip = gl.animations && gl.animations[0];
+    const sms = []; sc.traverse((o) => { if (o.isSkinnedMesh) sms.push(o); });
+    const body = sms.find((s) => /Body/i.test(s.material && s.material.name)) || sms[0];
+    const wing = sms.find((s) => /Wing/i.test(s.material && s.material.name));
+    const vein = sms.find((s) => s !== body && s !== wing);
+    if (!body || !wing || !clip) throw new Error('왕벌 몸 · 날개 · 동작 없음');
+    const bot = G.game && G.game.bots && G.game.bots.find((b) => b.mixer);
+    const MX = bot && bot.mixer.constructor; if (!MX) throw new Error('mixer 없음');
+    const mixer = new MX(sc), act = mixer.clipAction(clip); act.play();
+    const bones = {}; sc.traverse((o) => { if (o.isBone) bones[o.name] = o; });
+    const B = (re) => Object.values(bones).find((b) => re.test(b.name));
+    const wp = (b) => { const v = new T.Vector3(); b.getWorldPosition(v); return v; };
+    mixer.setTime(0); sc.updateMatrixWorld(true);
+    const head = B(/^Head_/), tail = B(/^tail2_/) || B(/^tail1_/), bodyB = B(/^Body_/) || B(/^Spine_/);
+    // 앞 = 꼬리 → 머리 · 위 = +y · 크기 = 몸 길이 1(놓을 때 크기를 곱한다)
+    const fwd = wp(head).sub(wp(tail)); fwd.y = 0; fwd.normalize();
+    const yaw = Math.atan2(fwd.x, fwd.z), ca = Math.cos(-yaw), sa = Math.sin(-yaw);
+    // 몸 길이 — 몸 정점의 앞뒤 폭
+    const v = new T.Vector3(); let lo = 1e9, hi = -1e9, cy = 0, n0 = body.geometry.attributes.position.count;
+    const org = wp(bodyB || head);
+    for (let i = 0; i < n0; i++) { body.getVertexPosition(i, v); v.applyMatrix4(body.matrixWorld).sub(org); const z = -v.x * sa + v.z * ca; lo = Math.min(lo, z); hi = Math.max(hi, z); cy += v.y; }
+    const K = 1 / Math.max(1e-3, hi - lo); org.y += cy / n0; org.addScaledVector(fwd, (hi + lo) / 2 / 1);   // 가운데를 몸 한가운데로
+    const toLocal = (out) => { out.sub(org); const x = out.x * ca + out.z * sa, z = -out.x * sa + out.z * ca; return out.set(x * K, out.y * K, z * K); };
+    // 날기 동작은 몸을 앞으로 · 위로 크게 옮긴다(이륙) — 장마다 몸통 뼈 기준으로 되돌려 제자리에서 굽는다(첫 장의 몸통 자리로)
+    const BodyB = bodyB || head, M0 = new M4().copy(BodyB.matrixWorld), FX = new M4();
+    const fix = () => { BodyB.updateWorldMatrix(true, false); FX.copy(M0).multiply(new M4().copy(BodyB.matrixWorld).invert()); };
+    fix();
+    function snap(sm, pivot) {
+      const src = sm.geometry, n = src.attributes.position.count, pos = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) { sm.getVertexPosition(i, v); v.applyMatrix4(sm.matrixWorld).applyMatrix4(FX); toLocal(v); if (pivot) v.sub(pivot); pos[i * 3] = v.x; pos[i * 3 + 1] = v.y; pos[i * 3 + 2] = v.z; }
+      const g = new src.constructor(); g.setAttribute('position', new src.attributes.position.constructor(pos, 3)); if (src.attributes.uv) g.setAttribute('uv', src.attributes.uv); if (src.index) g.setIndex(src.index);
+      g.computeVertexNormals(); g.computeBoundingSphere(); return g;
+    }
+    const out = [];
+    let wf = 0, wbest = -1;
+    for (let f = 0; f < NF; f++) {
+      mixer.setTime((f / NF) * clip.duration); sc.updateMatrixWorld(true); fix(); out.push(snap(body));
+      // 날개를 양옆으로 가장 넓게 편 장(날개는 그 장에서 떼어 경첩에서 돌린다)
+      let mn = 1e9, mx = -1e9; const n = wing.geometry.attributes.position.count;
+      for (let i = 0; i < n; i += 2) { wing.getVertexPosition(i, v); v.applyMatrix4(wing.matrixWorld).applyMatrix4(FX); toLocal(v); mn = Math.min(mn, v.x); mx = Math.max(mx, v.x); }
+      const sp = Math.min(-mn, mx); if (sp > wbest) { wbest = sp; wf = f; }
+    }
+    // 날개 — 쉬는 자세(뼈 처음 자리)에서 굽고 좌우로 나눠 경첩(WingHolder)을 원점으로
+    mixer.setTime((wf / NF) * clip.duration); sc.updateMatrixWorld(true); fix();
+    const hl = B(/^BoneBigWing_L/) || B(/^WingHolder_L/), hr = B(/^BoneBigWing_R/) || B(/^WingHolder_R/);   // 날개 뿌리(WingHolder 는 머리 자리에 있다)
+    const pL = toLocal(wp(hl || head).applyMatrix4(FX)), pR = toLocal(wp(hr || head).applyMatrix4(FX));
+    const sideGeo = (sm, sgn, piv) => {
+      const g = snap(sm, piv), p = g.attributes.position, idx = g.index ? g.index.array : null; if (!idx) return g;
+      // 경첩 쪽(x 부호)만 남긴 삼각형 · 양면(뒤집은 삼각형 더함 — 앞면만 그리는 재질이라)
+      const keep = [];
+      for (let i = 0; i < idx.length; i += 3) { const a = idx[i], b = idx[i + 1], c = idx[i + 2], mx = (p.getX(a) + p.getX(b) + p.getX(c)) / 3 + piv.x; if (mx * sgn > 0) keep.push(a, b, c); }
+      const both = keep.concat(keep.slice().reverse());
+      g.setIndex(both); g.computeVertexNormals(); g.computeBoundingSphere(); return g;
+    };
+    wingGeo = { L: sideGeo(wing, pL.x >= 0 ? 1 : -1, pL), R: sideGeo(wing, pR.x >= 0 ? 1 : -1, pR) };
+    if (vein) { wingGeo.vL = sideGeo(vein, pL.x >= 0 ? 1 : -1, pL); wingGeo.vR = sideGeo(vein, pR.x >= 0 ? 1 : -1, pR); }
+    pivots = { L: pL, R: pR };
+    tailTip = new T.Vector3(0, -0.05, -0.5);   // 꽁무니(침) — 몸 길이 1 기준 뒤 끝
+    return { out, mats: { body: body.material, wing: wing.material } };
+  }
+  // 재질 빌리기(새 셰이더 없음)
+  function borrow() {
+    let straw = null, glass = null, plain = null;
+    G.scene.traverse((o) => {
+      if (!o.isMesh || o.isSkinnedMesh || o.isInstancedMesh || !o.material || Array.isArray(o.material)) return;
+      const m = o.material; if (m.type !== 'MeshStandardMaterial') return;
+      if (!straw && m.name === 'strawmat') straw = m;
+      if (!glass && m.transparent && !m.map && !m.vertexColors && !m.alphaMap && o.visible) glass = m;
+      if (!plain && !m.transparent && !m.map && !m.vertexColors && !m.alphaMap && !m.normalMap && !m.emissiveMap && m.alphaTest === 0) plain = m;
+    });
+    return { straw, glass, plain };
+  }
+  function prepMat(base, name) {
+    const m = base.clone();
+    if (Object.prototype.hasOwnProperty.call(base, 'onBeforeCompile')) { m.onBeforeCompile = base.onBeforeCompile; m.customProgramCacheKey = base.customProgramCacheKey; }
+    m.name = name; m.userData.noMatCut = true; m.userData.noOcc = true; return m;
+  }
+  function load() {
+    loading = true;
+    G.loadGLB(FILE).then((gl) => { baked = bake(gl); frames = baked.out; }).catch((e) => { failed = true; console.warn('[hornet] 왕벌을 받지 못했습니다', e); });
+  }
+  let baked = null, matT = 0;
+  function mats() {   // 빌릴 재질(돗자리)이 장면에 들어온 뒤에
+    const b = baked, bm = borrow();
+    if (!bm.straw) return false;
+    {
+      matBody = prepMat(bm.straw, 'hornet-body'); matBody.map = b.mats.body.map || null; if (matBody.map && bm.straw.map && bm.straw.map.colorSpace !== undefined) matBody.map.colorSpace = bm.straw.map.colorSpace;
+      if (matBody.color) matBody.color.setRGB(0.9, 0.82, 0.7); if (matBody.roughness !== undefined) { matBody.roughness = 0.45; matBody.metalness = 0.05; }
+      matVein = prepMat(bm.straw, 'hornet-vein'); matVein.map = matBody.map; if (matVein.color) matVein.color.setRGB(0.05, 0.035, 0.02);
+      if (bm.glass) { matWing = prepMat(bm.glass, 'hornet-wing'); matWing.transparent = true; matWing.depthWrite = false; if (matWing.color) matWing.color.setRGB(0.62, 0.5, 0.36); matWing.opacity = 0.42; if (matWing.roughness !== undefined) { matWing.roughness = 0.1; matWing.metalness = 0; } }
+      else { matWing = prepMat(bm.straw, 'hornet-wing'); matWing.map = null; matWing.transparent = true; matWing.opacity = 0.42; matWing.depthWrite = false; }
+      matVen = prepMat(bm.plain || bm.straw, 'hornet-venom'); if (matVen.map) matVen.map = null; if (matVen.color) matVen.color.setRGB(0.42, 0.62, 0.05); if (matVen.emissive) matVen.emissive.setRGB(0.08, 0.14, 0.0); if (matVen.roughness !== undefined) { matVen.roughness = 0.15; matVen.metalness = 0; }
+      H.ready = true;
+      console.log('[hornet] 왕벌 받음 — 몸', NF, '장 · 정점', frames[0].attributes.position.count, '· 날개', wingGeo.L.attributes.position.count * 2, bm.glass ? '· 반투명 날개' : '· (날개 재질 새로)');
+    }
+    return true;
+  }
+
+  /* ── 왕벌 하나(쓰고 돌려 쓴다) ────────────────────────── */
+  const pool = [];
+  function makeBee() {
+    const root = new T.Group(); root.name = 'hornet';
+    const body = new T.Mesh(frames[0], matBody); body.castShadow = true; root.add(body);
+    const side = (k) => {
+      const piv = new T.Group(); piv.position.copy(pivots[k]); root.add(piv);
+      const main = new T.Mesh(wingGeo[k], matWing); piv.add(main);
+      if (wingGeo['v' + k]) main.add(new T.Mesh(wingGeo['v' + k], matVein));
+      const gm = matWing.clone(); gm.opacity = 0.2;
+      const gu = new T.Mesh(wingGeo[k], gm), gd = new T.Mesh(wingGeo[k], gm);
+      const pu = new T.Group(), pd = new T.Group(); pu.position.copy(pivots[k]); pd.position.copy(pivots[k]); pu.add(gu); pd.add(gd); root.add(pu); root.add(pd);
+      return { piv, pu, pd, gm, sgn: pivots[k].x >= 0 ? 1 : -1 };
+    };
+    const w = { L: side('L'), R: side('R') };
+    for (const o of [root]) o.traverse((x) => { if (x.isMesh) { x.frustumCulled = false; x.receiveShadow = false; if (x !== body) x.castShadow = false; } });
+    root.visible = false; G.scene.add(root);
+    return { root, body, w, busy: false, buzz: null };
+  }
+  function getBee() { let b = pool.find((x) => !x.busy); if (!b) { b = makeBee(); pool.push(b); } b.busy = true; b.root.visible = true; return b; }
+  function freeBee(b) { b.busy = false; b.root.visible = false; buzzStop(b); }
+
+  /* ── 사람 ─────────────────────────────────────────── */
+  function people() {
+    const out = []; if (G.hero) out.push({ who: 'hero', p: G.hero.position, root: G.hero, yaw: () => G.hero.rotation.y });
+    for (const b of (G.game && G.game.bots) || []) if (b.hero) out.push({ who: b, p: b.hero.position, root: b.hero, yaw: () => (b.yaw != null ? b.yaw : b.hero.rotation.y) });
+    return out;
+  }
+  const skinOf = (o) => { let s = null; if (o) o.traverse((x) => { if (x.isSkinnedMesh && !s) s = x; }); return s; };
+  function meshesOf(who) { if (who === 'hero') { const Bd = G.body; return Bd ? [skinOf(Bd.main), skinOf(Bd.drag)].filter(Boolean) : []; } return [who.__sm || (who.__sm = skinOf(who.model))].filter(Boolean); }
+  function headBones(who) { const out = []; for (const sm of meshesOf(who)) { const b = sm.skeleton && sm.skeleton.bones.find((x) => /Head$/.test(x.name)); if (b) out.push(b); } return out; }
+  function headPos(q, out) {
+    const hb = headBones(q.who).find((b) => { let p = b; while (p) { if (p.visible === false) return false; p = p.parent; } return true; }) || headBones(q.who)[0];
+    if (hb) { hb.updateWorldMatrix(true, false); return hb.getWorldPosition(out); }
+    return out.set(q.p.x, q.p.y + 1.6, q.p.z);
+  }
+  const busyWho = new Set();
+  H.busy = (who) => busyWho.has(who) || [...H.events].some((e) => e.q.who === who);
+  function downOf(q) {
+    const F = window.__crowflock; if (F && F.downOf) return F.downOf(q);
+    if (q.who === 'hero') return !!(G.hit && G.hit.active);
+    return q.who.stun > 0;
+  }
+  const crowOn = (who) => !!(window.__crowK && window.__crowK(who) < 1);
+
+  /* ── 소리 — 붕붕(파리 떼 녹음을 낮게 · 두 겹) ────────────── */
+  function au() { const A = G && G.audio; return A && A.ctx && A.out && G.cfg.sound !== false ? A : null; }
+  function buzzStart(b) {
+    const A = au(), R = window.__rsfx; if (!A || !R || !R.buf || !R.buf.fly_loop || !R.on) return;
+    const ctx = A.ctx, g = ctx.createGain(); g.gain.value = 0; const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+    const srcs = [0.5, 0.78].map((r) => { const s = ctx.createBufferSource(); s.buffer = R.buf.fly_loop; s.loop = true; s.playbackRate.value = r; s.connect(g); s.start(ctx.currentTime, Math.random() * 2); return s; });
+    if (pan) { g.connect(pan); pan.connect(A.out); } else g.connect(A.out);
+    b.buzz = { g, pan, srcs, ctx };
+  }
+  function buzzSet(b, pos) {
+    if (!b.buzz) return; const c = G.cam.position, d = Math.hypot(pos.x - c.x, pos.y - c.y, pos.z - c.z);
+    const v = Math.pow(Math.max(0, 1 - d / 45), 1.5) * 1.6 * C.buzz;
+    b.buzz.g.gain.setTargetAtTime(v, b.buzz.ctx.currentTime, 0.08);
+    if (b.buzz.pan) { const r = new T.Vector3(1, 0, 0).applyQuaternion(G.cam.quaternion), dx = pos.x - c.x, dz = pos.z - c.z; b.buzz.pan.pan.setTargetAtTime(Math.max(-0.9, Math.min(0.9, (dx * r.x + dz * r.z) / Math.max(1, Math.hypot(dx, dz)))), b.buzz.ctx.currentTime, 0.08); }
+    for (const s of b.buzz.srcs) s.detune.setTargetAtTime(Math.sin(now() * 7 + s.playbackRate.value * 9) * 60, b.buzz.ctx.currentTime, 0.05);
+  }
+  function buzzStop(b) { if (!b.buzz) return; const z = b.buzz; b.buzz = null; try { z.g.gain.setTargetAtTime(0, z.ctx.currentTime, 0.15); setTimeout(() => { for (const s of z.srcs) try { s.stop(); } catch { /* */ } }, 900); } catch { /* */ } }
+  function sfx(name, pos, o = {}) { const R = window.__rsfx; if (R && R.play) R.play(name, Object.assign({ pos, range: 40 }, o)); }
+  function scream(idx, pos, who, vol) {
+    const Sc = window.__scream; if (!Sc || !Sc.say) return;
+    const id = idx > 0 && Sc.list[idx - 1] ? Sc.list[idx - 1].key : (Sc.bigPick ? Sc.bigPick() : null); if (!id) return;
+    try { Sc.say(id, pos, meshesOf(who), { vol: (vol || 1) * C.screamVol, expr: 'scream' }); } catch { /* */ }
+  }
+
+  /* ── 독 방울 ──────────────────────────────────────── */
+  const drops = []; let dropGeo = null;
+  function spit(from, to) {
+    if (!dropGeo) dropGeo = new T.CylinderGeometry(0.75, 1, 1.5, 7, 1);
+    for (let i = 0; i < 14; i++) {
+      let d = drops.find((x) => !x.on); if (!d) { d = { m: new T.Mesh(dropGeo, matVen), on: false }; d.m.castShadow = false; d.m.frustumCulled = false; G.scene.add(d.m); drops.push(d); }
+      const dir = to.clone().sub(from), L = dir.length(); dir.normalize();
+      d.on = true; d.t = -i * 0.018; d.life = L / 13 + 0.05; d.p0 = from.clone(); d.p1 = to.clone().add(new T.Vector3(rnd(-0.07, 0.07), rnd(-0.06, 0.08), rnd(-0.07, 0.07)));
+      d.s = rnd(0.012, 0.03); d.m.scale.setScalar(d.s); d.m.visible = false; d.m.position.copy(from);
+    }
+  }
+  function dropsStep(dt) {
+    for (const d of drops) { if (!d.on) continue; d.t += dt; if (d.t < 0) continue; const u = Math.min(1, d.t / d.life); d.m.visible = true; d.m.position.lerpVectors(d.p0, d.p1, u); d.m.position.y += Math.sin(u * Math.PI) * 0.06; if (u >= 1) { d.on = false; d.m.visible = false; } }
+  }
+
+  /* ── 부풀기 — 머리뼈를 고르지 않게 키우고 꿈틀(그리기 직전에만 · 그린 뒤 되돌림) ─────────── */
+  function swellStart(who) {
+    const s = H.swells.get(who) || { t0: now(), blobs: [] }; s.t0 = now(); H.swells.set(who, s);
+    // 얼굴에 붙은 독 덩이 — 머리뼈에 붙인다(부풀면 같이)
+    if (!dropGeo) dropGeo = new T.CylinderGeometry(0.75, 1, 1.5, 7, 1);
+    for (const hb of headBones(who)) {
+      if (s.blobs.some((x) => x.parent === hb)) continue;
+      const sc = 1 / Math.max(1e-4, hb.getWorldScale(new T.Vector3()).x);
+      for (let i = 0; i < 5; i++) { const m = new T.Mesh(dropGeo, matVen); m.castShadow = false; m.frustumCulled = false; m.position.set(rnd(-0.06, 0.06) * sc, rnd(0.04, 0.13) * sc, rnd(0.07, 0.1) * sc); m.scale.setScalar(rnd(0.012, 0.024) * sc); hb.add(m); s.blobs.push(m); }
+    }
+  }
+  function swellK(s, t) {
+    const u = t - s.t0, up = Math.max(0.2, C.swellUp), hold = C.swellHold;
+    if (u < 0) return 0;
+    if (u < up) { const x = u / up; return Math.min(1.12, x * (2 - x) * 1.12); }   // 조금 넘치게
+    if (u < up + 0.4) return 1.12 - 0.12 * ss((u - up) / 0.4);
+    if (u < up + hold) return 1;
+    return Math.max(0, 1 - (u - up - hold) / 2.5);
+  }
+  const saved = [];
+  function swellApply() {
+    const t = now();
+    for (const [who, s] of H.swells) {
+      const k = swellK(s, t);
+      if (k <= 0 && t - s.t0 > 2) { for (const m of s.blobs) if (m.parent) m.parent.remove(m); H.swells.delete(who); continue; }
+      const w = C.swell * k, L = C.lump;
+      const thr = 1 + 0.06 * L * k * Math.sin(t * 9.5) + 0.04 * L * k * Math.sin(t * 23 + 1.3);   // 꿈틀
+      for (const hb of headBones(who)) {
+        saved.push([hb, hb.scale.x, hb.scale.y, hb.scale.z, hb.position.x, hb.position.y, hb.position.z]);
+        hb.scale.set(hb.scale.x * (1 + w * 1.0 * thr), hb.scale.y * (1 + w * 0.7 * (2 - thr)), hb.scale.z * (1 + w * 0.95 * thr));
+        hb.updateMatrixWorld(true);
+      }
+    }
+  }
+  function swellRestore() { for (let i = saved.length - 1; i >= 0; i--) { const e = saved[i]; e[0].scale.set(e[1], e[2], e[3]); } saved.length = 0; }
+
+  /* ── 공중에 든 몸(낚아채기) — 게임이 땅에 놓은 뒤 높이를 얹는다 ─────────── */
+  const lifts = new Map();   // who → y 위
+  const gy = (x, z, y0) => { const g = G.groundAt ? G.groundAt(x, z) : y0; return isFinite(g) ? g : y0; };
+  function liftApply() {
+    for (const [who, L] of lifts) {
+      const r = who === 'hero' ? G.hero : who.hero; if (!r) continue;
+      const base = gy(r.position.x, r.position.z, r.position.y);
+      r.position.y = base + L.h; r.updateMatrixWorld(true);
+    }
+  }
+
+  /* ── 공격 ──────────────────────────────────────────── */
+  // ev: { q, g('venom'|'grab'), t0, app, lift, h, local(효과를 이 화면이 낸다 — 나 · 혼자 할 때 봇), bee, st{} }
+  function attack(who, g, o = {}) {
+    if (!H.ready || !G || !G.hero) return false;
+    const ps = people(), q = who ? ps.find((x) => x.who === who) : null;
+    if (!q) return false;
+    if (!o.force && (downOf(q) || H.busy(q.who))) return false;
+    const ev = { q, g, t0: now(), app: o.app || C.app, lift: o.lift || C.lift, h: o.h || C.height, local: o.local !== false, st: {}, bee: getBee() };
+    const hp = headPos(q, new T.Vector3()), a = rnd(0, Math.PI * 2);
+    ev.sp = new T.Vector3(hp.x + Math.cos(a) * 20, hp.y + rnd(7, 11), hp.z + Math.sin(a) * 20);
+    ev.side = Math.random() < 0.5 ? -1 : 1;
+    ev.bee.root.position.copy(ev.sp); buzzStart(ev.bee);
+    H.events.push(ev); H.log.push({ t: +ev.t0.toFixed(1), g, who: q.who === 'hero' ? 'hero' : 'bot' + q.who.team }); if (H.log.length > 20) H.log.shift();
+    return true;
+  }
+  H.attack = attack;
+  H.demo = (g, toBot) => {
+    const ps = people(); let q = ps[0];
+    if (toBot) { const bs = ps.filter((x) => x.who !== 'hero' && !downOf(x)); if (!bs.length) return false; const hp = G.hero.position; bs.sort((a, b) => Math.hypot(a.p.x - hp.x, a.p.z - hp.z) - Math.hypot(b.p.x - hp.x, b.p.z - hp.z)); q = bs[0]; }
+    return attack(q.who, g, { local: !mpOn() || q.who === 'hero', force: false });
+  };
+  // 같이 하기 — 서버가 고른 팀 · 기믹 · 시간표
+  H.net = (Hs, myTeam) => {
+    if (!Hs || Hs.n === H.netN) return; const first = H.netN === undefined; H.netN = Hs.n; if (first || !(Hs.t >= 0)) return;
+    const lt = ((Hs.t - Math.max(0, myTeam)) % 3 + 3) % 3;
+    const who = lt === 0 ? 'hero' : ((G && G.game && G.game.bots) || []).find((b) => b.team === lt);
+    if (who) attack(who, Hs.g === 1 ? 'grab' : 'venom', { app: Hs.a, lift: Hs.l, h: Hs.h, local: who === 'hero', force: true });
+  };
+  window.__hornetNet = (v, myTeam) => { try { H.net(v, myTeam); } catch (e) { console.warn('[hornet]', e); } };
+
+  const tmpA = () => new T.Vector3();
+  function faceFront(q, out, dist, up) {   // 얼굴 앞 dist m
+    const hp = headPos(q, out), y = q.yaw(); out.x += Math.sin(y) * dist; out.z += Math.cos(y) * dist; out.y += up; return out;
+  }
+  function orient(bee, dir, up, roll) {   // 앞(+z)을 dir 로
+    const m = new M4(), z = dir.clone().normalize(), x = new T.Vector3().crossVectors(up || new T.Vector3(0, 1, 0), z); if (x.lengthSq() < 1e-6) x.set(1, 0, 0); x.normalize();
+    const y = new T.Vector3().crossVectors(z, x); m.makeBasis(x, y, z); bee.root.quaternion.setFromRotationMatrix(m);
+    if (roll) bee.root.rotateZ(roll);
+  }
+  function step(ev, dt, t) {
+    const b = ev.bee, q = ev.q, u = t - ev.t0, R = b.root, sz = C.size;
+    R.scale.setScalar(sz);
+    const hp = headPos(q, tmpA()), jit = new T.Vector3(Math.sin(t * 5.3 + ev.side) * 0.06, Math.sin(t * 7.1) * 0.05, Math.cos(t * 4.7) * 0.06);
+    const prev = R.position.clone();
+    let look = null, tail = null;
+    if (ev.g === 'venom') {
+      const hover = faceFront(q, tmpA(), 1.05 + sz * 0.35, 0.18).add(jit);
+      const tH = ev.app + VEN.hit;
+      if (u < ev.app) { const k = ss(u / ev.app), mid = ev.sp.clone().lerp(hover, 0.5); mid.y += 3; R.position.copy(bez(ev.sp, mid, hover, k)); }
+      else if (u < ev.app + 1.45) R.position.copy(hover);
+      else { const k = (u - ev.app - 1.45) / 2.4; if (!ev.away) ev.away = new T.Vector3(hp.x + Math.sin(q.yaw() + ev.side * 2) * 22, hp.y + 14, hp.z + Math.cos(q.yaw() + ev.side * 2) * 22); R.position.lerpVectors(hover, ev.away, ss(k)); if (k >= 1) return false; }
+      if (u >= ev.app && u < ev.app + 1.45) tail = hp;   // 꽁무니를 얼굴로
+      // 쏘기
+      if (!ev.st.spit && u >= ev.app + VEN.aim) { ev.st.spit = true; R.updateMatrixWorld(true); spit(R.localToWorld(tailTip.clone()), hp.clone()); sfx('p_squelch', hp, { vol: 0.9, rate: 0.7 }); }
+      if (!ev.st.hit && u >= tH) {
+        ev.st.hit = true; swellStart(q.who); sfx('sys_gore', hp, { vol: 0.5, rate: 1.3 });
+        scream(Math.round(C.venomScream), hp, q.who, 1);
+      }
+      if (!ev.st.drop && u >= tH + VEN.drop) {
+        ev.st.drop = true;
+        const Rl = window.__roll;
+        if (ev.local || (mpOn() && q.who !== 'hero')) { if (Rl && Rl.dropRoll) Rl.dropRoll(q.who); }
+      }
+    } else {
+      // 낚아채기
+      const tG = ev.app, tR = tG + ev.lift + GRAB.hold, tf = fallT(ev.h), tL = tR + tf;
+      const grabAt = tmpA().set(q.p.x, gy(q.p.x, q.p.z, q.p.y), q.p.z);
+      if (u < tG) {
+        const over = hp.clone(); over.y += 0.55 * sz + 0.35; const k = ss(u / tG), mid = ev.sp.clone().lerp(over, 0.5); mid.y += 3; R.position.copy(bez(ev.sp, mid, over, k)).add(jit.multiplyScalar(0.5));
+      } else if (u < tR) {
+        if (!ev.st.grab) {
+          ev.st.grab = true;
+          if (ev.local) grabStart(ev, tL - tG + GRAB.lie);
+          scream(Math.round(C.grabScream), hp, q.who, 1); sfx('p_cloth', hp, { vol: 0.8 });
+        }
+        const k = (u - tG) / ev.lift, lh = ev.h * ss(Math.min(1, k)) + (k > 1 ? Math.sin((u - tG - ev.lift) * 18) * 0.12 : 0);
+        lifts.set(q.who, { h: lh + Math.sin(t * 6) * 0.08 });
+        R.position.set(grabAt.x + Math.sin(t * 3.1) * 0.15, grabAt.y + lh + 0.55 + 0.42 * sz, grabAt.z + Math.cos(t * 2.7) * 0.15);
+      } else {
+        if (!ev.st.rel) { ev.st.rel = true; ev.relP = R.position.clone(); sfx('amb_gust', ev.relP, { vol: 0.5 }); }
+        const k = (u - tR) / 2.6; if (!ev.away) ev.away = new T.Vector3(grabAt.x + ev.side * 20, grabAt.y + ev.h + 9, grabAt.z + 14);
+        R.position.lerpVectors(ev.relP, ev.away, ss(Math.min(1, k)));
+        const fu = u - tR;
+        if (fu < tf) lifts.set(q.who, { h: Math.max(0, ev.h - 0.5 * GRAB.g * fu * fu) });
+        else {
+          lifts.delete(q.who);
+          if (!ev.st.land) {
+            ev.st.land = true; const lp = tmpA().set(q.p.x, gy(q.p.x, q.p.z, q.p.y), q.p.z);
+            sfx('p_bodydrop', lp, { vol: 1 }); sfx('mon_hit', lp, { vol: 0.9, rate: 0.85 }); sfx('sys_gore', lp, { vol: 0.6, delay: 0.04 });
+            landBlood(lp); if (q.who === 'hero' && window.__camKick) try { window.__camKick(1); } catch { /* */ }
+            const Sc = window.__scream; if (Sc && Sc.say && Sc.pick) try { const id = Sc.pick('hit'); if (id) Sc.say(id, lp, meshesOf(q.who), { vol: 0.9 * C.screamVol }); } catch { /* */ }
+          }
+          if (k >= 1) return false;
+        }
+      }
+      if (u < tR) look = hp;
+    }
+    // 방향 — 날아가는 쪽 · 겨눌 땐 꽁무니를 얼굴로
+    const vel = R.position.clone().sub(prev);
+    if (tail) { const d = R.position.clone().sub(tail); orient(b, d, null, Math.sin(t * 3) * 0.1); b.root.rotateX(-0.35); }
+    else if (look && vel.lengthSq() < 1e-5) { const d = look.clone().sub(R.position); d.y = 0; if (d.lengthSq() > 1e-4) orient(b, d); }
+    else if (vel.lengthSq() > 1e-7) { const d = vel.clone(); const pitch = Math.max(-0.6, Math.min(0.6, -Math.atan2(d.y, Math.hypot(d.x, d.z)))); d.y = 0; if (d.lengthSq() > 1e-8) { orient(b, d, null, Math.sin(t * 2.3) * 0.08); b.root.rotateX(pitch * 0.6); } }
+    // 몸 동작 · 날개
+    b.body.geometry = frames[Math.floor((t * 2.4) * NF) % NF];
+    const ang = C.wingAmp * Math.sin(t * Math.PI * 2 * C.wingHz + (Math.random() - 0.5) * 0.6);
+    for (const k of ['L', 'R']) { const w = b.w[k]; w.piv.rotation.set(0, 0, ang * w.sgn); w.pu.rotation.set(0, 0, C.wingAmp * w.sgn); w.pd.rotation.set(0, 0, -C.wingAmp * 0.8 * w.sgn); w.gm.opacity = C.ghost; w.pu.visible = w.pd.visible = C.ghost > 0.01; }
+    buzzSet(b, R.position);
+    return true;
+  }
+  const bez = (a, m, c, k) => { const o = new T.Vector3(); const u = 1 - k; o.x = u * u * a.x + 2 * u * k * m.x + k * k * c.x; o.y = u * u * a.y + 2 * u * k * m.y + k * k * c.y; o.z = u * u * a.z + 2 * u * k * m.z + k * k * c.z; return o; };
+  function grabStart(ev, total) {
+    const who = ev.q.who;
+    if (who === 'hero') { if (window.__heroDrop) window.__heroDrop(total); return; }
+    if (mpOn()) return;   // 같이 하기 봇은 서버가 쓰러뜨린다
+    const b = who; if (!b.acts || !b.hero) return;
+    if (b.body && G.mpApi && G.mpApi.botBurnDrop) G.mpApi.botBurnDrop(b);
+    const dn = window.__botDown ? window.__botDown(b) : [1.6, 1.6];
+    b.stun = total + dn[1]; b.__dn = [total, dn[1]]; b.state = 'stunned'; b.knockT = 99; b.kS = null; b.kH = 0;
+    if (!b.knockDir) b.knockDir = new T.Vector3(); b.knockDir.set(0, 0, 0);
+    if (b.acts.hit) { b.acts.hit.reset(); b.acts.hit.timeScale = (G.cfg.hitAnimSpeed || 1.65) * 1.3; G.mpApi.botAct(b, 'hit', 0.06); }
+  }
+  function landBlood(p) {
+    const gore = G.gore || (G.mpApi && G.mpApi.gore); if (!gore || !gore.drop || !(C.landBlood > 0)) return;
+    const n = Math.round(30 * C.landBlood), p0 = new T.Vector3(p.x, p.y + 0.3, p.z);
+    for (let i = 0; i < n; i++) { const a = rnd(0, 6.28), s = rnd(1, 4.5); gore.drop(p0, new T.Vector3(Math.cos(a) * s, rnd(1.5, 4.5), Math.sin(a) * s)); }
+  }
+
+  /* ── 혼자 할 때 차례 ───────────────────────────────── */
+  let nextT = null;
+  function schedule(dt) {
+    const playing = G.started && !window.__explore && !(window.__death && window.__death.active && window.__death.active()) && !(G.game && G.game.over);
+    if (!playing || mpOn() || !(C.on > 0.5) || !H.ready) { nextT = null; return; }
+    if (nextT === null) nextT = now() + C.every * rnd(0.65, 1.35);
+    if (now() < nextT) return;
+    const ps = people().filter((q) => !downOf(q) && !H.busy(q.who) && !crowOn(q.who));
+    if (!ps.length) { nextT = now() + 3; return; }
+    nextT = now() + C.every * rnd(0.65, 1.35);
+    const q = ps[(Math.random() * ps.length) | 0];
+    attack(q.who, Math.random() < C.venom ? 'venom' : 'grab', { local: true });
+  }
+
+  /* ── 매 프레임 ─────────────────────────────────────── */
+  let last = 0, hooked = false;
+  function hook() {
+    hooked = true;
+    const S = G.scene, pb = S.onBeforeRender, pa = S.onAfterRender;
+    S.onBeforeRender = function (...a) { if (pb) pb.apply(this, a); try { liftApply(); swellApply(); } catch (e) { if (!hook.err) { hook.err = true; console.warn('[hornet]', e); } } };
+    S.onAfterRender = function (...a) { swellRestore(); if (pa) pa.apply(this, a); };
+    // 카메라가 나를 따라가도록 — 높이를 카메라 계산 전에도(knock.js __camPost 앞)
+    const wrapCam = () => { const cp = window.__camPost; if (!cp || cp.__hn) return false; const f = function (cam, target) { try { if (lifts.has('hero')) liftApply(); } catch { /* */ } return cp.call(this, cam, target); }; f.__hn = true; window.__camPost = f; return true; };
+    if (!wrapCam()) { const iv = setInterval(() => { if (wrapCam()) clearInterval(iv); }, 500); }
+  }
+  (function loop() {
+    requestAnimationFrame(loop);
+    try {
+      G = window.__G; if (!G || !G.scene || !G.THREE || !G.hero) return;
+      if (!T) { T = G.THREE; V = new T.Vector3(); Q = G.scene.quaternion.clone(); M4 = G.scene.matrix.constructor; }
+      if (!H.ready) {
+        if (!loading && !failed && G.loadGLB && G.game && G.game.bots && G.game.bots.some((b) => b.mixer)) load();
+        if (baked && performance.now() - matT > 1000) { matT = performance.now(); try { mats(); } catch (e) { failed = true; console.warn('[hornet] 재질', e); } }
+        return;
+      }
+      if (!hooked) hook();
+      const t = now(), dt = Math.min(0.1, t - (last || t)); last = t;
+      schedule(dt); dropsStep(dt);
+      for (let i = H.events.length - 1; i >= 0; i--) {
+        const ev = H.events[i];
+        let alive = false; try { alive = step(ev, dt, t); } catch (e) { console.warn('[hornet]', e); alive = false; }
+        if (!alive || t - ev.t0 > 30) { lifts.delete(ev.q.who); freeBee(ev.bee); H.events.splice(i, 1); }
+      }
+    } catch (e) { if (!loop.err) { loop.err = true; console.warn('[hornet]', e); } }
+  })();
+  const prevR = window.__onRestart;   // 다시 시작 — 다 치운다
+  window.__onRestart = function () { if (prevR) prevR.apply(this, arguments); for (const ev of H.events) { lifts.delete(ev.q.who); freeBee(ev.bee); } H.events.length = 0; for (const [, s] of H.swells) for (const m of s.blobs) if (m.parent) m.parent.remove(m); H.swells.clear(); nextT = null; };
+
+  /* ── 패널 — 오른쪽 아래 「왕벌」 ───────────────────────── */
+  const ROWS = [
+    ['등장'], ['on', '나타남(1 = 켬)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['every', '나타나는 간격(평균)', 10, 240, 1, (v) => `${Math.round(v)}초`],
+    ['venom', '독 쏘기 비율(나머지는 낚아채기)', 0, 1, 0.05, (v) => `${Math.round(v * 100)}%`], ['app', '날아오는 시간', 1, 6, 0.1, (v) => `${(+v).toFixed(1)}초`],
+    ['size', '크기(몸 길이)', 0.4, 3, 0.05, (v) => `${(+v).toFixed(2)}m`], ['buzz', '붕붕 소리 크기', 0, 2, 0.05, (v) => `${Math.round(v * 100)}%`],
+    ['날개'], ['wingHz', '날갯짓 빠르기', 4, 60, 1, (v) => `${Math.round(v)}번/초`], ['wingAmp', '날갯짓 폭', 0.1, 1.5, 0.05, (v) => `${Math.round(v * 57.3)}°`], ['ghost', '잔상(번짐) 진하기', 0, 0.8, 0.02, (v) => `${Math.round(v * 100)}%`],
+    ['독 — 얼굴이 부풀어 뒹군다'], ['swell', '부푸는 정도', 0, 1.6, 0.05, (v) => `+${Math.round(v * 100)}%`], ['swellUp', '부풀어 오르는 시간', 0.2, 4, 0.1, (v) => `${(+v).toFixed(1)}초`],
+    ['swellHold', '부은 채로 있는 시간', 0, 30, 0.5, (v) => `${(+v).toFixed(1)}초`], ['lump', '울퉁불퉁 꿈틀거림', 0, 2, 0.05, (v) => `${Math.round(v * 100)}%`],
+    ['venomScream', '비명(0 = 큰 비명 아무거나 · 움직이면 들려줌)', 0, 40, 1, 'scream'], ['screamVol', '비명 크기', 0, 1.5, 0.05, (v) => `${Math.round(v * 100)}%`],
+    ['낚아채기 — 하늘 높이 들어 올려 떨군다'], ['height', '올라가는 높이', 4, 30, 0.5, (v) => `${(+v).toFixed(1)}m`], ['lift', '올라가는 시간', 0.8, 6, 0.1, (v) => `${(+v).toFixed(1)}초`],
+    ['grabScream', '잡힐 때 비명(0 = 큰 비명 아무거나)', 0, 40, 1, 'scream'], ['landBlood', '떨어질 때 피', 0, 3, 0.05, (v) => `${Math.round(v * 100)}%`],
+  ];
+  const MPK = ['on', 'every', 'venom', 'app', 'height', 'lift'];   // 같이 하기는 방장 값(서버 시간표)
+  function fmt(r, v) { if (r[5] === 'scream') { const L = window.__scream && window.__scream.list, i = Math.round(v); if (!i) return '아무거나'; const it = L && L[i - 1]; return it ? `${i} · ${it.name}` : `${i}`; } return r[5](v); }
+  function panel() {
+    const st = document.createElement('style');
+    st.textContent = `#hn-btn{position:fixed;right:214px;bottom:14px;z-index:60;padding:6px 12px;background:rgba(10,8,6,.82);color:#e9e1d0;border:1px solid #5a4a3a;font:700 12px "UIF","Noto Serif KR",serif;letter-spacing:.2em;cursor:pointer}
+body:not(.tz-live) #hn-btn{visibility:hidden}
+#hn-p{position:fixed;right:12px;top:60px;bottom:52px;z-index:61;width:320px;overflow-y:auto;padding:12px 14px;background:rgba(12,9,7,.92);color:#e9e1d0;border:1px solid #6b5a1c;font:12px "UIF","Noto Serif KR",serif;display:none}
+#hn-p.on{display:block} #hn-p h4{margin:0 0 8px;font-size:14px;letter-spacing:.3em;color:#d8a326}
+#hn-p h5{margin:12px 0 2px;font-size:12px;color:#d9b07a;letter-spacing:.12em;border-top:1px solid #3a2f20;padding-top:8px}
+#hn-p .bs{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+#hn-p button.b{padding:7px 4px;background:#2a210b;color:#f2e6d6;border:1px solid #8a6a1c;font:700 12px "UIF","Noto Serif KR",serif;cursor:pointer}
+#hn-p label{display:flex;justify-content:space-between;align-items:center;margin:6px 0 0;color:#c9bfae;gap:8px} #hn-p label b{color:#f2e6d6;font-weight:600;white-space:nowrap}
+#hn-p input[type=range]{width:100%;margin:2px 0 0}
+#hn-p .n{font-size:11px;color:#8d877a;margin-top:10px;line-height:1.5}`;
+    document.head.appendChild(st);
+    const btn = document.createElement('button'); btn.id = 'hn-btn'; btn.type = 'button'; btn.textContent = '왕벌';
+    const p = document.createElement('div'); p.id = 'hn-p';
+    p.innerHTML = `<h4>雀蜂 · 왕벌</h4>
+<div class="bs"><button class="b" data-a="v0">▶ 독 쏘기 — 나</button><button class="b" data-a="g0">▶ 낚아채기 — 나</button><button class="b" data-a="v1">▶ 독 쏘기 — 가까운 봇</button><button class="b" data-a="g1">▶ 낚아채기 — 가까운 봇</button></div>
+${ROWS.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</span><b data-v="${r[0]}"></b></label><input type="range" data-k="${r[0]}" min="${r[2]}" max="${r[3]}" step="${r[4]}">`)).join('')}
+<div class="bs" style="margin-top:10px"><button class="b" data-a="def">기본값</button><span class="svs"></span></div>
+<div class="n">값은 움직이는 즉시 이 브라우저에 남는다 · 「저장」은 모두의 기본값 · 같이 하기에선 나타남 · 간격 · 비율 · 날아오는 시간 · 높이 · 올라가는 시간은 방장 값 · 쓰러져 있거나 · 맞는 중 · 불타는 사람은 노리지 않는다</div>`;
+    document.body.appendChild(btn); document.body.appendChild(p);
+    if (window.__settings && window.__settings.button) p.querySelectorAll('.svs').forEach((sv) => sv.appendChild(window.__settings.button()));
+    const sync = () => { for (const r of ROWS) { if (r.length === 1) continue; const i = p.querySelector(`input[data-k="${r[0]}"]`), b = p.querySelector(`b[data-v="${r[0]}"]`); if (i && document.activeElement !== i) i.value = C[r[0]]; if (b) b.textContent = fmt(r, C[r[0]]); } };
+    sync(); H.sync = sync;
+    btn.addEventListener('click', () => { p.classList.toggle('on'); sync(); });
+    p.addEventListener('input', (e) => {
+      const k = e.target && e.target.dataset && e.target.dataset.k; if (!k) return; const r = ROWS.find((x) => x[0] === k); C[k] = +e.target.value; save(); sync();
+      if (r && r[5] === 'scream' && C[k] > 0) { const Sc = window.__scream, it = Sc && Sc.list[Math.round(C[k]) - 1]; if (it && Sc.play) try { Sc.play(it.key, null, { vol: 0.8 * C.screamVol }); } catch { /* */ } }
+    });
+    p.addEventListener('click', (e) => {
+      const a = e.target && e.target.dataset && e.target.dataset.a; if (!a) return;
+      if (a === 'def') { Object.assign(C, DEF); save(); sync(); return; }
+      const ok = H.demo(a[0] === 'v' ? 'venom' : 'grab', a[1] === '1');
+      if (!ok) { e.target.textContent = H.ready ? '지금은 못 함(쓰러짐 · 이미 공격 중)' : '왕벌을 받는 중…'; setTimeout(sync, 10); setTimeout(() => { const lab = { v0: '▶ 독 쏘기 — 나', g0: '▶ 낚아채기 — 나', v1: '▶ 독 쏘기 — 가까운 봇', g1: '▶ 낚아채기 — 가까운 봇' }; e.target.textContent = lab[a]; }, 1600); }
+    });
+  }
+  (function waitBody() { if (!document.body) { setTimeout(waitBody, 100); return; } panel(); })();
+  // 「저장」(settings.js — 모두의 기본값)
+  (function reg() {
+    if (!window.__settings || !window.__settings.reg) { setTimeout(reg, 500); return; }
+    window.__settings.reg('hornet', { get: () => Object.assign({}, C), set: (o) => { if (!o) return; for (const k in DEF) if (typeof o[k] === 'number' && isFinite(o[k])) C[k] = o[k]; if (H.sync) H.sync(); } });
+  })();
+  // 같이 하기 — 방장 값을 서버로(mp.js 가 부른다)
+  H.mine = () => { const o = {}; for (const k of MPK) o['hn_' + k] = C[k]; return o; };
 })();
 
 </script>
@@ -13540,7 +14068,7 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
    · Esc 잠시 멈춤 창 · 같이 하기 창처럼 위에 얹히는 창은 반만 어둡게 · 더 짧게
    · 보기만(게임 판단 무관) · 끄기: __screenFade.on = 0 */
 (() => {
-  const F = (window.__screenFade = { on: 1, dur: 0.7, outDur: 0.3, dark: 1, lite: 0.55, liteDur: 0.35 });
+  const F = (window.__screenFade = { on: 1, dur: 0.7, outDur: 0.3, dark: 1, lite: 0.55, liteDur: 0.35, hold: 0.35, settle: 12, maxHold: 2.5, startHold: 0.7 });
   let el = null, sig = null, ready = false;
   function state() {
     const s = document.getElementById('start'), c = document.getElementById('csel'), p = document.getElementById('sr-pause'), G = window.__G;
@@ -13564,6 +14092,18 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
       if (!el) { el = document.createElement('div'); el.id = 'screen-fade'; el.style.cssText = 'position:fixed;inset:0;background:#000;pointer-events:none;z-index:2147483000;opacity:0'; document.body.appendChild(el); }
       if (!ready) { if (window.__gate && window.__gate.ok && window.__gate.ok()) { ready = true; sig = state(); } return; }   // 처음 불러오기 → 타이틀은 그대로(불러오기 화면이 따로 걷힌다)
       const st = state();
+      if (hold) {   // b698 — 단추로 바꾼 뒤: 새 화면이 다 서기 전(카메라 · 배우를 세우는 몇 프레임)엔 검게 덮어 둔다
+        const now = performance.now();
+        if (st.screen !== hold.sig) { hold.sig = st.screen; hold.n = 0; hold.changed = true; } else hold.n++;
+        if (hold.lan) { const Bd = window.__badge; if (Bd && Bd.restAll) Bd.restAll(); }   // b699 — 사원증 줄을 검은 동안 처음 자세로(늘어진 줄이 보이지 않게)
+        const ready = now - hold.t0 > Math.max(F.hold, hold.min || 0) * 1000 && (hold.changed ? hold.n >= F.settle : now - hold.t0 > 600);
+        if (ready || now - hold.t0 > F.maxHold * 1000) { hold = null; kick(F.dark, F.dur); }
+        sig = st; return;
+      }
+      if (st.screen !== sig.screen && /C/.test(sig.screen) && !/[CT]/.test(st.screen) && F.startHold > 0) {   // b699 — 캐릭터 선택 → 게임: 검게 끊고(0.7초) 사원증 줄을 처음 자세로 · 그다음 시작 연출이 밝아진다(사용자)
+        if (anim) anim.cancel(); anim = el.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 10, fill: 'forwards' });
+        hold = { t0: performance.now(), sig: st.screen, n: 0, changed: true, min: F.startHold, lan: true }; sig = st; return;
+      }
       if (st.screen !== sig.screen) kick(F.dark, F.dur);
       else if (st.over !== sig.over) kick(F.lite, F.liteDur);
       sig = st;
@@ -13573,13 +14113,14 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
   //   (b689 는 바뀐 뒤에 검게 덮기만 해 새 화면을 짓는 동안 멎은 옛 화면 → 뚝 검정 → 걷힘으로 「전혀 부드럽지 않다」 — 사용자)
   let passing = false;
   let pending = false;
+  let hold = null;   // b698 — { t0, sig, n, changed } — 뒤로 · 타이틀로 누를 때 잠깐 맵 위에서 본 화면이 비치던 것(사용자 「선택창에서 뒤로 눌렀더니 게임 맵 위에서 본 화면이 아주 짧게 보였다가 타이틀」)
   function fadeOut(cb) {
     if (pending) return; pending = true;
     if (anim) anim.cancel(); const o = curOp(), ms = Math.max(30, F.outDur * 1000 * (1 - o));
     anim = el.animate([{ opacity: o }, { opacity: 1 }], { duration: ms, easing: 'cubic-bezier(.4,0,.7,1)', fill: 'forwards' });
     setTimeout(() => {   // 애니메이션 끝 알림(onfinish)에 기대지 않는다 — 가려진 창에서는 오지 않을 수 있다
       pending = false; passing = true; try { cb(); } catch (e) { console.warn('[screenfade]', e); } finally { passing = false; }
-      setTimeout(() => kick(F.dark, F.dur), 30);
+      hold = { t0: performance.now(), sig: sig ? sig.screen : '', n: 0, changed: false };   // 걷기는 loop 가 새 화면이 서면(바뀐 뒤 12 프레임 · 0.35초 넘게) — 예전엔 30ms 뒤 바로 걷혀 중간 화면이 비쳤다
     }, ms + 20);
   }
   const SEL = '#start-btn, #mp-btn, #csel .scene-back, .sr-modes button, #sr-pause button';
@@ -14304,6 +14845,16 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     if (b.acts.hit) { b.acts.hit.reset(); b.acts.hit.timeScale = (G.cfg.hitAnimSpeed || 1.65) * 1.3; G.mpApi.botAct(b, 'hit', 0.06); }
     return true;
   }
+  // b699 — 다른 것(왕벌 독)도 같은 「쓰러져 구르기」 — who: 'hero' 또는 봇 · 같이 하기 꼭두각시는 구르기만(쓰러짐은 서버 6)
+  R.dropRoll = (who) => {
+    const G = window.__G; if (!G) return false;
+    if (who === 'hero') { if (window.__heroDrop && window.__heroDrop(LIE)) { startRoll(G.body.main, 'hero'); return true; } return false; }
+    if (!who || !who.model) return false;
+    if (mpOn()) { startRoll(who.model, who); return true; }
+    if (botDrop(who)) { who.__dn = [LIE, 1.6]; startRoll(who.model, who); return true; }   // 일어나기는 1.6초 남았을 때(예전 맞음의 __dn 이 남아 있으면 바로 일어났다)
+    return false;
+  };
+  R.LIE = LIE;
   function tick() {
     const G = window.__G, B = window.__burn;
     if (!G || !G.started || !B || !B.list) return;
@@ -14489,6 +15040,15 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     if (!on) {
       if (S.active && G) hold(G, false);
       S.active = false; S.sm = null; S.cd = null; S.lb = 0; S.fovAdd *= 0.8; window.__camSkipClip = false;
+      // b701 — 둘러보기 · 다른 시점에서도 까마귀가 나를 쪼는 동안 다가간다(사용자 「까마귀가 쪼을 때 카메라 연출은?」 — 둘러보기 카메라는 이 파일을 안 거쳤다) · 보는 방향은 그대로 · 머리 뒤 1.8m
+      if (G && G.hero && (window.__explore || G.started)) {
+        const cw = window.__crowCam ? clamp(+window.__crowCam() || 0, 0, 1.5) : 0; S.ex = (S.ex || 0) + (cw - (S.ex || 0)) * ex(dt, cw > (S.ex || 0) ? 0.5 : 1.0);
+        if (S.ex > 0.003) {
+          const h = G.hero.position, dx = cam.x - h.x, dz = cam.z - h.z, l = Math.hypot(dx, dz) || 1, k = Math.min(1, S.ex), D = Math.max(1.2, 3.4 * (1 - 0.47 * S.ex)), py = h.y + 1.55;
+          cam.x += (h.x + dx / l * D - cam.x) * k; cam.y += (py + 0.25 - cam.y) * k; cam.z += (h.z + dz / l * D - cam.z) * k;
+          target.x += (h.x - target.x) * k; target.y += (py - target.y) * k; target.z += (h.z - target.z) * k;
+        }
+      }
       return;
     }
     if (!S.active) { hold(G, true); S.active = true; }
@@ -19327,6 +19887,7 @@ function onState(k, v) {
     case 'chat': onChat(v); break;
     case 'T': if (MP.on) applyTune(v); break;
     case 'R': if (MP.on && window.__crowNet) window.__crowNet(v, myTeam); break;   // b665 — 까마귀 공격(서버가 고른 팀)
+    case 'H': if (MP.on && window.__hornetNet) window.__hornetNet(v, myTeam); break;   // b699 — 왕벌(서버가 고른 팀 · 기믹 · 시간표)
     default: break;
   }
 }
@@ -19406,6 +19967,7 @@ function drawRoom() {
   if (st.host === myId && room) { const BF = window.__basefx, ZF = window.__zonefence, T = st.T || {}, want = {};   // b648 — 방장: 토리이 크기 · 자리 · 본진 모양을 서버로(바뀐 것만)
     if (BF && BF.toff) { want.toriiK = BF.tk || 1; for (let t = 0; t < 3; t++) { want['tx' + t] = BF.toff[t].x || 0; want['tz' + t] = BF.toff[t].z || 0; } }
     if (ZF) { want.zA = ZF.sA; want.zB = ZF.sB; want.zPaint = ZF.paint > 0.5 ? 1 : 0; }
+    { const HN = window.__hornet; if (HN && HN.mine) Object.assign(want, HN.mine()); }   // b699 — 왕벌(나타남 · 간격 · 비율 · 날아오는 시간 · 높이 · 올라가는 시간)
     { const MT = window.__mat; if (MT && MT.d) { want.mOn = MT.on > 0.5 && MT.zone > 0.5 ? 1 : 0; want.mW = MT.w; want.mAr = MT.ar; want.mOx = MT.ox; want.mOz = MT.oz; want.mRot = MT.rot; want.mD = MT.d(); } }   // b661 — 돗자리 = 본진(서버 판정)
     const diff = {}; for (const k in want) if (typeof want[k] === 'number' && Math.abs(want[k] - (typeof T[k] === 'number' ? T[k] : NaN)) > 0.004 || (typeof T[k] !== 'number' && typeof want[k] === 'number')) diff[k] = want[k];
     const key = JSON.stringify(diff); if (Object.keys(diff).length && key !== sentZone) { sentZone = key; room.send('tune', diff); } }
