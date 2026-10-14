@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-670 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-671 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,13 +431,12 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-670'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-671'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
 </script>
 <link rel="icon" href="data:,">
-
 <title>시체쟁탈 — 屍體爭奪</title>
 <style>
   :root { --ink: #d6d2c2; --dim: #7d7b6c; --line: #3b3d34; --bg: rgba(6, 8, 7, .84); --serif: "UIF", "Noto Serif KR", "Nanum Myeongjo", "Batang", serif; }
@@ -3681,7 +3680,7 @@ var MeshoptDecoder = (function () {
         if (E.fillFix !== false) {
           if (!E.fill) G.scene.traverse((o) => { if (!E.fill && o.isPointLight && !o.castShadow && o.decay === 1.5 && o.color.getHex() === 0xd8dde6) E.fill = o; });
           const F = E.fill, h = G.hero && G.hero.position, cp = G.cam.position;
-          if (F && h) { let dx = cp.x - h.x, dz = cp.z - h.z; const l = Math.hypot(dx, dz) || 1; F.position.set(h.x + dx / l * 1.0, h.y + 1.4, h.z + dz / l * 1.0); F.distance = 5; F.intensity = (c.charFill || 0) * 0.494; }
+          if (F && h) { let dx = cp.x - h.x, dz = cp.z - h.z; const l = Math.hypot(dx, dz) || 1; F.position.set(h.x + dx / l * 1.0, h.y + 1.4, h.z + dz / l * 1.0); const fb = E.fillBack != null ? E.fillBack : 1.0, fh = E.fillH != null ? E.fillH : 1.4; F.position.set(h.x + dx / l * fb, h.y + fh, h.z + dz / l * fb); F.distance = E.fillD != null ? E.fillD : 5; F.intensity = E.fillOn === 0 ? 0 : (c.charFill || 0) * 0.494; }   // b671 — 조절 「내 주변 빛」(켜기 · 자리 · 닿는 거리)
         }
         // b627 — 오라 빛(game.js aura · 머리 위 2.2m · 감쇠 2 · 7.5m) — 머리 위 낮게 붙어 있어 곁의 바위 · 카메라 앞 바위가 하얗게 탔다(사용자 「내 앞 오브젝트가 심하게 반사」 — 이 빛만 끄면 멀쩡했다)
         //   → 머리 위 5m · 감쇠 1 · 14m 로 높고 완만하게 · 세기는 내 발밑 밝기가 예전과 같게 · 끄기: E.auraFix = false
@@ -6296,6 +6295,17 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
         get: () => (window.__charlit ? window.__charlit.lit : 0.3), set: (v) => { if (window.__charlit) window.__charlit.lit = v; } },
       { k: 'charBright', label: '몸 색 밝기', min: 0, max: 2.5, step: 0.01, def: 0.85, fmt: (v) => pct(v / 0.85) },
       { k: 'charFill', label: '몸 둘레 빛', min: 0, max: 40, step: 0.5, def: 9, fmt: (v) => pct(v / 9) },
+    ] },
+    // b671 — 내 주변 빛(사용자 「내 앞에 있는 광원을 실제로 켜고 끌 수 있게」) — eyelight.js · perf.js
+    { title: '내 주변 빛', sub: '내 앞 땅이 밝게 빛나는 것 = 「몸 둘레 빛」(나와 카메라 사이 점빛) · 끄면 그 둥근 빛 웅덩이가 사라진다', rows: [
+      { k: 'lit.fillOn', label: '몸 둘레 빛', toggle: true, min: 0, max: 1, step: 1, def: 1, get: () => (window.__eyelight && window.__eyelight.fillOn === 0 ? 0 : 1), set: (v) => { if (window.__eyelight) window.__eyelight.fillOn = v ? 1 : 0; } },
+      { k: 'lit.fillBack', label: '몸 둘레 빛 — 카메라 쪽 거리', min: 0, max: 4, step: 0.05, def: 1, fmt: (v) => v.toFixed(2) + 'm', get: () => { const E = window.__eyelight; return E && E.fillBack != null ? E.fillBack : 1; }, set: (v) => { if (window.__eyelight) window.__eyelight.fillBack = v; } },
+      { k: 'lit.fillH', label: '몸 둘레 빛 — 높이', min: 0.3, max: 6, step: 0.05, def: 1.4, fmt: (v) => v.toFixed(2) + 'm', get: () => { const E = window.__eyelight; return E && E.fillH != null ? E.fillH : 1.4; }, set: (v) => { if (window.__eyelight) window.__eyelight.fillH = v; } },
+      { k: 'lit.fillD', label: '몸 둘레 빛 — 닿는 거리', min: 1, max: 15, step: 0.1, def: 5, fmt: (v) => v.toFixed(1) + 'm', get: () => { const E = window.__eyelight; return E && E.fillD != null ? E.fillD : 5; }, set: (v) => { if (window.__eyelight) window.__eyelight.fillD = v; } },
+      { k: 'lit.eye', label: '눈 앞 시야 빛', toggle: true, min: 0, max: 1, step: 1, def: 1, get: () => { const X = window.__fx; return X && X.on && X.on.eyelight === false ? 0 : 1; }, set: (v) => { const X = window.__fx; if (X && X.on) X.on.eyelight = !!v; } },
+      { k: 'lit.eyeK', label: '눈 앞 시야 빛 — 세기', min: 0, max: 3, step: 0.05, def: 1, fmt: pct, get: () => (window.__eyelight ? window.__eyelight.k : 1), set: (v) => { if (window.__eyelight) window.__eyelight.k = v; } },
+      { k: 'lit.eyeShadow', label: '눈 앞 시야 빛 그림자(일렁이는 그림자)', toggle: true, min: 0, max: 1, step: 1, def: 0, get: () => (window.__perf && window.__perf.eyeShadow > 0.5 ? 1 : 0), set: (v) => { if (window.__perf) window.__perf.eyeShadow = v ? 1 : 0; } },
+      { k: 'auraOn', label: '머리 위 빛', toggle: true, min: 0, max: 1, step: 1, def: 0 },
     ] },
     { title: '화면', sub: '해상도 · 시야 · 화면 필터', rows: [
       { k: 'lowres', label: '해상도', min: 0.25, max: 1, step: 0.05, def: 0.55, fmt: pct },   // 그리는 크기(화면 대비) — 높을수록 선명하고 무겁다
@@ -13228,7 +13238,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
    ④ 화면 밖(카메라 뒤 · 옆 멀리)의 봇 · 시체 · 괴물은 그리는 순간만 숨긴다(뼈대 몸은 화면 밖이어도 늘 그려지게 되어 있었다) — 게임 판단은 그대로(그린 뒤 되돌림)
    · 새 셰이더 없음 · 끄기: __perf.on = 0(전부 원래대로) · 하나씩: __perf.sun / eye / grass / cull = 0 */
 (() => {
-  const P = (window.__perf = { on: 1, sun: 1, eye: 1, grass: 1, cull: 1, stat: {} });
+  const P = (window.__perf = { on: 1, sun: 1, eye: 1, grass: 1, cull: 1, eyeShadow: 0, stat: {} });   // b671 eyeShadow — 눈빛 그림자(기본 끔: 카메라 따라 움직이는 성긴 그림자라 연기처럼 일렁였다 — 사용자)
   let G = null, statics = [], dyn = [], scanT = 0, hooked = false, spot = null, V = null, hid = [];
   const isDynRoot = (o) => dyn.includes(o);
   function roots() {
@@ -13287,12 +13297,16 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       try {
         for (const r of hid) r.visible = true; hid.length = 0;
         // ② 다음 프레임에 쓸 눈빛 그림자 — 지금(빛이 눈빛 자리에 있을 때 · eyelight 가 되돌리기 전) 사람 · 괴물 · 시체만으로
-        if (eyeMode()) {
+        if (eyeMode() && !(P.eyeShadow > 0.5)) {
+          if (!P.eyeEmpty) { const off = []; G.scene.traverse((o) => { if (o.castShadow && (o.isMesh || o.isSkinnedMesh)) { o.castShadow = false; off.push(o); } }); spot.shadow.needsUpdate = true; try { G.renderer.shadowMap.render([spot], S, G.cam); } finally { for (const o of off) o.castShadow = true; } P.eyeEmpty = true; }   // 빈 그림자 지도 한 번 — 그 뒤로는 그리지 않음(그림자 없음 · 비용 0)
+          spot.shadow.needsUpdate = false; P.eyeReady = true;
+        } else if (eyeMode()) {
+          P.eyeEmpty = false;
           const off = []; for (const o of statics) if (o.castShadow) { o.castShadow = false; off.push(o); }
           spot.shadow.needsUpdate = true;
           try { G.renderer.shadowMap.render([spot], S, G.cam); } finally { for (const o of off) o.castShadow = true; }
           spot.shadow.needsUpdate = false; P.eyeReady = true;
-        } else if (spot && P.eyeReady) { spot.shadow.autoUpdate = true; P.eyeReady = false; }
+        } else if (spot && P.eyeReady) { spot.shadow.autoUpdate = true; P.eyeReady = false; P.eyeEmpty = false; }
       } catch (e) { if (!hook.err2) { hook.err2 = true; console.warn('[perf] 눈빛 그림자', e); } }
       if (pa) pa.apply(this, a);
     };
