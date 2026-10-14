@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-680 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-681 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-680'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-681'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -13460,54 +13460,45 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
 
 </script>
 <script>/* uifilter.js */
-/* 타이틀 · 캐릭터 선택창 글자와 UI 에도 화면 필터(2026-10-14 사용자: 「타이틀과 캐릭터 선택창에 나오는 ui 와 폰트들은 화면 필터가 적용되어 있게」)
-   · 3D 화면의 필터(game.js 후처리 — 노이즈 · 주사선 · 색 번짐)는 캔버스에만 걸려 위에 얹힌 글자 · 단추는 깨끗하게 떠 보였다
-   · 같은 느낌을 글자 위에도: ① 노이즈 알갱이(미리 만든 4장을 번갈아 · 매 프레임 자리만 바꿈) ② 주사선 ③ 색 번짐(붉은 · 푸른 그림자 1px) · 살짝 흐림 · 대비
-   · 세기는 화면 필터 값을 따른다(조절 「화면」 노이즈 · 주사선 — 0 이면 없음) · 조절 패널(시연 · 선택창 조절)에는 색 번짐을 걸지 않는다
-   · 타이틀(#start)이나 선택창(#csel)이 보일 때만 · 게임 화면에는 없음(게임 HUD 는 원래 필터 안에서 그려진다) · 끄기: __uiFilter.on = 0 */
+/* 캐릭터 선택창 글자 · 로고 · 단추에 타이틀과 같은 화면 필터(2026-10-14 사용자: 「타이틀과 캐릭터 선택창에 나오는 ui 와 폰트들은 화면 필터가」 · 「왜 선택창 글씨와 ui 로고들은 필터가 안 씌워져 있는 거야」)
+   · 타이틀은 title.js 「필터 — 로고 · 메뉴 · 글」(세피아 · 채도 · 대비 · 밝기 · 흐림 · 색 번짐 · 붉은 빛 번짐 · 알갱이 · 주사선 · 깜빡임 · 흔들림)이 #start 에 걸려 있다
+   · 선택창(#csel)에도 같은 값 그대로 — 타이틀 조절에서 바꾸면 선택창도 따라간다(값은 #start 의 CSS 변수를 그대로 옮겨 쓴다 · 새로 저장하는 값 없음)
+   · 로고 · 「캐릭터를 선택하세요」 · 이름 · 뒤로 · 시작 · 조작 안내 — 조절 패널(선택창 조절)에는 걸지 않는다
+   · b677 까지의 따로 만든 노이즈 · 색 번짐(이 파일의 예전 판)은 타이틀과 달라 뺐다 · 끄기: __uiFilter.on = 0 */
 (() => {
-  const U = (window.__uiFilter = { on: 1, grain: 1, scan: 1, ca: 1 });
-  let el = null, sc = null, tiles = [], fi = 0, lastT = 0;
-  function noiseTile(seed) {
-    const N = 192, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'), d = g.createImageData(N, N);
-    let s = seed * 9301 + 49297; const R = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
-    for (let i = 0; i < N * N; i++) { const v = (R() * 255) | 0; d.data[i * 4] = d.data[i * 4 + 1] = d.data[i * 4 + 2] = v; d.data[i * 4 + 3] = 255; }
-    g.putImageData(d, 0, 0); return c.toDataURL('image/png');
-  }
-  function build() {
-    tiles = [1, 2, 3, 4].map(noiseTile);
-    el = document.createElement('div'); el.id = 'ui-filter';
-    el.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:35;display:none;mix-blend-mode:overlay;background-size:192px 192px;image-rendering:pixelated';
-    sc = document.createElement('div'); sc.id = 'ui-filter-scan';
-    sc.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:35;display:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.55) 0 1px,transparent 1px 3px)';
-    document.body.appendChild(el); document.body.appendChild(sc);
+  const U = (window.__uiFilter = { on: 1 });
+  const VARS = ['--t3fs', '--t3ft', '--t3fc', '--t3fbr', '--t3fb', '--t3fa', '--t3fac', '--t3fgl', '--t3fg', '--t3fl', '--t3ff', '--t3fj'];
+  const SEL = 'body.uif #csel .scene-logo, body.uif #csel h1, body.uif #csel .fr .nm, body.uif #csel .scene-action, body.uif #csel .hint';
+  let styled = false, last = '', wasOn = false, openT = 0;
+  function style() {
+    styled = true;
     const st = document.createElement('style');
-    st.textContent = `body.uif-ca #csel > *:not(.pan):not(svg) { filter: drop-shadow(var(--uif-ca,1.2px) 0 rgba(255,40,30,.38)) drop-shadow(calc(-1 * var(--uif-ca,1.2px)) 0 rgba(0,190,255,.3)) blur(.35px) contrast(1.06); }`;
+    st.textContent = `${SEL} { filter: sepia(var(--t3fs, .32)) saturate(var(--t3ft, .82)) contrast(var(--t3fc, 1.08)) brightness(var(--t3fbr, 1)) blur(var(--t3fb, .35px))
+  drop-shadow(var(--t3fa, 1.2px) 0 0 rgba(255, 0, 0, var(--t3fac, .18))) drop-shadow(calc(var(--t3fa, 1.2px) * -1) 0 0 rgba(0, 200, 255, calc(var(--t3fac, .18) * .7))) drop-shadow(0 0 var(--t3fgl, 0px) rgba(170, 0, 0, .8)); }
+body.uif #csel::before { opacity: var(--t3fg, .11); }
+body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     document.head.appendChild(st);
   }
-  function shown() {
-    const c = document.getElementById('csel');
-    return !!(c && c.classList.contains('on'));   // b677 — 타이틀은 제 필터(title.js 「필터 — 로고 · 메뉴 · 글」)가 있다 — 여기서 덮으면 그 필터가 지워졌다(사용자 「타이틀 메뉴 · 로고 필터가 해제」)
-  }
-  function loop(now) {
-    requestAnimationFrame(loop);
+  function loop() {
     try {
-      if (!document.body) return; if (!el) build();
-      const G = window.__G, cf = (G && G.cfg) || {}, on = U.on > 0.5 && shown();
-      const gr = on ? Math.max(0, (cf.grain != null ? cf.grain : 1.5) / 1.5) * U.grain : 0, sn = on ? Math.max(0, (cf.scan != null ? cf.scan : 1.2) / 1.2) * U.scan : 0;
-      el.style.display = gr > 0.01 ? 'block' : 'none'; sc.style.display = sn > 0.01 ? 'block' : 'none';
-      document.body.classList.toggle('uif-ca', on && U.ca > 0);
-      if (!on) return;
-      document.body.style.setProperty('--uif-ca', (1.2 * U.ca).toFixed(2) + 'px');
-      if (gr > 0.01 && now - lastT > 55) {   // 18장/초 — 화면 노이즈처럼 지글지글
-        lastT = now; fi = (fi + 1 + ((Math.random() * 2) | 0)) % 4;
-        el.style.backgroundImage = `url(${tiles[fi]})`; el.style.backgroundPosition = `${(Math.random() * 192) | 0}px ${(Math.random() * 192) | 0}px`;
-        el.style.opacity = Math.min(0.5, 0.2 * gr).toFixed(3);
+      if (document.body) {
+        if (!styled) style();
+        const c = document.getElementById('csel'), s = document.getElementById('start'), on = U.on > 0.5 && !!c && c.classList.contains('on');
+        if (on && !wasOn) openT = performance.now(); wasOn = on;
+        document.body.classList.toggle('uif', on);
+        if (on && s) {
+          const vals = VARS.map((k) => s.style.getPropertyValue(k)).join('|');
+          if (vals !== last) { last = vals; VARS.forEach((k) => { const v = s.style.getPropertyValue(k); if (v) c.style.setProperty(k, v); }); }
+          const cf = (window.__title3 && window.__title3.cf) || {}, an = [];
+          if (cf.fF > 0.001) an.push('t3flick 5s linear infinite'); if (cf.fJ > 0.01) an.push('t3jit .42s steps(1, end) infinite');
+          const v = an.length && performance.now() - openT > 2500 ? an.join(', ') : '';   // 등장 연출(선택창 조절 「등장 모션」)이 끝난 뒤에만 · 없으면 손대지 않음
+          for (const e of c.querySelectorAll('.scene-logo, h1, .fr .nm, .scene-action, .hint')) if (e.style.animation !== v) e.style.animation = v;   // 깜빡임 · 흔들림도 타이틀처럼
+        }
       }
-      if (sn > 0.01) { sc.style.opacity = Math.min(0.4, 0.13 * sn).toFixed(3); sc.style.backgroundPosition = `0 ${((now / 40) | 0) % 3}px`; }
     } catch (e) { if (!loop.err) { loop.err = true; console.warn('[uifilter]', e); } }
+    setTimeout(loop, 200);
   }
-  requestAnimationFrame(loop);
+  loop();
 })();
 
 </script>
