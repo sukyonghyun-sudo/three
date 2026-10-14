@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-679 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-680 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-679'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-680'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6215,10 +6215,10 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
       { k: 'crowSlow', label: '쪼이는 동안 걸음', min: 0.2, max: 1, step: 0.05, unit: '배', def: 0.55 },
       { k: 'crowWob', label: '쪼이는 동안 방향 비틀림', min: 0, max: 1.5, step: 0.05, unit: 'rad', def: 0.6 },
       { k: 'crowCount', label: '떼 크기', min: 0, max: 16, step: 1, unit: '마리', def: 10 },
-      { k: 'crowSpeed', label: '날아다니는 빠르기', min: 0.2, max: 1.5, step: 0.05, unit: '배', def: 0.6 },   // b675
+      { k: 'crowSpeed', label: '평소 날아다니는 빠르기(쪼으러 올 때와 따로)', min: 0.2, max: 1.5, step: 0.05, unit: '배', def: 0.6 },   // b675
       { k: 'crowFeed', label: '시체에 내려앉아 파먹는 빈도', min: 0, max: 1, step: 0.05, unit: '', def: 0.7 },
       { k: 'crowFlee', label: '사람이 이만큼 오면 날아감', min: 2, max: 15, step: 0.5, unit: 'm', def: 6.5 },
-      { k: 'crowDive', label: '내려오는 시간(길수록 천천히)', min: 0.8, max: 5, step: 0.1, unit: '초', def: 2.6 },   // b673
+      { k: 'crowDive', label: '쪼으러 내려오는 시간(길수록 천천히 · 평소 비행과 따로)', min: 0.8, max: 6, step: 0.1, unit: '초', def: 2.6 },   // b673
       { k: 'crowBloodN', label: '쫄 때 피 방울 수', min: 0, max: 60, step: 1, unit: '개', def: 16 },
       { k: 'crowBloodSize', label: '피 방울 크기', min: 0.1, max: 3, step: 0.05, unit: '배', def: 0.55 },
       { k: 'crowBloodSpd', label: '피 튀는 세기', min: 0.2, max: 3, step: 0.05, unit: '배', def: 1 },
@@ -13154,7 +13154,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       if (d > 18) { const a = rnd(0, 6.28); c.x = hd.x + Math.cos(a) * 13; c.z = hd.z + Math.sin(a) * 13; c.y = hd.y + rnd(5, 8); }   // 멀면 화면 밖 하늘에서 내리꽂는다
       c.st = 'dive'; c.t = 0; c.q = q; c.slot = k; c.t0 = t0 + k * rnd(0.05, 0.25); c.d0 = { x: c.x, y: c.y, z: c.z };
       c.sa = [0, rnd(0.7, 1.1), rnd(-1.1, -0.7)][k] + rnd(-0.2, 0.2); c.sy = [0.04, rnd(0.08, 0.2), rnd(0.15, 0.32)][k];   // 자리 — 정면 · 옆 · 위
-      c.f1 = rnd(11, 19) * (0.55 + 0.45 * SPD()); c.f2 = rnd(4, 8) * (0.55 + 0.45 * SPD()); c.tempo = rnd(0.8, 1.3); c.frate = rnd(2.6, 3.4);   // 흔들림 · 찌르는 박자 · 날갯짓 — 마리마다
+      c.f1 = rnd(11, 19); c.f2 = rnd(4, 8);   /* b680 — 쪼을 때는 평소 비행 빠르기와 따로(사용자) */ c.tempo = rnd(0.8, 1.3); c.frate = rnd(2.6, 3.4);   // 흔들림 · 찌르는 박자 · 날갯짓 — 마리마다
     });
     if (!free.length) return false;
     attacks.push({ q, t0, said: false });
@@ -13242,7 +13242,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       } else if (c.st === 'dive') {
         // b669 — 내리꽂기: 멀리서 잠깐 노리다가(앞 45%) 확 가속해 얼굴로 꽂힌다(사용자 「날아올 때도 빠르게」) — 끝까지 속도를 줄이지 않는다
         const hd = headOf(c.q), fy = c.q.yaw() + c.sa, ex = hd.x + Math.sin(fy) * 0.4, ez = hd.z + Math.cos(fy) * 0.4, ey = hd.y + c.sy;
-        const u = Math.min(1, Math.max(0, (t - c.t0) / DIN())), e = u < 0.45 ? 0.12 * (u / 0.45) : 0.12 + 0.88 * Math.pow((u - 0.45) / 0.55, 2.4);
+        const u = Math.min(1, Math.max(0, (t - c.t0) / DIN())), e = u < 0.3 ? 0.1 * (u / 0.3) : 0.1 + 0.9 * (() => { const w = (u - 0.3) / 0.7; return w * w * (3 - 2 * w); })();   // b680 — 노리다가 고르게 다가와 끝에 붙는다(끝에서 확 꽂히던 것 — 빠르기는 「쪼으러 내려오는 시간」만으로)
         const px = c.x, py = c.y, pz = c.z;
         c.x = c.d0.x + (ex - c.d0.x) * e + Math.sin(t * 5 + c.i) * 0.3 * (1 - e); c.z = c.d0.z + (ez - c.d0.z) * e + Math.cos(t * 4 + c.i) * 0.3 * (1 - e); c.y = c.d0.y + (ey - c.d0.y) * e + Math.sin(Math.min(1, e * 1.3) * Math.PI) * 0.8;
         c.vx = (c.x - px) / Math.max(dt, 1e-3); c.vy = (c.y - py) / Math.max(dt, 1e-3); c.vz = (c.z - pz) / Math.max(dt, 1e-3);
@@ -13265,8 +13265,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       // ── 그리기 ──
       const fl = c.st !== 'ground';
       if (fl) {
-        const rate = c.st === 'attack' ? c.frate : c.st === 'dive' ? ((t - c.t0) / DIN() < 0.45 ? 1.4 : 0.3) : (c.vy > 0.5 ? 1.5 : c.vy < -1.2 ? 0.25 : 1) * c.rate;   // 내리꽂을 땐 날개를 거의 편 채 미끄러짐 · 오를 땐 힘껏
-        c.ph = (c.ph + dt * rate * (c.st === 'attack' ? 1 : 0.55 + 0.45 * SPD()) * NF / 0.367) % NF;
+        const rate = c.st === 'attack' ? c.frate : c.st === 'dive' ? ((t - c.t0) / DIN() < 0.3 ? 1.4 : 0.6) : (c.vy > 0.5 ? 1.5 : c.vy < -1.2 ? 0.25 : 1) * c.rate;   // 내리꽂을 땐 날개를 거의 편 채 미끄러짐 · 오를 땐 힘껏
+        c.ph = (c.ph + dt * rate * (c.st === 'attack' || c.st === 'dive' ? 1 : 0.55 + 0.45 * SPD()) * NF / 0.367) % NF;
       }
       const g = fl ? frames[c.ph | 0] : perch;
       c.wing.geometry = g[0]; c.body.geometry = g[1] || g[0];
