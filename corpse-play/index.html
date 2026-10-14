@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-709 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-711 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-709'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-711'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6274,6 +6274,9 @@ window.__NAVGRID = {"sig":"n8|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
       { k: 'crowScream', label: '쪼일 때 비명(0 = 없음 · 움직이면 들려줌)', min: 0, max: 40, step: 1, def: 0, fmt: (v) => { const L = window.__scream && window.__scream.list, i = Math.round(v); if (!i) return '없음'; const it = L && L[i - 1]; if (it && window.__crowScreamPrev !== i) { const first = window.__crowScreamPrev === undefined; window.__crowScreamPrev = i; if (!first) try { const G = window.__G; window.__scream.play(it.key, G.hero.position, { vol: 0.7 }); } catch { /* */ } } return it ? it.name : '—'; } },
       { k: 'crowScreamVol', label: '비명 크기', min: 0, max: 1.5, step: 0.05, def: 0.8, fmt: pct },
       { k: 'crowCam', label: '쪼일 때 카메라 다가감(0 = 끔)', min: 0, max: 1.5, step: 0.05, def: 1, fmt: pct },   // b695
+      { k: 'crowCamIn', label: '쪼일 때 카메라 다가가는 시간', min: 0.2, max: 4, step: 0.05, unit: '초', def: 1.8 },   // b710
+      { k: 'crowCamOut', label: '쪼임 끝나고 카메라 돌아오는 시간', min: 0.2, max: 4, step: 0.05, unit: '초', def: 1.6 },
+      { k: 'crowCamLead', label: '카메라가 움직이기 시작하는 때(+ 면 닿기 전 · − 면 닿은 뒤)', min: -1.5, max: 2, step: 0.05, unit: '초', def: 0.15 },
       { k: 'crowStain', label: '쫄 때 얼굴에 핏자국 남는 빈도(쌓인다)', min: 0, max: 1, step: 0.05, def: 0.25, fmt: pct },   // b703
     ] },
     { title: '피', sub: '업고 갈 때 흐르는 피', rows: [
@@ -13228,7 +13231,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const attacks = [];
   // b695 — 까마귀가 나를 쪼는 동안 카메라가 자연스럽게 다가간다(camera.js · 사용자 「까마귀한테 공격당할 때는 카메라를 이 정도로 자연스럽게 클로즈업」)
   //   내리꽂기 0.8초 전부터 쪼기가 끝날 때까지 · 세기 = 조절 「쪼일 때 카메라 다가감」(0 = 끔)
-  window.__crowCam = () => { const t = now(); for (const A of attacks) { if (!A.q || A.q.who !== 'hero') continue; const u = t - A.t0; if (u > DIN() - 1.3 && u < DIN() + DUR_ATK + 0.15) return Math.max(0, cfg('crowCam', 1));   /* b703 — 1.3초 전부터(다가가는 1.4초가 쪼기 시작과 맞게) */ } return 0; };
+  window.__crowCam = () => { const t = now(); for (const A of attacks) { if (!A.q || A.q.who !== 'hero') continue; const u = t - A.t0; if (u > DIN() - cfg('crowCamLead', 0.15) && u < DIN() + DUR_ATK + 0.15) return Math.max(0, cfg('crowCam', 1));   /* b710 — 까마귀가 얼굴에 닿을 무렵부터(예전 1.3초 전 — 「카메라가 먼저 움직인다」) */   /* b703 — 1.3초 전부터(다가가는 1.4초가 쪼기 시작과 맞게) */ } return 0; };
   F.attack = (who) => {
     const ps = people().filter((q) => !downOf(q));   // b699 — 쓰러져 있거나 · 맞는 중 · 불타는 사람은 노리지 않는다
     const q = who ? ps.find((x) => x.who === who) : ps[(Math.random() * ps.length) | 0];
@@ -14378,6 +14381,32 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
   const VARS = ['--t3fs', '--t3ft', '--t3fc', '--t3fbr', '--t3fb', '--t3fa', '--t3fac', '--t3fgl', '--t3fg', '--t3fl', '--t3ff', '--t3fj'];
   const SEL = 'body.uif #csel .scene-logo, body.uif #csel h1, body.uif #csel .fr .nm, body.uif #csel .scene-action, body.uif #csel .hint';
   let styled = false, last = '', wasOn = false, openT = 0;
+  // b710 — 화면 아래 단추 · 글 · 패널을 올린다(사용자 「전체 화면으로 하면 하단 패널들이 안 보여 클릭을 못 한다 · 전체적으로 조금씩 올려」) — 올리는 양: --uilift(56px) · 끄기: __uiLift(0)
+  //   + 캐릭터 선택창 「뒤로 · 시작」 = 시안 3(크게 · 붉은 띠 · 아래 어둡게) · 위로 올림(사용자 「3번으로 · 전체적으로 위로 조금」)
+  function liftStyle() {
+    const st = document.createElement('style'); st.id = 'ui-lift';
+    st.textContent = `:root{--uilift:56px}
+#hud{bottom:calc(14px + var(--uilift))!important}
+#sr-stamp{bottom:calc(18px + var(--uilift))!important}
+#sr-tune-btn,#sr-show-btn,#lit-cmp,#cin-btn,#hn-btn{bottom:calc(14px + var(--uilift))!important}
+#cin-p,#hn-p{bottom:calc(52px + var(--uilift))!important}
+#sr-look{bottom:calc(46px + var(--uilift))!important}
+#sr-tour{bottom:calc(58px + var(--uilift))!important}
+#mp-say{bottom:calc(48px + var(--uilift))!important}
+#mp-out{bottom:calc(16px + var(--uilift))!important}
+#mp-feed{bottom:calc(100px + var(--uilift))!important}
+#sr-tune,#sr-show{padding-bottom:calc(20px + var(--uilift))!important}
+#csel .scene-start,#csel .scene-back{outline:none!important}
+#csel .scene-start{translate:-40px calc(22px - var(--uilift) - 14px);scale:1.3;transform-origin:100% 100%;text-shadow:0 2px 6px #000,0 0 16px rgba(255,70,50,.5)}
+#csel .scene-start::before{filter:brightness(1.4) drop-shadow(0 0 12px rgba(230,40,25,.8))}
+#csel .scene-back{translate:40px calc(22px - var(--uilift) - 14px);scale:1.25;transform-origin:0 100%;padding-left:34px!important;text-shadow:0 2px 6px #000}
+#csel .scene-back::after{content:'';position:absolute;left:6px;right:-6px;top:52%;height:62%;transform:translateY(-50%) skewX(-12deg);background:linear-gradient(90deg,rgba(122,23,18,0),rgba(122,23,18,.85) 18%,rgba(122,23,18,.75) 80%,rgba(122,23,18,0));z-index:-1;filter:drop-shadow(0 0 8px rgba(200,30,20,.6))}
+#csel .hint{bottom:calc(24px + var(--uilift))!important;top:auto!important;z-index:6;opacity:.85}
+#csel .fr .nm{translate:0 calc(-1 * var(--uilift))}
+#csel .cs-band{position:absolute;left:0;right:0;bottom:0;height:calc(112px + var(--uilift));background:linear-gradient(to bottom,rgba(0,0,0,0),rgba(0,0,0,.8) 45%,#000 75%);pointer-events:none;z-index:1}`;
+    document.head.appendChild(st);
+  }
+  window.__uiLift = (px) => { document.documentElement.style.setProperty('--uilift', (+px || 0) + 'px'); };
   function style() {
     styled = true;
     const st = document.createElement('style');
@@ -14391,7 +14420,8 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
   function loop() {
     try {
       if (document.body) {
-        if (!styled) style();
+        if (!styled) { style(); liftStyle(); }
+        { const c0 = document.getElementById('csel'); if (c0 && !c0.querySelector('.cs-band')) { const d = document.createElement('div'); d.className = 'cs-band'; c0.appendChild(d); } }
         const c = document.getElementById('csel'), s = document.getElementById('start'), on = U.on > 0.5 && !!c && c.classList.contains('on');
         if (on && !wasOn) openT = performance.now(); wasOn = on;
         document.body.classList.toggle('uif', on);
@@ -15320,6 +15350,27 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
   const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
   const ss = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
   const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+  // b710 — 까마귀 클로즈업 공통(사용자 「카메라가 먼저 움직이는 느낌 · 끝나고 돌아갈 때 방향이 반대로 되는 느낌」)
+  //   ① 들어가는 시간 · 돌아오는 시간 조절(기본 1.8 · 1.6초 · 처음과 끝은 천천히) ② 얼굴 쪽(좌 · 우)은 시작할 때 한 번만 정하고 끝까지 그대로(예전엔 끝날 무렵 다시 골라 반대쪽으로 튀었다)
+  //   ③ 돌아가는 각도를 이어서 잰다(±180° 를 넘어도 같은 길로 · 예전엔 짧은 쪽으로 뒤집혀 반대로 돌았다) ④ 돌아올 때는 들어갈 때의 길을 그대로 되짚는다
+  const cfgN = (k, d) => { const c = window.__G && window.__G.cfg; return c && typeof c[k] === 'number' && isFinite(c[k]) ? c[k] : d; };
+  function crowRamp(o, dt) {
+    const cw = window.__crowCam ? clamp(+window.__crowCam() || 0, 0, 1.5) : 0;
+    if (cw > 0) o.s = cw;
+    o.on = cw > 0;
+    o.p = clamp((o.p || 0) + (cw > 0 ? dt / Math.max(0.2, cfgN('crowCamIn', 1.8)) : -dt / Math.max(0.2, cfgN('crowCamOut', 1.6))), 0, 1);
+    return ss(o.p) * (o.s || 1);
+  }
+  // 얼굴 쪽 각도(기준 yaw 에서 얼마나 돌아야 하는지) — 이어서
+  function crowTurn(o, base, fy) {
+    if (!o.lk) o.lk = { side: wrap(base - fy) >= 0 ? 1 : -1, d: null };
+    if (o.on || o.lk.d === null) {
+      let nd = wrap(fy + o.lk.side * (+conf.crowFaceSide || 0.55) - base);
+      if (o.lk.d !== null) { while (nd - o.lk.d > Math.PI) nd -= 2 * Math.PI; while (nd - o.lk.d < -Math.PI) nd += 2 * Math.PI; }
+      o.lk.d = nd;
+    }
+    return o.lk.d;
+  }
   const ex = (dt, tau) => 1 - Math.exp(-dt / Math.max(1e-4, tau));
   const S = {
     active: false, sm: null, lb: 0, lbHeld: false, lbUsed: false, drag: false, manualT: -1e9,
@@ -15391,15 +15442,14 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
       S.active = false; S.sm = null; S.cd = null; S.lb = 0; S.fovAdd *= 0.8; window.__camSkipClip = false;
       // b701 — 둘러보기 · 다른 시점에서도 까마귀가 나를 쪼는 동안 다가간다(사용자 「까마귀가 쪼을 때 카메라 연출은?」 — 둘러보기 카메라는 이 파일을 안 거쳤다) · 보는 방향은 그대로 · 머리 뒤 1.8m
       if (G && G.hero && (window.__explore || G.started)) {
-        const cw = window.__crowCam ? clamp(+window.__crowCam() || 0, 0, 1.5) : 0; if (cw > 0) S.exS = cw; S.exP = clamp((S.exP || 0) + (cw > 0 ? dt / 1.4 : -dt / 1.2), 0, 1); S.ex = ss(S.exP) * (S.exS || 1);   // b703 — 천천히
+        S.ce = S.ce || {}; S.ex = crowRamp(S.ce, dt);   // b710
         if (S.ex > 0.003) {
           const h = G.hero.position, k = Math.min(1, S.ex), D = Math.max(1.2, 3.4 * (1 - 0.47 * S.ex)), py = h.y + 1.55;
-          const fy0 = G.hero.rotation.y; S.fy = S.fy === undefined ? fy0 : S.fy + wrap(fy0 - S.fy) * ex(dt, 0.35);
-          if (S.fside === undefined || S.ex < 0.05) S.fside = wrap(Math.atan2(cam.x - h.x, cam.z - h.z) - S.fy) >= 0 ? 1 : -1;
-          const a = S.fy + S.fside * (+conf.crowFaceSide || 0.55);   // b703 — 얼굴 쪽(3/4)에서
+          const fy0 = G.hero.rotation.y; S.fy = S.fy === undefined ? fy0 : S.fy + wrap(fy0 - S.fy) * ex(dt, 1.0);
+          const b0 = Math.atan2(cam.x - h.x, cam.z - h.z), a = b0 + crowTurn(S.ce, b0, S.fy) * k;   // 지금 카메라 쪽에서 얼굴 쪽으로 — 이어서
           cam.x += (h.x + Math.sin(a) * D - cam.x) * k; cam.y += (py + 0.2 - cam.y) * k; cam.z += (h.z + Math.cos(a) * D - cam.z) * k;
           target.x += (h.x - target.x) * k; target.y += (py - target.y) * k; target.z += (h.z - target.z) * k;
-        }
+        } else S.ce.lk = null;
       }
       return;
     }
@@ -15432,7 +15482,7 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     K.monF += (monF - K.monF) * ex(dt, 0.8);
     { const cw = window.__crowCam ? clamp(+window.__crowCam() || 0, 0, 1.5) : 0;   // b695 — 까마귀가 나를 쪼는 동안 다가감(crowflock.js)
       // b703 — 한 번에 확 다가가지 않게(사용자 「확 한번에 부자연스럽게 확대」): 들어갈 때 1.4초 · 나올 때 1.2초 같은 빠르기로 · 처음과 끝은 천천히(ss)
-      if (cw > 0) K.crowS = cw; K.crowP = clamp((K.crowP || 0) + (cw > 0 ? dt / 1.4 : -dt / 1.2), 0, 1); K.crow = ss(K.crowP) * (K.crowS || 1); }
+      S.cc = S.cc || {}; K.crow = crowRamp(S.cc, dt); void cw; }   // b710 — 들어가는 · 돌아오는 시간 조절(crowRamp)
     // 내 본진 가까이 — 13m 안에 들어서면 천천히 물러나며(최대 40%) 조금 더 내려다봐(+9°) 본진 바닥 · 토리이가 한눈에 들어온다 · 5m 안이면 가득 · 쫓기는 동안은 쉰다
     //   (2026-10-12 사용자: 「내 본진에 가까워질수록 천천히 자연스럽게 줌아웃하면서 내 본진을 보여주는 카메라 · 본진 위치 파악이 쉽게」) · 끄기: 시연실 연출 「내 본진 가까이 카메라」
     { let want = 0; const X = window.__fx, zb = G.zones && G.zones.list && G.zones.list.find((z) => z.team === 0);
@@ -15506,8 +15556,8 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     dist = Math.max(0.8, dist);
     let yc = sm.yaw + Math.PI * lbS;
     // b703 — 까마귀가 쪼는 동안은 뒤통수 말고 얼굴이 보이게 — 몸이 보는 쪽(앞)에서 카메라 쪽으로 비스듬히(3/4) 천천히 돌아 들어간다(보기만 · 조작 방향은 그대로)
-    { const fy0 = G.hero.rotation.y; S.fy = S.fy === undefined ? fy0 : S.fy + wrap(fy0 - S.fy) * ex(dt, 0.35);
-      if (kC > 0.003) { if (S.fside === undefined || kC < 0.05) S.fside = wrap(sm.yaw - S.fy) >= 0 ? 1 : -1; const want = S.fy + S.fside * (+conf.crowFaceSide || 0.55); yc += wrap(want - yc) * ss(Math.min(1, kC)); } }
+    { const fy0 = G.hero.rotation.y; S.fy = S.fy === undefined ? fy0 : S.fy + wrap(fy0 - S.fy) * ex(dt, kC > 0.003 ? 1.0 : 0.35);   // 쪼이는 동안은 몸이 비틀려도(crowWob) 천천히 따라간다
+      if (kC > 0.003) yc += crowTurn(S.cc, sm.yaw, S.fy) * Math.min(1, kC); else if (S.cc) S.cc.lk = null; }   // b710 — 쪽은 한 번만 · 각도는 이어서 · 돌아올 땐 같은 길
     const cx = Math.sin(yc), cz = Math.cos(yc), rx = cz, rz = -cx;   // rx·rz = 화면 오른쪽
     const sh = 0.5 * lbS;
     // 업기 구도 — 시체 머리 반대 어깨로 22cm
