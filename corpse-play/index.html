@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-708 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-709 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-708'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-709'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2037,6 +2037,8 @@ var MeshoptDecoder = (function () {
     q.tex.needsUpdate = true;
   }
   // 토리이 모형을 문 가로 방향으로 재서(기둥·지붕 끝) 그 바깥, 걸을 수 있는 땅을 고른다. 없으면 문 앞
+  const SIGN_FIX = [{ lat: 6.13, fwd: -0.5 }, { lat: 5.23, fwd: -0.5 }, { lat: 5.63, fwd: -0.5 }];   // b709 — 2026-10-14 사용자 「항상 토리이와 푯말은 현재 위치 고정」 — 푯말 밑자리(조절 「푯말 좌우 · 앞뒤」는 여기에 더한다)
+  if (!window.__signOff) window.__signOff = [{ x: -2.05, z: -1.5 }, { x: -2.35, z: 1.5 }, { x: -2.65, z: -0.5 }];   // 저장값이 없어도 지금 자리
   function sideSpot(z) {
     const V = G.THREE, root = z.torii.root, tx = z.torii.rec.x, tz = z.torii.rec.z;
     const lx = z.fz, lz = -z.fx;                          // 문 가로 방향
@@ -2074,7 +2076,9 @@ var MeshoptDecoder = (function () {
       const tsc = z.torii.root ? +z.torii.root.scale.x.toFixed(3) : 1, navOk = !window.__nav || window.__nav.settled;
       if ((q.lbl !== lbl || q.tx !== z.torii.rec.x || q.tz !== z.torii.rec.z || q.tsc !== tsc || q.px === undefined) && (navOk || q.px === undefined)) {   // 토리이가 옮겨지거나 커지면 자리를 다시 잡는다
         q.lbl = lbl; q.tx = z.torii.rec.x; q.tz = z.torii.rec.z; q.tsc = tsc;
-        const s = sideSpot(z);
+        // b709 — 2026-10-14 사용자 「항상 토리이와 푯말은 현재 위치 고정」 — 자리를 찾지 않고 숫자로 박는다(토리이 기준 문 가로 · 앞뒤 m · 2026-10-14 저녁 그대로) · 길찾기 · 바위 · 소품 규칙이 바뀌어도 움직이지 않는다 · 예전처럼 찾기: __signAuto = true
+        const FX = SIGN_FIX[t], lx0 = z.fz, lz0 = -z.fx;
+        const s = window.__signAuto === true || !FX ? sideSpot(z) : { x: z.torii.rec.x + lx0 * FX.lat + z.fx * FX.fwd, z: z.torii.rec.z + lz0 * FX.lat + z.fz * FX.fwd };
         q.px = s.x; q.pz = s.z; q.gy = G.groundAt(q.px, q.pz) - 0.04;   // 말뚝이 땅에 살짝 박히게
       }
       { const so = (window.__signOff && window.__signOff[t]) || { x: 0, z: 0 }, k = so.x + ',' + so.z;   // b637 — 본진마다 푯말 옮기기(조절(Tab) 「본진 토리이 · 푯말」 좌우 · 앞뒤 · 사용자)
@@ -3068,9 +3072,9 @@ var MeshoptDecoder = (function () {
   // 기둥 크기(2026-10-12 사용자: 「본진들 기둥 3개 동시에 같이 사이즈 키울 수 있는 패널 따로」) — 조절(Tab) 「본진 기둥」 굵기 · 높이 · 셋 모두 같이 · 밑동은 땅에 붙은 채 위로 자란다
   // 본진 토리이 크기(2026-10-12 사용자: 「본진들 기둥은 빛기둥 말고 서 있는 구조물 — 신사 같은 거」) — 조절(Tab) 「본진 토리이」 · 셋 모두 같이 · 밑동(소품 원점)은 그 자리
   //   크기가 바뀌면 nav.js 소품 서명이 바뀌어 기둥 둘레 못 지나가는 칸을 새로 찍는다(같이 하기 서버 봇의 격자는 기본 크기 그대로)
-  BF.tk = 1;
+  BF.tk = 1.75;   // b709 — 2026-10-14 사용자 「항상 토리이와 푯말은 현재 위치 고정」 — 저장값이 없어도 지금 크기(1.75배) · 자리
   // b637 — 본진마다 토리이 옮기기(사용자 「토리이 각각 위치 변경 · 크기만 다 같이」) — 문 가로(좌우) · 문 앞뒤 m · 높이는 그 자리 땅에 맞춤 · 조절(Tab) 「본진 토리이 · 푯말」
-  BF.toff = [{ x: 0, z: 0, y: 0 }, { x: 0, z: 0, y: 0 }, { x: 0, z: 0, y: 0 }];   // b638 — 높낮이 y(사용자 「토리이가 커지면서 위로 올라가는데 높낮이도」)
+  BF.toff = [{ x: 0, z: 0, y: -0.32 }, { x: -0.9, z: 2.5, y: -0.18 }, { x: -0.5, z: 0.9, y: -0.1 }];   // b709 — 2026-10-14 사용자 「항상 토리이와 푯말은 현재 위치 고정」(예전 기본 0)   // b638 — 높낮이 y(사용자 「토리이가 커지면서 위로 올라가는데 높낮이도」)
   BF.toriiMove = (t, x, z, y) => {
     const o = BF.toff[t]; if (!o) return; if (isFinite(x)) o.x = x; if (isFinite(z)) o.z = z; if (isFinite(y)) o.y = y; o.y = o.y || 0;
     const G2 = window.__G, zz = G2 && G2.zones && G2.zones.list.find((q) => q.team === t), r = zz && zz.torii && zz.torii.root; if (!r) return;
@@ -3734,6 +3738,20 @@ var MeshoptDecoder = (function () {
       if (pa) pa.apply(this, a);
     };
     E.ready = true; console.log('[eyelight] 눈 앞 시야 — 손전등 빛을 빌림');
+  })();
+  // b709 — 비교 단추(사용자 「캐릭터 라이트 있던 것과 지금을 비교해 보게 · 원래 캐릭터 섬광 있던 버전 보는 버튼」) — 오른쪽 아래 「빛: 지금 / 예전」
+  //   예전 = 내 앞 1m 보조등(몸 둘레 빛) 켬 · 내 몸 자체 밝기는 원래대로 / 지금 = 보조등 끔 · 내 몸만 자체 밝기 2배 · 누를 때마다 바뀐다(저장 안 함 — 판을 다시 열면 「지금」)
+  (function cmpBtn() {
+    if (!document.body) { setTimeout(cmpBtn, 200); return; }
+    const st = document.createElement('style');
+    st.textContent = `#lit-cmp{position:fixed;right:272px;bottom:14px;z-index:60;padding:6px 12px;background:rgba(10,8,6,.82);color:#e9e1d0;border:1px solid #5a4a3a;font:700 12px "UIF","Noto Serif KR",serif;letter-spacing:.12em;cursor:pointer}
+#lit-cmp.old{border-color:#c9a24a;color:#f3dca0}
+body:not(.tz-live) #lit-cmp{visibility:hidden}`;
+    document.head.appendChild(st);
+    const b = document.createElement('button'); b.id = 'lit-cmp'; b.type = 'button';
+    const show = () => { const old = E.fillOn !== 0; b.textContent = old ? '빛: 예전(앞 조명)' : '빛: 지금'; b.classList.toggle('old', old); };
+    b.addEventListener('click', () => { E.fillOn = E.fillOn === 0 ? 1 : 0; show(); });
+    document.body.appendChild(b); show(); setInterval(show, 500);
   })();
   E.demo = () => { const X = window.__fx; if (X && X.on) X.on.eyelight = true; const G = window.__G; if (G && G.cfg.torch && G.set) G.set('torch', false); return true; };
 })();
@@ -6290,14 +6308,15 @@ window.__NAVGRID = {"sig":"n8|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     ] },
     // 본진 토리이(2026-10-12 사용자: 「본진들 기둥 3개 동시에 같이 사이즈 키울 수 있는 패널 따로」 → 「빛기둥 말고 서 있는 구조물 — 신사 같은 거」) — basefx.js toriiSize · 셋을 한꺼번에
     { title: '본진 토리이 · 푯말', sub: '크기는 셋 같이 · 자리는 본진마다(좌우 = 문 가로 · 앞뒤 = 문 앞쪽 +)', save: true, rows: [
-      { k: 'torii.size', label: '크기', min: 0.5, max: 2.5, step: 0.05, def: 1, fmt: pct,
+      { k: 'torii.size', label: '크기', min: 0.5, max: 2.5, step: 0.05, def: 1.75, fmt: pct,   // b709 — 기본값 = 지금(고정)
         get: () => (window.__basefx ? window.__basefx.tk : 1), set: (v) => { if (window.__basefx && window.__basefx.toriiSize) window.__basefx.toriiSize(v); } },
       // b637 — 본진마다 토리이 · 시체 푯말(에마) 자리(사용자 「토리이 각각 위치 변경과 본진 푯말 위치도 각각」)
       ...[0, 1, 2].flatMap((t) => {
         const nm = t === 0 ? 'P1(나)' : 'P' + (t + 1);
-        const TR = (ax, lab) => ({ k: `torii.t${t}.${ax}`, label: `${nm} 토리이 ${lab}`, min: -6, max: 6, step: 0.05, def: 0, fmt: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`,
+        const FIXT = [{ x: 0, z: 0, y: -0.32 }, { x: -0.9, z: 2.5, y: -0.18 }, { x: -0.5, z: 0.9, y: -0.1 }][t], FIXS = [{ x: -2.05, z: -1.5 }, { x: -2.35, z: 1.5 }, { x: -2.65, z: -0.5 }][t];   // b709 — 「기본값」 = 지금 자리(고정 · 사용자)
+        const TR = (ax, lab) => ({ k: `torii.t${t}.${ax}`, label: `${nm} 토리이 ${lab}`, min: -6, max: 6, step: 0.05, def: FIXT[ax], fmt: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`,
           get: () => { const B = window.__basefx; return B && B.toff ? (B.toff[t][ax] || 0) : 0; }, set: (v) => { const B = window.__basefx; if (B && B.toriiMove) B.toriiMove(t, ax === 'x' ? v : NaN, ax === 'z' ? v : NaN, ax === 'y' ? v : NaN); } });
-        const SG = (ax, lab) => ({ k: `sign.t${t}.${ax}`, label: `${nm} 푯말 ${lab}`, min: -8, max: 8, step: 0.05, def: 0, fmt: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`,
+        const SG = (ax, lab) => ({ k: `sign.t${t}.${ax}`, label: `${nm} 푯말 ${lab}`, min: -8, max: 8, step: 0.05, def: FIXS[ax], fmt: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`,
           get: () => { const S = window.__signOff; return S && S[t] ? S[t][ax] : 0; }, set: (v) => { const S = window.__signOff || (window.__signOff = [{ x: 0, z: 0 }, { x: 0, z: 0 }, { x: 0, z: 0 }]); S[t][ax] = v; } });
         return [TR('x', '좌우'), TR('z', '앞뒤'), Object.assign(TR('y', '높낮이'), { min: -4, max: 4, step: 0.02 }), SG('x', '좌우'), SG('z', '앞뒤')];   // b638 — 토리이 높낮이
       }),
