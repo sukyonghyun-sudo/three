@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-650 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-653 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-650'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-653'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6225,6 +6225,15 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
           get: () => { const S = window.__signOff; return S && S[t] ? S[t][ax] : 0; }, set: (v) => { const S = window.__signOff || (window.__signOff = [{ x: 0, z: 0 }, { x: 0, z: 0 }, { x: 0, z: 0 }]); S[t][ax] = v; } });
         return [TR('x', '좌우'), TR('z', '앞뒤'), Object.assign(TR('y', '높낮이'), { min: -4, max: 4, step: 0.02 }), SG('x', '좌우'), SG('z', '앞뒤')];   // b638 — 토리이 높낮이
       }),
+    ] },
+    // b651 — 본진 돗자리(사용자 「큰 돗자리 깔아 놓고 · 내 영역에 배치 · 사이즈나 색 조절」) — mat.js
+    { title: '본진 돗자리', sub: '내 본진에 깐다(세 본진 모두도) · 둥근 영역 한가운데 · 토리이를 따라감', rows: [
+      ...[['on', '깔기(1 = 켬)', 0, 1, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['all', '세 본진 모두(1 = 예)', 0, 1, 1, 0, (v) => (v > 0.5 ? '셋 다' : '내 본진만')],
+        ['w', '크기(가로 m)', 1, 14, 0.05, 4.2, (v) => `${v.toFixed(2)}m`], ['ar', '세로 비율', 0.4, 2.5, 0.01, 1, pct],
+        ['ox', '좌우', -6, 6, 0.05, 0, (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`], ['oz', '앞뒤(문 안쪽 +)', -6, 6, 0.05, 0, (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`],
+        ['oy', '높이(땅 위)', -0.3, 0.5, 0.005, 0.02, (v) => `${(v * 100).toFixed(1)}cm`], ['rot', '돌리기', -180, 180, 1, 0, (v) => `${Math.round(v)}°`], ['tilt', '땅 경사 따라(1 = 예)', 0, 1, 1, 1, (v) => (v > 0.5 ? '예' : '평평')],
+        ['bright', '밝기', 0.1, 3, 0.01, 1, pct], ['hue', '색조', 0, 360, 1, 30, (v) => `${Math.round(v)}°`], ['tint', '색 입히기', 0, 1, 0.01, 0, pct]]
+        .map(([k, label, min, max, step, def, fmt]) => ({ k: 'mat.' + k, label, min, max, step, def, fmt, get: () => { const m = window.__mat; return m && m[k] != null ? m[k] : def; }, set: (v) => { if (window.__mat) window.__mat[k] = v; } })),
     ] },
     // b628 — 본진 영역 색 · 테두리 라인 진하기(사용자 「본진 영역 색과 테두리 라인 진하기 조절하는 패널」) — zonefence.js · 셋 모두
     { title: '본진 영역', sub: '바닥 색 · 테두리 라인 진하기 · 본진 셋 모두', save: true, rows: [
@@ -12741,6 +12750,100 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
     if (!ready) { const G = window.__G; if (G && G.scene && G.THREE && G.cam && (G.started || (window.__title3 && window.__title3.on))) { let cnt = 0; G.scene.traverse((o) => { if (o.isMesh) cnt++; }); if (cnt > 50) ready = setup(); } }
     if (ready) hook();
     setTimeout(boot, ready ? 1000 : 400);
+  })();
+})();
+
+</script>
+<script>/* mat.js */
+/* 본진 돗자리(2026-10-14 사용자: 「차라리 큰 돗자리 깔아 놓고 그 위에 올리는 게 낫겠네」 · 준 모델 unhyun__straw_mat_b.glb → 깃허브 corpse-props/straw_mat_b.glb)
+   · 내 본진(P1)에 깐다 · 「세 본진 모두」를 켜면 셋 다 · 둥근 본진 영역 한가운데(토리이 자리 · 크기를 따라) · 문 방향으로 돌려 놓는다
+   · 조절(Tab) 「본진 돗자리」 — 켜기 · 세 본진 · 크기(폭 m) · 세로 비율 · 좌우 · 앞뒤 · 높이 · 돌리기 · 기울기(땅 경사 따라) · 밝기 · 색조 · 색 입히기
+   · 새 셰이더 없음: 모델의 재질(노멀 · 거칠기 · AO 그림 — 새 프로그램이 생긴다) 대신 장면에 이미 있는 「그림 한 장」 재질을 복제해 돗자리 그림만 끼운다
+   · 보이는 것만(판정 · 서버 무관) · 판이 시작된 뒤에만 보인다(타이틀 · 캐릭터 선택에는 없음) */
+(() => {
+  const M = (window.__mat = { on: 1, all: 0, w: 4.2, ar: 1, ox: 0, oz: 0, oy: 0.02, rot: 0, tilt: 1, bright: 1, hue: 30, tint: 0, ready: false, list: [] });
+  const FILE = 'corpse-props/straw_mat_b.glb';
+  let src = null, loading = false, failed = false, base = null;   // base = { geo, tex, w, d, cx, cz, y0 } — 모델을 가로 1 로 맞춘 기준
+  function pickMat(G) {
+    let pick = null;
+    G.scene.traverse((o) => {
+      if (pick || !o.isMesh || o.isSkinnedMesh || o.isInstancedMesh || !o.visible || !o.geometry || !o.geometry.attributes.uv) return;
+      const m = o.material; if (!m || Array.isArray(m) || m.type !== 'MeshStandardMaterial' || !m.map) return;
+      if (m.transparent || m.alphaTest > 0 || m.vertexColors || m.normalMap || m.roughnessMap || m.metalnessMap || m.aoMap || m.emissiveMap || m.lightMap || m.alphaMap || m.bumpMap || m.envMap || m.displacementMap) return;
+      if (o.geometry.attributes.color || o.geometry.morphAttributes.position) return;
+      const own = (k) => Object.prototype.hasOwnProperty.call(m, k);
+      if (own('onBeforeCompile') && !(own('customProgramCacheKey') && String(m.customProgramCacheKey()).endsWith('occ2'))) return;
+      if (window.__swayMats && window.__swayMats.has && window.__swayMats.has(m)) return;
+      if (/Ground|Concrete/.test(o.name)) pick = { m, o };
+    });
+    return pick;
+  }
+  function load(G) {
+    loading = true;
+    G.loadGLB(FILE).then((gl) => {
+      let mesh = null; gl.scene.updateMatrixWorld(true); gl.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });
+      if (!mesh) throw new Error('돗자리 메시 없음');
+      // 모델 공간 → 세상(가로 · 위 · 세로) — 가장 얇은 축을 위로
+      const g = mesh.geometry.clone(); g.applyMatrix4(mesh.matrixWorld);
+      for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);   // 접선 · 둘째 uv 를 빼야 빌린 재질과 같은 셰이더(프로그램이 하나 더 생겼다)
+      const p = g.attributes.position, mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9];
+      for (let i = 0; i < p.count; i++) for (let k = 0; k < 3; k++) { const v = p.getComponent(i, k); if (v < mn[k]) mn[k] = v; if (v > mx[k]) mx[k] = v; }
+      const ext = [0, 1, 2].map((k) => mx[k] - mn[k]), up = ext.indexOf(Math.min(...ext));
+      const ax = [0, 1, 2].filter((k) => k !== up), wide = ext[ax[0]] >= ext[ax[1]] ? ax[0] : ax[1], deep = wide === ax[0] ? ax[1] : ax[0];
+      const W = ext[wide], c = [0, 1, 2].map((k) => (mn[k] + mx[k]) / 2);
+      // 다시 놓기: x = 가로(긴 쪽) · y = 위 · z = 세로 · 가로 1 로 · 바닥 = 0
+      const out = new Float32Array(p.count * 3);
+      const perm = [wide, up, deep], odd = ((perm[0] > perm[1]) + (perm[0] > perm[2]) + (perm[1] > perm[2])) % 2 === 1, zs = odd ? -1 : 1;   // 축 바꿈이 뒤집기면 세로를 뒤집어 앞면 그대로
+      for (let i = 0; i < p.count; i++) { out[i * 3] = (p.getComponent(i, wide) - c[wide]) / W; out[i * 3 + 1] = (p.getComponent(i, up) - mn[up]) / W; out[i * 3 + 2] = zs * (p.getComponent(i, deep) - c[deep]) / W; }
+      p.array.set(out); p.needsUpdate = true; if (g.attributes.normal) g.computeVertexNormals(); g.computeBoundingSphere();
+      const sm = mesh.material, tex = sm && sm.map;
+      src = { geo: g, tex, d: ext[deep] / W };
+      console.log('[mat] 돗자리 받음 — 가로:세로', (1).toFixed(2) + ':' + src.d.toFixed(2), '정점', p.count);
+    }).catch((e) => { failed = true; console.warn('[mat] 돗자리를 받지 못했습니다', e); });
+  }
+  function make(G) {
+    const pk = pickMat(G); if (!pk) return false;
+    const m = pk.m.clone(); m.map = src.tex; if (src.tex && pk.m.map && pk.m.map.colorSpace !== undefined) src.tex.colorSpace = pk.m.map.colorSpace;
+    if (Object.prototype.hasOwnProperty.call(pk.m, 'onBeforeCompile')) { m.onBeforeCompile = pk.m.onBeforeCompile; m.customProgramCacheKey = pk.m.customProgramCacheKey; }   // 같은 셰이더
+    m.name = 'strawmat'; if (m.roughness !== undefined) { m.roughness = 0.95; m.metalness = 0; }
+    base = { m };
+    for (let t = 0; t < 3; t++) {
+      const o = new pk.o.constructor(src.geo, m); o.name = 'strawmat' + t; o.castShadow = false; o.receiveShadow = !!pk.o.receiveShadow; o.matrixAutoUpdate = true; o.visible = false;
+      G.scene.add(o); M.list.push(o);
+    }
+    console.log('[mat] 돗자리 — 빌린 재질', pk.m.name || pk.o.name);
+    return true;
+  }
+  const hsl = (h, s, l) => { const a = s * Math.min(l, 1 - l), f = (n) => { const k = (n + h / 30) % 12; return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); }; return [f(0), f(8), f(4)]; };
+  function place(G) {
+    const ZF = window.__zonefence, zs = G.zones && G.zones.list; if (!zs || !ZF || !ZF.torii || !ZF.dims) return;
+    const d = ZF.dims(), on = M.on > 0.5 && G.started && !(window.__death && window.__death.active && window.__death.active());
+    { const [r, g, b] = hsl(((M.hue % 360) + 360) % 360, 0.9, 0.5), k = Math.max(0, Math.min(1, M.tint)); base.m.color.setRGB(M.bright * (1 - k + k * r * 2), M.bright * (1 - k + k * g * 2), M.bright * (1 - k + k * b * 2)); }
+    for (const z of zs) {
+      const o = M.list[z.team]; if (!o) continue;
+      o.visible = on && (z.team === 0 || M.all > 0.5); if (!o.visible) continue;
+      const T = ZF.torii(z), rx = z.fz, rz = -z.fx, cx = T.x + z.fx * (d.C + M.oz) + rx * M.ox, cz = T.z + z.fz * (d.C + M.oz) + rz * M.ox;
+      const yaw = Math.atan2(-rz, rx) + M.rot * Math.PI / 180,   /* 긴 쪽 = 문 가로 */ W = M.w, D = W * src.d * M.ar;
+      // 땅 높이 · 경사(네 귀 평균) — 기울기 1 이면 경사를 따른다
+      const ca = Math.cos(yaw), sa = Math.sin(yaw), hx = W / 2, hz = D / 2;
+      const gh = (u, v) => { const x = cx + ca * u + sa * v, zz = cz - sa * u + ca * v, y = G.groundAt(x, zz); return isFinite(y) ? y : NaN; };
+      const y0 = gh(0, 0), yR = gh(hx * 0.8, 0), yL = gh(-hx * 0.8, 0), yF = gh(0, hz * 0.8), yB = gh(0, -hz * 0.8);
+      const ok = [y0, yR, yL, yF, yB].every(isFinite), yc = ok ? Math.max(y0, (yR + yL + yF + yB) / 4) : (isFinite(y0) ? y0 : 0);
+      o.position.set(cx, yc + M.oy, cz);
+      o.rotation.order = 'YXZ'; o.rotation.set(ok && M.tilt > 0.5 ? -Math.atan2(yF - yB, hz * 1.6) : 0, yaw, ok && M.tilt > 0.5 ? Math.atan2(yR - yL, hx * 1.6) : 0);
+      o.scale.set(W, W, W * M.ar);
+    }
+  }
+  (function loop() {
+    try {
+      const G = window.__G;
+      if (G && G.scene && G.loadGLB && G.zones && G.zones.list.length && !failed) {
+        if (!src && !loading) load(G);
+        if (src && !base) { if (make(G)) M.ready = true; }
+        if (base) place(G);
+      }
+    } catch (e) { if (!loop.err) { loop.err = true; console.warn('[mat]', e); } }
+    requestAnimationFrame(loop);
   })();
 })();
 
