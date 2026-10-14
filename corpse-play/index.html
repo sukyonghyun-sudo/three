@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-654 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-655 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-654'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-655'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6227,11 +6227,12 @@ window.__NAVGRID = {"sig":"n6|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
       }),
     ] },
     // b651 — 본진 돗자리(사용자 「큰 돗자리 깔아 놓고 · 내 영역에 배치 · 사이즈나 색 조절」) — mat.js
-    { title: '본진 돗자리', sub: '내 본진에 깐다(세 본진 모두도) · 둥근 영역 한가운데 · 토리이를 따라감', rows: [
+    { title: '본진 돗자리', sub: '「내 자리로」 — 내 캐릭터가 선 곳으로 돗자리를 옮긴다(둘러보기에서 걸어가서 누르면 쉽다) · 토리이를 따라감', rows: [
+      { k: 'mat.here', label: '내 자리로 옮기기(누르면)', toggle: true, min: 0, max: 1, step: 1, def: 0, get: () => 0, set: (v) => { if (v && window.__mat && window.__mat.toHere) window.__mat.toHere(); } },   // b655
       ...[['on', '깔기(1 = 켬)', 0, 1, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['all', '세 본진 모두(1 = 예)', 0, 1, 1, 0, (v) => (v > 0.5 ? '셋 다' : '내 본진만')],
         ['w', '크기(가로 m)', 1, 14, 0.05, 4.2, (v) => `${v.toFixed(2)}m`], ['ar', '세로 비율', 0.4, 2.5, 0.01, 1, pct],
-        ['ox', '좌우', -6, 6, 0.05, 0, (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`], ['oz', '앞뒤(문 안쪽 +)', -6, 6, 0.05, 0, (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`],
-        ['oy', '높이(땅 위)', -0.3, 0.5, 0.005, 0.02, (v) => `${(v * 100).toFixed(1)}cm`], ['rot', '돌리기', -180, 180, 1, 0, (v) => `${Math.round(v)}°`], ['tilt', '땅 경사 따라(1 = 예)', 0, 1, 1, 1, (v) => (v > 0.5 ? '예' : '평평')],
+        ['ox', '좌우', -15, 15, 0.05, 0, (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`], ['oz', '앞뒤(문 안쪽 +)', -15, 15, 0.05, 0, (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}m`],
+        ['oy', '위아래 높이', -2, 3, 0.01, 0.02, (v) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(0)}cm`], ['rot', '돌리기', -180, 180, 1, 0, (v) => `${Math.round(v)}°`], ['tilt', '땅 경사 따라(1 = 예)', 0, 1, 1, 1, (v) => (v > 0.5 ? '예' : '평평')],
         ['bright', '밝기', 0.1, 3, 0.01, 1, pct], ['hue', '색조', 0, 360, 1, 30, (v) => `${Math.round(v)}°`], ['tint', '색 입히기', 0, 1, 0.01, 0, pct]]
         .map(([k, label, min, max, step, def, fmt]) => ({ k: 'mat.' + k, label, min, max, step, def, fmt, get: () => { const m = window.__mat; return m && m[k] != null ? m[k] : def; }, set: (v) => { if (window.__mat) window.__mat[k] = v; } })),
     ] },
@@ -12835,6 +12836,13 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       o.scale.set(W, W, W * M.ar);
     }
   }
+  // b655 — 내 캐릭터가 선 곳으로(사용자 「위치 조절도 힘들고」) — 좌우 · 앞뒤 값을 거꾸로 계산 · 높이는 땅에 맞춤
+  M.toHere = () => {
+    const G = window.__G, ZF = window.__zonefence, z = G && G.zones && G.zones.list.find((q) => q.team === 0); if (!G || !z || !ZF || !ZF.torii) return false;
+    const T = ZF.torii(z), d = ZF.dims(), h = G.hero.position, dx = h.x - T.x, dz = h.z - T.z;
+    M.ox = +(dx * z.fz - dz * z.fx).toFixed(2); M.oz = +(dx * z.fx + dz * z.fz - d.C).toFixed(2); M.oy = 0.02;
+    if (window.__tuneSync) window.__tuneSync(); return true;
+  };
   (function loop() {
     try {
       const G = window.__G;
