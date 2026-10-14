@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-656 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-657 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-656'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-657'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1881,6 +1881,13 @@ var MeshoptDecoder = (function () {
   const TEAM_ID = ['P1', 'P2', 'P3'];   // 게임 속 팀 표지(b.held 등) — 이름이 아니라 이것과 견준다
   const josa = (s, a, b) => { const c = String(s).charCodeAt(String(s).length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? a : b; };
   const hex = (c) => '#' + c.toString(16).padStart(6, '0');
+  // b657 — 형광 빼기(사용자 「UI · 푯말 색이 대부분 형광 · 형광 효과만 빼고 · 알려 줄 때만 포인트로」): 늘 떠 있는 것(본진 푯말 · 본진 표찰 · 본진 화살)은 채도를 낮춘 칠 색 · 번지는 빛 없음
+  //   알림(도난 경고 · 내 본진 길잡이 · 물 · 한 판 남은 맥박)은 예전 그대로 형광 · 되돌리기: window.__neon = true
+  const soft = (hc) => { if (window.__neon === true) return hc; const n = parseInt(hc.slice(1), 16); let r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; let h = 0, sat = 0;
+    if (d > 1e-6) { sat = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+    const S2 = sat * 0.42, L2 = Math.min(0.56, l * 0.82), c = (1 - Math.abs(2 * L2 - 1)) * S2, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = L2 - c / 2;
+    const [r1, g1, b1] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+    const to = (v) => Math.round((v + m) * 255).toString(16).padStart(2, '0'); return '#' + to(r1) + to(g1) + to(b1); };
   let G = null, el = null, vc = null, vp = null;
   let prev = [];                 // 시체마다 { holder, zone } — 지난 프레임
   const stolen = new Map();      // 내 본진에서 가져간 시체 번호 → 가져간 팀
@@ -1989,7 +1996,7 @@ var MeshoptDecoder = (function () {
     return c;
   }
   function buildArt(col) {
-    art = col.map((c, t) => ({
+    art = col.map(soft).map((c, t) => ({
       ema: emaArt(c, `${TEAM[t]}`, 101 + t * 31),                 // 대화명만(2026-10-08 — '본진' 글자 뺌)
       on: [0, 1, 2].map((k) => stampArt(c, true, 500 + t * 17 + k * 7)),
       off: [0, 1, 2].map((k) => stampArt(c, false, 900 + t * 13 + k * 5)),
@@ -2385,10 +2392,10 @@ var MeshoptDecoder = (function () {
     return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
   };
   // 붓으로 칠한 화살촉 — 오른쪽(+x)을 가리킨다. 캔버스 가운데가 기준점(화살은 가운데를 축으로 돈다)
-  function arrowArt(color, seed) {
+  function arrowArt(color, seed, calm) {
     const S = AR, k = S / 46, [c, g] = hcanvas(S, S), R = rnd(seed), m = S / 2;
     const shape = () => { g.beginPath(); g.moveTo(m + 20 * k, m); g.lineTo(m - 16 * k, m - 11 * k); g.lineTo(m - 6 * k, m); g.lineTo(m - 16 * k, m + 11 * k); g.closePath(); };   // b450 — 길고 날렵하게(넓적한 삼각형이 ▽ 처럼 보여 방향이 헷갈렸다)
-    g.save(); g.shadowColor = color; g.shadowBlur = 14 * k * HDPR; g.fillStyle = color;   // 번지는 빛(두 번 — 필터에 눌려도 남게)
+    g.save(); g.shadowColor = color; g.shadowBlur = calm ? 0 : 14 * k * HDPR; g.fillStyle = color;   // 번지는 빛(두 번 — 필터에 눌려도 남게)
     shape(); g.fill(); shape(); g.fill(); g.restore();
     g.save(); shape(); g.clip();
     const body = g.createLinearGradient(m - 16 * k, 0, m + 20 * k, 0);   // 뒤는 제 색, 촉 끝은 밝게
@@ -2455,7 +2462,7 @@ var MeshoptDecoder = (function () {
   // 본진 표지 — 작은 나무 표찰: 팀(팀 색) · 인장 세 칸(모은 시체, 에마 판과 같은 인장) · 거리
   function baseTagArt(t, n, dist) {
     // 2026-10-08 사용자: 「본진 표시도 더 디테일하고 알기 쉽게」 — 내 것은 대화명 대신 「내 본진」(「陣」 도장은 사용자 「본진에 도장 표시가 왜 있어 · 이상하다」로 뺐다)
-    const H = 40, SL = 25, GAP = 3, P = 10, SEAL = -6, col = hex(G.colors[t]), nm0 = TEAM[t], name = nm0.length > 9 ? nm0.slice(0, 9) + '…' : nm0;   // b411 — 내 것도 대화명(2026-10-12 사용자: 「내 본진이라고 뜨는데 그렇게 말고 플레이어 이름 뜨게」)   // 남은 대화명(혼자 하기의 봇은 "P2 봇")
+    const H = 40, SL = 25, GAP = 3, P = 10, SEAL = -6, col = soft(hex(G.colors[t])), nm0 = TEAM[t], name = nm0.length > 9 ? nm0.slice(0, 9) + '…' : nm0;   // b411 — 내 것도 대화명(2026-10-12 사용자: 「내 본진이라고 뜨는데 그렇게 말고 플레이어 이름 뜨게」)   // 남은 대화명(혼자 하기의 봇은 "P2 봇")
     const font = `800 20px ${MJ}`, fsub = `800 15px ${MJ}`;
     mg.font = font; mg.letterSpacing = '2px'; const nw = mg.measureText(name).width;
     mg.font = fsub; mg.letterSpacing = '1px'; const dw = mg.measureText(dist).width;
@@ -2509,7 +2516,7 @@ var MeshoptDecoder = (function () {
     const blank = () => tex(hcanvas(2, 2, 1)[0]);          // 표찰 자리 — 처음부터 그림이 있는 셰이더로 굽히게
     HUD.vig = quad(tex(vignetteArt()), 0);
     const glow = tex(glowArt());
-    HUD.base = [0, 1, 2].map((t) => ({ t, arrow: quad(tex(arrowArt(hex(G.colors[t]), 91 + t)), 4), label: quad(blank(), 5), glow: quad(glow, 3), key: '', w: 0, h: 0, slamT: -9 }));
+    HUD.base = [0, 1, 2].map((t) => ({ t, arrow: quad(tex(arrowArt(soft(hex(G.colors[t])), 91 + t, true)), 4), label: quad(blank(), 5), glow: quad(glow, 3), key: '', w: 0, h: 0, slamT: -9 }));
     HUD.warn = { arrow: quad(tex(arrowArt(red, 71)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: red, glyph: '奪', seed: 301 };
     HUD.home = { arrow: quad(tex(arrowArt(mine, 53)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'wood', color: mine, glyph: '歸', seed: 211 };
     HUD.water = { arrow: quad(tex(arrowArt('#6fb6e6', 41)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: '#6fb6e6', glyph: '水', seed: 401 };   // 불붙었을 때 가장 가까운 연못(b442)
@@ -2769,7 +2776,7 @@ var MeshoptDecoder = (function () {
       for (const q of plq) if (q) { q.dirty = true; q.lbl = null; }
       if (HUD.scene) {
         const sw = (m, cv) => { const old = m.material.map; m.material.map = tex(cv); m.material.needsUpdate = true; if (old) old.dispose(); };
-        for (const it of HUD.base) { sw(it.arrow, arrowArt(hex(G.colors[it.t]), 91 + it.t)); it.key = ''; }
+        for (const it of HUD.base) { sw(it.arrow, arrowArt(soft(hex(G.colors[it.t])), 91 + it.t, true)); it.key = ''; }
         const mine = hex(G.colors[0]);
         HUD.home.color = mine; sw(HUD.home.arrow, arrowArt(mine, 53)); HUD.home.key = ''; HUD.warn.key = '';
       }
