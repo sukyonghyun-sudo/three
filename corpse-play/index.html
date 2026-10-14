@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-677 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-678 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-677'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-678'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -17693,7 +17693,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
      세 몸을 복제(같은 재질 · 같은 셰이더)해 빈 땅에 세우고 서 있기 동작만 · 그리는 동안 진짜 나 · 봇 · 괴물 · 시체는 감춘다(그린 뒤 되돌림) · 닫으면 복제를 버린다 */
   const LEGACY_DEFAULT = { dist: 1.95, camY: 1.47, lookY: 1.42, side: 0, gap: 1.0, top: 1.78, bot: 1.04, half: 0.3, frameY: 0, light: 1.7, charBright: 1, title: 4.6, name: 4.4, titleY: 6.5, nameY: 2.2, maskOp: 0.97, glow: 1, anim: 2, animDur: 0.9, stagger: 0.18, scale: 1, exp: 1, faceCam: 1, face: 0, f0: 0, f1: 0, f2: 0 };   // b641 — 캐릭터 방향(사용자 「캐릭터 선택창에서 캐릭터들이 정면을 안 보고 있어 · 설정하는 패널」)   // b599 — 캐릭터 크기 · 노출   // b596 — 등장 모션 · 캐릭터 밝기 · 글자 자리 · 배경 어둡기 · 선택 빛
   const CSD = Object.assign({}, LEGACY_DEFAULT, { dist: 2.65, camY: 1.21, lookY: 1.22, gap: 0.86, top: 1.84, bot: 0.45, half: 0.38, light: 1.1, title: 4.6, titleY: 4, name: 3.5, nameY: 0, maskOp: 0.85, anim: 1, fov: 34, advance: 0.22, badgeBright: 0.82, strapBright: 0.7,
-    lowOn: 1, lowCamY: 0.3, lowLookY: 1.75, lowDist: 1.9, lowFov: 50, lookDown: 0.9, lean: 0.25, tight: 0.45, sly: 1 });   // b676 — tight: 더 타이트하게(가까이 · 사람 간격 좁게) · sly: 비열하게 쳐다보는 얼굴   // b674 — 아래에서 올려다보는 포스터 구도(사용자 「위에서 날 내려다보는 시점」 · 0 = 예전 B 구도)
+    lowOn: 1, lowCamY: 0.3, lowLookY: 1.75, lowDist: 1.9, lowFov: 50, lookDown: 0.9, lean: 0.25, tight: 0.45, sly: 1, giggleRate: 1.35 });   // b676 — tight: 더 타이트하게(가까이 · 사람 간격 좁게) · sly: 비열하게 쳐다보는 얼굴   // b674 — 아래에서 올려다보는 포스터 구도(사용자 「위에서 날 내려다보는 시점」 · 0 = 예전 B 구도)
   const CS = (S.cf = Object.assign({}, CSD)), legacy = Object.assign({}, LEGACY_DEFAULT);
   let sceneLoaded = false;
   (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 300); return; }
@@ -17760,8 +17760,14 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
       a.grp.rotation.y = base + ((CS.face || 0) + (CS['f' + i] || 0)) * Math.PI / 180;
       a.grp.updateMatrixWorld(true);
       // b676 — 비열하게 쳐다보는 얼굴(사용자) — 입꼬리 한쪽 비틀기(sneer) · 눈 가늘게(strain_eyes) · 이 살짝 악묾 · 비명 반응 중엔 그 얼굴
-      if (a.sm && a.sm.morphTargetDictionary && !(reacting && reacting === a)) { const D = a.sm.morphTargetDictionary, I = a.sm.morphTargetInfluences, k = clamp(CS.sly, 0, 1.5), br = 0.06 * Math.sin(performance.now() / 900 + i * 2.1);
-        const set = (n, v) => { const j = D[n]; if (j !== undefined) I[j] = clamp(v, 0, 1); }; set('sneer', (0.55 + br) * k); set('strain_eyes', (0.5 - br) * k); set('clench', 0.22 * k); }
+      // b678 — 눈은 또렷하게 뜨고 썩소(사용자) · 누르면 「키키키」 비열한 웃음 얼굴 · 고르면 이긴 연출 웃음 얼굴(grin 모프 · 없으면 sneer)
+      if (a.sm && a.sm.morphTargetDictionary) { const D = a.sm.morphTargetDictionary, I = a.sm.morphTargetInfluences, k = clamp(CS.sly, 0, 1.5), t = performance.now() / 1000, br = 0.05 * Math.sin(t * 1.1 + i * 2.1), hasG = D.grin !== undefined;
+        const set = (n, v) => { const j = D[n]; if (j !== undefined) I[j] = clamp(v, 0, 1); };
+        const md = a.mode && t < a.modeEnd ? a.mode : 'idle', u = t - (a.modeT || 0);
+        let g = 0.38 * k, sn = (0.42 + br) * k, ew = 0.18 * k, jd = 0;
+        if (md === 'giggle') { const kk = Math.min(1, u / 0.15); g = 0.85 * kk + g * (1 - kk); sn = 0.4; ew = 0.12; jd = (0.08 + 0.2 * Math.abs(Math.sin(u * 15))) * kk; }        // 키키키 — 빠르게 들썩
+        else if (md === 'win') { const kk = Math.min(1, u / 0.3); g = 1 * kk + g * (1 - kk); sn = 0.25; ew = 0.22; jd = (0.12 + 0.28 * Math.abs(Math.sin(u * 8.5))) * kk; }   // 흐흐흐 — 크게
+        set(hasG ? 'grin' : 'sneer', hasG ? g : Math.max(g, sn)); if (hasG) set('sneer', sn); set('eyes_wide', ew); set('strain_eyes', 0); set('clench', 0); set('jaw_drop', jd); set('scream_mouth', 0); set('scream_eyes', 0); }
       for (const m of a.mats) if (m.emissive) { m.emissive.setRGB(1, 0.96 + 0.02 * a.focus, 0.90 + 0.05 * a.focus); m.emissiveIntensity = m.userData.csEmission * CS.charBright * (0.8 + 0.42 * a.focus); }
     });
   }
@@ -17810,6 +17816,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (reacting && window.__cast && window.__cast.clearOn) window.__cast.clearOn([reacting.sm]);
     reacting = null;
   }
+  const laughId = () => { try { const o = JSON.parse(localStorage.getItem('corpse_end_v4') || '{}'); return o.laughId || '1'; } catch { return '1'; } };   // 이긴 연출(death.js)에서 고른 웃음
   function react(i) {
     if (reacting === act[i]) return; stopReaction();
     const a = act[i], token = epoch; if (!a) return; reacting = a; reactStart = performance.now();
@@ -17817,7 +17824,8 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     reactT = setTimeout(() => {
       if (!S.open || token !== epoch || reacting !== a) return;
       const SC = window.__scream, C = window.__cast;
-      try { window.__G.warmAudio && window.__G.warmAudio(); const id = SC && SC.pick && (SC.pick('ignite') || SC.pick('hit')); if (id && SC.say) voice = SC.say(id, null, [a.sm], { vol: 0.9, expr: 'scream' }); if (!voice && C && C.playOnKey) C.playOnKey([a.sm], 'scream'); } catch (e) { console.warn('[charsel] 비명', e); }
+      try { window.__G.warmAudio && window.__G.warmAudio(); const t = performance.now() / 1000; a.mode = 'giggle'; a.modeT = t; a.modeEnd = t + 1.25;   // b678 — 비명 대신 「키키키」 비열한 웃음(이긴 연출 웃음 녹음을 빠르고 높게 · 짧게)
+        const R = window.__rsfx; if (R && R.play && t - (react.lastSnd || 0) > 0.3) { react.lastSnd = t; R.play('end_laugh' + laughId(), { vol: 0.85, rate: CS.giggleRate, dur: 1.15, offset: 0.1 }); } } catch (e) { console.warn('[charsel] 웃음', e); }
       reactEnd = setTimeout(() => { if (token === epoch && reacting === a) stopReaction(); }, 1250);
     }, 40);
   }
@@ -17842,6 +17850,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
   function choose(i) {
     if (!S.open || lock) return; sel = i;
     if (reacting !== act[i]) react(i);
+    { const a = act[i], t = performance.now() / 1000; if (a) { a.mode = 'win'; a.modeT = t; a.modeEnd = t + 2.2; } const R = window.__rsfx; try { if (R && R.play) R.play('end_laugh' + laughId(), { vol: 1, rate: 1 }); } catch { /* */ } }   // b678 — 고르면 이긴 연출 웃음
     lock = true; draw(); el.classList.add('picked');
     const token = epoch;
     confirmT = setTimeout(async () => {
@@ -17853,7 +17862,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
         console.log('[charsel] 고른 캐릭터 —', KINDS[i][1], kind);
         S.pass = true; const b = document.getElementById('start-btn'); if (b) b.click();
       } catch (e) { committing = false; lock = false; el.classList.remove('picked'); draw(); console.warn('[charsel] 시작 실패', e); }
-    }, Math.max(80, 1300 - (performance.now() - reactStart)));
+    }, Math.max(1500, 1300 - (performance.now() - reactStart)));   // b678 — 웃음을 들을 만큼
   }
   // 그리기 직전 — 카메라를 정면으로 · 조금 밝게(있는 조명 세기만 · 그린 뒤 되돌림)
   function hook() {
@@ -17924,11 +17933,15 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     act.forEach((a, i) => {
       const r = a.grp.position, pts = [[-CS.half * CS.scale, CS.top * CS.scale + CS.frameY], [CS.half * CS.scale, CS.top * CS.scale + CS.frameY], [-CS.half * CS.scale, CS.bot * CS.scale + CS.frameY], [CS.half * CS.scale, CS.bot * CS.scale + CS.frameY]].map(([u, y]) => { const yaw = a.grp.rotation.y, rx = Math.cos(yaw), rz = -Math.sin(yaw); v.set(r.x + rx * u, r.y + y, r.z + rz * u).project(cam); return [(v.x + 1) / 2 * W, (1 - v.y) / 2 * H]; });
       const x0 = Math.min(...pts.map((p) => p[0])), x1 = Math.max(...pts.map((p) => p[0])), y0 = Math.min(...pts.map((p) => p[1])), y1 = Math.max(...pts.map((p) => p[1]));
-      const f = el.querySelector(`.fr[data-i="${i}"]`);
-      if (f) {
-        const w = clamp(x1 - x0, stage.w * 0.17, stage.w * 0.28), cx = clamp((x0 + x1) / 2 - stage.x, w / 2 + 4, stage.w - w / 2 - 4), top = clamp(y0 - stage.y, stage.h * 0.15, stage.h * 0.43), bottom = clamp(stage.h * (0.84 + CS.nameY / 100), stage.h * 0.72, stage.h * 0.87);
-        f.style.left = cx - w / 2 + 'px'; f.style.top = top + 'px'; f.style.width = w + 'px'; f.style.height = bottom - top + 'px';
-      }
+      a.px = (x0 + x1) / 2 - stage.x; a.py0 = y0 - stage.y;
+    });
+    // b678 — 누르는 자리: 사람마다 옆 사람과의 가운데까지(좌우 같은 폭 · 위는 머리 위까지) — 예전엔 몸 폭만이라 가장자리 사람(손주용)이 좁았다(사용자)
+    act.forEach((a, i) => {
+      const f = el.querySelector(`.fr[data-i="${i}"]`); if (!f) return;
+      let half = stage.w * 0.2; for (const b of act) if (b !== a) half = Math.min(half, Math.abs(b.px - a.px) / 2);
+      half = Math.max(half, stage.w * 0.1);
+      const l = clamp(a.px - half, 4, stage.w - 40), r = clamp(a.px + half, l + 40, stage.w - 4), top = clamp(a.py0 - stage.h * 0.06, stage.h * 0.1, stage.h * 0.4), bottom = clamp(stage.h * (0.84 + CS.nameY / 100), stage.h * 0.72, stage.h * 0.87);
+      f.style.left = l + 'px'; f.style.top = top + 'px'; f.style.width = r - l + 'px'; f.style.height = bottom - top + 'px';
     });
   }
   function draw() { if (!el) return; el.querySelectorAll('.fr').forEach((f) => { const on = +f.dataset.i === sel; f.classList.toggle('on', on); f.setAttribute('aria-checked', String(on)); }); const start = el.querySelector('.scene-start'); if (start) { start.disabled = lock; start.setAttribute('aria-label', KINDS[sel][1] + '으로 시작'); } }
@@ -17941,7 +17954,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     ['#', '등장 모션'], ['animDur', '길이', 0.2, 3, 0.05, '초'], ['stagger', '칸마다 늦게', 0, 0.6, 0.01, '초']];
   function build() {
     if (el) return;
-    ROWS.push(['#', '아래에서 올려다보기(포스터 구도)'], ['lowOn', '켜기(1 = 예 · 0 = 예전 B 구도)', 0, 1, 1, ''], ['lowCamY', '카메라 높이(땅에서)', 0.05, 1.2, 0.01, 'm'], ['lowLookY', '바라보는 높이', 0.8, 2.6, 0.01, 'm'], ['lowDist', '거리', 1, 4, 0.05, 'm'], ['lowFov', '시야각', 30, 75, 1, '°'], ['lookDown', '내려다보는 정도(고개 숙임)', 0, 1.5, 0.05, '×'], ['lean', '허리로 숙이는 몫', 0, 0.8, 0.01, ''], ['tight', '타이트하게(가까이 · 간격 좁게)', 0, 1, 0.01, ''], ['sly', '비열한 표정 세기', 0, 1.5, 0.05, '×']);   // b674
+    ROWS.push(['#', '아래에서 올려다보기(포스터 구도)'], ['lowOn', '켜기(1 = 예 · 0 = 예전 B 구도)', 0, 1, 1, ''], ['lowCamY', '카메라 높이(땅에서)', 0.05, 1.2, 0.01, 'm'], ['lowLookY', '바라보는 높이', 0.8, 2.6, 0.01, 'm'], ['lowDist', '거리', 1, 4, 0.05, 'm'], ['lowFov', '시야각', 30, 75, 1, '°'], ['lookDown', '내려다보는 정도(고개 숙임)', 0, 1.5, 0.05, '×'], ['lean', '허리로 숙이는 몫', 0, 0.8, 0.01, ''], ['tight', '타이트하게(가까이 · 간격 좁게)', 0, 1, 0.01, ''], ['sly', '썩소 세기', 0, 1.5, 0.05, '×'], ['giggleRate', '누를 때 웃음 빠르기(키키키)', 0.8, 2, 0.05, '×']);   // b674
     ROWS.push(['#', 'B 집결 구도'], ['fov', '시야각', 25, 55, 1, '°'], ['advance', '선택 인물 앞으로', 0, 0.4, 0.01, 'm'], ['badgeBright', '선택창 사원증 밝기', 0.2, 1.5, 0.02, '×'], ['strapBright', '선택창 목줄 밝기', 0.2, 1.5, 0.02, '×']);
     const st = document.createElement('style');
     st.textContent = `#csel{position:fixed;inset:0;z-index:30;display:none;font-family:'Song Myung','UIF',serif;--ca:1.4px 0 rgba(255,30,20,.45),-1.4px 0 rgba(0,190,255,.3);color:#e8e4dc;overflow:hidden}
