@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-736 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-737 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-736'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-737'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -13614,6 +13614,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     fallFace: 0, fallAng2: 88, fallTurn: 10, exLift: 0, exFall: 1, fallLines: 1,
     aArmUp: 25, aArmFwd: 15, aElbow: 65, aHandUp: 15, aLegOut: 55, aLegFwd: 25, aShinOut: 12, aShinFwd: 0, aHeadBack: 12, fpWiggle: 1,   // b731 — 추락 자세(°) — 팔 들기 · 팔 앞으로 · 팔꿈치 · 손 머리 쪽 · 다리 벌림 · 허벅지 들기 · 정강이 옆 · 앞 · 고개 젖힘 · 흔들림   // b731 — 떨어질 때 얼굴(0 하늘 · 1 땅 · 2 예전) · 몸 각도 · 빙글 · 표정(0 자동 · n 번째) · 속도선                                  // 발버둥(0 버팀 · 1 발버둥 · 2 허우적) · 세기 · 빠르기
     liftAng: 12, fallAng: 60, fallSpin: 80,                                    // 몸 각도(° · 0 = 머리 위로 똑바로 · 90 = 누운 채 · 180 = 거꾸로) · 떨어지며 도는 빠르기(°/초)
+    zApp: 1, zLift: 1, zTop: 1, zFall: 1, zLand: 1, zBlend: 0.4,               // b737 — 구간별 줌(배 · 1 그대로 · 2 두 배 확대) · 구간이 바뀔 때 줌이 옮겨 가는 시간
     camOn: 1, cIn: 0.6, cOut: 1.2,                                             // 카메라 켬 · 들어가는 · 돌아오는 시간
     cLiftD: 4.2, cLiftH: 0.45, cLiftRise: 0.35, cLiftOrbit: 12, cLiftFov: -12, cLiftShake: 0.35, cLiftRoll: 6,
     cFallD: 3.4, cFallUp: 1.6, cFallSide: 35, cFallLead: 0.6, cFallLag: 0.12, cFallFov: 12,
@@ -14281,9 +14282,19 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     const tG = ev.app, tR = tG + ev.lift + ev.ho, tf = fallT(ev.h, ev.fg);
     if (x < tG) return 0; if (x < tR) return liftH(ev, x); if (x < tR + tf) return Math.max(0, ev.h - 0.5 * ev.fg * (x - tR) * (x - tR)); return 0;
   }
+  // b737 — 구간별 줌(사용자 「각 구간별로 카메라가 줌인할 수 있게」) — 연출 시간 u 로만 정한다(재생바로 끌어도 같은 줌) · 낚아채기 카메라를 꺼도 줌은 된다(평소 카메라를 당겨 봄)
+  function zoomAt(ev, u) {
+    const tG = ev.app, tL1 = tG + ev.lift, tR = tL1 + ev.ho, tL = tR + fallT(ev.h, ev.fg), tEnd = tL + C.cLandHold, zb = Math.max(0.05, C.zBlend);
+    const B = [[tG, C.zLift], [tL1, C.zTop], [tR, C.zFall], [tL, C.zLand]];
+    let z = C.zApp, prev = C.zApp;
+    for (const [b, v] of B) { z += (v - prev) * ss((u - b + zb / 2) / zb); prev = v; }
+    const kin = ss(u / zb), kout = 1 - ss((u - tEnd) / Math.max(0.05, C.cOut));
+    return 1 + (z - 1) * Math.min(kin, kout);
+  }
   function cine(cam, target) {
     const t = hnow();
     const ev = H.events.find((e) => e.g === 'grab' && e.q.who === 'hero');
+    window.__hnZoom = ev ? zoomAt(ev, t - ev.t0) : 1;
     if (!ev || !(C.camOn > 0.5)) { CS.ev = null; window.__hnFov = 0; window.__hnRoll = 0; return; }
     const u = t - ev.t0, tG = ev.app, tR = tG + ev.lift + ev.ho, tf = fallT(ev.h, ev.fg), tL = tR + tf, tEnd = tL + C.cLandHold;
     const h = G.hero.position, cy = G.mpApi && G.mpApi.camYaw ? G.mpApi.camYaw() : 0;
@@ -14391,7 +14402,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   window.__onRestart = function () { if (prevR) prevR.apply(this, arguments); for (const ev of H.events) { lifts.delete(ev.q.who); freeBee(ev.bee); } H.events.length = 0; for (const [, s] of H.swells) for (const m of s.blobs) if (m.parent) m.parent.remove(m); H.swells.clear(); nextT = null; };
 
   /* ── 패널 — 오른쪽 아래 「왕벌」 ───────────────────────── */
-  const PCT = (v) => `${Math.round(v * 100)}%`, SEC = (v) => `${(+v).toFixed(1)}초`, M2 = (v) => `${(+v).toFixed(2)}m`, M1 = (v) => `${(+v).toFixed(1)}m`, DEG = (v) => `${Math.round(v)}°`;
+  const ZM = (v) => `${(+v).toFixed(2)}배`, PCT = (v) => `${Math.round(v * 100)}%`, SEC = (v) => `${(+v).toFixed(1)}초`, M2 = (v) => `${(+v).toFixed(2)}m`, M1 = (v) => `${(+v).toFixed(1)}m`, DEG = (v) => `${Math.round(v)}°`;
   const MODES = ['버팀 — 팔 뻗어 할퀴고 다리 버팀', '발버둥 — 다리를 마구 차고 팔은 감쌈', '허우적 — 두 팔을 머리 위로 휘저음', '매달림 — 두 팔로 벌을 붙잡고 다리는 늘어짐', '축 늘어짐 — 힘이 빠져 흔들림', '추락 — 하늘 보고 팔다리 쫙(옛 격투 게임처럼)'];
   const GBN = ['등(가슴 뒤)', '어깨 사이', '머리', '허리(엉덩이)', '예전(땅 기준 · 맞춤 없음)'], FFN = ['하늘을 보고', '땅을 보고', '예전(자유롭게 굴러)'];
   const NEX = ((window.__cast && window.__cast.EXPRS) || []).length || 22;
@@ -14424,6 +14435,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     ['카메라 — 떨어질 때(같이 따라감)'], ['cFallD', '나와의 거리', 1, 12, 0.1, M1], ['cFallUp', '나보다 높이', -4, 6, 0.1, M1], ['cFallSide', '옆으로 도는 각도', -180, 180, 1, DEG],
     ['cFallTop', '시선(0 옆에서 같이 · 1 하늘에서 내려다봄)', 0, 1, 0.05, (v) => (v >= 0.95 ? '하늘에서 내려다봄' : v <= 0.05 ? '옆에서 같이' : `섞음 ${Math.round(v * 100)}%`)], ['cFallAbove', '내려다볼 때 몸 위 높이', 1, 20, 0.1, M1], ['cFallOff', '내려다볼 때 옆으로 비킴', 0.3, 8, 0.1, M1], ['cFallBlend', '올려다보기 → 내려다보기 넘어가는 시간(0 컷)', 0, 1.5, 0.02, SEC],
     ['cFallLead', '앞(아래)을 내다봄', 0, 2, 0.05, PCT], ['cFallLag', '따라가는 늦음', 0.02, 0.8, 0.01, SEC], ['cFallFov', '넓게(+) · 확대(−)', -30, 30, 1, DEG],
+    ['카메라 — 구간별 줌(1배 그대로 · 2배 두 배 확대 · 1보다 작으면 넓게)'], ['zApp', '① 날아올 때 줌', 0.5, 4, 0.05, ZM], ['zLift', '② 끌려 올라갈 때 줌', 0.5, 4, 0.05, ZM], ['zTop', '③ 꼭대기 줌', 0.5, 4, 0.05, ZM], ['zFall', '④ 떨어질 때 줌', 0.5, 4, 0.05, ZM], ['zLand', '⑤ 땅 · 돌아올 때 줌', 0.5, 4, 0.05, ZM], ['zBlend', '구간이 바뀔 때 줌이 옮겨 가는 시간', 0, 2, 0.05, SEC],
     ['카메라 — 땅에 부딪힐 때'], ['cLandShake', '쿵 흔들림', 0, 3, 0.05, PCT], ['cLandHold', '부딪힌 뒤 머무는 시간', 0, 5, 0.1, SEC],
   ];
   const ROWS = ROWS_A.concat(ROWS_B);
@@ -14513,16 +14525,16 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
      · 판은 그 자리에 멈춘다(봇 · 괴물 · 시간) · 왕벌은 보이기만 하고 나를 진짜로 쓰러뜨리지 않는다 · 닫으면 원래대로 · 같이 하기 중엔 못 연다 */
   const SECS = [
     { k: 'app', name: '① 날아옴', col: '#8a7a3a', a: (e) => 0, b: (e) => e.app,
-      rows: ['날아오기', 'app', 'size', 'buzz', '날개 · 다리', 'wingHz', 'wingAmp', 'ghost', 'legAmt', 'legSpd', '카메라 — 들어가기', 'camOn', 'cIn'] },
+      rows: ['날아오기', 'app', 'size', 'buzz', '날개 · 다리', 'wingHz', 'wingAmp', 'ghost', 'legAmt', 'legSpd', '카메라 — 들어가기', 'camOn', 'zApp', 'zBlend', 'cIn'] },
     { k: 'lift', name: '② 끌려 올라감', col: '#b08a2a', a: (e) => e.app, b: (e) => e.app + e.lift,
-      rows: ['올라가기', 'height', 'lift', 'liftCurve', '잡는 자리 — 벌과 몸 맞추기', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', 'grabScream', 'screamVol', '카메라 — 땅에서 올려다봄', 'camOn', 'cLiftD', 'cLiftH', 'cLiftRise', 'cLiftOrbit', 'cLiftFov', 'cLiftShake', 'cLiftRoll'] },
+      rows: ['올라가기', 'height', 'lift', 'liftCurve', '잡는 자리 — 벌과 몸 맞추기', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', 'grabScream', 'screamVol', '카메라 — 땅에서 올려다봄', 'camOn', 'zLift', 'zBlend', 'cLiftD', 'cLiftH', 'cLiftRise', 'cLiftOrbit', 'cLiftFov', 'cLiftShake', 'cLiftRoll'] },
     { k: 'top', name: '③ 꼭대기', col: '#c9a64a', a: (e) => e.app + e.lift, b: (e) => e.app + e.lift + e.ho,
-      rows: ['꼭대기', 'topHold', 'height', '잡는 자리', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK'] },
+      rows: ['꼭대기', 'topHold', 'height', '카메라', 'zTop', 'zBlend', '잡는 자리', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK'] },
     { k: 'fall', name: '④ 떨어짐', col: '#c0603c', a: (e) => e.app + e.lift + e.ho, b: (e) => e.app + e.lift + e.ho + fallT(e.h, e.fg),
-      rows: ['떨어지기', 'fallG', '떨어지는 몸', 'fallFace', 'fallAng2', 'fallTurn', 'stFall2', 'exFall', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', '추락 자세', 'aArmUp', 'aArmFwd', 'aElbow', 'aHandUp', 'aLegOut', 'aLegFwd', 'aShinOut', 'aShinFwd', 'aHeadBack', 'fpWiggle', '화면', 'fallLines', '(예전 방식 — 얼굴 「예전」일 때)', 'fallAng', 'fallSpin', '카메라 — 떨어질 때', 'camOn', 'cFallTop', 'cFallBlend', '하늘에서 내려다봄', 'cFallAbove', 'cFallOff', '옆에서 같이 떨어짐', 'cFallD', 'cFallUp', '둘 다', 'cFallSide', 'cFallLead', 'cFallLag', 'cFallFov'] },
+      rows: ['떨어지기', 'fallG', '떨어지는 몸', 'fallFace', 'fallAng2', 'fallTurn', 'stFall2', 'exFall', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', '추락 자세', 'aArmUp', 'aArmFwd', 'aElbow', 'aHandUp', 'aLegOut', 'aLegFwd', 'aShinOut', 'aShinFwd', 'aHeadBack', 'fpWiggle', '화면', 'fallLines', '(예전 방식 — 얼굴 「예전」일 때)', 'fallAng', 'fallSpin', '카메라 — 떨어질 때', 'camOn', 'zFall', 'zBlend', 'cFallTop', 'cFallBlend', '하늘에서 내려다봄', 'cFallAbove', 'cFallOff', '옆에서 같이 떨어짐', 'cFallD', 'cFallUp', '둘 다', 'cFallSide', 'cFallLead', 'cFallLag', 'cFallFov'] },
     { k: 'land', name: '⑤ 땅 · 돌아옴', col: '#7a2a1c', a: (e) => e.app + e.lift + e.ho + fallT(e.h, e.fg), b: (e) => evDur(e),
-      rows: ['부딪힘', 'landBlood', '카메라', 'camOn', 'cLandShake', 'cLandHold', 'cOut'] },
-    { k: 'all', name: '전체', rows: ['게임에서', 'on', 'every', '카메라', 'camOn', 'cIn', 'cOut', '왕벌', 'size', 'buzz', 'screamVol'] },
+      rows: ['부딪힘', 'landBlood', '카메라', 'camOn', 'zLand', 'zBlend', 'cLandShake', 'cLandHold', 'cOut'] },
+    { k: 'all', name: '전체', rows: ['게임에서', 'on', 'every', '카메라', 'camOn', 'cIn', 'cOut', '구간별 줌', 'zApp', 'zLift', 'zTop', 'zFall', 'zLand', 'zBlend', '왕벌', 'size', 'buzz', 'screamVol'] },
   ];
   let SS = null, lab = null;   // SS — 연출실 상태 { ev, loop, prevPaused, prevSpeed }
   H.studio = () => SS;
@@ -14554,7 +14566,7 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
     if (!SS) return;
     endEv(SS.ev);
     window.__paused = SS.prevPaused; H.ck.paused = false; H.ck.speed = SS.prevSpeed || 1;
-    SS = null; CS.ev = null; window.__hnFov = 0; window.__hnRoll = 0;
+    SS = null; CS.ev = null; window.__hnFov = 0; window.__hnRoll = 0; window.__hnZoom = 1;
     if (lab) lab.root.style.display = 'none'; document.body.classList.remove('hs-on');
   }
   H.openStudio = openStudio; H.closeStudio = closeStudio;
@@ -16160,6 +16172,7 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     { const hr = +window.__hnRoll || 0; if (hr) cam.rotateZ(hr); }   // b703 — 왕벌 낚아채기 카메라 기울기(hornet.js)
     const f = S.fovAdd + (S.active ? S.pulse || 0 : 0) + (+window.__hnFov || 0);   // b703 — 왕벌 카메라 시야각
     if (Math.abs(f) > 0.01) { cam.fov += f; S.fovApplied += f; cam.updateProjectionMatrix(); }
+    { const z = +window.__hnZoom || 1; if (Math.abs(z - 1) > 0.001) { const nf = 2 * Math.atan(Math.tan(cam.fov * Math.PI / 360) / z) * 180 / Math.PI, df = nf - cam.fov; cam.fov = nf; S.fovApplied += df; cam.updateProjectionMatrix(); } }   // b737 — 왕벌 구간별 줌(배 · hornet.js)
   };
   /* ── 가림 비추기 — 맵·소품 재질(MeshStandard 등)에 붙인다 · 같은 균일값을 모두 나눠 쓴다 ── */
   const OCC = (window.__occ = { ready: false, n: 0, uB: { value: null }, uOn: { value: 0 }, uZT: { value: null }, uZP: { value: null }, uZC: { value: null }, uZO: { value: null }, uZL: { value: 0 }, uMR: { value: null }, uMS: { value: null }, uMT: { value: null }, uMOff: { value: 0 }, uMG: { value: null } });   // b661 — uMG = 돗자리 테두리 빛(팀 색 rgb · 세기)   // b656 — 돗자리 위로 솟은 풀 · 땅 안 그리기(mat.js 가 채운다)   // b648 — 본진 영역 칠(zonefence.js 가 값을 채운다)
