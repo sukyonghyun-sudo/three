@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-669 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-670 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,12 +431,13 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-669'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-670'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
 </script>
 <link rel="icon" href="data:,">
+
 <title>시체쟁탈 — 屍體爭奪</title>
 <style>
   :root { --ink: #d6d2c2; --dim: #7d7b6c; --line: #3b3d34; --bg: rgba(6, 8, 7, .84); --serif: "UIF", "Noto Serif KR", "Nanum Myeongjo", "Batang", serif; }
@@ -13213,6 +13214,101 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       }
     } catch (e) { if (!loop.err) { loop.err = true; console.warn('[crowflock]', e); } }
     requestAnimationFrame(loop);
+  })();
+})();
+
+</script>
+<script>/* perf.js */
+/* 가볍게(2026-10-14 사용자: 「게임이 많이 느려진 느낌 · 최적화」 → 측정: 한 프레임 삼각형 360만 · 그리기 340~410번 · 스크립트 16.4ms — 60fps 한계를 넘음)
+   ① 달빛 그림자에서 맨땅 · 풀을 뺀다 — 땅이 땅에 드리우는 그림자(밤엔 안 보임)와 풀 65,000 정점 × 8 덩이가 그림자 지도에 매 프레임 다시 그려졌다
+      (달빛 그림자 상자가 나를 따라 움직여 「한 번 구워 두기」는 안 된다 — 대신 그릴 것을 줄임)
+   ② 「눈 앞 시야」 빛 그림자는 사람 · 봇 · 괴물 · 시체만 — 맵 · 바위 · 풀 · 토리이는 그 빛 그림자 지도에 그리지 않는다(달빛 그림자는 그대로)
+      방법: 그 빛의 그림자 지도만 따로 그린다(장면을 다 그린 뒤 다음 프레임 것을 — 그때만 맵의 castShadow 를 잠깐 끔) · 본 그리기에서는 그 빛 그림자를 건너뜀
+   ③ 풀은 그림자를 드리우지 않는다(①에 포함 · 눈빛에도)
+   ④ 화면 밖(카메라 뒤 · 옆 멀리)의 봇 · 시체 · 괴물은 그리는 순간만 숨긴다(뼈대 몸은 화면 밖이어도 늘 그려지게 되어 있었다) — 게임 판단은 그대로(그린 뒤 되돌림)
+   · 새 셰이더 없음 · 끄기: __perf.on = 0(전부 원래대로) · 하나씩: __perf.sun / eye / grass / cull = 0 */
+(() => {
+  const P = (window.__perf = { on: 1, sun: 1, eye: 1, grass: 1, cull: 1, stat: {} });
+  let G = null, statics = [], dyn = [], scanT = 0, hooked = false, spot = null, V = null, hid = [];
+  const isDynRoot = (o) => dyn.includes(o);
+  function roots() {
+    const out = [];
+    if (G.hero) out.push(G.hero);
+    for (const b of (G.game && G.game.bots) || []) if (b.hero) out.push(b.hero);
+    for (const b of (G.game && G.game.bodies) || []) if (b.root) out.push(b.root);
+    if (G.monster && G.monster.root) out.push(G.monster.root);
+    if (G.body) { if (G.body.main) out.push(G.body.main); if (G.body.drag) out.push(G.body.drag); }
+    return out;
+  }
+  // 정적(맵 · 소품) 그림자 드리우는 것 목록 — 움직이는 몸 밑이 아닌 것
+  function scan() {
+    dyn = roots();
+    const st = []; let grassN = 0;
+    G.scene.traverse((o) => {
+      if (!(o.isMesh || o.isSkinnedMesh)) return;
+      for (let q = o; q; q = q.parent) if (isDynRoot(q)) return;
+      if (o.userData.__cs0 === undefined) o.userData.__cs0 = o.castShadow;
+      const grass = /^GrassShape/.test(o.name || ''), ground = /^BaseShape_Ground/.test(o.name || '');
+      const want = P.on > 0.5 && ((grass && P.grass > 0.5) || (ground && P.sun > 0.5)) ? false : o.userData.__cs0;
+      if (o.castShadow !== want) o.castShadow = want;
+      if (grass) grassN++;
+      if (o.castShadow && !o.isSkinnedMesh) st.push(o);
+    });
+    statics = st; P.stat.statics = st.length; P.stat.grass = grassN; P.stat.dyn = dyn.length;
+  }
+  function findSpot() { let s = null; G.scene.traverse((o) => { if (!s && o.isSpotLight && o.shadow && o.shadow.mapSize && o.shadow.mapSize.x === 1024) s = o; }); return s; }
+  const eyeMode = () => P.on > 0.5 && P.eye > 0.5 && spot && spot.castShadow && !(G.cfg && G.cfg.torch) && !(window.__fx && window.__fx.on && window.__fx.on.eyelight === false) && G.started;
+  function hook() {
+    hooked = true;
+    const S = G.scene, pb = S.onBeforeRender, pa = S.onAfterRender, cam = () => G.cam;
+    S.onBeforeRender = function (...a) {
+      if (pb) pb.apply(this, a);
+      try {
+        // ② 본 그리기에서는 눈빛 그림자를 건너뜀(지난 프레임 끝에 사람만으로 그려 둔 것을 씀)
+        if (spot) { if (eyeMode() && P.eyeReady) { spot.shadow.autoUpdate = false; spot.shadow.needsUpdate = false; } }
+        // ④ 화면 밖 몸 숨김
+        hid.length = 0;
+        if (P.on > 0.5 && P.cull > 0.5 && G.started) {
+          const c = cam(); c.updateMatrixWorld(); const cp = c.position;
+          const test = (root, x, y, z) => {
+            const d = Math.hypot(x - cp.x, y - cp.y, z - cp.z); if (d < 7 || !root.visible) return;
+            V.set(x, y, z).project(c);
+            const m = 0.25 + 3.2 / Math.max(1, d);   // 몸 반지름만큼 넉넉히(그림자가 화면 안으로 드리울 수 있게)
+            if (V.z > 1 || Math.abs(V.x) > 1 + m || Math.abs(V.y) > 1 + m * 1.6) { root.visible = false; hid.push(root); }
+          };
+          for (const b of (G.game && G.game.bots) || []) if (b.hero) test(b.hero, b.hero.position.x, b.hero.position.y + 1, b.hero.position.z);
+          for (const b of (G.game && G.game.bodies) || []) if (b.root && !b.held && b.bones && b.bones.hips) { b.bones.hips.getWorldPosition(V); test(b.root, V.x, V.y, V.z); }
+          const M = G.monster && G.monster.root; if (M) { const h = (G.cfg && G.cfg.monHeight) || 4; test(M, M.position.x, M.position.y + h * 0.5, M.position.z); }
+        }
+        P.stat.hidden = hid.length;
+      } catch (e) { if (!hook.err) { hook.err = true; console.warn('[perf]', e); } }
+    };
+    S.onAfterRender = function (...a) {
+      try {
+        for (const r of hid) r.visible = true; hid.length = 0;
+        // ② 다음 프레임에 쓸 눈빛 그림자 — 지금(빛이 눈빛 자리에 있을 때 · eyelight 가 되돌리기 전) 사람 · 괴물 · 시체만으로
+        if (eyeMode()) {
+          const off = []; for (const o of statics) if (o.castShadow) { o.castShadow = false; off.push(o); }
+          spot.shadow.needsUpdate = true;
+          try { G.renderer.shadowMap.render([spot], S, G.cam); } finally { for (const o of off) o.castShadow = true; }
+          spot.shadow.needsUpdate = false; P.eyeReady = true;
+        } else if (spot && P.eyeReady) { spot.shadow.autoUpdate = true; P.eyeReady = false; }
+      } catch (e) { if (!hook.err2) { hook.err2 = true; console.warn('[perf] 눈빛 그림자', e); } }
+      if (pa) pa.apply(this, a);
+    };
+  }
+  (function loop() {
+    try {
+      G = window.__G;
+      if (G && G.scene && G.THREE && G.renderer && G.cam && G.hero) {
+        if (!V) V = new G.THREE.Vector3();
+        if (!spot) spot = findSpot();
+        if (!hooked && window.__eyelight && window.__eyelight.ready) hook();
+        const t = performance.now();
+        if (t > scanT) { scanT = t + 2000; scan(); }
+      }
+    } catch (e) { if (!loop.err) { loop.err = true; console.warn('[perf]', e); } }
+    setTimeout(loop, 250);
   })();
 })();
 
