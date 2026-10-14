@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-658 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-659 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-658'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-659'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -12844,7 +12844,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
       o.scale.set(W, W, W * M.ar);
       // b656 — 이 돗자리 위로 솟은 풀 · 땅 지우기 값(camera.js) — 네모 안쪽 4% · 윗면 = 바닥 + 두께 · 경사
       if (cut && z.team < 3 && M.cutH > 0) { const i = z.team, su = ok && M.tilt > 0.5 ? (yR - yL) / (hx * 1.6) : 0, sv = ok && M.tilt > 0.5 ? (yF - yB) / (hz * 1.6) : 0;
-        O.uMR.value.set([cx, cz, ca, sa], i * 4); O.uMS.value.set([hx * 0.96, hz * 0.96, o.position.y + src.th * W, M.cutH], i * 4); O.uMT.value.set([su, sv], i * 2); }
+        O.uMR.value.set([cx, cz, ca, sa], i * 4); O.uMS.value.set([hx * 0.995, hz * 0.995, o.position.y + src.th * W, M.cutH], i * 4); O.uMT.value.set([su, sv], i * 2); }
     }
   }
   // b655 — 내 캐릭터가 선 곳으로(사용자 「위치 조절도 힘들고」) — 좌우 · 앞뒤 값을 거꾸로 계산 · 높이는 땅에 맞춤
@@ -13909,7 +13909,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const ZONE_HEAD = ['uniform vec4 uMR[3];', 'uniform vec4 uMS[3];', 'uniform vec2 uMT[3];', 'uniform float uMOff;', 'uniform vec4 uZT[3];', 'uniform vec4 uZP[3];', 'uniform vec3 uZC[3];', 'uniform vec4 uZO;', 'uniform float uZL;', ''].join(NL);
   // b656 — 돗자리 네모(안쪽 4%) 안에서 돗자리 윗면 ~ 그 위 H 사이의 맵 · 소품 조각은 그리지 않는다(사용자 「잔디나 바닥이 돗자리 위로 안 보이게 · 떠 보이면 안 되고 아래를 안 그리게」) · 돗자리 자신은 uMOff = 1
   const MAT_FS = ['if (uMOff < 0.5) { for (int mi = 0; mi < 3; mi++) { vec4 mr = uMR[mi]; vec4 ms = uMS[mi]; if (ms.x <= 0.0) continue; vec2 md = vOccW.xz - mr.xy; float mu = mr.z * md.x - mr.w * md.y; float mv = mr.w * md.x + mr.z * md.y;',
-    '  if (abs(mu) < ms.x && abs(mv) < ms.y) { float mt = ms.z + mu * uMT[mi].x + mv * uMT[mi].y; if (vOccW.y > mt - 0.015 && vOccW.y < mt + ms.w) discard; } } }'].join(NL);
+    '  if (abs(mu) < ms.x && abs(mv) < ms.y) { float mt = ms.z + mu * uMT[mi].x + mv * uMT[mi].y; if (vOccW.y > mt - 0.6 && vOccW.y < mt + ms.w) discard;   /* b659 — 윗면 아래도 전부(돗자리가 가린다) — 가장자리 · 처진 곳 풀 조각이 남던 것 */ } } }'].join(NL);
   const ZONE_FS = ['#include <map_fragment>', MAT_FS, 'if (uZO.x > 0.5) { for (int zi = 0; zi < 3; zi++) {', '  vec2 zd = vOccW.xz - uZT[zi].xy; vec2 zf = uZT[zi].zw; float zv = dot(zd, zf); float zu = dot(zd, vec2(zf.y, -zf.x)); vec4 zp = uZP[zi];',
     '  float ea = zu / zp.x, eb = (zv - zp.z) / zp.y, ze = sqrt(ea * ea + eb * eb);',
     '  float zin = (1.0 - smoothstep(1.0 - uZO.z, 1.0, ze)) * smoothstep(-0.2, 0.15, zv) * (1.0 - smoothstep(zp.w + uZO.w * 0.7, zp.w + uZO.w, vOccW.y));',
