@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-829 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-830 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-829'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-830'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -836,7 +836,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
       css = css.split(`font-family: '${f.fam}'`).join("font-family: 'UIF'");
       if (!el) { el = document.createElement('style'); el.id = 'sr-uif'; document.head.appendChild(el); }
       el.textContent = css;
-      await Promise.race([Promise.all(['400 16px UIF', '700 16px UIF', '800 16px UIF'].map((s) => document.fonts.load(s, '시체쟁탈 본진初日屍'))), new Promise((res) => setTimeout(res, 4000))]);
+      await Promise.race([Promise.all(['400 16px UIF', '700 16px UIF', '800 16px UIF'].map((s) => document.fonts.load(s, '시체쟁탈 본진제단初日屍'))), new Promise((res) => setTimeout(res, 4000))]);
       return true;
     } catch (e) { console.warn('[font] 글꼴 받기 실패 — 나눔명조로', f.name, e); if (el) el.textContent = ''; return false; }
   }
@@ -1559,8 +1559,8 @@ body.mp-art #mp-cd.n1 { background-image: var(--art-count-n1); }
   };
   const mo = new MutationObserver(rd); mo.observe(bar, { attributes: true, attributeFilter: ['style'] }); rd();
   // 한 줄 귀띔
-  const TIPS = ['시체 셋을 먼저 자기 본진에 모으는 자가 살아남는다', 'G — 시체를 잡고 놓는다 · 들고 가면 걸음이 느려진다', '괴물의 눈에 띄면 쫓아온다 — 멀리 벗어나야 놓친다',
-    '봇도 네 본진의 시체를 훔쳐 간다', '남의 본진에서도 시체를 빼앗아 올 수 있다', 'Esc — 잠시 멈춤 · 설정 · 타이틀로'];
+  const TIPS = ['시체 셋을 먼저 자기 제단에 바치는 자가 살아남는다', 'G — 시체를 잡고 놓는다 · 들고 가면 걸음이 느려진다', '괴물의 눈에 띄면 쫓아온다 — 멀리 벗어나야 놓친다',
+    '봇도 네 제단의 시체를 훔쳐 간다', '남의 제단에서도 시체를 빼앗아 올 수 있다', 'Esc — 잠시 멈춤 · 설정 · 타이틀로'];
   // b815 — 귀띔 줄 없앰(사용자 「로딩 시에 이런 글씨 다 없애」 — ◆ 남의 본진에서도 시체를 빼앗아 올 수 있다 등) · 되살리기: TIP_ON = true
   const TIP_ON = false;
   if (TIP_ON) {
@@ -1935,7 +1935,7 @@ var MeshoptDecoder = (function () {
     const col = G.colors.map(hex);
     const root = document.createElement('div');
     root.id = 'tz';
-    root.innerHTML = `<div id="sr-startfade"></div><div id="sr-start"><div class="pl">신사 터</div><div class="tm"><b>初日</b><span>--:--:--</span><i></i></div><div class="ob">종료 조건 — 시체 셋을 먼저 자기 본진에 모은다</div></div><div id="sr-endfade"></div><div id="sr-end"><div class="k"></div><div class="t"></div><div class="s"></div><div class="rec"></div><div class="tally"></div><div class="r">R — 다시</div><div class="menu"><button type="button" data-a="again">다시 하기</button><button type="button" data-a="title">타이틀로</button></div><div class="gr"></div><div class="sl"></div></div><div id="sr-endgrain"></div>
+    root.innerHTML = `<div id="sr-startfade"></div><div id="sr-start"><div class="pl">신사 터</div><div class="tm"><b>初日</b><span>--:--:--</span><i></i></div><div class="ob">종료 조건 — 시체 셋을 먼저 자기 제단에 바친다</div></div><div id="sr-endfade"></div><div id="sr-end"><div class="k"></div><div class="t"></div><div class="s"></div><div class="rec"></div><div class="tally"></div><div class="r">R — 다시</div><div class="menu"><button type="button" data-a="again">다시 하기</button><button type="button" data-a="title">타이틀로</button></div><div class="gr"></div><div class="sl"></div></div><div id="sr-endgrain"></div>
       <div id="sr-stamp"><b>경기장</b><span class="sr-day">初日</span><span id="sr-stamp-clock">--:--:--</span></div>`;
     (document.getElementById('game-root') || document.body).appendChild(root);   // 스튜디오 캡처 범위 안(종료 카드·시각)
     /* b779 — 종료 카드(사용자 「누가 승리했다고 써 줘 · 타이틀 화면으로 돌아가거나 같은 판 다시 하는 메뉴 · 여기도 UI 와 글씨에 필터」)
@@ -2028,7 +2028,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     hudSetup();                                          // 준비 단계(ready.js)가 표지 셰이더·그림까지 미리 굽게 지금 만든다
     try { if (G.cfg.minimapOn) G.set('minimapOn', false); } catch { /* 넘어간다 */ }
     try {
-      document.fonts.load(`800 13px ${MJ}`, 'P1P2P3 본진屍歸奪이(가) 시체를 가져간다 내0123456789m').then(() => {
+      document.fonts.load(`800 13px ${MJ}`, 'P1P2P3 본진제단屍歸奪이(가) 시체를 가져간다 내0123456789m').then(() => {
         buildArt(col); for (const q of plq) if (q) q.dirty = true;
         if (HUD.scene) for (const it of [HUD.home, HUD.warn, HUD.water, ...HUD.base].filter(Boolean)) it.key = '';   // 표찰도 새 글꼴로 다시
       }).catch(() => {});
@@ -2602,7 +2602,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     // 2026-10-08 사용자: 「본진 표시도 더 디테일하고 알기 쉽게」 — 내 것은 대화명 대신 「내 본진」(「陣」 도장은 사용자 「본진에 도장 표시가 왜 있어 · 이상하다」로 뺐다)
     const H = 40, SL = 25, GAP = 3, P = 10, SEAL = -6, col = soft(hex(G.colors[t])), nm0 = TEAM[t], name = nm0.length > 9 ? nm0.slice(0, 9) + '…' : nm0;   // b411 — 내 것도 대화명(2026-10-12 사용자: 「내 본진이라고 뜨는데 그렇게 말고 플레이어 이름 뜨게」)   // 남은 대화명(혼자 하기의 봇은 "P2 봇")
     const font = `800 20px ${MJ}`, fsub = `800 15px ${MJ}`;
-    const mk = pin === 'mark', name2 = mk ? (t === 0 ? '내 본진' : '') : pin ? name + ' 본진' : name, TI = pin ? 26 : 0;   // b829 — mark: 이름 대신 ⛩ (내 것만 「내 본진」)
+    const mk = pin === 'mark', name2 = mk ? (t === 0 ? '내 제단' : '') : pin ? name + ' 제단' : name,   /* b830 — 본진 → 제단(사용자) */ TI = pin ? 26 : 0;   // b829 — mark: 이름 대신 ⛩ (내 것만 「내 본진」)
     mg.font = font; mg.letterSpacing = '2px'; const nw = mg.measureText(name2).width;
     mg.font = fsub; mg.letterSpacing = '1px'; const dw = mg.measureText(dist).width;
     const W = Math.ceil(P + SEAL + 6 + TI + nw + P + 3 * SL + 2 * GAP + P + dw + P + 2);
@@ -3266,7 +3266,7 @@ body.sr-keys-on #hud .hint{display:none!important}`;
     hunt: () => ['鬼', '괴물이 너를 보았다', '달 려 라'],
     score: (t, n) => ['献', '시체를 바쳤다', `${n} / 3`],
     rival: (t, n) => ['屍', `${tname(t)}${josa(tname(t), '이', '가')} 시체를 바쳤다`, `${n} / 3`],
-    take: (t) => ['奪', `${tname(t)} 본진의 시체를 빼앗았다`, '내 본진으로 끌고 가라'],
+    take: (t) => ['奪', `${tname(t)}의 제단에서 시체를 빼앗았다`, '내 제단으로 끌고 가라'],   // b830 — 본진 → 제단(사용자)
   };
   // 소리(realsfx.js 실제 녹음 — 삐빅 대신) — 도난 · 쫓김 = 낮게 찢기는 브람 / 내 득점 = 큰 절 종 / 남 득점 · 빼앗음 = 먹먹한 나무 똑(남 득점은 먼 종도 낮게)
   const SND = { danger: [['sys_danger', 0.75]], hunt: [['sys_danger', 0.55, 0.92]], score: [['sys_score', 0.7]], rival: [['sys_tick', 0.6], ['sys_score', 0.28, 0.82]], take: [['sys_tick', 0.6]] };
@@ -4373,7 +4373,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
   // b777 — 짧게(사용자 「조작은 방향키 또는 WASD · G 또는 스페이스 정도만 · 괴물과 방해 요소를 잘 피해서 시체 3구를 내 돗자리 위에 올려 두면 이긴다 정도로 · 방해 요소 설명은 자세히 쓰지 마」)
   // b778 — 「시체 3구를 서로 뺏어서 제일 먼저 3구를 모으는 사람이 승리한다 이런 식으로」 · 「방향키로도 이동 가능하다고」 · 키 묶음은 줄에서 안 끊김(.kg)
   const HOW = [
-    { k: 'goal', t: '목표', l: [`괴물과 방해 요소를 피해 <b>시체 3구</b>를 서로 빼앗아`, `가장 먼저 <b>내 돗자리</b>에 3구를 모으는 사람이 <b>승리</b>한다`] },
+    { k: 'goal', t: '목표', l: [`괴물과 방해 요소를 피해 <b>시체 3구</b>를 서로 빼앗아`, `가장 먼저 <b>내 제단</b>에 3구를 바치는 사람이 <b>승리</b>한다`] },
     { k: 'keys', t: '조작', l: [`<span class="kg">방향키 ${K('↑')}${K('↓')}${K('←')}${K('→')}</span> 또는 <span class="kg">${K('W')}${K('A')}${K('S')}${K('D')}</span> 이동`, `<span class="kg">${K('G')} 또는 ${K('Space')}</span> 시체 잡기 / 놓기`] },
   ];
   const TIP = '';
@@ -19890,7 +19890,7 @@ body.sr-looking #sr-expr-cap { bottom: var(--sr-look-h, 196px) !important; }   /
         <span class="grp"><i>까마귀</i><button type="button" class="go" data-crow="me">나를 쪼게</button><button type="button" data-crow="bot">봇을 쪼게</button></span>
         <span class="grp"><i>왕벌</i><button type="button" class="go" data-hornet="me">나를 낚아채게</button><button type="button" data-hornet="bot">봇을 낚아채게</button></span>
         <span class="grp"><button type="button" data-face class="${faceOn ? 'on' : ''}">얼굴 보기<small>9</small></button></span>
-        ${window.__hudStyle ? `<span class="grp"><i>본진 표지</i>${ar('hst', -1)}<button type="button" class="nm">${window.__hudStyle.name()}</button>${ar('hst', 1)}</span>` : ''}
+        ${window.__hudStyle ? `<span class="grp"><i>제단 표지</i>${ar('hst', -1)}<button type="button" class="nm">${window.__hudStyle.name()}</button>${ar('hst', 1)}</span>` : ''}
         ${window.__sysFont ? `<span class="grp"><i>메세지</i>${ar('sf', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.cur()[1]}</button>${ar('sf', 1)}`
           + (window.__keyHint ? (() => { const K = window.__keyHint.info(); return `</span><span class="grp"><i>조작 안내</i><button type="button" data-khon class="${K.on ? 'on' : ''}">${K.on ? '켜짐' : '꺼짐'}</button><i>크기</i>${ar('khs', -1)}<button type="button" class="nm">${K.size}%</button>${ar('khs', 1)}<i>높이</i>${ar('khy', -1)}<button type="button" class="nm">${K.y}px</button>${ar('khy', 1)}<i>밝기</i>${ar('kho', -1)}<button type="button" class="nm">${K.op}%</button>${ar('kho', 1)}<i>블러</i>${ar('khb', -1)}<button type="button" class="nm">${K.blur}px</button>${ar('khb', 1)}</span><span class="grp"><i>메세지</i>`; })() : '')
           + (window.__sysFont.info ? `<i>크기</i>${ar('sz', -2)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().px}px</button>${ar('sz', 2)}<i>색</i>${ar('scol', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().col}</button>${ar('scol', 1)}<i>필터</i>${ar('sfk', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().k}%</button>${ar('sfk', 1)}` : '') + '</span>' : ''}
@@ -22721,7 +22721,7 @@ function beginRound() {
   syncBodies();
   G.monster.tgt = null;
   if (!G.started) G.mpApi.start();
-  feedSys(`판 ${st.round} — 시체 셋을 먼저 내 본진에`);
+  feedSys(`판 ${st.round} — 시체 셋을 먼저 내 제단에`);   // b830 — 본진 → 제단
 }
 function refreshHud() { try { if (window.__tension && window.__tension.refresh) window.__tension.refresh(); } catch (e) { console.warn('[mp] 표지 다시 그리기', e); } }
 // 봇 머리 위 이름표 — 사람은 닉네임, 빈 자리는 "P2 봇"
