@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-821 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-823 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-821'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-823'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2598,23 +2598,44 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     return c;
   }
   // 본진 표지 — 작은 나무 표찰: 팀(팀 색) · 인장 세 칸(모은 시체, 에마 판과 같은 인장) · 거리
-  function baseTagArt(t, n, dist) {
+  function baseTagArt(t, n, dist, pin) {   // b822 — pin: A 장소 핀 시안(토리이 기호 + 「본진」)
     // 2026-10-08 사용자: 「본진 표시도 더 디테일하고 알기 쉽게」 — 내 것은 대화명 대신 「내 본진」(「陣」 도장은 사용자 「본진에 도장 표시가 왜 있어 · 이상하다」로 뺐다)
     const H = 40, SL = 25, GAP = 3, P = 10, SEAL = -6, col = soft(hex(G.colors[t])), nm0 = TEAM[t], name = nm0.length > 9 ? nm0.slice(0, 9) + '…' : nm0;   // b411 — 내 것도 대화명(2026-10-12 사용자: 「내 본진이라고 뜨는데 그렇게 말고 플레이어 이름 뜨게」)   // 남은 대화명(혼자 하기의 봇은 "P2 봇")
     const font = `800 20px ${MJ}`, fsub = `800 15px ${MJ}`;
-    mg.font = font; mg.letterSpacing = '2px'; const nw = mg.measureText(name).width;
+    const name2 = pin ? name + ' 본진' : name, TI = pin ? 26 : 0;
+    mg.font = font; mg.letterSpacing = '2px'; const nw = mg.measureText(name2).width;
     mg.font = fsub; mg.letterSpacing = '1px'; const dw = mg.measureText(dist).width;
-    const W = Math.ceil(P + SEAL + 6 + nw + P + 3 * SL + 2 * GAP + P + dw + P + 2);
+    const W = Math.ceil(P + SEAL + 6 + TI + nw + P + 3 * SL + 2 * GAP + P + dw + P + 2);
     const [c, g] = hcanvas(W, H), R = rnd(401 + t * 17);
     plank(g, W, H, false, col, R);   // b701 — 「시체를 가져간다」 표찰과 같은 검붉은 옻칠 판(사용자 「본진을 가리키는 UI 도 같은 스타일 톤으로 · 색감은 유지」) · 테 · 이름은 팀 색 그대로(예전 나무 판)
     g.textBaseline = 'middle'; g.textAlign = 'left';
-    g.font = font; g.letterSpacing = '2px'; inkText(g, name, P + SEAL + 6, H / 2 + 1.5, tint(col, t === 0 ? 0.55 : 0.4), t === 0 ? 5 : 4);
-    let x = P + SEAL + 6 + nw + P;
+    if (pin) toriiIcon(g, P + SEAL + 6 + 11, H / 2 + 1, 22, tint(col, 0.25));
+    g.font = font; g.letterSpacing = '2px'; inkText(g, name2, P + SEAL + 6 + TI, H / 2 + 1.5, tint(col, t === 0 ? 0.55 : 0.4), t === 0 ? 5 : 4);
+    let x = P + SEAL + 6 + TI + nw + P;
     for (let k = 0; k < 3; k++) { slotArt(g, x, (H - SL) / 2, SL, col, k < n, t, k); x += SL + GAP; }
     g.font = fsub; g.letterSpacing = '1px'; inkText(g, dist, x - GAP + P, H / 2 + 2, '#efdccf', 3.2);
     c.__sl = { x: x - 3 * (SL + GAP), y: (H - SL) / 2, w: 3 * SL + 2 * GAP, h: SL, W, H };   // b812 — 시체 세 칸 자리(깜박이는 테두리를 여기에 맞춘다)
     return c;
   }
+  // b822 — 토리이 기호(붓 먹 테) — 위 지붕(살짝 휜 가사기) · 둘째 들보 · 기둥 둘
+  function toriiIcon(g, x, y, s, col) {
+    g.save(); g.fillStyle = col; g.strokeStyle = 'rgba(8,4,2,.92)'; g.lineWidth = Math.max(1, s * 0.07); g.lineJoin = 'round';
+    const P = () => { g.beginPath(); g.moveTo(x - s * 0.56, y - s * 0.44); g.quadraticCurveTo(x, y - s * 0.30, x + s * 0.56, y - s * 0.44); g.lineTo(x + s * 0.50, y - s * 0.30); g.quadraticCurveTo(x, y - s * 0.20, x - s * 0.50, y - s * 0.30); g.closePath();
+      g.rect(x - s * 0.42, y - s * 0.13, s * 0.84, s * 0.09); g.rect(x - s * 0.33, y - s * 0.30, s * 0.11, s * 0.78); g.rect(x + s * 0.22, y - s * 0.30, s * 0.11, s * 0.78); };
+    P(); g.stroke(); P(); g.fill(); g.restore();
+  }
+  // b822 — C 발밑 고리의 작은 표찰(토리이 + 거리)
+  function ringTagArt(t, dist) {
+    const H = 28, col = soft(hex(G.colors[t])), f = `800 14px ${MJ}`; mg.font = f; mg.letterSpacing = '1px'; const dw = mg.measureText(dist).width, W = Math.ceil(8 + 22 + 6 + dw + 9);
+    const [c, g] = hcanvas(W, H), R = rnd(611 + t * 13); plank(g, W, H, false, col, R);
+    toriiIcon(g, 8 + 11, H / 2 + 1, 18, tint(col, 0.25)); g.textBaseline = 'middle'; g.textAlign = 'left'; g.font = f; g.letterSpacing = '1px'; inkText(g, dist, 8 + 22 + 6, H / 2 + 1.5, '#efdccf', 3);
+    return c;
+  }
+  function ringArt() {   // 발밑 고리 — 흰 점선 원(재질 색으로 물들임)
+    const S = 256, [c, g] = hcanvas(S, S, 1); g.strokeStyle = '#fff'; g.lineWidth = 7; g.setLineDash([18, 14]); g.shadowColor = '#fff'; g.shadowBlur = 8;
+    g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 14, 0, Math.PI * 2); g.stroke(); return c;
+  }
+  function dotArt() { const S = 64, [c, g] = hcanvas(S, S, 1); g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(S / 2, S / 2, S / 2 - 6, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#fff'; g.beginPath(); g.arc(S / 2, S / 2, 7, 0, Math.PI * 2); g.fill(); return c; }
   // 인장 칸 — 찍힌 칸은 에마 판과 같은 인장, 빈 칸은 파인 네모 + 팀 색 테(필터를 먹어도 □ 로 읽히게 또렷이)
   function slotArt(g, x, y, S, col, on, t, k) {
     if (on) { g.drawImage(art[t].on[k], x, y, S, S); return; }
@@ -2635,6 +2656,15 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
   }
   /* b812 — 시체 2구를 모은 진영: 시체 칸 테두리가 은은하게 꺼졌다 켜졌다(사용자 「두 개를 모은 순간 그 진영의 시체 표시 칸 테두리가 깜박깜박 꺼졌다 켜졌다 은은하게 빛나게」)
      · 화면 표찰(이름 · □□□ · 거리)과 본진 에마 판 둘 다 · 1.4초에 한 번 · 팀 색 · 끄기 __slotBlink = false */
+  /* b822 — 본진 표지 시안(사용자 「HUD 가 본진을 가리키는 게 아니라 플레이어를 가리키는 걸로 오해할 수도」 · 「A 와 C 를 둘러보기에서 골라서 볼 수 있게」)
+     지금(cur) · A 장소 핀(pin — 화살 없이 본진 위 표찰 + 땅에 꽂힌 줄기 · 토리이 기호 + 「○○ 본진」 · 화면 밖은 가장자리 화살) · C 발밑 고리(ring — 내 발밑 점선 원 + 본진 쪽 눈금 + 토리이 · 거리)
+     둘러보기 「본진 표지 ‹ ›」 · 이 브라우저에 기억 · 「저장」하면 모두의 기본값(settings 'hudStyle') */
+  const HSTY = { mode: 'cur', list: [['cur', '지금'], ['pin', 'A 장소 핀'], ['ring', 'C 발밑 고리']] };
+  try { const v = localStorage.getItem('corpse_hudstyle'); if (v && HSTY.list.some((x) => x[0] === v)) HSTY.mode = v; } catch (e) { /* */ }
+  window.__hudStyle = { list: HSTY.list, get: () => HSTY.mode, name: () => (HSTY.list.find((x) => x[0] === HSTY.mode) || HSTY.list[0])[1],
+    set(m) { if (!HSTY.list.some((x) => x[0] === m)) return; HSTY.mode = m; try { localStorage.setItem('corpse_hudstyle', m); } catch (e) { /* */ } for (const it of HUD.base || []) if (it) it.key = ''; },
+    step(d) { const i = Math.max(0, HSTY.list.findIndex((x) => x[0] === HSTY.mode)), n = HSTY.list.length; window.__hudStyle.set(HSTY.list[(i + d + n) % n][0]); } };
+  (function regHS() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regHS, 400); return; } St.reg('hudStyle', { get: () => HSTY.mode, set: (v) => { if (typeof v === 'string') window.__hudStyle.set(v); } }); })();
   const blinkK = (t) => { const v = 0.5 - 0.5 * Math.cos(t * Math.PI * 2 / 1.4); return 0.95 * Math.pow(v, 1.6); };
   function frameArt() {   // 빛나는 둥근 네모 테 — 안쪽 네모 324×100(시체 세 칸 비율) · 바깥 18px 은 번짐
     const W = 360, H = 136, [c, g] = hcanvas(W, H, 1);
@@ -2665,6 +2695,9 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     const blank = () => tex(hcanvas(2, 2, 1)[0]);          // 표찰 자리 — 처음부터 그림이 있는 셰이더로 굽히게
     HUD.vig = quad(tex(vignetteArt()), 0);
     const glow = tex(glowArt()), frm = tex(frameArt());
+    { const wc = hcanvas(4, 4, 1); wc[1].fillStyle = '#fff'; wc[1].fillRect(0, 0, 4, 4); const wt = tex(wc[0]), dt = tex(dotArt());   // b822 — 표지 시안 A · C
+      HUD.stem = [0, 1, 2].map(() => quad(wt, 2)); HUD.gdot = [0, 1, 2].map(() => quad(dt, 2)); HUD.ring = quad(tex(ringArt()), 1); HUD.rdash = Array.from({ length: 32 }, () => { const q = quad(wt, 2); q.material = q.material.clone(); q.material.color.set('#e7e2d4'); return q; });
+      HUD.notch = [0, 1, 2].map((t) => quad(tex(arrowArt(soft(hex(G.colors[t])), 131 + t, true)), 4)); HUD.rtag = [0, 1, 2].map(() => ({ label: quad(blank(), 5), key: '', w: 0, h: 0 })); }
     HUD.base = [0, 1, 2].map((t) => ({ t, arrow: quad(tex(arrowArt(soft(hex(G.colors[t])), 91 + t, true)), 4), label: quad(blank(), 5), glow: quad(glow, 3), frame: quad(frm, 6), key: '', w: 0, h: 0, slamT: -9 }));
     HUD.warn = { arrow: quad(tex(arrowArt(red, 71)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: red, glyph: '奪', seed: 301 };
     HUD.home = { arrow: quad(tex(arrowArt(mine, 53)), 7), label: quad(blank(), 8), key: '', w: 0, h: 0, style: 'lacquer', color: mine, glyph: '歸', seed: 211 };   // b701 — 내 본진 길잡이도 옻칠 판(같은 톤)
@@ -2798,14 +2831,19 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
       setLabel(HUD.water, '물에 뛰어들어라', `${dStep(Math.hypot(wt.x - me.x, wt.z - me.z))}m`);
       us.push(uwt = layout(HUD.water, aim(wt.x, wt.y + 1.2, wt.z), AR, true, hs));
     }
-    const ub = [];
+    const ub = [], rings = [];
     for (const b of bs) {
       const z = b.z, it = HUD.base[b.t], d = Math.hypot(z.cx - me.x, z.cz - me.z);
       const p = aim(z.cx, G.groundAt(z.cx, z.cz) + 2.4, z.cz);
       if (p.on && d < NEAR) continue;                          // 가까이 보이면 월드의 에마 판이 대신
-      const dd = dStep(d), key = b.n + '|' + dd;
-      if (it.key !== key) { it.key = key; swapTex(it, baseTagArt(b.t, b.n, `${dd}m`)); }
+      const hm2 = HSTY.mode;
+      if (hm2 === 'ring') { rings.push({ b, z, d }); continue; }   // b822 — C: 표지 대신 발밑 고리
+      const dd = dStep(d), key = hm2 + '|' + b.n + '|' + dd;
+      if (it.key !== key) { it.key = key; swapTex(it, baseTagArt(b.t, b.n, `${dd}m`, hm2 === 'pin')); }
       const u = layout(it, p, BAR, false, hs);
+      if (hm2 === 'pin' && p.on) {   // b822 — A: 화살 없이 본진 바로 위에 표찰 · 아래로 줄기가 땅에 꽂힌다
+        const gp = project(z.cx, G.groundAt(z.cx, z.cz) + 0.05, z.cz); u.lx = p.x; u.ly = p.y - it.h / 2 - 6; u.x0 = u.lx - it.w / 2; u.x1 = u.lx + it.w / 2; u.y0 = u.ly - it.h / 2; u.y1 = u.ly + it.h / 2;
+        u.dx = Math.max(8 - u.x0, Math.min(innerWidth - 8 - u.x1, 0)); u.pin = gp.on ? gp : null; u.noArrow = true; }
       u.b = b; us.push(u); ub.push(u);
     }
     resolve(us);
@@ -2824,6 +2862,11 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
       const hot = b.n >= 2;                                          // 한 판 남았다
       const back = b.t === 0 ? 1 : 1 - 0.82 * hf;                     // 쫓기는 동안 남의 표지는 물러난다
       apply(u, t, 1.4, (hot || slam > 0 ? 1 : 0.86) * back, 1 + 0.45 * slam);
+      if (u.noArrow) { it.arrow.visible = false;   // b822 — A 장소 핀: 줄기 · 땅 점
+        if (u.pin) { const lx = it.label.position.x, ly = -it.label.position.y + it.h * (1 + 0.45 * slam) / 2, gx = u.pin.x, gy = u.pin.y, len = Math.max(0, gy - ly);
+          const st = HUD.stem[b.t], gd = HUD.gdot[b.t], col = soft(hex(G.colors[b.t]));
+          if (len > 4) { st.position.set((lx + gx) / 2, -(ly + gy) / 2, 0); st.rotation.z = -Math.atan2(gx - lx, gy - ly); st.scale.set(2.2, len, 1); st.material.color.set(col); st.material.opacity = 0.75 * back; st.visible = true; }
+          gd.position.set(gx, -gy, 0); gd.scale.set(30, 11, 1); gd.material.color.set(col); gd.material.opacity = 0.85 * back; gd.visible = true; } }
       if (hot) {
         const gl = it.glow, pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / 0.9);
         gl.material.color.set(b.t === 0 ? hex(G.colors[0]) : '#ff2a1a');
@@ -2834,6 +2877,23 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
           fr.material.color.set(soft(hex(G.colors[b.t]))); fr.material.opacity = 0.8 * blinkK(t) * back;   // b816 — 흰빛 쪽 섞음 뺌(화면 번짐이 칸 안까지 밝혔다)
           fr.position.set(it.label.position.x + ((s.x + s.w / 2) / s.W - 0.5) * it.w * k, it.label.position.y - ((s.y + s.h / 2) / s.H - 0.5) * it.h * k, 0);
           fr.scale.set(cw * 360 / 324 + 6, ch * 136 / 100 + 6, 1); fr.visible = true;
+        }
+      }
+    }
+    if (rings.length) {   // b822 — C 발밑 방향 고리: 내 발밑 점선 원 · 본진 쪽 눈금(화살) · 작은 표찰(토리이 + 거리)
+      const fy = me.y + 0.04, c0 = project(me.x, fy, me.z);
+      if (c0.on) {
+        const Rr = 1.25, ND = HUD.rdash.length;   // b822 — 원을 점선 조각으로 하나하나 투영(화면 밖 · 카메라 뒤 점은 건너뜀)
+        for (let k = 0; k < ND; k++) { const a0 = k / ND * Math.PI * 2, a1 = (k + 0.55) / ND * Math.PI * 2, p0 = project(me.x + Math.cos(a0) * Rr, fy, me.z + Math.sin(a0) * Rr), p1 = project(me.x + Math.cos(a1) * Rr, fy, me.z + Math.sin(a1) * Rr); if (!p0.on || !p1.on) continue;
+          const q = HUD.rdash[k], L = Math.hypot(p1.x - p0.x, p1.y - p0.y); if (L < 0.5) continue; q.position.set((p0.x + p1.x) / 2, -(p0.y + p1.y) / 2, 0); q.rotation.z = -Math.atan2(p1.y - p0.y, p1.x - p0.x); q.scale.set(L, 3, 1); q.material.opacity = 0.6; q.visible = true; }
+        const cy0 = c0.y;
+        for (const q of rings) {
+          const dx = q.z.cx - me.x, dz = q.z.cz - me.z, dl = Math.hypot(dx, dz) || 1, sp = project(me.x + dx / dl * Rr * 1.22, fy, me.z + dz / dl * Rr * 1.22); if (!sp.on) continue;
+          const ang = Math.atan2(sp.y - cy0, sp.x - c0.x), nt = HUD.notch[q.b.t], as = 30 * (window.__hudK || 1);
+          nt.position.set(sp.x, -sp.y, 0); nt.rotation.z = -ang; nt.scale.set(as, as, 1); nt.material.opacity = 0.95; nt.visible = true;
+          const rt = HUD.rtag[q.b.t], dd = `${dStep(q.d)}m`, key = q.b.t + '|' + dd; if (rt.key !== key) { rt.key = key; swapTex(rt, ringTagArt(q.b.t, dd)); }
+          const ox = Math.cos(ang), oy = Math.sin(ang), lx = sp.x + ox * (as * 0.6 + rt.w / 2 + 2), ly = sp.y + oy * (as * 0.6 + rt.h / 2 + 2);
+          rt.label.position.set(Math.round(lx), -Math.round(ly), 0); rt.label.scale.set(rt.w, rt.h, 1); rt.label.material.opacity = 0.95; rt.label.visible = true;
         }
       }
     }
@@ -19796,6 +19856,7 @@ body.sr-looking #sr-expr-cap { bottom: var(--sr-look-h, 196px) !important; }   /
         <span class="grp"><i>까마귀</i><button type="button" class="go" data-crow="me">나를 쪼게</button><button type="button" data-crow="bot">봇을 쪼게</button></span>
         <span class="grp"><i>왕벌</i><button type="button" class="go" data-hornet="me">나를 낚아채게</button><button type="button" data-hornet="bot">봇을 낚아채게</button></span>
         <span class="grp"><button type="button" data-face class="${faceOn ? 'on' : ''}">얼굴 보기<small>9</small></button></span>
+        ${window.__hudStyle ? `<span class="grp"><i>본진 표지</i>${ar('hst', -1)}<button type="button" class="nm">${window.__hudStyle.name()}</button>${ar('hst', 1)}</span>` : ''}
         ${window.__sysFont ? `<span class="grp"><i>메세지</i>${ar('sf', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.cur()[1]}</button>${ar('sf', 1)}`
           + (window.__keyHint ? (() => { const K = window.__keyHint.info(); return `</span><span class="grp"><i>조작 안내</i><button type="button" data-khon class="${K.on ? 'on' : ''}">${K.on ? '켜짐' : '꺼짐'}</button><i>크기</i>${ar('khs', -1)}<button type="button" class="nm">${K.size}%</button>${ar('khs', 1)}<i>높이</i>${ar('khy', -1)}<button type="button" class="nm">${K.y}px</button>${ar('khy', 1)}<i>밝기</i>${ar('kho', -1)}<button type="button" class="nm">${K.op}%</button>${ar('kho', 1)}<i>필터</i>${ar('khk', -1)}<button type="button" class="nm">${K.k}%</button>${ar('khk', 1)}</span><span class="grp"><i>메세지</i>`; })() : '')
           + (window.__sysFont.info ? `<i>크기</i>${ar('sz', -2)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().px}px</button>${ar('sz', 2)}<i>색</i>${ar('scol', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().col}</button>${ar('scol', 1)}<i>필터</i>${ar('sfk', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().k}%</button>${ar('sfk', 1)}` : '') + '</span>' : ''}
@@ -19821,6 +19882,7 @@ body.sr-looking #sr-expr-cap { bottom: var(--sr-look-h, 196px) !important; }   /
     else if (d.face !== undefined) face();
     else if (d.sf !== undefined && window.__sysFont) window.__sysFont.step(+d.sf);   // b816 — 시스템 메시지 글꼴(「G · 시체를 잡는다」) 고르고 바로 보기
     else if (d.sfgo !== undefined && window.__sysFont) window.__sysFont.preview();
+    else if (d.hst !== undefined && window.__hudStyle) window.__hudStyle.step(+d.hst);   // b822 — 본진 표지 시안
     else if (d.khon !== undefined && window.__keyHint) window.__keyHint.toggle();   // b821 — 아래 조작 안내 줄(keyhint.js)
     else if (d.khs !== undefined && window.__keyHint) window.__keyHint.step('size', +d.khs);
     else if (d.khy !== undefined && window.__keyHint) window.__keyHint.step('y', +d.khy);
