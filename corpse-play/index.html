@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-866 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-867 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-866'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-867'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5243,7 +5243,7 @@ ${HWR.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</s
       /* b821 — 끝날 때 판이 뚝 멈추고 「○○ 승리」가 뜨던 것이 어색(사용자 「게임 끝났을 때 플레이 멈춰지고 누구 승리라고 메시지 뜨는 게 되게 어색하게 끝남」)
          → 판이 1.15초에 걸쳐 느려지며 멎고(그사이 death.js 가 천천히 어둡게) · 다 멎으면 멈춤 · 끄기 __endSlow = false */
       const soft = !mpOn() && window.__endSlow !== false && G.game.winner >= 0 && fx('loseboom') && window.__death;
-      if (soft) { const t0 = now(); endSlow = { s0: window.__slowmo }; (function ramp() { if (!endSlow) return; const k = Math.min(1, (now() - t0) / (window.__endBeat !== false ? 2.3 : 1.15));   /* b861 — 결판 순간 1.3초 + 어두워짐 1.1초 */ window.__slowmo = 1 - 0.95 * ss(k); if (k < 1) { requestAnimationFrame(ramp); return; } freeze(G, true); window.__slowmo = endSlow.s0 === undefined ? 1 : endSlow.s0; endSlow = null; })(); }
+      if (soft) { const t0 = now(); endSlow = { s0: window.__slowmo }; (function ramp() { if (!endSlow) return; const k = Math.min(1, (now() - t0) / (window.__endBeat !== false ? 2.7 : 1.15));   /* b861 · b867 — 결판 순간 1.6초 + 어두워짐 1.1초 */ window.__slowmo = 1 - 0.95 * ss(k); if (k < 1) { requestAnimationFrame(ramp); return; } freeze(G, true); window.__slowmo = endSlow.s0 === undefined ? 1 : endSlow.s0; endSlow = null; })(); }
       else if (!mpOn()) freeze(G, true);
       if (G.game.winner >= 0 && fx('loseboom') && window.__death) window.__death.real(G.game.winner); }   // b462 — 결말 연출(death.js) · 누가 이겨도
     if (false) { }
@@ -6207,19 +6207,24 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
      → 그다음 1.1초에 걸쳐 어두워지고 결말 연출 · 혼자 하기만(같이 하기는 결말 연출 없이 종료 카드) · 끄기 __endBeat = false */
   const josaE = (s, a, b) => { const c = String(s).charCodeAt(String(s).length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? a : b; };
   let beatCss = false;
+  // b867 — 결판 순간 시간표: 글 3.0초 머묾(+0.5초 사라짐) · 1.6초에 어두워지기 시작(1.1초) · 글이 다 사라진 뒤(3.55초) 결말 연출
+  const BEAT = { hold: 3.0, fadeAt: 1.6, fade: 1.1, after: 3.55 };
   function beat(winner) {
     try {
       if (!beatCss) { beatCss = true; const st = document.createElement('style');
-        st.textContent = 'html body #sr-crisis.win,html body #sr-crisis-edge.win{visibility:visible!important}html body.dl-on #sr-crisis.win,html body.dl-on #sr-crisis-edge.win{visibility:hidden!important}';   // 판 끝(cin-on)에도 보이게 · 결말 연출(dl-on)에선 숨김
+        st.textContent = 'html body #sr-crisis.win,html body #sr-crisis-edge.win{visibility:visible!important}html body.dl-on #sr-crisis.win,html body.dl-on #sr-crisis-edge.win{visibility:hidden!important}'   // 판 끝(cin-on)에도 보이게 · 결말 연출(dl-on)에선 숨김
+          + 'html body #sr-crisis.win{z-index:2147483001!important}html body #sr-crisis.win .a{font-size:calc(var(--crA,34px) * 1.24)!important}html body #sr-crisis.win .b{font-size:calc(var(--crB,16px) * 1.25)!important;margin-top:10px}';   // b867 — 조금 크게(사용자) · 검게 덮인 뒤에도 글은 위에 남는다
         document.head.appendChild(st); }
       const nm = window.__teamName ? window.__teamName(winner) : `P${winner + 1}`, C = window.__crisis;
       if (C && C.show) {
+        const h0 = window.__crisisHold; window.__crisisHold = BEAT.hold;   // b867 — 이 글만 오래(사라지는 때를 늦춤 — 사용자) · 화면이 다 검어진 뒤에 사라진다
         C.show(`${nm}${josaE(nm, '이', '가')} 시체 3구를 바쳤다`, '승 리');
+        window.__crisisHold = h0;
         const xs = [document.getElementById('sr-crisis'), document.getElementById('sr-crisis-edge')];
-        for (const x of xs) if (x) x.classList.add('win');
-        setTimeout(() => { for (const x of xs) if (x) x.classList.remove('win'); }, 4200);
+        for (const x of xs) if (x) { if (x.parentNode !== document.body) document.body.appendChild(x); x.classList.add('win'); }   // 검은 덮개(screen-fade)보다 위에 오도록 body 바로 아래로
+        setTimeout(() => { for (const x of xs) if (x) x.classList.remove('win'); }, (BEAT.hold + 1.2) * 1000);
       }
-      const R = window.__rsfx; if (R && R.play) { R.play('amb_bell', { vol: 0.9, rate: 0.92 }); if (R.duck) R.duck(0.7, 3.4); }
+      const R = window.__rsfx; if (R && R.play) { R.play('amb_bell', { vol: 0.9, rate: 0.92 }); if (R.duck) R.duck(0.7, 4.2); }
       const BF = window.__basefx; if (BF) { BF.winTeam = winner; BF.winT = performance.now() / 1000; }
     } catch (e) { /* 결판 순간이 없어도 결말은 간다 */ }
   }
@@ -6229,11 +6234,12 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
     pend = true; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = 'hidden';   // 결말 카드가 어두워지는 사이에 비치지 않게
     const B = window.__endBeat !== false; if (B) beat(winner);
     const hidX = () => { for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = ''; };
+    const t0 = performance.now();
     setTimeout(() => { if (!G.game || !G.game.over || S) { pend = false; hidX(); return; }   // 결판 순간에 다시 하기 · 타이틀로
-    SF.fadeTo(B ? 1.1 : 1.15).then(() => { pend = false;
+    SF.fadeTo(B ? BEAT.fade : 1.15).then(() => new Promise((ok) => setTimeout(ok, B ? Math.max(0, BEAT.after * 1000 - (performance.now() - t0)) : 0))).then(() => { pend = false;   // b867 — 검은 화면 위 글이 다 사라진 뒤에
       if (S || !G.game || !G.game.over || mpOn()) { SF.kick(1, 0.6); for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = ''; return; }   // 그새 다시 하기 · 타이틀로
       begin('real', winner); if (window.__endTitle !== true) S.u = TL().u0 + 0.05;   // b821 — 멈춘 맵 위 「○○ 승리」 첫 장면은 건너뛰고 하늘 장면부터(이름은 마지막 카드) · 되살리기 __endTitle = true
-      setTimeout(() => SF.kick(1, 1.2), 250); }); }, B ? 1300 : 0); };
+      setTimeout(() => SF.kick(1, 1.2), 250); }); }, B ? BEAT.fadeAt * 1000 : 0); };
   D.reset = () => { if (S && S.mode === 'real') end(); };
 
   /* ── 연출실 ── */
