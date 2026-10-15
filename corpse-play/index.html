@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-823 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-826 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-823'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-826'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3045,7 +3045,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
    · 필터: 시스템 메시지와 같은 결(색 번짐 · 흐림 · 알갱이 · 주사선 · 세기 k)
    · 조절: 둘러보기 시험 줄 「조작 안내」 — 켜기 · 크기 · 높이 · 밝기 · 필터 · 이 브라우저에 기억 · 「저장」하면 모두의 기본값(settings 'keyHint') */
 (() => {
-  const DEF = { on: 1, size: 1, y: 24, op: 0.85, k: 0.6 };
+  const DEF = { on: 1, size: 1, y: 24, op: 0.85, k: 0.6, blur: 0 };   // b825 — blur(px)
   const CF = Object.assign({}, DEF);
   try { const o = JSON.parse(localStorage.getItem('corpse_keyhint') || 'null'); if (o) for (const k in DEF) if (typeof o[k] === 'number' && isFinite(o[k])) CF[k] = o[k]; } catch (e) { /* */ }
   const NOISE = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.55'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>\")";
@@ -3054,14 +3054,13 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
   function build() {
     const st = document.createElement('style');
     st.textContent = `#sr-keys{position:fixed;left:50%;bottom:var(--kh-y,24px);transform:translateX(-50%) scale(var(--kh-s,1));transform-origin:50% 100%;z-index:13;display:flex;align-items:center;gap:22px;white-space:nowrap;pointer-events:none;
-  font:700 14px 'Noto Serif KR','UIF',serif;letter-spacing:.06em;color:#e7e2d4;text-shadow:0 1px 3px #000,0 0 10px rgba(0,0,0,.9);opacity:0;transition:opacity .6s ease;
-  filter:sepia(calc(.5 * var(--khk, .6))) contrast(calc(1 + .22 * var(--khk, .6))) blur(calc(.7px * var(--khk, .6))) drop-shadow(calc(2px * var(--khk, .6)) 0 0 rgba(255,0,0,calc(.7 * var(--khk, .6)))) drop-shadow(calc(-2px * var(--khk, .6)) 0 0 rgba(0,200,255,calc(.55 * var(--khk, .6))));
-  -webkit-mask-image:${NOISE},${SCAN};-webkit-mask-composite:source-in;mask-image:${NOISE},${SCAN};mask-composite:intersect}
+  font:700 14px 'Noto Serif KR','UIF',serif;letter-spacing:.06em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.8);opacity:0;transition:opacity .6s ease;
+  filter:blur(var(--khb,0px))}   /* b825 — 깔끔한 흰색(사용자) · 색 번짐 · 알갱이 뺌 · 블러만 조절 */
 #sr-keys.on{opacity:var(--kh-o,.85)}
 #sr-keys .g{display:flex;align-items:center;gap:6px}
-#sr-keys b{display:inline-block;min-width:1.55em;padding:2px 6px 1px;border:1px solid rgba(231,226,212,.55);background:rgba(0,0,0,.5);box-shadow:inset 0 0 6px rgba(0,0,0,.8);font-weight:700;text-align:center;line-height:1.35}
-#sr-keys i{width:4px;height:4px;transform:rotate(45deg);background:#a8140c;box-shadow:0 0 6px rgba(200,20,10,.8)}
-#sr-keys span.t{margin:0 2px;color:#d6cfbf}
+#sr-keys b{display:inline-block;min-width:1.55em;padding:2px 6px 1px;border:1px solid rgba(255,255,255,.8);background:rgba(0,0,0,.45);color:#fff;box-shadow:inset 0 0 6px rgba(0,0,0,.8);font-weight:700;text-align:center;line-height:1.35}
+#sr-keys i{width:4px;height:4px;transform:rotate(45deg);background:#fff}
+#sr-keys span.t{margin:0 2px;color:#fff}
 body.sr-keys-on #hud .hint{display:none!important}`;
     document.head.appendChild(st);
     el = document.createElement('div'); el.id = 'sr-keys'; el.setAttribute('aria-hidden', 'true');
@@ -3072,16 +3071,16 @@ body.sr-keys-on #hud .hint{display:none!important}`;
   }
   function apply() {
     if (!el) return;
-    el.style.setProperty('--kh-y', CF.y + 'px'); el.style.setProperty('--kh-s', String(CF.size)); el.style.setProperty('--kh-o', String(CF.op)); el.style.setProperty('--khk', String(CF.k));
+    el.style.setProperty('--kh-y', CF.y + 'px'); el.style.setProperty('--kh-s', String(CF.size)); el.style.setProperty('--kh-o', String(CF.op)); el.style.setProperty('--khk', String(CF.k)); el.style.setProperty('--khb', CF.blur + 'px');
     document.body.classList.toggle('sr-keys-on', CF.on > 0.5);
   }
   const save = () => { try { localStorage.setItem('corpse_keyhint', JSON.stringify(CF)); } catch (e) { /* */ } apply(); };
-  const STEP = { size: [0.05, 0.6, 2], y: [4, 0, 260], op: [0.05, 0.1, 1], k: [0.1, 0, 1] };
+  const STEP = { size: [0.05, 0.6, 2], y: [4, 0, 260], op: [0.05, 0.1, 1], k: [0.1, 0, 1], blur: [0.1, 0, 4] };
   window.__keyHint = {
     cf: CF,
     toggle() { CF.on = CF.on > 0.5 ? 0 : 1; save(); },
     step(key, d) { const s = STEP[key]; if (!s) return; CF[key] = Math.max(s[1], Math.min(s[2], Math.round((CF[key] + d * s[0]) * 100) / 100)); save(); },
-    info: () => ({ on: CF.on > 0.5, size: Math.round(CF.size * 100), y: CF.y, op: Math.round(CF.op * 100), k: Math.round(CF.k * 100) }),
+    info: () => ({ on: CF.on > 0.5, size: Math.round(CF.size * 100), y: CF.y, op: Math.round(CF.op * 100), k: Math.round(CF.k * 100), blur: Math.round(CF.blur * 10) / 10 }),
   };
   (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 400); return; } St.reg('keyHint', { get: () => Object.assign({}, CF), set: (o) => { if (!o || typeof o !== 'object') return; for (const k in DEF) if (typeof o[k] === 'number' && isFinite(o[k])) CF[k] = o[k]; apply(); } }); })();
   // 보일 때 — 판이 도는 동안(둘러보기 포함) · 연출 · 결말 · 타는 동안 물 표지만 뜰 때는 숨김
@@ -5079,11 +5078,39 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
     const v = new T.Vector3((b.min.x + b.max.x) / 2, (b.min.y + b.max.y) / 2, (b.min.z + b.max.z) / 2).applyMatrix4(o.matrixWorld);
     return isFinite(v.x) && isFinite(v.z) ? (PLC = [v.x, v.z]) : null;
   }
+  /* b824 — 결말 배우는 복제(사용자 「마지막 엔딩에서 화면이 왔다갔다 · 게임에서 갖다 쓰지 말고 연출을 하라니까 · 방금 끝난 게임에서 갖다 쓰니까 꼬이는 거 아냐」)
+     예전: 판의 실제 사람 · 봇 몸을 그리기 직전에만 옮겨 찍었다 — 게임 쪽(설 수 없는 곳 되돌림 · 넘어짐 · 왕벌 · 사원증 줄 등)이 그 몸을 같이 만지면 머리 자리가 튀어 카메라가 왔다갔다 했다
+     이제: 보이는 몸을 뼈째 복제해 결말 무대에만 세운다(사원증도 복제에 따로 걸림 — 선택창과 같은 길 grip.extra) · 판의 몸 · 사원증은 결말 동안 그리지 않는다 · 끝나면 복제를 치운다 · 끄기 __endClone = false */
+  function cloneRigE(o) {
+    const c = o.clone(), a = [], b = []; o.traverse((x) => a.push(x)); c.traverse((x) => b.push(x));
+    const map = new Map(a.map((x, i) => [x, b[i]]));
+    b.forEach((x, i) => { if (x.isSkinnedMesh) { const sk = a[i].skeleton; if (sk.bones.some((bn) => !map.has(bn))) throw new Error('뼈대 복제 누락'); x.bind(new sk.constructor(sk.bones.map((bn) => map.get(bn)), sk.boneInverses), x.bindMatrix); } });
+    return c;
+  }
+  function stage(A) {
+    if (!A || window.__endClone === false) return A;
+    try {
+      const sm = A.sm(); if (!sm) return A;
+      let m = sm; while (m.parent && m.parent !== A.obj) m = m.parent; if (m.parent !== A.obj) return A;
+      const cl = cloneRigE(m), hd = new T.Group(); hd.name = 'end-actor';
+      hd.position.copy(A.obj.position); hd.quaternion.copy(A.obj.quaternion); hd.scale.copy(A.obj.scale);
+      cl.position.copy(m.position); cl.quaternion.copy(m.quaternion); cl.scale.copy(m.scale); hd.add(cl);
+      const a = [], b = []; m.traverse((x) => a.push(x)); cl.traverse((x) => b.push(x)); const csm = b[a.indexOf(sm)]; if (!csm) return A;
+      G.scene.add(hd); hd.updateMatrixWorld(true);
+      const fake = { team: A.t, hero: hd, model: cl, kind: 'drag', body: null, acts: {}, __title: true, __sm: csm }, gr = window.__grip; if (gr && gr.extra) gr.extra.push(fake);   // 사원증(lanyard.js)이 복제에도 걸린다
+      return Object.assign({}, A, { obj: hd, sm: () => csm, live: A.obj, liveSm: sm, fake, bot: null });
+    } catch (e) { console.warn('[end] 배우 복제 실패 — 판의 몸으로', e); return A; }
+  }
+  function unstage() {
+    if (!S) return; const gr = window.__grip;
+    for (const A of [S.W, ...(S.L || [])]) { if (!A || !A.fake) continue; try { if (gr && gr.extra) gr.extra = gr.extra.filter((f) => f !== A.fake); const sm = A.sm(); if (window.__badge && window.__badge.release && sm) window.__badge.release(sm); if (A.obj.parent) A.obj.parent.remove(A.obj); A.obj.traverse((o) => { if (o.isSkinnedMesh && o.skeleton) o.skeleton.dispose(); }); } catch (e) { /* */ } }
+  }
   function setup(winner) {
     const zs = G.zones.list; let cx = 0, cz = 0; for (const z of zs) { cx += z.cx; cz += z.cz; } cx /= zs.length; cz /= zs.length;
     if (window.__endCenterPlat !== false) { const pc = platC(); if (pc) { cx = pc[0]; cz = pc[1]; } }
     S.win = winner; S.cx = cx; S.cz = cz; S.cy = gyAt(cx, cz);
     S.W = actorOf(winner); S.L = [0, 1, 2].filter((t) => t !== winner).map(actorOf).filter(Boolean);
+    if (S.mode === 'real') { S.W = stage(S.W); S.L = S.L.map(stage); }   // b824 — 판의 몸 대신 복제 배우
     // 진 둘 — 자기 진영(토리이 앞)에서 가운데를 등지고 서 있다 → 등 뒤로 끌려간다
     for (const A of S.L) {
       const z = zoneOf(A.t), dx = cx - z.cx, dz = cz - z.cz, dl = Math.hypot(dx, dz) || 1;
@@ -5622,6 +5649,10 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
     // 시체 · 들고 있던 몸은 사람과 함께 움직이지 않게 숨긴다
     for (const b of G.game.bodies) if (b.root && b.root.parent && (b.root.parent === G.hero || G.game.bots.some((q) => q.hero === b.root.parent))) { keep(b.root); b.root.visible = false; }
     if (G.monster && G.monster.root) { keep(G.monster.root); G.monster.root.visible = false; }   // 괴물은 연출에 안 나온다
+    for (const A of [S.W, ...S.L]) if (A && A.live) {   // b824 — 판의 몸 · 그 사원증은 결말 동안 그리지 않는다(복제 배우만)
+      keep(A.live); A.live.visible = false;
+      const Bd = window.__badge, e = Bd && Bd.ents && Bd.ents.get(A.liveSm); if (e) { for (const o of [e.card, e.strap]) if (o) { keep(o); o.visible = false; } }
+    }
     if (S.weapon === undefined) S.weapon = findWeapon();
     if (S.weapon) { keep(S.weapon); S.weapon.visible = false; }
     hideGame();
@@ -5670,13 +5701,14 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
       if (uw > -0.1 && sm) {
         const ex = ss(uw / 0.25) * (1 - ss((uw - CF.reliefT) / 0.3)), sn = ss((uw - CF.reliefT) / 0.45);
         const rr = rig(sm);
+        // b824 — 「흐흐」 때 눈 찡그림(strain_eyes)은 뺐다(안경이 눈에서 어긋나 보였다)
         // b812 — 미소 뒤로도 살아 있게: 숨(가슴) · 천천히 고개 갸웃 · 가끔 「흐흐」 어깨 들썩(5.2초에 한 번 1.3초)
         const lv = window.__endLive === false ? 0 : ss((uw - CF.reliefT) / 1.2), cy = uw - CF.reliefT - 1.6, cp = cy > 0 ? cy % 5.2 : -1, ch = cp >= 0 && cp < 1.3 ? Math.sin(Math.PI * cp / 1.3) * lv : 0, jg = Math.sin(uw * 19);
-        if (rr) { const br = Math.sin(uw * 2.2); rotB(rr.Spine2, -0.06 * ex * br - 0.04 * ex + (0.024 * Math.sin(uw * 1.6) - 0.025 * ch) * lv, 0.03 * Math.sin(uw * 0.41) * lv, 0); rotB(rr.Head, 0.12 * ex - 0.08 * sn + (0.03 * Math.sin(uw * 0.53 + 1) - 0.035 * ch + 0.012 * ch * jg) * lv, 0.05 * Math.sin(uw * 0.33 + 2) * lv, 0.1 * sn + 0.035 * Math.sin(uw * 0.47) * lv); rotB(rr.Neck, 0.05 * ex, 0.06 * sn, 0);
+        if (rr) { const br = Math.sin(uw * 2.2); rotB(rr.Spine2, -0.06 * ex * br - 0.04 * ex + (0.024 * Math.sin(uw * 1.6) - 0.025 * ch) * lv, 0.03 * Math.sin(uw * 0.41) * lv, 0); rotB(rr.Head, 0.12 * ex - 0.08 * sn, 0, 0.1 * sn); rotB(rr.Neck, 0.05 * ex + (0.03 * Math.sin(uw * 0.53 + 1) - 0.035 * ch + 0.012 * ch * jg) * lv, 0.06 * sn + 0.05 * Math.sin(uw * 0.33 + 2) * lv, 0.035 * Math.sin(uw * 0.47) * lv);   // b825 — 살아 있는 흔들림은 목 뼈에(머리 뼈만 돌리면 허지용 안경이 눈에서 어긋났다)
           if (ch > 0) { rotB(rr.LeftShoulder, 0, 0, 0.03 * ch * jg); rotB(rr.RightShoulder, 0, 0, -0.03 * ch * jg); }
           (rr.Hips || sm.skeleton.bones[0]).updateMatrixWorld(true); }
         const hasG = sm.morphTargetDictionary && sm.morphTargetDictionary.grin !== undefined;
-        face(sm, { exhaust: CF.relief * ex, gasp: CF.relief * 0.45 * ex * (0.6 + 0.4 * Math.sin(uw * 2.2)) + 0.22 * ch * Math.abs(jg), strain_eyes: 0.35 * ch, [hasG ? 'grin' : 'sneer']: CF.sneer * sn * (hasG ? 0.9 + 0.1 * Math.sin(uw * 0.7) + 0.1 * ch : 0.6) });   // 씨익 — 각 몸에 새로 넣은 grin 모프(v5)
+        face(sm, { exhaust: CF.relief * ex, gasp: CF.relief * 0.45 * ex * (0.6 + 0.4 * Math.sin(uw * 2.2)) + 0.22 * ch * Math.abs(jg), [hasG ? 'grin' : 'sneer']: CF.sneer * sn * (hasG ? 0.9 + 0.1 * Math.sin(uw * 0.7) + 0.1 * ch : 0.6) });   // 씨익 — 각 몸에 새로 넣은 grin 모프(v5)
       }
       W.head = (() => { let h = null; if (sm) { const b = sm.skeleton && sm.skeleton.bones.find((q) => /Head$/.test(q.name)); if (b) h = b.getWorldPosition(new T.Vector3()); } if (h && Math.hypot(h.x - o.position.x, h.z - o.position.z) > 2.5) h = null; return h || V(o.position.x, o.position.y + 1.55, o.position.z); })();   // b731 — 머리가 몸에서 2.5m 넘게 떨어져 있으면 잘못 잡은 것
     }
@@ -5782,6 +5814,7 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
     if (G.carry && G.carry.heldBody && G.set) { try { G.set('dragMode', false); } catch (e) { /* */ } }
   }
   function end() {
+    unstage();   // b824 — 복제 배우 치움
     freeParts();
     restore(G && G.cam); overlaysOff();
     for (const k in mesh) mesh[k].count = 0;
@@ -19858,7 +19891,7 @@ body.sr-looking #sr-expr-cap { bottom: var(--sr-look-h, 196px) !important; }   /
         <span class="grp"><button type="button" data-face class="${faceOn ? 'on' : ''}">얼굴 보기<small>9</small></button></span>
         ${window.__hudStyle ? `<span class="grp"><i>본진 표지</i>${ar('hst', -1)}<button type="button" class="nm">${window.__hudStyle.name()}</button>${ar('hst', 1)}</span>` : ''}
         ${window.__sysFont ? `<span class="grp"><i>메세지</i>${ar('sf', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.cur()[1]}</button>${ar('sf', 1)}`
-          + (window.__keyHint ? (() => { const K = window.__keyHint.info(); return `</span><span class="grp"><i>조작 안내</i><button type="button" data-khon class="${K.on ? 'on' : ''}">${K.on ? '켜짐' : '꺼짐'}</button><i>크기</i>${ar('khs', -1)}<button type="button" class="nm">${K.size}%</button>${ar('khs', 1)}<i>높이</i>${ar('khy', -1)}<button type="button" class="nm">${K.y}px</button>${ar('khy', 1)}<i>밝기</i>${ar('kho', -1)}<button type="button" class="nm">${K.op}%</button>${ar('kho', 1)}<i>필터</i>${ar('khk', -1)}<button type="button" class="nm">${K.k}%</button>${ar('khk', 1)}</span><span class="grp"><i>메세지</i>`; })() : '')
+          + (window.__keyHint ? (() => { const K = window.__keyHint.info(); return `</span><span class="grp"><i>조작 안내</i><button type="button" data-khon class="${K.on ? 'on' : ''}">${K.on ? '켜짐' : '꺼짐'}</button><i>크기</i>${ar('khs', -1)}<button type="button" class="nm">${K.size}%</button>${ar('khs', 1)}<i>높이</i>${ar('khy', -1)}<button type="button" class="nm">${K.y}px</button>${ar('khy', 1)}<i>밝기</i>${ar('kho', -1)}<button type="button" class="nm">${K.op}%</button>${ar('kho', 1)}<i>블러</i>${ar('khb', -1)}<button type="button" class="nm">${K.blur}px</button>${ar('khb', 1)}</span><span class="grp"><i>메세지</i>`; })() : '')
           + (window.__sysFont.info ? `<i>크기</i>${ar('sz', -2)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().px}px</button>${ar('sz', 2)}<i>색</i>${ar('scol', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().col}</button>${ar('scol', 1)}<i>필터</i>${ar('sfk', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().k}%</button>${ar('sfk', 1)}` : '') + '</span>' : ''}
       </div>`;
     requestAnimationFrame(() => { const r = ui.getBoundingClientRect(); if (r.height) document.body.style.setProperty('--sr-look-h', Math.round(innerHeight - r.top + 10) + 'px'); });
@@ -19888,6 +19921,7 @@ body.sr-looking #sr-expr-cap { bottom: var(--sr-look-h, 196px) !important; }   /
     else if (d.khy !== undefined && window.__keyHint) window.__keyHint.step('y', +d.khy);
     else if (d.kho !== undefined && window.__keyHint) window.__keyHint.step('op', +d.kho);
     else if (d.khk !== undefined && window.__keyHint) window.__keyHint.step('k', +d.khk);
+    else if (d.khb !== undefined && window.__keyHint) window.__keyHint.step('blur', +d.khb);   // b825 — 조작 안내 블러
     else if (d.sz !== undefined && window.__sysFont && window.__sysFont.size) window.__sysFont.size(+d.sz);   // b819 — 메시지 크기 · 색 · 필터 세기
     else if (d.scol !== undefined && window.__sysFont && window.__sysFont.color) window.__sysFont.color(+d.scol);
     else if (d.sfk !== undefined && window.__sysFont && window.__sysFont.filt) window.__sysFont.filt(+d.sfk);
