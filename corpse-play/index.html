@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-819 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-820 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-819'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-820'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1987,27 +1987,27 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     // b816 — 시스템 메시지 글꼴(사용자 「폰트가 구리네 · 둘러보기에서 설정할 수 있게」) — 둘러보기 시험 줄 「메세지 글꼴 ‹ ›」 · 이 브라우저에 기억 · 「저장」하면 모두의 기본값(settings 'sysFont')
     { const L = [['song', '송명', 'Song Myung', 'Song+Myung', 1], ['bwp', '흑백사진', 'Black And White Picture', 'Black+And+White+Picture', 1.05], ['noto', '본명조', 'Noto Serif KR', 'Noto+Serif+KR:wght@700;900', 1], ['hahm', '함렛', 'Hahmlet', 'Hahmlet:wght@700;800', 1],
         ['dokdo', '동해독도', 'East Sea Dokdo', 'East+Sea+Dokdo', 1.35], ['brush', '나눔붓', 'Nanum Brush Script', 'Nanum+Brush+Script', 1.3], ['gowun', '고운바탕', 'Gowun Batang', 'Gowun+Batang:wght@700', 1], ['gothic', '고딕', 'Gothic A1', 'Gothic+A1:wght@700;800', 0.95]];
-      let cur = 'noto'; try { const v = localStorage.getItem('corpse_sysfont2'); if (v && L.some((x) => x[0] === v)) cur = v; } catch (e) { /* */ }   // b819 — 기본 본명조(사용자 「시스템 메세지는 본명조로」) · 예전 기억(송명 등)은 새 이름이라 안 먹는다
+      let cur = 'noto';   // b820 — 고정(사용자 「메세지는 이 수치로 고정」 — 본명조 · 22px · 미색 · 필터 70%) · 둘러보기 조절은 그 자리 보기만(다시 불러오면 이 값) · 브라우저 기억 · 「저장」 안 씀
       const got = {}, apply = () => { const f = L.find((x) => x[0] === cur) || L[0];
         if (!got[f[0]] && f[0] !== 'song') { got[f[0]] = 1; const ln = document.createElement('link'); ln.rel = 'stylesheet'; ln.href = `https://fonts.googleapis.com/css2?family=${f[3]}&display=swap`; document.head.appendChild(ln); }
         const r = document.documentElement.style; if (f[0] === 'song') { r.removeProperty('--sysf'); r.removeProperty('--sysfs'); } else { r.setProperty('--sysf', `'${f[2]}'`); r.setProperty('--sysfs', String(f[4])); } };
       let pvT = 0; const SF = (window.__sysFont = { list: L, cur: () => (L.find((x) => x[0] === cur) || L[0]),
-        set(k) { if (!L.some((x) => x[0] === k)) return; cur = k; try { localStorage.setItem('corpse_sysfont2', k); } catch (e) { /* */ } apply(); },
+        set(k) { if (!L.some((x) => x[0] === k)) return; cur = k; apply(); },
         step(d) { const i = Math.max(0, L.findIndex((x) => x[0] === cur)), n = L.length; SF.set(L[(i + d + n) % n][0]); SF.preview(); },
         preview() { const p = document.getElementById('prompt'); if (!p) return; p.classList.add('pv'); clearTimeout(pvT); pvT = setTimeout(() => p.classList.remove('pv'), 2600); } });
       apply();
       // b819 — 크기 · 색 · 필터 세기(사용자 「둘러보기에서 시스템 메세지 폰트 색상과 글씨 크기 조절」 · 「필터도 안 먹어 있는 것 같다」) — 이 브라우저에 기억 · 「저장」하면 모두의 기본값(settings 'sysFx')
       const COLS = [['ink', '미색', '#e7e2d4'], ['white', '흰색', '#ffffff'], ['bone', '뼈빛', '#d6c9a8'], ['blood', '핏빛', '#d8261a'], ['rust', '녹슨 주황', '#d27235'], ['ash', '잿빛', '#a8a398']];
-      const SX = { px: 24, col: 'ink', k: 0.6 }; try { const o = JSON.parse(localStorage.getItem('corpse_sysfx') || 'null'); if (o) { if (typeof o.px === 'number') SX.px = o.px; if (typeof o.col === 'string') SX.col = o.col; if (typeof o.k === 'number') SX.k = o.k; } } catch (e) { /* */ }
+      const SX = { px: 22, col: 'ink', k: 0.7 };   // b820 — 고정값
       const fxApply = () => { const r = document.documentElement.style, c = COLS.find((x) => x[0] === SX.col) || COLS[0]; r.setProperty('--sysfpx', SX.px + 'px'); r.setProperty('--sysfc', c[2]); r.setProperty('--sysk', String(SX.k)); };
-      const fxSave = () => { try { localStorage.setItem('corpse_sysfx', JSON.stringify(SX)); } catch (e) { /* */ } fxApply(); SF.preview(); };
+      const fxSave = () => { fxApply(); SF.preview(); };
       SF.size = (d) => { SX.px = Math.max(14, Math.min(48, SX.px + d)); fxSave(); };
       SF.color = (d) => { const i = Math.max(0, COLS.findIndex((x) => x[0] === SX.col)), n = COLS.length; SX.col = COLS[(i + d + n) % n][0]; fxSave(); };
       SF.filt = (d) => { SX.k = Math.max(0, Math.min(1, Math.round((SX.k + d * 0.1) * 10) / 10)); fxSave(); };
       SF.info = () => ({ px: SX.px, col: (COLS.find((x) => x[0] === SX.col) || COLS[0])[1], k: Math.round(SX.k * 100) });
       fxApply();
-      (function reg2() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg2, 400); return; } St.reg('sysFx', { get: () => Object.assign({}, SX), set: (o) => { if (!o || typeof o !== 'object') return; if (typeof o.px === 'number') SX.px = o.px; if (typeof o.col === 'string') SX.col = o.col; if (typeof o.k === 'number') SX.k = o.k; fxApply(); } }); })();
-      (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 400); return; } St.reg('sysFont2', { get: () => cur, set: (v) => { if (typeof v === 'string') SF.set(v); } }); })(); }
+      // b820 — 모두의 기본값(settings sysFx) 저장 · 불러오기 뺌(고정)
+      }
     // b812 — 시스템 메시지에도 타이틀 필터 값(--t3f*)을 옮겨 둔다(#start 에만 있어 기본값으로 걸렸다)
     { let sv = ''; setInterval(() => { try { const s0 = document.getElementById('start'); if (!s0) return; const K = ['--t3fs', '--t3ft', '--t3fc', '--t3fbr', '--t3fb', '--t3fa', '--t3fac'], v = K.map((k) => s0.style.getPropertyValue(k)).join('|'); if (v === sv) return; sv = v;
       for (const id of ['prompt', 'sr-ui']) { const e = document.getElementById(id); if (e) for (const k of K) { const x = s0.style.getPropertyValue(k); if (x) e.style.setProperty(k, x); } } } catch (e) { /* */ } }, 700); }
