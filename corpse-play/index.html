@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-769 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-771 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-769'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-771'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -4084,26 +4084,43 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
      · 확인(또는 Enter · Space)을 누르면 ④ 등 뒤 게임 카메라로 넘어가며 판이 시작된다 · 판이 시작될 때만(연출 패널의 보기는 그대로) · 끄기 __introHow = false */
   let how = null;
   function howCard() {
+    // b771 — 다시(사용자 「이 문구를 간단하게 · 게임 분위기에 맞는 폰트와 디자인 · 크기도 키우고 · 필터도 먹게」)
+    //   상자 없이 왼쪽에서 번지는 어둠 위에 송명(UIF) 붓 글씨 크게 · 제목 밑 붉은 붓 띠 · 「확인」은 선택창 단추처럼 붉은 띠
+    //   필터: 타이틀과 같은 값(세피아 · 채도 · 대비 · 흐림 · 색 번짐 — #start 의 CSS 변수를 그대로) + 알갱이 · 주사선 · 깜빡임 · 흔들림
     if (how) return how;
     const st = document.createElement('style');
-    st.textContent = `#cin-how{position:absolute;left:6vw;top:50%;transform:translateY(-50%);width:min(430px,40vw);z-index:45;padding:24px 28px 26px;box-sizing:border-box;background:linear-gradient(90deg,rgba(8,4,3,.86),rgba(8,4,3,.55));border-left:2px solid #9a2016;color:#e9e1d0;font:15px/1.7 "UIF","Noto Serif KR",serif;opacity:0;transition:opacity .7s;pointer-events:none}
-#cin-how.on{opacity:1;pointer-events:auto} #cin-how .k{font:800 20px "UIF","Noto Serif KR",serif;letter-spacing:.32em;color:#f2e6d6;margin-bottom:12px;text-shadow:0 0 10px #000}
-#cin-how .k i{font-style:normal;color:#c8392a;margin-right:12px} #cin-how ul{margin:0;padding:0;list-style:none} #cin-how li{margin:7px 0;padding-left:16px;position:relative;text-shadow:0 0 6px #000}
-#cin-how li:before{content:'';position:absolute;left:0;top:.8em;width:7px;height:1px;background:#c8392a} #cin-how b{color:#f6d9a8;font-weight:700} #cin-how kbd{font:700 13px "UIF",serif;padding:0 6px;border:1px solid #6b5a3a;color:#f2e6d6;background:rgba(40,30,20,.6);margin:0 1px}
-#cin-how button{margin-top:18px;padding:10px 34px;background:#5a140c;color:#f2e6d6;border:1px solid #c0503c;font:800 15px "UIF","Noto Serif KR",serif;letter-spacing:.4em;cursor:pointer} #cin-how button:hover{background:#7a1c10} #cin-how button small{font:600 11px "UIF",serif;letter-spacing:.1em;color:#d9a07a;margin-left:10px}`;
+    st.textContent = `#cin-how{position:absolute;left:0;top:0;bottom:0;width:min(820px,64vw);z-index:45;display:flex;flex-direction:column;justify-content:center;padding:0 0 0 7vw;box-sizing:border-box;color:#e7e2d4;font-family:"UIF","Song Myung","Noto Serif KR",serif;opacity:0;transition:opacity .9s;pointer-events:none;background:linear-gradient(90deg,rgba(4,2,2,.88) 0%,rgba(4,2,2,.64) 42%,rgba(4,2,2,0) 100%)}
+#cin-how.on{opacity:1;pointer-events:auto}
+#cin-how .in{display:flex;flex-direction:column;align-items:flex-start;filter:sepia(var(--t3fs,.32)) saturate(var(--t3ft,.82)) contrast(var(--t3fc,1.08)) brightness(var(--t3fbr,1)) blur(var(--t3fb,.35px)) drop-shadow(var(--t3fa,1.2px) 0 0 rgba(255,0,0,var(--t3fac,.18))) drop-shadow(calc(var(--t3fa,1.2px) * -1) 0 0 rgba(0,200,255,calc(var(--t3fac,.18) * .7))) drop-shadow(0 0 var(--t3fgl,0px) rgba(170,0,0,.8))}
+#cin-how::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;opacity:var(--t3fg,.11);mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>")}
+#cin-how::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;opacity:var(--t3fl,.16);background:repeating-linear-gradient(0deg,rgba(0,0,0,.6) 0 1px,transparent 1px 3px)}
+#cin-how .t{position:relative;font-size:clamp(40px,4.4vw,64px);letter-spacing:.3em;color:#efe8da;text-shadow:0 0 18px #000,0 0 3px #400;padding:0 .5em 12px 0;margin-bottom:30px}
+#cin-how .t::after{content:'';position:absolute;left:-.25em;right:0;bottom:0;height:8px;background:linear-gradient(90deg,rgba(150,18,12,.95),rgba(150,18,12,.6) 70%,rgba(150,18,12,0));transform:skewX(-14deg);filter:drop-shadow(0 0 8px rgba(200,30,20,.6))}
+#cin-how p{margin:0 0 14px;font-size:clamp(20px,2vw,30px);line-height:1.4;letter-spacing:.08em;text-shadow:0 2px 8px #000,0 0 2px #000}
+#cin-how p b{color:#e8463a;font-weight:400}
+#cin-how .ok{position:relative;z-index:0;margin-top:34px;padding:12px 70px 12px 34px;background:none;border:0;color:#f3ece0;font:400 clamp(26px,2.6vw,38px) "UIF","Song Myung",serif;letter-spacing:.55em;cursor:pointer;text-shadow:0 2px 6px #000,0 0 16px rgba(255,70,50,.5)}
+#cin-how .ok::after{content:'';position:absolute;left:4px;right:-6px;top:52%;height:72%;transform:translateY(-50%) skewX(-12deg);background:linear-gradient(90deg,rgba(122,23,18,0),rgba(122,23,18,.92) 16%,rgba(122,23,18,.82) 80%,rgba(122,23,18,0));z-index:-1;filter:drop-shadow(0 0 10px rgba(200,30,20,.65))}
+#cin-how .ok:hover::after{background:linear-gradient(90deg,rgba(170,30,22,0),rgba(170,30,22,.96) 16%,rgba(170,30,22,.86) 80%,rgba(170,30,22,0))}
+#cin-how .ok small{font-size:.4em;letter-spacing:.15em;color:#d9a07a;margin-left:2px}`;
     document.head.appendChild(st);
-    how = el('', `<div class="k"><i>—</i>하는 법</div><ul>
-<li><b>시체 셋</b>을 먼저 <b>내 본진 돗자리</b>에 모으면 이긴다</li>
-<li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 이동 · <kbd>G</kbd> 또는 <kbd>Space</kbd> 시체 잡기 · 놓기 — 들고 가면 느려진다</li>
-<li>남의 본진 시체도 빼앗아 올 수 있다 — 봇도 내 것을 훔쳐 간다</li>
-<li><b>괴물</b>은 눈에 띄면 쫓아온다 — 맞으면 날아가 시체를 놓친다 · 멀리 벗어나야 놓친다</li>
-<li><b>까마귀 떼 · 왕벌</b>을 조심 — 바닥의 <b>벌통</b>을 건드리면 왕벌이 나올 수 있다</li>
-<li>불이 붙으면 <b>연못</b>에 들어가 끈다</li>
-<li><kbd>V</kbd> 시점 · <kbd>R</kbd> 다시 · <kbd>Esc</kbd> 잠시 멈춤</li></ul>
-<button type="button">확인<small>Enter</small></button>`);
+    how = el('', `<div class="in"><div class="t">살아남는 법</div>
+<p>시체 <b>셋</b>을 먼저 내 <b>돗자리</b>로</p>
+<p><b>WASD</b> 이동 · <b>G</b> 잡기 / 놓기</p>
+<p>괴물 · 까마귀 · 왕벌을 피하라</p>
+<p><b>벌통</b>은 건드리지 마라</p>
+<p>불이 붙으면 <b>연못</b>으로</p>
+<button class="ok" type="button">확인<small>Enter</small></button></div>`);
     how.id = 'cin-how'; how.style.cssText = '';
-    how.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); howOk(); });
+    how.querySelector('.ok').addEventListener('click', (e) => { e.stopPropagation(); howOk(); });
     return how;
+  }
+  // 타이틀 필터 값을 카드로(타이틀 조절에서 바꾸면 따라감) · 깜빡임 · 흔들림도
+  const HF = ['--t3fs', '--t3ft', '--t3fc', '--t3fbr', '--t3fb', '--t3fa', '--t3fac', '--t3fgl', '--t3fg', '--t3fl', '--t3ff', '--t3fj'];
+  function howFilter() {
+    if (!how) return; const s = document.getElementById('start');
+    if (s) for (const k of HF) { const v = s.style.getPropertyValue(k); if (v) how.style.setProperty(k, v); }
+    const cf = (window.__title3 && window.__title3.cf) || {}, an = []; if (cf.fF > 0.001) an.push('t3flick 5s linear infinite'); if (cf.fJ > 0.01) an.push('t3jit .42s steps(1, end) infinite');
+    const inn = how.querySelector('.in'), v = an.join(', '); if (inn && inn.style.animation !== v) inn.style.animation = v;
   }
   function howOk() { if (how) how.classList.remove('on'); if (!intro || intro.ok) return; intro.ok = true; if (intro.waiting) { intro.t0 = now() - intro.pz; delete intro.pz; intro.waiting = false; } }
   CN.howOk = howOk;
@@ -4269,7 +4286,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
           if (intro.pz !== undefined) CN.introEnd = performance.now() + (IL() - u) * 1000 + 50;   // 멈춰 있는 동안 판이 먼저 시작되지 않게
           const b1 = CF.s1T, b2 = b1 + CF.s2T, b3 = b2 + CF.s3T, b4 = b3 + CF.s4T; intro.u = u;
           if (intro.real && !intro.ok && window.__introHow !== false) {   // b768 — 하는 법 카드 · ③ 끝에서 확인을 기다림
-            if (u > b2 + Math.min(1, CF.tIn)) howCard().classList.add('on');
+            if (u > b2 + Math.min(1, CF.tIn)) { if (!howCard().classList.contains('on')) howFilter(); how.classList.add('on'); }
             if (u >= b3 - 0.001 && intro.pz === undefined) { intro.pz = b3 - 0.001; intro.waiting = true; }
           }
           if (u > b4) { intro = null; if (title) title.style.opacity = '0'; if (how) how.classList.remove('on'); }
@@ -13688,12 +13705,12 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     cLandShake: 1, cLandHold: 1.4,
     // b758 — 새 벌 카메라(「벌 카메라」 창) — k{장면}{값}: 장면 ap 날아옴 · li 끌려 올라감 · tp 꼭대기 · fa 떨어짐 · la 땅 / 값 D 거리 · H 높이 · Y 방향 · L 보는 곳 · Z 확대 · F 따라감 · O 돌기 · B 넘어오는 시간
     //   처음 값은 b757 까지 맞춰 둔 예전 카메라 모습에 가깝게(날아옴 6.5m 옆 25° · 올라감 13.5m 밖 땅에서 올려다봄 · 꼭대기 위로 옮겨 감 · 떨어짐 하늘에서 내려다봄)
-    kapD: 6.5, kapH: 1.4, kapY: 25, kapL: 0.5, kapZ: 1.1, kapF: 0, kapO: 0, kapB: 1.3,
-    kliD: 13.5, kliH: 4.9, kliY: 0, kliL: 0, kliZ: 0.8, kliF: 0.18, kliO: 18, kliB: 1.2,
-    ktpD: 3, ktpH: 5, ktpY: -60, ktpL: 0, ktpZ: 1.6, ktpF: 1, ktpO: 10, ktpB: 1.6,
-    kfaD: 1.2, kfaH: 4.3, kfaY: -90, kfaL: 0, kfaZ: 0.85, kfaF: 1, kfaO: 0, kfaB: 0.9,
-    klaD: 1.6, klaH: 4.3, klaY: -90, klaL: 0, klaZ: 0.95, klaF: 1, klaO: 6, klaB: 0.45,
-    kOn: 1, kFrom: 0, kBase: 0, kClear: 1, kHold: 1.4, kOut: 1.25, kLag: 0.19,
+    kapD: 6.5, kapH: 1.4, kapY: 25, kapL: 0.5, kapZ: 1.1, kapF: 0, kapO: 0, kapB2: 1.3,
+    kliD: 13.5, kliH: 4.9, kliY: 0, kliL: 0, kliZ: 0.8, kliF: 0.18, kliO: 18, kliB2: 2.2,   // b770 — 날아옴 → 채감을 2.2초에 걸쳐(사용자 「1 날아오고 2 하늘로 채가는 사이가 너무 확 바뀐다」 · 예전 1.2초)
+    ktpD: 3, ktpH: 5, ktpY: -60, ktpL: 0, ktpZ: 1.6, ktpF: 1, ktpO: 10, ktpB2: 1.6,
+    kfaD: 1.2, kfaH: 4.3, kfaY: -90, kfaL: 0, kfaZ: 0.85, kfaF: 1, kfaO: 0, kfaB2: 0.9,
+    klaD: 1.6, klaH: 4.3, klaY: -90, klaL: 0, klaZ: 0.95, klaF: 1, klaO: 6, klaB2: 0.45,
+    kOn: 1, kFrom: 0, kBase: 0, kClear: 1, kHold: 1.4, kOut: 1.25, kLag: 0.19, kLead: 0.35,   // b770 — 장면 넘어가기는 경계보다 35% 먼저 시작(벌이 내리꽂을 때 이미 물러나기 시작 · 나머지는 끌려 올라가는 동안)
     kShGrab: 1, kPunchG: 7, kShLift: 0.35, kRoll: 12, kShRel: 1.3, kPunchR: 9, kShLand: 1.5,
   };
   const H = (window.__hornet = { ready: false, cf: Object.assign({}, DEF), DEF, log: [], events: [], swells: new Map() });
@@ -14537,10 +14554,11 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   function arcMix(h, A, B, w, bulge, rp, yp) {
     if (w <= 0) return A; if (w >= 1) return B;
     const ax = A.x - h.x, az = A.z - h.z, bx = B.x - h.x, bz = B.z - h.z, ra = Math.hypot(ax, az), rb = Math.hypot(bx, bz);
-    let aa = Math.atan2(az, ax), ab = Math.atan2(bz, bx); if (ra < 0.05) aa = ab; if (rb < 0.05) ab = aa; const d = Math.atan2(Math.sin(ab - aa), Math.cos(ab - aa)), an = aa + d * w, r = ra + (rb - ra) * Math.pow(w, rp || 1) + (bulge || 0) * Math.sin(Math.PI * w);   // bulge · rp — 몸을 지나 위로 넘어갈 때 넓게 돌아(시선이 휙 뒤집히지 않게)
+    const yv = A.yw != null && B.yw != null;   // b771 — 두 장면 모두 방향 값(yw)이 있으면 그 차이대로 돈다(짧은 쪽 고르기가 반대편 가까이에서 뒤집혀 한 번에 건너뛰었다)
+    let aa = Math.atan2(az, ax), ab = Math.atan2(bz, bx); if (ra < 0.05) aa = ab; if (rb < 0.05) ab = aa; const d = yv && ra >= 0.05 && rb >= 0.05 ? B.yw - A.yw : Math.atan2(Math.sin(ab - aa), Math.cos(ab - aa)), an = aa + d * w, r = ra + (rb - ra) * Math.pow(w, rp || 1) + (bulge || 0) * Math.sin(Math.PI * w);   // bulge · rp — 몸을 지나 위로 넘어갈 때 넓게 돌아(시선이 휙 뒤집히지 않게)
     const L = (k) => A[k] + (B[k] - A[k]) * w;
     const wy = Math.pow(w, yp || 1);   // yp < 1 — 높이는 먼저(넓게 돌 때 몸 높이를 지나가게 · 시선이 천천히 뒤집힌다)
-    return { x: h.x + Math.cos(an) * r, y: A.y + (B.y - A.y) * wy, z: h.z + Math.sin(an) * r, tx: L('tx'), ty: L('ty'), tz: L('tz') };
+    return { x: h.x + Math.cos(an) * r, y: A.y + (B.y - A.y) * wy, z: h.z + Math.sin(an) * r, tx: L('tx'), ty: L('ty'), tz: L('tz'), yw: yv ? A.yw + (B.yw - A.yw) * w : undefined };
   }
   function zoomAt(ev, u) {
     const tG = ev.app, tL1 = tG + ev.lift, tR = tL1 + ev.ho, tL = tR + fallT(ev.h, ev.fg), tEnd = tL + C.cLandHold, zb = Math.max(0.05, C.zBlend);
@@ -14565,7 +14583,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   ];
   const shotEnd = (i, e) => (i + 1 < SHOT.length ? SHOT[i + 1].a(e) : evDur(e));
   const c01 = (v) => Math.max(0, Math.min(1, v));
-  const blendW = (u, b, B) => (B <= 0.001 ? (u >= b ? 1 : 0) : ss((u - (b - B / 2)) / B));
+  const blendW = (u, b, B) => { if (B <= 0.001) return u >= b ? 1 : 0; const t = c01((u - (b - B * c01(C.kLead))) / B); return t * t * t * (t * (t * 6 - 15) + 10); };   // b770 — 경계보다 kLead 몫 먼저 시작 · 더 부드러운 곡선(시작 · 끝 가속도 0)
   // 장면 i 의 카메라(그 순간) — 가운데는 나(가슴) · 방향은 기준 D0 에서 Y° 돈 쪽 · 높이는 (땅 + 1.1m + 몸 높이 × 따라감) + H
   function shotPose(i, ev, u, g0, D0, my, bhLag, chest) {
     const s = SHOT[i].k, P = (n) => C['k' + s + n], h = G.hero.position;
@@ -14576,7 +14594,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     const x = h.x + dx * D, z = h.z + dz * D; let y = g0.y + 1.1 + bhLag * c01(P('F')) + Hd;
     const gg = gy(x, z, g0.y); if (y < gg + 0.3) y = gg + 0.3;   // 땅 밑으로는 안 들어감
     const bp = ev.bee.root.position, L = c01(P('L'));
-    return { x, y, z, tx: h.x + (bp.x - h.x) * L, ty: chest + (bp.y - chest) * L, tz: h.z + (bp.z - h.z) * L, zm: Math.max(0.2, P('Z')) };
+    return { x, y, z, tx: h.x + (bp.x - h.x) * L, ty: chest + (bp.y - chest) * L, tz: h.z + (bp.z - h.z) * L, zm: Math.max(0.2, P('Z')), yw };
   }
   // b763 — 가림 피하기(사용자 「추락한 다음에 나뭇가지 · 잎에 가린 화면이 자주」 — 처음 서는 자리 1.5m 옆 소나무(잎 반지름 6.6m · 높이 11m) 밑에 떨어지면 하늘에서 내려다보는 카메라가 잎 속에 있었다)
   //   사용자 「나무 말고도 다른 오브젝트들도 가린다」 → 나무만이 아니라 장면의 단단한 물체 모두(맵 땅 · 바위 · 돌벽 · 문(토리이 · GateShape — 맵 단단한 것 목록에 빠져 있었다) · 기와 · 소품 · 등롱 · 본진 물건 …)
@@ -14617,7 +14635,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     const u = t - ev.t0, tG = ev.app, tR = tG + ev.lift + ev.ho, tf = fallT(ev.h, ev.fg), tL = tR + tf, tEnd = tL + C.kHold;
     const h = G.hero.position, cy = G.mpApi && G.mpApi.camYaw ? G.mpApi.camYaw() : 0;
     if (CS.ev !== ev) { CS.ev = ev; CS.y0 = cy; const dx = cam.x - h.x, dz = cam.z - h.z, l = Math.hypot(dx, dz) || 1; CS.d0 = { x: dx / l, z: dz / l }; CS.g0 = { x: h.x, y: gy(h.x, h.z, h.y), z: h.z }; }
-    const from = C.kFrom > 0.5 ? 1 : 0, bIn = Math.max(0.05, C['k' + SHOT[from].k + 'B']), uIn = from ? tG - bIn / 2 : 0;
+    const from = C.kFrom > 0.5 ? 1 : 0, bIn = Math.max(0.05, C['k' + SHOT[from].k + 'B2']), uIn = from ? tG - bIn * c01(C.kLead) : 0;
     const k = Math.min(ss((u - uIn) / bIn), 1 - ss((u - tEnd) / Math.max(0.05, C.kOut)));
     if (k <= 0.0005) { window.__hnFov = 0; window.__hnRoll = 0; window.__hnZoom = 1; return; }
     const g0 = CS.g0, my = Math.atan2(Math.sin(cy - CS.y0), Math.cos(cy - CS.y0)); CS.my = my;   // 마우스로 끌어 돌린 만큼
@@ -14648,7 +14666,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     const chest = g0.y + bh + 1.1 - 0.85 * ss((u - tL) / 0.25);   // 땅에 누우면 가슴이 낮다
     let P = shotPose(from, ev, u, g0, D0, my, bhLag, chest), zm = P.zm;
     for (let i = from + 1; i < SHOT.length; i++) {
-      const w = blendW(u, SHOT[i].a(ev), C['k' + SHOT[i].k + 'B']); if (w <= 0) continue;
+      const w = blendW(u, SHOT[i].a(ev), C['k' + SHOT[i].k + 'B2']); if (w <= 0) continue;
       const Q = shotPose(i, ev, u, g0, D0, my, bhLag, chest);
       P = arcMix(G.hero.position, P, Q, w, Math.min(3, Math.abs(Q.y - P.y) * 0.15), 1, 0.8); zm += (Q.zm - zm) * w;   // 높이가 크게 바뀌면(땅 → 하늘) 넓게 돌아 넘어감
     }
@@ -15103,13 +15121,13 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     ['Z', '확대(1배 그대로 · 2배 두 배로 크게)', 0.4, 4, 0.05, ZM],
     ['F', '카메라가 내 높이를 따라감(0% = 땅에 남아 올려다봄)', 0, 1, 0.05, PCT],
     ['O', '천천히 돌기(0 = 멈춤)', -60, 60, 1, (v) => `${Math.round(v)}°/초`],
-    ['B', '앞 장면에서 넘어오는 시간(0 = 컷)', 0, 3, 0.05, SEC],
+    ['B2', '앞 장면에서 넘어오는 시간(0 = 컷)', 0, 4, 0.05, SEC],
   ];
   const ONF = (v) => (v > 0.5 ? '켬' : '끔');
   const KG = [
     ['기본'], ['kOn', '벌 카메라', 0, 1, 1, ONF], ['kFrom', '시작', 0, 1, 1, (v) => (v > 0.5 ? '잡힐 때부터' : '날아올 때부터')],
     ['kBase', '방향 0° 기준', 0, 1, 1, (v) => (v > 0.5 ? '평소 카메라 쪽' : '벌 맞은편')], ['kClear', '토리이 · 나무가 가리면 비켜 섬', 0, 1, 1, ONF],
-    ['kLag', '몸 따라가는 부드러움', 0, 0.8, 0.01, SEC], ['kHold', '땅에 박힌 뒤 머무는 시간', 0, 6, 0.1, SEC], ['kOut', '평소 카메라로 돌아가는 시간', 0.1, 4, 0.05, SEC],
+    ['kLag', '몸 따라가는 부드러움', 0, 0.8, 0.01, SEC], ['kLead', '장면 넘어가기를 경계보다 먼저 시작(0 = 경계에서 · 50% = 반 먼저)', 0, 1, 0.05, PCT], ['kHold', '땅에 박힌 뒤 머무는 시간', 0, 6, 0.1, SEC], ['kOut', '평소 카메라로 돌아가는 시간', 0.1, 4, 0.05, SEC],
     ['흔들림 · 확 당김'], ['kShGrab', '잡는 순간 쿵', 0, 3, 0.05, PCT], ['kPunchG', '잡는 순간 확 당겨짐', 0, 25, 0.5, DEG], ['kShLift', '올라가는 동안 잔떨림', 0, 2, 0.05, PCT], ['kRoll', '올라가는 동안 기울어 흔들림', 0, 25, 0.5, DEG],
     ['kShRel', '놓는 순간 툭', 0, 3, 0.05, PCT], ['kPunchR', '놓는 순간 확 넓어짐', 0, 25, 0.5, DEG], ['kShLand', '땅에 부딪힐 때 쿵', 0, 3, 0.05, PCT],
   ];
