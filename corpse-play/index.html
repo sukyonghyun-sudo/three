@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-787 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-791 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-787'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-791'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -4181,6 +4181,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
 #cin-how.v4 .s h6{margin:0 0 4px;font:400 1.25em "UIF",serif;color:#5a0c06;letter-spacing:.25em;text-align:center} #cin-how.v4 .s p{margin:0} #cin-how.v4 b{color:#7a0e06} #cin-how.v4 kbd{color:#2a1608;background:rgba(255,235,200,.3);border-color:rgba(60,30,10,.55)}
 /* b777 두 칸뿐이라 크게 · b778 조절 패널(--hw*) */
 #cin-how .kg{white-space:nowrap}
+#cin-how.v1 .s{border-top:0;position:relative} #cin-how.v1 .s::before{content:'';position:absolute;left:0;top:0;height:1px;width:var(--hwll,100%);background:rgba(160,40,30,.45);opacity:var(--hwlo,1);pointer-events:none}   /* b788 칸 사이 붉은 줄 — 진하기 · 길이(사용자 「없애거나 길이 조절 가능하게」) */
 #cin-how.v1 .t{margin-bottom:calc(18px + var(--hwgt,0px))} #cin-how.v1 .s{padding:calc(9px + var(--hwgs,0px) / 2) 0;column-gap:calc(16px + var(--hwgx,0px))} #cin-how .ok{margin-top:calc(26px + var(--hwgo,0px))}   /* b786 간격 */
 #cin-how{transition:opacity var(--hwfade,.9s)}
 #cin-how .in{left:var(--hwx,5vw);top:calc(50% + var(--hwy,0vh));transform:translateY(-50%) scale(var(--hws,1));transform-origin:0 50%}
@@ -4231,7 +4232,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
   /* b778 — 「살아남는 법」 조절(사용자 「살아남는 법도 조절 패널 만들어 줘」) — 오른쪽 아래 「살아남는 법」 단추
      자리 · 전체 크기 · 제목 · 글씨 · 줄 간격 · 확인 크기 · 왼쪽 어둠 · 나타나는 시간 — 카드 CSS 변수(--hw*)로 바로 바뀜 · 움직이는 즉시 이 브라우저에 · 「저장」은 모두의 기본값 */
   const HW_LS = 'corpse_howcard_v1';
-  const HWD = { x: 5, y: 0, scale: 1, title: 1, font: 1, lineH: 1, ok: 1, shade: 1, fade: 0.9, gT: 0, gS: 0, gX: 0, gOk: 0 };   // b786 — 간격(더하기 px · 사용자 「살아남는 법 · 목표 · 조작 · 확인 항목들 간격도 늘릴 수 있게」)
+  const HWD = { x: 5, y: 0, scale: 1, title: 1, font: 1, lineH: 1, ok: 1, shade: 1, fade: 0.9, gT: 0, gS: 0, gX: 0, gOk: 0, lineO: 1, lineL: 100 };   // b788 lineO · lineL — 칸 사이 붉은 줄 진하기(0 = 없앰) · 길이(%)   // b786 — 간격(더하기 px · 사용자 「살아남는 법 · 목표 · 조작 · 확인 항목들 간격도 늘릴 수 있게」)
   const HW = Object.assign({}, HWD);
   try { const sv = JSON.parse(localStorage.getItem(HW_LS) || 'null'); if (sv) for (const k in HWD) if (typeof sv[k] === 'number' && isFinite(sv[k])) HW[k] = sv[k]; } catch { /* 저장 없음 */ }
   CN.howCf = HW;
@@ -4239,6 +4240,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
     const r = document.documentElement.style;
     r.setProperty('--hwx', HW.x + 'vw'); r.setProperty('--hwy', HW.y + 'vh'); r.setProperty('--hws', String(HW.scale)); r.setProperty('--hwt', String(HW.title)); r.setProperty('--hwf', String(HW.font));
     r.setProperty('--hwl', String(HW.lineH)); r.setProperty('--hwo', String(HW.ok)); r.setProperty('--hwsh', String(HW.shade)); r.setProperty('--hwfade', HW.fade + 's');
+    r.setProperty('--hwlo', String(HW.lineO)); r.setProperty('--hwll', HW.lineL + '%');
     r.setProperty('--hwgt', HW.gT + 'px'); r.setProperty('--hwgs', HW.gS + 'px'); r.setProperty('--hwgx', HW.gX + 'px'); r.setProperty('--hwgo', HW.gOk + 'px');
   }
   hwApply();
@@ -4248,6 +4250,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
     ['자리'], ['x', '왼쪽에서(화면 폭의 %)', 0, 45, 0.5, (v) => `${(+v).toFixed(1)}%`], ['y', '위아래(0 = 가운데 · 화면 높이의 %)', -30, 30, 0.5, (v) => `${(+v).toFixed(1)}%`], ['scale', '전체 크기', 0.5, 1.8, 0.02, HX2],
     ['글씨'], ['title', '제목 「살아남는 법」 크기', 0.5, 2, 0.02, HX2], ['font', '설명 글씨 크기', 0.6, 2, 0.02, HX2], ['lineH', '줄 간격', 0.7, 1.8, 0.02, HX2], ['ok', '「확인」 크기', 0.5, 1.8, 0.02, HX2],
     ['간격(늘리기)'], ['gT', '제목 「살아남는 법」 ↔ 목표', -10, 80, 1, (v) => `+${Math.round(v)}px`], ['gS', '목표 ↔ 조작(칸 사이)', -8, 80, 1, (v) => `+${Math.round(v)}px`], ['gX', '「목표」 「조작」 글자 ↔ 설명', -10, 120, 1, (v) => `+${Math.round(v)}px`], ['gOk', '조작 ↔ 「확인」', -20, 120, 1, (v) => `+${Math.round(v)}px`],
+    ['칸 사이 붉은 줄'], ['lineO', '진하기(0 = 없앰)', 0, 1, 0.05, (v) => `${Math.round(v * 100)}%`], ['lineL', '길이', 0, 100, 1, (v) => `${Math.round(v)}%`],
     ['바탕 · 나타남'], ['shade', '왼쪽 어둠(시안 1 · 3 · 4)', 0, 1.5, 0.05, (v) => `${Math.round(v * 100)}%`], ['fade', '나타나는 시간', 0.1, 3, 0.05, (v) => `${(+v).toFixed(2)}초`],
   ];
   function hwPanel() {
@@ -4265,10 +4268,10 @@ body:not(.tz-live) #hw-btn,body.hs-on #hw-btn{visibility:hidden}
     const btn = document.createElement('button'); btn.id = 'hw-btn'; btn.type = 'button'; btn.textContent = '살아남는 법';
     const p = document.createElement('div'); p.id = 'hw-p';
     p.innerHTML = `<h4>살아남는 법 · 카드</h4>
-<div class="bs"><button class="b" data-a="show">카드 보기</button><button class="b" data-a="hide">카드 숨기기</button></div>
+<div class="bs"><button class="b" data-a="show">카드 화면에 띄우기</button><button class="b" data-a="hide">카드 닫기</button></div>
 ${HWR.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</span><b data-v="${r[0]}"></b></label><input type="range" data-k="${r[0]}" min="${r[2]}" max="${r[3]}" step="${r[4]}">`)).join('')}
 <div class="bs" style="margin-top:10px"><button class="b" data-a="def">기본값</button><span class="svs"></span></div>
-<div class="n">값은 움직이는 즉시 이 브라우저에 남는다 · 「저장」은 모두의 기본값 · 「카드 보기」로 판 중에도 띄워 보며 맞춘다(확인을 누르면 닫힘)</div>`;
+<div class="n">값은 움직이는 즉시 이 브라우저에 남는다 · 「저장」은 모두의 기본값 · 「카드 화면에 띄우기」 — 시작 연출을 기다리지 않고 지금 화면에 카드를 띄워 놓고 값을 맞춘다(판 중 · 타이틀에서도 · 「확인」이나 「카드 닫기」로 닫힘)</div>`;
     document.body.appendChild(btn); document.body.appendChild(p);
     if (window.__settings && window.__settings.button) p.querySelectorAll('.svs').forEach((sv) => sv.appendChild(window.__settings.button()));
     for (const ev of ['pointerdown', 'mousedown', 'wheel', 'contextmenu']) p.addEventListener(ev, (e) => e.stopPropagation());
@@ -4307,6 +4310,9 @@ ${HWR.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</s
         window.__paused = true;
         if (M && ifz.m) { M.position.x = ifz.m[0]; M.position.y = ifz.m[1]; M.position.z = ifz.m[2]; }
       } else if (ifz) { ifz = null; if (!(window.__pause && window.__pause.open)) window.__paused = false; }
+      // b789 — 멈춤 동안 괴물은 제자리 서 있기(사용자 「시작 연출에서 왜 괴물 걸어 다니는 소리가 나지 · 실제 게임이 돌아가고 있으면 안 된다」)
+      //   멈춤(window.__paused)은 괴물 자리만 세우고 걷기 동작은 계속 돌려 발소리(걷기 동작의 발 디딤마다 — game.js)가 났다 · Esc 잠시 멈춤도 같았다 → 서 있기 동작으로
+      if (G && G.started && window.__paused && !mpOn() && window.__pauseIdle !== false) { const MM = G.monster, id = MM && MM.actions && MM.actions.idle; if (id && MM.current !== id) { id.paused = false; id.reset().setEffectiveWeight(1).fadeIn(0.3).play(); if (MM.current) MM.current.fadeOut(0.3); MM.current = id; } }
     } catch (e) { if (!introFreeze.err) { introFreeze.err = true; console.warn('[cinema] 시작 연출 멈춤', e); } }
   })();
   // b768 — 시작 자리: 각 팀 돗자리 가운데(나 · 봇 모두 · 같이 하기는 서버 startRound 가 같은 자리로)
@@ -10300,6 +10306,7 @@ void main(){ float r = length(vUv - 0.5) * 2.0; float a = (1.0 - smoothstep(0.1,
     };
     let mSide = 1;
     wi.monsterStep = (pos) => {
+      if (window.__paused || (window.__cinema && window.__cinema.introOn && window.__cinema.introOn())) return;   // b789 — 멈춤 · 시작 연출 중엔 괴물 발소리 없음
       if (!play('mon_step', { pos, range: 35, vol: 0.95, rate: rnd(0.95, 1.04) })) { o.monsterStep(pos); return; }
       if (pos) monWeight(pos);                                            // 괴물 무게 — 연못 떨림 · 에마 달각
       const sf = pos ? surfAt(pos, monSurf) : 'dirt';                   // 돌 · 나무를 밟으면 단단한 바닥을 짓밟는 소리를 낮게 겹친다(바닥 따라 발소리 · 2026-10-09)
@@ -13163,7 +13170,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   //   → 고른 사람에게 다가가는 동안만(선택창 pickK · 줄 서 있는 화면 · 게임 · 타이틀은 그대로) 위끝 몇 cm 를 목 옆 뒤 · 아래(깃 속)로 밀어 넣어 끝이 옷에 묻히게
   //   값 window.__badgeTuck = { back, down, len } · 끄기 window.__badgeTuck = false
   function tuck(a, e, s, k, sg) {
-    const TK = window.__badgeTuck || {}, bk = (TK.back ?? 0.08) * s * k, dn = (TK.down ?? 0.05) * s * k, inw = (TK.inw ?? 0.02) * s * k, L = (TK.len ?? 0.09) * s;   // 미리보기에서 비교해 고른 값
+    const TK = window.__badgeTuck || {}, cf = (window.__charSel && window.__charSel.cf) || {}, cm = (v, d) => (typeof v === 'number' ? v / 100 : d);   // b790 — 선택창 조절 「클로즈업 — 목줄 위끝」(cm)
+    const bk = (TK.back ?? cm(cf.tkBack, 0.08)) * s * k, dn = (TK.down ?? cm(cf.tkDown, 0.05)) * s * k, inw = (TK.inw ?? cm(cf.tkIn, 0.02)) * s * k, L = Math.max(0.001, (TK.len ?? cm(cf.tkLen, 0.09)) * s);
     let d = 0; const f = e.fr.f, u = e.fr.u, r = e.fr.r;
     for (let j = 0; j < a.length - 1 && d < L; j++) {
       const w = 1 - d / L, w2 = w * w; d += a[j].distanceTo(a[j + 1]);
@@ -20556,6 +20564,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     csVer: 689, gl_son: 1, gp_son: 0.8,   /* b686 — 손주용: 같은 녹음 · 낮고 굵은 톤(1.1 은 너무 높아 이상) */   /* b683 — 손주용 웃음 2번 녹음이 이상(사용자) → 1번 · 조금 높게 */ gl_m16: 1, gp_m16: 0.9, gl_m17: 1, gp_m17: 1.04 });   // b682 — 사람마다 키키키: 녹음(1 · 2) · 높낮이   // b682 — 열릴 때 카메라가 멀리서 스윽 다가오고 · 다가오는 동안 세 사람이 하나씩 고개를 내려 나를 깔보듯 내려다봄(사용자)
   // b679 — 선택창에서만 사원증 목줄 고치기(사용자 「안경 캐릭터 목줄이 이상 · 선택창에서만」) — 게임 값(조절 「사원증 · …」)에 더하는 값 · lanyard.js PK 가 선택창 복제에만 쓴다
   const BDP = [['drop', '줄 길이(카드 높이)', -15, 15, 0.5, 'cm'], ['sideX', '목 좌우(한쪽)', -5, 5, 0.1, 'cm'], ['neckY', '목 거는 높이', -10, 10, 0.25, 'cm'], ['neckZ', '목 앞뒤', -10, 10, 0.25, 'cm'], ['cardTop', '카드 최고 높이(목 아래로)', -15, 15, 0.5, 'cm'], ['front', '카드 몸 앞 최소', -5, 8, 0.25, 'cm'], ['cardGap', '카드 몸에서 띄움', -2, 5, 0.1, 'cm'], ['freeTop', '줄 위쪽 옷 무시(꺾임 펴기)', -10, 15, 0.25, 'cm'], ['bendR', '줄 위쪽 둥글기', -8, 8, 0.25, 'cm'], ['stiff', '줄 부드러움(꺾임 버팀)', -0.6, 0.4, 0.05, '']];
+  Object.assign(CSD, { tkBack: 8, tkDown: 5, tkIn: 2, tkLen: 9 });   // b790 — 클로즈업 목줄 위끝 넣기(cm · lanyard.js tuck)
   for (const [k] of KINDS) for (const [p] of BDP) CSD['bd_' + k + '_' + p] = 0;   // b676 — tight: 더 타이트하게(가까이 · 사람 간격 좁게) · sly: 비열하게 쳐다보는 얼굴   // b674 — 아래에서 올려다보는 포스터 구도(사용자 「위에서 날 내려다보는 시점」 · 0 = 예전 B 구도)
   const CS = (S.cf = Object.assign({}, CSD)), legacy = Object.assign({}, LEGACY_DEFAULT);
   let sceneLoaded = false;
@@ -20722,6 +20731,14 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     if (back) { const st = document.getElementById('start'); if (st) st.style.display = startDisp || 'grid'; if (focus0 && focus0.isConnected) focus0.focus({ preventScroll: true }); }
     console.log('[charsel] 종료 · 복제/비명/사원증 정리', back ? '뒤로' : '시작');
   }
+  // b790 — 클로즈업 멈춰 보기(사용자 「목줄은 선택했을 때 조정해야 하는데 화면이 넘어가 버려 조절을 못 함 · 정지를 시켜 주던지」)
+  //   지금 고른 사람 얼굴로 다가간 화면에서 멈춤 — 게임 시작 안 함 · 그대로 사원증 · 목줄 값을 움직여 본다 · 다시 누르면 풀림 · 시작(Enter)은 예전처럼
+  function holdCU(on) {
+    if (!S.open || lock) return;
+    if (on) { pickZ = { i: sel, t0: performance.now() - 5000, hold: true }; if (!document.getElementById('csel-pickcss')) { const st = document.createElement('style'); st.id = 'csel-pickcss'; st.textContent = '#csel.picked .fr:not(.on) .nm{opacity:0;transition:opacity .25s}'; document.head.appendChild(st); } el.classList.add('picked'); } else { pickZ = null; el.classList.remove('picked'); }
+    const b = el.querySelector('.cuhold'); if (b) b.textContent = on ? '■ 클로즈업 풀기' : '▶ 클로즈업 멈춰 보기(시작 안 함)'; draw();
+  }
+  S.holdCU = holdCU;
   // 선택과 확정은 분리. 방금 선택 비명이 나는 중이면 재생하지 않고 남은 연출만 기다린다.
   function choose(i) {
     if (!S.open || lock) return; sel = i;
@@ -20866,6 +20883,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     ROWS.push(['#', '아래에서 올려다보기(포스터 구도)'], ['lowOn', '켜기(1 = 예 · 0 = 예전 B 구도)', 0, 1, 1, ''], ['lowCamY', '카메라 높이(땅에서)', 0.05, 1.2, 0.01, 'm'], ['lowLookY', '바라보는 높이', 0.8, 2.6, 0.01, 'm'], ['lowDist', '거리', 1, 4, 0.05, 'm'], ['lowFov', '시야각', 30, 75, 1, '°'], ['lookDown', '내려다보는 정도(고개 숙임)', 0, 1.5, 0.05, '×'], ['lean', '허리로 숙이는 몫', 0, 0.8, 0.01, ''], ['tight', '타이트하게(가까이 · 간격 좁게)', 0, 1, 0.01, ''], ['sly', '썩소 세기', 0, 1.5, 0.05, '×'], ['giggleRate', '누를 때 웃음 빠르기(키키키)', 0.8, 2, 0.05, '×']);
     ROWS.push(['#', '등장 — 카메라가 다가오며 깔보기'], ['introOn', '켜기(1 = 예)', 0, 1, 1, ''], ['introDur', '다가오는 시간', 0.5, 5, 0.1, '초'], ['introPush', '처음 거리(배 더 멀리)', 0, 2.5, 0.05, '×'], ['introLook', '고개 숙이기 시작', 0, 3, 0.05, '초'], ['introStag', '사람마다 늦게', 0, 1, 0.05, '초'], ['introBow', '나타날 때 이미 숙인 정도', 0, 1, 0.05, ''], ['contempt', '깔보는 정도(턱 들기 · 비스듬히)', 0, 2, 0.05, '×'], ['introSnd', '다가오는 바람 소리', 0, 1.5, 0.05, '×']);   // b682
     ROWS.push(['#', '시작 누르면 — 고른 얼굴로 다가가기'], ['pickZoom', '다가가는 정도(0 = 안 함)', 0, 1, 0.05, ''], ['laughSq', '웃을 때 눈 가늘게', 0, 1, 0.02, ''], ['faceEase', '표정 바뀌는 빠르기(작을수록 천천히)', 1, 20, 0.5, ''], ['drift', '가만있을 때 고개 · 어깨 흔들림', 0, 3, 0.05, '×'], ['pickDur', '다가가는 시간', 0.2, 3, 0.05, '초'], ['pickDist', '얼굴 앞 거리', 0.3, 2, 0.05, 'm'], ['pickDown', '얼굴보다 아래로', -0.3, 0.6, 0.01, 'm']);   // b683
+    ROWS.push(['#', '시작 누른 뒤 클로즈업 — 목줄 위끝을 깃 속으로(이때만 · 줄 선 화면은 그대로)'], ['tkBack', '뒤로 넣기', 0, 20, 0.5, 'cm'], ['tkDown', '아래로 넣기', 0, 15, 0.5, 'cm'], ['tkIn', '목 쪽으로 모으기', 0, 8, 0.25, 'cm'], ['tkLen', '넣는 길이(위끝에서)', 0, 25, 0.5, 'cm']);   // b790
     ROWS.push(['#', '사람마다 키키키(누를 때)']); for (const [k, n] of KINDS) ROWS.push(['gl_' + k, n + ' — 웃음 녹음(1 · 2)', 1, 2, 1, ''], ['gp_' + k, n + ' — 높낮이', 0.6, 1.6, 0.02, '×']);   // b674
     ROWS.push(['#', 'B 집결 구도'], ['fov', '시야각', 25, 55, 1, '°'], ['advance', '선택 인물 앞으로', 0, 0.4, 0.01, 'm'], ['badgeBright', '선택창 사원증 밝기', 0.2, 1.5, 0.02, '×'], ['strapBright', '선택창 목줄 밝기', 0.2, 1.5, 0.02, '×']);
     const st = document.createElement('style');
@@ -20943,7 +20961,7 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
 <h1><b>캐릭터</b>를 선택하세요</h1><div class="sub">누 구 로 · 살 아 남 을 · 것 인 가</div><div class="band"></div>
 ${KINDS.map(([, n], i) => `<div class="fr" data-i="${i}" style="--i:${i}"><div class="no">0${i + 1}</div><div class="tag">선택</div><div class="nm">${n}</div></div>`).join('')}
 <button type="button" class="adj">선택창 조절</button><div class="pan"><b>캐릭터 선택창</b>${ROWS.map(([k, n, mn, mx, st]) => (k === '#' ? `<h6>${n}</h6>` : `<label>${n}<span data-v="${k}"></span></label><input type="range" min="${mn}" max="${mx}" step="${st}" data-k="${k}">`)).join('')}
-<h6>등장 모션 고르기</h6><div class="am">${ANIMS.map((n, i) => `<button type="button" data-an="${i}">${n}</button>`).join('')}</div><button type="button" class="replay">▶ 등장 다시 보기</button>
+<h6>등장 모션 고르기</h6><div class="am">${ANIMS.map((n, i) => `<button type="button" data-an="${i}">${n}</button>`).join('')}</div><button type="button" class="replay">▶ 등장 다시 보기</button><button type="button" class="replay cuhold">▶ 클로즈업 멈춰 보기(시작 안 함)</button>
 <div class="row2"><button type="button" class="cdef">기본값</button></div><div class="csv"></div></div>
 <div class="vig"></div><div class="hint"><kbd>←</kbd><kbd>→</kbd> 고르기 · <kbd>Enter</kbd> 선택 · <kbd>Esc</kbd> 타이틀로</div>`;
     // 옛 카드 데코/칸 마스크는 DOM에서도 제거한다. 같은 3D 장면 위에 이름과 두 조작만.
@@ -20959,7 +20977,7 @@ ${KINDS.map(([, n], i) => `<div class="fr" data-i="${i}" style="--i:${i}"><div c
     for (const type of ['pointerdown', 'pointerup', 'pointermove']) el.addEventListener(type, (e) => e.stopPropagation());
     const pan = el.querySelector('.pan'), syncP = () => { pan.querySelectorAll('[data-an]').forEach((b) => b.classList.toggle('on', +b.dataset.an === CS.anim)); for (const i of pan.querySelectorAll('input[data-k]')) { const k = i.dataset.k; i.value = CS[k]; const r = ROWS.find((q) => q[0] === k); pan.querySelector(`[data-v="${k}"]`).textContent = (+CS[k]).toFixed(2) + r[5]; } };
     el.querySelector('.adj').addEventListener('click', (e) => { e.stopPropagation(); pan.classList.toggle('on'); syncP(); });
-    pan.addEventListener('click', (e) => { e.stopPropagation(); if (e.target.classList.contains('cdef')) { Object.assign(CS, CSD); syncP(); layout(); } const an = e.target.dataset && e.target.dataset.an; if (an !== undefined) { CS.anim = +an; syncP(); enter(); } if (e.target.classList.contains('replay')) enter(); });
+    pan.addEventListener('click', (e) => { e.stopPropagation(); if (e.target.classList.contains('cdef')) { Object.assign(CS, CSD); syncP(); layout(); } const an = e.target.dataset && e.target.dataset.an; if (an !== undefined) { CS.anim = +an; syncP(); enter(); } if (e.target.classList.contains('cuhold')) { holdCU(!(pickZ && pickZ.hold)); return; } if (e.target.classList.contains('replay')) enter(); });
     pan.addEventListener('input', (e) => { const k = e.target.dataset.k; if (!k) return; CS[k] = +e.target.value; syncP(); layout(); });
     pan.addEventListener('keydown', (e) => e.stopPropagation(), true);
     { const sv = pan.querySelector('.csv'); if (sv && window.__settings && window.__settings.button) sv.appendChild(window.__settings.button()); }
