@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-816 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-817 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-816'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-817'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -6700,7 +6700,6 @@ window.__NAVGRID = {"sig":"n8|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
       { k: 'crowGap', label: '덮친 뒤 누구에게든 다시 오기까지', min: 0, max: 120, step: 1, unit: '초', def: 15 },
       { k: 'crowN', label: '한 번에 달려드는 수', min: 1, max: 3, step: 1, unit: '마리', def: 2 },
       { k: 'crowSlow', label: '쪼이는 동안 걸음', min: 0.2, max: 1, step: 0.05, unit: '배', def: 0.55 },
-      { k: 'crowWob', label: '쪼이는 동안 방향 비틀림', min: 0, max: 1.5, step: 0.05, unit: 'rad', def: 0.6 },
       { k: 'crowCount', label: '떼 크기', min: 0, max: 16, step: 1, unit: '마리', def: 10 },
       { k: 'crowSpeed', label: '평소 날아다니는 빠르기(쪼으러 올 때와 따로)', min: 0.2, max: 1.5, step: 0.05, unit: '배', def: 0.6 },   // b675
       { k: 'crowFeed', label: '시체에 내려앉아 파먹는 빈도', min: 0, max: 1, step: 0.05, unit: '', def: 0.7 },
@@ -13624,7 +13623,8 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
   const fxs = new Map();   // who → { until, ph }
   const now = () => performance.now() / 1000;
   window.__crowK = (who) => { const e = fxs.get(who); return e && now() < e.until ? cfg('crowSlow', 0.55) : 1; };
-  window.__crowYaw = (who) => { const e = fxs.get(who); if (!e || now() >= e.until) return 0; const t = now(), w = cfg('crowWob', 0.6); return w * Math.sin(t * 2.3 + e.ph) + w * 0.5 * Math.sin(t * 5.1 + e.ph * 1.7); };
+  // b817 — 방향 비틀림 뺌(사용자 「까마귀한테 당했을 때 방향키 조작 흔들림은 빼 줘」) · 느려짐 · 카메라는 그대로 · 되살리기 window.__crowWobOn = true
+  window.__crowYaw = (who) => { if (window.__crowWobOn !== true) return 0; const e = fxs.get(who); if (!e || now() >= e.until) return 0; const t = now(), w = cfg('crowWob', 0.6); return w * Math.sin(t * 2.3 + e.ph) + w * 0.5 * Math.sin(t * 5.1 + e.ph * 1.7); };
   function hit(who, sec) { const e = fxs.get(who) || { until: 0, ph: rnd(0, 6.28) }; e.until = Math.max(e.until, now() + sec); fxs.set(who, e); }
   // ── 굽기: 날갯짓 NF 장 + 앉은 자세(날개를 몸 뒤로 접고 다리를 아래로) ──
   function bake(gl) {
