@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-831 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-836 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-831'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-836'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3081,6 +3081,7 @@ body.sr-keys-on #hud .hint{display:none!important}`;
     cf: CF,
     toggle() { CF.on = CF.on > 0.5 ? 0 : 1; save(); },
     step(key, d) { const s = STEP[key]; if (!s) return; CF[key] = Math.max(s[1], Math.min(s[2], Math.round((CF[key] + d * s[0]) * 100) / 100)); save(); },
+    set(key, v) { if (!(key in CF)) return; CF[key] = +v; apply(); },   // b834 — 메세지 조절 패널
     info: () => ({ on: CF.on > 0.5, size: Math.round(CF.size * 100), y: CF.y, op: Math.round(CF.op * 100), k: Math.round(CF.k * 100), blur: Math.round(CF.blur * 10) / 10 }),
   };
   // b827 — 모두의 기본값(settings keyHint) 저장 · 불러오기 뺌(고정)
@@ -3094,6 +3095,178 @@ body.sr-keys-on #hud .hint{display:none!important}`;
       el.classList.toggle('on', show);
     } catch (e) { /* */ }
   }, 200);
+})();
+
+</script>
+<script>/* crisis.js */
+/* 위기 알림(2026-10-15 사용자: 「상대방이 내 시체를 뺏어 갔거나 · 상대방이 시체를 2개 모으면 위험하니까 화면에 따로 시스템 메세지를 띄워야 하지 않나」 → 1~3 넣어 줘)
+   · 둘만 — 내 제단의 시체를 누가 들고 나감 「○○이 내 시체를 가져갔다 · 되찾아라」 · 상대가 시체 둘을 모음 「○○의 제단 · 하나 남았다 · 빼앗아라」
+   · 화면 가운데 위에 한 번(들어옴 0.25초 · 머묾 1.6초 · 사라짐 0.5초) · 위치는 붉은 화살 · 표찰이 계속 알려 준다 · 둘이 겹치면 차례로
+   · 모양: 창틀 없이 글만 — 본명조 · 위기 줄은 핏빛 · 시스템 메시지와 같은 필터(색 번짐 · 흐림 · 알갱이 · 주사선) · 뜰 때 글이 짧게 떨리고 가장자리가 붉게 한 번
+   · 혼자 하기 · 같이 하기 똑같이(판의 시체 · 점수만 읽는다) · 연출 · 둘러보기 · 판 끝엔 띄우지 않음 · 끄기 window.__crisisOff = true */
+(() => {
+  const TEAM_ID = ['P1', 'P2', 'P3'];
+  const josa = (s, a, b) => { const c = String(s).charCodeAt(String(s).length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? a : b; };
+  const nameOf = (t) => (window.__teamName ? window.__teamName(t) : `P${t + 1}`);
+  const NOISE = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.55'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>\")";
+  const SCAN = 'repeating-linear-gradient(0deg,#000 0 2px,rgba(0,0,0,.6) 2px 3px)';
+  let el = null, edge = null;
+  // b834 — 모양은 CSS 변수(둘러보기 「메세지 조절」 패널 msgpanel.js) — 크기 --crA/--crB · 색 --crAc/--crBc · 위치 --crTop · 필터 --crK · 떨림 --crSh · 가장자리 붉은빛 --crEdge · 머묾 window.__crisisHold(초)
+  (function css() {
+    const st = document.createElement('style');
+    st.textContent = `#sr-crisis{position:fixed;left:50%;top:var(--crTop,27%);transform:translateX(-50%);z-index:31;pointer-events:none;text-align:center;white-space:nowrap;opacity:0;
+  font-family:'Noto Serif KR','UIF',serif;filter:sepia(calc(.5 * var(--crK,.7))) contrast(calc(1 + .22 * var(--crK,.7))) blur(calc(.85px * var(--crK,.7))) drop-shadow(calc(2.6px * var(--crK,.7)) 0 0 rgba(255,0,0,calc(.7 * var(--crK,.7)))) drop-shadow(calc(-2.6px * var(--crK,.7)) 0 0 rgba(0,200,255,calc(.55 * var(--crK,.7)))) drop-shadow(0 0 10px rgba(0,0,0,.95));
+  -webkit-mask-image:${NOISE},${SCAN};-webkit-mask-composite:source-in;mask-image:${NOISE},${SCAN};mask-composite:intersect}
+#sr-crisis .a{font-weight:900;font-size:var(--crA,34px);letter-spacing:.18em;color:var(--crAc,#d8261a);text-shadow:0 2px 3px #000,0 0 16px rgba(120,0,0,.7)}
+#sr-crisis .b{margin-top:8px;font-weight:700;font-size:var(--crB,16px);letter-spacing:.6em;text-indent:.6em;color:var(--crBc,#e7e2d4);text-shadow:0 1px 3px #000}
+#sr-crisis.on{animation:srCrIn .25s cubic-bezier(.2,.8,.2,1) both,srCrShake .36s .05s linear both}
+#sr-crisis.out{opacity:0;transition:opacity .5s ease,filter .5s ease}
+#sr-crisis.pin{opacity:1!important;animation:none!important}   /* 패널에서 띄워 두기 */
+#prompt{bottom:var(--sysby,18%)!important}
+@keyframes srCrIn{0%{opacity:0;letter-spacing:.5em}100%{opacity:1}}
+@keyframes srCrShake{0%,100%{translate:0 0}15%{translate:calc(var(--crSh,1) * -7px) calc(var(--crSh,1) * 1px)}30%{translate:calc(var(--crSh,1) * 6px) calc(var(--crSh,1) * -2px)}45%{translate:calc(var(--crSh,1) * -4px) calc(var(--crSh,1) * 2px)}60%{translate:calc(var(--crSh,1) * 3px) calc(var(--crSh,1) * -1px)}75%{translate:calc(var(--crSh,1) * -2px) calc(var(--crSh,1) * 1px)}}
+#sr-crisis-edge{position:fixed;inset:0;z-index:30;pointer-events:none;opacity:0;background:radial-gradient(ellipse 75% 70% at 50% 50%,rgba(120,0,0,0) 55%,rgba(130,0,0,.55) 85%,rgba(60,0,0,.85))}
+#sr-crisis-edge.on{animation:srCrEdge .7s ease-out both}
+@keyframes srCrEdge{0%{opacity:0}18%{opacity:var(--crEdge,1)}100%{opacity:0}}
+body.sr-drop #prompt{opacity:1!important}   /* b833 — 내 제단 돗자리 위에서 시체를 들고 있으면 「G · 시체를 내려놓는다」 */
+body.cin-on #sr-crisis,body.dl-on #sr-crisis,body.cin-on #sr-crisis-edge,body.dl-on #sr-crisis-edge{visibility:hidden!important}`;
+    document.head.appendChild(st);
+  })();   // b834 — 처음부터 건다(예전엔 첫 알림 때 걸려서 「내려놓는다」 안내가 안 보였다)
+  function build() {
+    const root = document.getElementById('game-root') || document.body;
+    edge = document.createElement('div'); edge.id = 'sr-crisis-edge'; root.appendChild(edge);
+    el = document.createElement('div'); el.id = 'sr-crisis'; el.setAttribute('aria-live', 'polite'); root.appendChild(el);
+  }
+  const queue = []; let busy = false;
+  function show(a, b) {
+    queue.push([a, b]); if (busy) return;
+    (function next() {
+      const m = queue.shift(); if (!m) { busy = false; return; } busy = true;
+      if (!el) build();
+      el.innerHTML = `<div class="a"></div><div class="b"></div>`; el.querySelector('.a').textContent = m[0]; el.querySelector('.b').textContent = m[1];
+      el.classList.remove('on', 'out'); edge.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); edge.classList.add('on');
+      const hold = Math.max(0.5, +window.__crisisHold || 1.85) * 1000;
+      setTimeout(() => { el.classList.add('out'); }, hold);
+      setTimeout(() => { el.classList.remove('on', 'out'); next(); }, hold + 600);
+    })();
+  }
+  // b834 — 패널에서 띄워 두고 보며 고치기
+  function pin(on, a, b) { if (!el) build(); if (on) { el.innerHTML = `<div class="a"></div><div class="b"></div>`; el.querySelector('.a').textContent = a || '손주용이 내 시체를 가져갔다'; el.querySelector('.b').textContent = b || '되 찾 아 라'; } el.classList.toggle('pin', !!on); }
+  window.__crisis = { show, pin, samples: [['손주용이 내 시체를 가져갔다', '되 찾 아 라'], ['허지용의 제단 · 하나 남았다', '빼 앗 아 라']] };
+  /* b833 — 내려놓기 안내(사용자 「내 제단의 돗자리 영역에 오면 G 로 시체를 내려놓으라는 메시지」): 시체를 들고 내 제단(돗자리) 안에 들어서면 아래 시스템 메시지 자리에 「G · 시체를 내려놓는다」
+     · 「G · 시체를 잡는다」와 같은 자리 · 같은 모양(본명조 · 필터) · 내려놓거나 나가면 원래 글로 · 끄기 window.__dropHintOff = true */
+  const PICK = 'G · 시체를 잡는다', DROP = 'G · 시체를 내려놓는다'; let dropOn = false;
+  function dropHint(on) { const p = document.getElementById('prompt'); if (!p || on === dropOn) return; dropOn = on; document.body.classList.toggle('sr-drop', on); p.textContent = on ? DROP : PICK; }
+  setInterval(() => { try { const G = window.__G; const on = !!(G && G.started && G.game && !G.game.over && !window.__explore && window.__dropHintOff !== true && G.carry && G.carry.heldBody && G.zoneAt && G.zoneAt(G.hero.position.x, G.hero.position.z) === 0); dropHint(on); } catch (e) { /* */ } }, 120);
+  // 지켜보기 — 시체(누가 들었나 · 어느 제단에 놓였나) · 점수
+  let prev = null, sc0 = null, was = false;
+  setInterval(() => {
+    try {
+      const G = window.__G; if (!G || !G.game || !G.zoneAt || !G.hips || !G.scores) return;
+      const live = !!G.started && !G.game.over && !window.__explore && G.game.bodies.length > 0;
+      if (!live) { prev = null; sc0 = null; was = false; return; }
+      if (!was) { was = true; prev = null; sc0 = G.scores().slice(); }   // 판 시작 · 다시 하기 — 지금 상태부터
+      const quiet = window.__crisisOff === true || (window.__cinema && window.__cinema.active && window.__cinema.active());
+      const cur = G.game.bodies.map((b) => { const holder = b.held ? TEAM_ID.indexOf(b.held) : -1; let zone = -1; if (holder < 0) { const h = G.hips(b); zone = G.zoneAt(h.x, h.z); } return { holder, zone }; });
+      if (prev && !quiet) cur.forEach((c, k) => { const p = prev[k]; if (p && p.holder < 0 && p.zone === 0 && c.holder > 0) { const nm = nameOf(c.holder); show(`${nm}${josa(nm, '이', '가')} 내 시체를 가져갔다`, '되 찾 아 라'); } });
+      prev = cur;
+      const sc = G.scores();
+      if (sc0 && !quiet) for (let t = 1; t < 3; t++) if (sc[t] === 2 && sc0[t] < 2) show(`${nameOf(t)}의 제단 · 하나 남았다`, '빼 앗 아 라');   // b834 — 「막아라」 → 「빼앗아라」(막는 기능은 없고 그 제단 시체를 빼앗아 올 수 있다 — 사용자)
+      sc0 = sc.slice();
+    } catch (e) { /* */ }
+  }, 150);
+})();
+
+</script>
+<script>/* msgpanel.js */
+/* 메세지 조절 패널(2026-10-15 사용자: 「시스템 메세지 뜨는 거 각각 사이즈 조절과 그런 거 할 수 있게 둘러보기에 패널」 · 「띄워서 보면서 수정할 수 있게」)
+   · 둘러보기 시험 줄 「메세지 조절」 → 오른쪽 패널 · 셋을 따로
+     1 아래 안내(「G · 시체를 잡는다」 · 「G · 시체를 내려놓는다」) — 크기 · 높이 · 필터 · 색 · 「띄워 두기」
+     2 위기 알림(「○○이 내 시체를 가져갔다」 · 「○○의 제단 · 하나 남았다」) — 큰 줄 · 작은 줄 크기 · 색 · 위치 · 필터 · 떨림 · 가장자리 붉은빛 · 머무는 시간 · 「띄워 두기」 · 「한 번 보기」
+     3 조작 안내(화면 아래 키 줄) — 크기 · 높이 · 밝기 · 블러
+   · 움직이면 바로 화면에 · 이 브라우저에 기억 · 「저장」하면 모두의 기본값(settings 'msgPanel') · 기본값 = 사용자가 고정한 값(22px 미색 필터 70% · 조작 안내 80% 28px 75% 0.7px) */
+(() => {
+  const DEF = { pPx: 22, pBy: 18, pK: 0.7, pCol: '#e7e2d4', cA: 34, cAc: '#d8261a', cB: 16, cBc: '#e7e2d4', cTop: 27, cK: 0.7, cSh: 1, cEdge: 1, cHold: 1.85, kSize: 0.8, kY: 28, kOp: 0.75, kBlur: 0.7 };
+  const CF = Object.assign({}, DEF);
+  const KEY = 'corpse_msgpanel_v1';
+  try { const o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) for (const k in DEF) if (typeof o[k] === typeof DEF[k]) CF[k] = o[k]; } catch (e) { /* */ }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(CF)); } catch (e) { /* */ } };
+  const COLS = [['#e7e2d4', '미색'], ['#ffffff', '흰색'], ['#d6c9a8', '뼈빛'], ['#d8261a', '핏빛'], ['#d27235', '녹슨 주황'], ['#a8a398', '잿빛']];
+  function apply() {
+    const r = document.documentElement.style;
+    r.setProperty('--sysfpx', CF.pPx + 'px'); r.setProperty('--sysby', CF.pBy + '%'); r.setProperty('--sysk', String(CF.pK)); r.setProperty('--sysfc', CF.pCol);
+    r.setProperty('--crA', CF.cA + 'px'); r.setProperty('--crAc', CF.cAc); r.setProperty('--crB', CF.cB + 'px'); r.setProperty('--crBc', CF.cBc);
+    r.setProperty('--crTop', CF.cTop + '%'); r.setProperty('--crK', String(CF.cK)); r.setProperty('--crSh', String(CF.cSh)); r.setProperty('--crEdge', String(CF.cEdge));
+    window.__crisisHold = CF.cHold;
+    const K = window.__keyHint; if (K && K.set) { K.set('size', CF.kSize); K.set('y', CF.kY); K.set('op', CF.kOp); K.set('blur', CF.kBlur); }
+  }
+  // [키, 이름, 최소, 최대, 간격, 단위]
+  const ROWS = {
+    p: [['pPx', '크기', 12, 48, 1, 'px'], ['pBy', '높이(아래에서)', 4, 50, 1, 'p%'], ['pK', '필터', 0, 1, 0.05, '%']],
+    c: [['cA', '큰 줄 크기', 14, 72, 1, 'px'], ['cB', '작은 줄 크기', 8, 36, 1, 'px'], ['cTop', '위치(위에서)', 5, 70, 1, 'p%'], ['cK', '필터', 0, 1, 0.05, '%'], ['cSh', '떨림', 0, 3, 0.1, '배'], ['cEdge', '가장자리 붉은빛', 0, 1, 0.05, '%'], ['cHold', '머무는 시간', 0.5, 5, 0.05, '초']],
+    k: [['kSize', '크기', 0.5, 2, 0.05, '%'], ['kY', '높이(아래에서)', 0, 260, 1, 'px'], ['kOp', '밝기', 0.1, 1, 0.05, '%'], ['kBlur', '블러', 0, 4, 0.1, 'px']],
+  };
+  const fmt = (v, u) => (u === 'p%' ? Math.round(v) + '%' : u === '%' ? Math.round(v * 100) + '%' : u === 'px' ? Math.round(v * 10) / 10 + 'px' : u === '초' ? (+v).toFixed(2) + '초' : (+v).toFixed(1) + '배');
+  let el = null, pinP = 0, pinC = 0;
+  const PTXT = ['G · 시체를 잡는다', 'G · 시체를 내려놓는다'];
+  function pinPrompt(i) { pinP = i; const p = document.getElementById('prompt'); if (!p) return; if (i) { p.textContent = PTXT[i - 1]; p.classList.add('pv'); } else { p.classList.remove('pv'); p.textContent = PTXT[0]; } }
+  function pinCrisis(i) { pinC = i; const C = window.__crisis; if (!C || !C.pin) return; const s = C.samples[(i || 1) - 1]; C.pin(!!i, s[0], s[1]); }
+  const sw = (key) => COLS.map(([c, n]) => `<button type="button" class="sw${CF[key] === c ? ' on' : ''}" data-col="${key}" data-v="${c}" title="${n}" style="background:${c}"></button>`).join('');
+  const rows = (g) => ROWS[g].map(([k, n, mn, mx, st, u]) => `<label><span>${n}</span><b data-v="${k}">${fmt(CF[k], u)}</b></label><input type="range" data-k="${k}" min="${mn}" max="${mx}" step="${st}" value="${CF[k]}">`).join('');
+  function render() {
+    el.innerHTML = `<div class="hd"><b>메세지 조절</b><button type="button" class="x" data-close>닫기</button></div>
+      <section><h4>아래 안내 <small>G · 시체를 잡는다 / 내려놓는다</small></h4>
+        <div class="bt"><button type="button" data-pp="1" class="${pinP === 1 ? 'on' : ''}">「잡는다」 띄워 두기</button><button type="button" data-pp="2" class="${pinP === 2 ? 'on' : ''}">「내려놓는다」 띄워 두기</button></div>
+        ${rows('p')}<div class="cl"><span>색</span>${sw('pCol')}</div></section>
+      <section><h4>위기 알림 <small>내 시체를 가져갔다 · 하나 남았다</small></h4>
+        <div class="bt"><button type="button" data-pc="1" class="${pinC === 1 ? 'on' : ''}">「가져갔다」 띄워 두기</button><button type="button" data-pc="2" class="${pinC === 2 ? 'on' : ''}">「하나 남았다」 띄워 두기</button><button type="button" data-once>한 번 보기</button></div>
+        ${rows('c')}<div class="cl"><span>큰 줄 색</span>${sw('cAc')}</div><div class="cl"><span>작은 줄 색</span>${sw('cBc')}</div></section>
+      <section><h4>조작 안내 <small>화면 아래 키 줄</small></h4>${rows('k')}</section>
+      <div class="ft"><button type="button" data-def>기본값</button><span class="sv"></span></div>`;
+    if (window.__settings && window.__settings.button) { const b = window.__settings.button(); if (b) el.querySelector('.sv').appendChild(b); }
+  }
+  function build() {
+    const st = document.createElement('style');
+    st.textContent = `#msg-p{position:fixed;right:14px;top:70px;width:300px;max-height:calc(100vh - 150px);overflow:auto;z-index:70;display:none;padding:10px 12px 12px;background:rgba(10,8,7,.93);border:1px solid #6b2a20;color:#e9e1d0;font:12px 'UIF','Noto Serif KR',serif}
+#msg-p.on{display:block}
+#msg-p .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px} #msg-p .hd b{font-size:14px;letter-spacing:.2em;color:#f2e6d6}
+#msg-p section{border-top:1px solid rgba(231,226,212,.15);padding-top:8px;margin-top:8px}
+#msg-p h4{margin:0 0 6px;font-size:13px;color:#e0392b;font-weight:700} #msg-p h4 small{font-size:10px;color:#9c9484;font-weight:400;margin-left:6px}
+#msg-p label{display:flex;justify-content:space-between;margin:6px 0 0;color:#c9bfae} #msg-p label b{color:#f2e6d6}
+#msg-p input[type=range]{width:100%}
+#msg-p button{padding:4px 8px;background:rgba(0,0,0,.55);border:1px solid rgba(231,226,212,.25);color:#d8d2c2;font:700 11px 'UIF',serif;cursor:pointer}
+#msg-p button.on{background:rgba(140,10,6,.65);border-color:#e0392b;color:#fff}
+#msg-p .bt{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+#msg-p .cl{display:flex;align-items:center;gap:5px;margin-top:7px;color:#c9bfae} #msg-p .cl span{margin-right:auto}
+#msg-p .sw{width:18px;height:18px;padding:0;border:1px solid rgba(0,0,0,.8)} #msg-p .sw.on{outline:2px solid #e0392b;outline-offset:1px}
+#msg-p .ft{display:flex;gap:6px;align-items:center;margin-top:10px;border-top:1px solid rgba(231,226,212,.15);padding-top:8px}`;
+    document.head.appendChild(st);
+    el = document.createElement('div'); el.id = 'msg-p'; document.body.appendChild(el);
+    el.addEventListener('input', (e) => { const k = e.target.dataset && e.target.dataset.k; if (!k) return; CF[k] = +e.target.value; const row = Object.values(ROWS).flat().find((r) => r[0] === k); const v = el.querySelector(`b[data-v="${k}"]`); if (v && row) v.textContent = fmt(CF[k], row[5]); apply(); save(); });
+    el.addEventListener('click', (e) => {
+      const t = e.target.closest('button'); if (!t) return; const d = t.dataset; e.stopPropagation();
+      if (d.close !== undefined) { toggle(false); return; }
+      if (d.col) { CF[d.col] = d.v; apply(); save(); }
+      else if (d.pp) pinPrompt(pinP === +d.pp ? 0 : +d.pp);
+      else if (d.pc) pinCrisis(pinC === +d.pc ? 0 : +d.pc);
+      else if (d.once !== undefined) { pinCrisis(0); const C = window.__crisis; if (C) { const s = C.samples[Math.random() < 0.5 ? 0 : 1]; C.show(s[0], s[1]); } }
+      else if (d.def !== undefined) { Object.assign(CF, DEF); apply(); save(); }
+      render();
+    });
+    for (const ty of ['keydown', 'keyup', 'pointerdown', 'mousedown', 'wheel']) el.addEventListener(ty, (e) => e.stopPropagation());
+  }
+  function toggle(on) {
+    if (!el) build();
+    const v = on === undefined ? !el.classList.contains('on') : !!on;
+    el.classList.toggle('on', v);
+    if (v) render(); else { pinPrompt(0); pinCrisis(0); }
+  }
+  window.__msgPanel = { toggle, cf: CF, apply };
+  (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 400); return; } St.reg('msgPanel', { get: () => Object.assign({}, CF), set: (o) => { if (!o || typeof o !== 'object') return; for (const k in DEF) if (typeof o[k] === typeof DEF[k]) CF[k] = o[k]; apply(); } }); })();
+  // 처음 · 늦게 붙는 것(tension.js 의 메세지 값 · keyhint)보다 뒤에 한 번 더
+  apply(); setTimeout(apply, 800); setTimeout(apply, 3000);
+  // 둘러보기를 끝내면 패널을 닫는다
+  setInterval(() => { if (el && el.classList.contains('on') && !window.__explore) toggle(false); }, 500);
 })();
 
 </script>
@@ -4867,7 +5040,7 @@ ${HWR.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</s
   }
   CN.demo = (skip) => demoLose(window.__G, skip);
   { const st = document.createElement('style'); st.textContent = 'body.cin-on #prompt,body.cin-on #arrows,body.cin-on #alerts,body.cin-on #alertpulse,body.cin-on #monstat,body.cin-on #score,body.cin-on #btn-view,body.cin-on #hud .hint,body.cin-on #sr-stamp{visibility:hidden!important}'; document.head.appendChild(st); }
-  setInterval(() => document.body.classList.toggle('cin-on', !!(intro || lose)), 100);
+  setInterval(() => { const G0 = window.__G, D0 = window.__death; document.body.classList.toggle('cin-on', !!(intro || lose || (G0 && G0.game && G0.game.over && G0.started) || (D0 && D0.active && D0.active()))); }, 100);   // b832 — 판이 끝난 뒤 · 결말 연출 동안에도 「G · 시체를 잡는다」 같은 글을 걷는다(사용자 「이긴 연출이 나오는데 시스템 메세지가 출력되는 오류」)
   // b454 — 시작 연출이 끝나기 전엔 조작이 안 된다(사용자) · Tab · Esc · K 같은 창 열기는 그대로
   const BLOCK = /^(Key[WASDGVRQEF]|Arrow|Space|Shift)/;
   addEventListener('keydown', (e) => {
@@ -19891,9 +20064,7 @@ body.sr-looking #sr-expr-cap { bottom: var(--sr-look-h, 196px) !important; }   /
         <span class="grp"><i>왕벌</i><button type="button" class="go" data-hornet="me">나를 낚아채게</button><button type="button" data-hornet="bot">봇을 낚아채게</button></span>
         <span class="grp"><button type="button" data-face class="${faceOn ? 'on' : ''}">얼굴 보기<small>9</small></button></span>
         ${window.__hudStyle ? `<span class="grp"><i>제단 표지</i>${ar('hst', -1)}<button type="button" class="nm">${window.__hudStyle.name()}</button>${ar('hst', 1)}</span>` : ''}
-        ${window.__sysFont ? `<span class="grp"><i>메세지</i>${ar('sf', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.cur()[1]}</button>${ar('sf', 1)}`
-          + (window.__keyHint ? (() => { const K = window.__keyHint.info(); return `</span><span class="grp"><i>조작 안내</i><button type="button" data-khon class="${K.on ? 'on' : ''}">${K.on ? '켜짐' : '꺼짐'}</button><i>크기</i>${ar('khs', -1)}<button type="button" class="nm">${K.size}%</button>${ar('khs', 1)}<i>높이</i>${ar('khy', -1)}<button type="button" class="nm">${K.y}px</button>${ar('khy', 1)}<i>밝기</i>${ar('kho', -1)}<button type="button" class="nm">${K.op}%</button>${ar('kho', 1)}<i>블러</i>${ar('khb', -1)}<button type="button" class="nm">${K.blur}px</button>${ar('khb', 1)}</span><span class="grp"><i>메세지</i>`; })() : '')
-          + (window.__sysFont.info ? `<i>크기</i>${ar('sz', -2)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().px}px</button>${ar('sz', 2)}<i>색</i>${ar('scol', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().col}</button>${ar('scol', 1)}<i>필터</i>${ar('sfk', -1)}<button type="button" class="nm" data-sfgo>${window.__sysFont.info().k}%</button>${ar('sfk', 1)}` : '') + '</span>' : ''}
+        <span class="grp"><button type="button" class="go" data-msgp>메세지 조절</button></span>
       </div>`;
     requestAnimationFrame(() => { const r = ui.getBoundingClientRect(); if (r.height) document.body.style.setProperty('--sr-look-h', Math.round(innerHeight - r.top + 10) + 'px'); });
   }
@@ -19914,6 +20085,7 @@ body.sr-looking #sr-expr-cap { bottom: var(--sr-look-h, 196px) !important; }   /
     else if (d.sc !== undefined) { const n = ((window.__scream && window.__scream.list) || []).length; if (n) { sci = (sci + +d.sc + n) % n; scream(); } }
     else if (d.scgo !== undefined) scream();
     else if (d.face !== undefined) face();
+    else if (d.msgp !== undefined && window.__msgPanel) window.__msgPanel.toggle();   // b834 — 메세지 조절 패널
     else if (d.sf !== undefined && window.__sysFont) window.__sysFont.step(+d.sf);   // b816 — 시스템 메시지 글꼴(「G · 시체를 잡는다」) 고르고 바로 보기
     else if (d.sfgo !== undefined && window.__sysFont) window.__sysFont.preview();
     else if (d.hst !== undefined && window.__hudStyle) window.__hudStyle.step(+d.hst);   // b822 — 본진 표지 시안
