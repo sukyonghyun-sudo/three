@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-828 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-829 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-828'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-829'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2602,7 +2602,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     // 2026-10-08 사용자: 「본진 표시도 더 디테일하고 알기 쉽게」 — 내 것은 대화명 대신 「내 본진」(「陣」 도장은 사용자 「본진에 도장 표시가 왜 있어 · 이상하다」로 뺐다)
     const H = 40, SL = 25, GAP = 3, P = 10, SEAL = -6, col = soft(hex(G.colors[t])), nm0 = TEAM[t], name = nm0.length > 9 ? nm0.slice(0, 9) + '…' : nm0;   // b411 — 내 것도 대화명(2026-10-12 사용자: 「내 본진이라고 뜨는데 그렇게 말고 플레이어 이름 뜨게」)   // 남은 대화명(혼자 하기의 봇은 "P2 봇")
     const font = `800 20px ${MJ}`, fsub = `800 15px ${MJ}`;
-    const name2 = pin ? name + ' 본진' : name, TI = pin ? 26 : 0;
+    const mk = pin === 'mark', name2 = mk ? (t === 0 ? '내 본진' : '') : pin ? name + ' 본진' : name, TI = pin ? 26 : 0;   // b829 — mark: 이름 대신 ⛩ (내 것만 「내 본진」)
     mg.font = font; mg.letterSpacing = '2px'; const nw = mg.measureText(name2).width;
     mg.font = fsub; mg.letterSpacing = '1px'; const dw = mg.measureText(dist).width;
     const W = Math.ceil(P + SEAL + 6 + TI + nw + P + 3 * SL + 2 * GAP + P + dw + P + 2);
@@ -2659,7 +2659,9 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
   /* b822 — 본진 표지 시안(사용자 「HUD 가 본진을 가리키는 게 아니라 플레이어를 가리키는 걸로 오해할 수도」 · 「A 와 C 를 둘러보기에서 골라서 볼 수 있게」)
      지금(cur) · A 장소 핀(pin — 화살 없이 본진 위 표찰 + 땅에 꽂힌 줄기 · 토리이 기호 + 「○○ 본진」 · 화면 밖은 가장자리 화살) · C 발밑 고리(ring — 내 발밑 점선 원 + 본진 쪽 눈금 + 토리이 · 거리)
      둘러보기 「본진 표지 ‹ ›」 · 이 브라우저에 기억 · 「저장」하면 모두의 기본값(settings 'hudStyle') */
-  const HSTY = { mode: 'cur', list: [['cur', '지금'], ['pin', 'A 장소 핀'], ['ring', 'C 발밑 고리']] };
+  /* b829 — 새 표지(mark · 기본): 사람 이름 대신 팀 색 ⛩ 마크 + □□□ + 거리 · 내 본진은 ⛩ 「내 본진」(들고 갈 때 큰 길잡이도) · 화면 안 화살은 ▼ 로 본진 자리를 내려 찍는다
+     (사용자 「HUD 가 본진이 아니라 플레이어를 가리키는 걸로 오해」 — 이름표처럼 보였고 · 화면 안 화살이 「나 → 본진」 쪽이라 본진을 지나 하늘(▲)을 가리켰다) · 화면 밖 가장자리 화살은 그대로 · 예전 것은 둘러보기 「본진 표지 ‹ 예전 ›」 */
+  const HSTY = { mode: 'mark', list: [['mark', '새 표지'], ['cur', '예전'], ['pin', 'A 장소 핀'], ['ring', 'C 발밑 고리']] };
   // b828 — 원래 표지로 고정(사용자 「원래 허드로 바꿔놔」) · 브라우저 기억 · 「저장」 값은 읽지 않는다 · 둘러보기에서 고르면 그 자리 보기만
   window.__hudStyle = { list: HSTY.list, get: () => HSTY.mode, name: () => (HSTY.list.find((x) => x[0] === HSTY.mode) || HSTY.list[0])[1],
     set(m) { if (!HSTY.list.some((x) => x[0] === m)) return; HSTY.mode = m; for (const it of HUD.base || []) if (it) it.key = ''; },
@@ -2742,9 +2744,9 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     return it.ang;
   }
   // 자리만 잡는다(그리기 전에 겹침을 풀려고) — 화살(ax,ay) · 표찰(lx,ly) · 둘을 감싼 상자
-  function layout(it, p, as, fixed, hs) {
+  function layout(it, p, as, fixed, hs, fang) {   // b829 — fang: 화면 안일 때 화살 방향 고정(▼ = π/2)
     as *= window.__hudK || 1;
-    const ang = p.on ? onAng(it, p, hs) : (it.ang = p.ang), q = labelAt(p, ang, it.w, it.h, as);
+    const ang = p.on ? (fang !== undefined ? (it.ang = fang) : onAng(it, p, hs)) : (it.ang = p.ang), q = labelAt(p, ang, it.w, it.h, as);
     const x0 = Math.min(p.x - as / 2, q.x - it.w / 2), x1 = Math.max(p.x + as / 2, q.x + it.w / 2);
     const y0 = Math.min(p.y - as / 2, q.y - it.h / 2), y1 = Math.max(p.y + as / 2, q.y + it.h / 2);
     const u = { it, ang, as, ax: p.x, ay: p.y, lx: q.x, ly: q.y, x0, y0, x1, y1, dx: 0, dy: 0, fixed };
@@ -2822,8 +2824,8 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     if (hm) {
       // 2026-10-08 사용자: 「왜 봇들이랑 나랑 표시가 달라 · 빈칸은 왜 안 나오노 · 통일해야지」 — 길잡이도 본진 표지와 같은 그림(이름 · 모은 칸 □□□ · 거리)
       { const n0 = (G.scores && G.scores()[0]) || 0, dd = dStep(Math.hypot(hm.cx - me.x, hm.cz - me.z)), key = 'b' + n0 + '|' + dd;
-        if (HUD.home.key !== key) { HUD.home.key = key; swapTex(HUD.home, baseTagArt(0, n0, `${dd}m`)); } }
-      us.push(uh = layout(HUD.home, aim(hm.cx, G.groundAt(hm.cx, hm.cz) + 2.2, hm.cz), AR, true, hs));
+        if (HUD.home.key !== key + HSTY.mode) { HUD.home.key = key + HSTY.mode; swapTex(HUD.home, baseTagArt(0, n0, `${dd}m`, HSTY.mode === 'mark' ? 'mark' : false)); } }
+      us.push(uh = layout(HUD.home, aim(hm.cx, G.groundAt(hm.cx, hm.cz) + 2.2, hm.cz), AR, true, hs, HSTY.mode === 'mark' ? Math.PI / 2 : undefined));
     }
     let uwt = null;
     if (wt && HUD.water) {   // 2026-10-12 사용자: 「불탈 때 물웅덩이 위치를 알려주게」 — 타는 동안만 가장 가까운 연못 쪽 · 水 표찰 + 거리
@@ -2838,8 +2840,8 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
       const hm2 = HSTY.mode;
       if (hm2 === 'ring') { rings.push({ b, z, d }); continue; }   // b822 — C: 표지 대신 발밑 고리
       const dd = dStep(d), key = hm2 + '|' + b.n + '|' + dd;
-      if (it.key !== key) { it.key = key; swapTex(it, baseTagArt(b.t, b.n, `${dd}m`, hm2 === 'pin')); }
-      const u = layout(it, p, BAR, false, hs);
+      if (it.key !== key) { it.key = key; swapTex(it, baseTagArt(b.t, b.n, `${dd}m`, hm2 === 'pin' ? true : hm2 === 'mark' ? 'mark' : false)); }
+      const u = layout(it, p, BAR, false, hs, hm2 === 'mark' ? Math.PI / 2 : undefined);
       if (hm2 === 'pin' && p.on) {   // b822 — A: 화살 없이 본진 바로 위에 표찰 · 아래로 줄기가 땅에 꽂힌다
         const gp = project(z.cx, G.groundAt(z.cx, z.cz) + 0.05, z.cz); u.lx = p.x; u.ly = p.y - it.h / 2 - 6; u.x0 = u.lx - it.w / 2; u.x1 = u.lx + it.w / 2; u.y0 = u.ly - it.h / 2; u.y1 = u.ly + it.h / 2;
         u.dx = Math.max(8 - u.x0, Math.min(innerWidth - 8 - u.x1, 0)); u.pin = gp.on ? gp : null; u.noArrow = true; }
