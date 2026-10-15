@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-761 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-762 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-761'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-762'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -13619,6 +13619,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   const DEF = {
     on: 1, every: 55, venom: 0.5, app: 2.6, size: 1.3, buzz: 1,
     wingHz: 28, wingAmp: 0.85, ghost: 0.3,
+    wingCarry: 1, wingSweep: 0.22, beeWob: 0, legGrab: 1,   // b762 — 사람을 들고 날 때 날갯짓(빠르기 · 폭 배) · 날개 앞뒤 휘젓기 · 들고 날 때 벌 몸 휘청임(°) · 움켜쥔 다리 꿈틀(배) — 사용자 「벌 날갯짓과 버둥거리는 것 조절」
     swell: 0.75, swellUp: 1.1, swellHold: 9, lump: 0.6, venomScream: 0, screamVol: 1,
     height: 14, lift: 2.4, grabScream: 0, landDrop2: 0,   /* b757 — landBlood → landDrop2 · 기본 0(사용자 「동그란 방울지는 피는 안 생기고 촥 퍼지기만」) */
     landStill: 1.6, landStreak: 1, lArmUp: 12, lArmFwd: -18, lElbow: 12, lHandUp: 0, lLegOut: 30, lLegFwd: -10, lShinOut: 6, lShinFwd: -4, lHeadBack: 14,   // b740 — 땅에 박힌 뒤 팔다리 뻗고 멈춰 있는 시간 · 흩뿌린 피 자국 · 뻗은 자세(°)
@@ -13771,8 +13772,8 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     for (const P of R.parts) {
       const k = P.kind, sd = P.side, p = P.ph / 6.2832 + ph0;
       if (mode === 'drop' && (k === 'thigh' || k === 'shin' || k === 'arm' || k === 'arm2')) { rotW(P.b, R.lat, amt * (k === 'thigh' ? 0.75 : k === 'shin' ? -0.35 : k === 'arm' ? 0.7 : -0.3)); continue; }   // b738 — 놓기 — 다리를 쫙 벌려 손을 뗀 모양
-      if (k === 'thigh') rotW(P.b, R.lat, amt * (mode === 'grab' ? -0.55 + 0.12 * s(f * 3, p) : 0.38 * s(f, p)) + (mode === 'grab' ? 0 : -0.15 * amt));
-      else if (k === 'shin') rotW(P.b, R.lat, amt * (mode === 'grab' ? 0.7 + 0.15 * s(f * 3.3, p + 0.3) : 0.5 * s(f, p + 0.22) + 0.25));
+      if (k === 'thigh') rotW(P.b, R.lat, amt * (mode === 'grab' ? -0.55 + 0.12 * C.legGrab * s(f * 3, p) : 0.38 * s(f, p)) + (mode === 'grab' ? 0 : -0.15 * amt));   // b762 — legGrab: 움켜쥔 채 꿈틀
+      else if (k === 'shin') rotW(P.b, R.lat, amt * (mode === 'grab' ? 0.7 + 0.15 * C.legGrab * s(f * 3.3, p + 0.3) : 0.5 * s(f, p + 0.22) + 0.25));
       else if (k === 'arm') { rotW(P.b, R.lat, amt * (mode === 'grab' ? -0.6 : 0.3 * s(f * 1.3, p))); rotW(P.b, R.up, amt * sd * 0.15 * s(f * 0.9, p + 0.3)); }
       else if (k === 'arm2') rotW(P.b, R.lat, amt * (mode === 'grab' ? 0.65 : 0.35 * s(f * 1.3, p + 0.25) + 0.2));
       else if (k === 'tail') rotW(P.b, R.lat, mode === 'aim' ? -0.42 - 0.06 * s(5, 0) : 0.07 * s(1.6, ph0));
@@ -14086,9 +14087,10 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     // b712 — 날갯짓이 화면에 보이게(사용자 「아무리 봐도 날갯짓을 안 하는 것으로 보인다」)
     //   진짜 28번/초는 화면(30 ~ 60장/초)이 따라가지 못해 한 장씩 같은 자리 · 반대 자리를 번갈아 찍어 멈춘 날개 둘로 보였다(줄무늬 효과)
     //   → 한 장에 많아야 0.3바퀴만 돌린다(60장이면 초당 18번 · 30장이면 9번 — 늘 퍼덕이는 게 보인다) + 지나온 자리에 옅은 잔상 둘(빠른 날개의 번짐)
-    b.wph = ev.studio ? u * Math.min(C.wingHz, 18) : (b.wph || Math.random()) + Math.min(C.wingHz * dt, 0.3) + (dt > 0 ? (Math.random() - 0.5) * 0.02 : 0);   // 연출실 — 재생바 자리로 날개도
-    const W2 = Math.PI * 2, wp0 = b.wph * W2, ang = C.wingAmp * Math.sin(wp0), sw = 0.22 * Math.cos(wp0);
-    const g1 = C.wingAmp * Math.sin(wp0 - 0.09 * W2), g2 = C.wingAmp * Math.sin(wp0 - 0.18 * W2);
+    const wc = Math.max(0.2, C.wingCarry), cG = ev.g === 'grab' ? ev.app : 1e9, cR = ev.g === 'grab' ? ev.app + ev.lift + ev.ho : 1e9, carry = u >= cG && u < cR, f0 = Math.min(C.wingHz, 18), f1 = Math.min(C.wingHz * wc, 18);
+    b.wph = ev.studio ? f0 * Math.min(u, cG) + f1 * Math.max(0, Math.min(u, cR) - cG) + f0 * Math.max(0, u - cR) : (b.wph || Math.random()) + Math.min(C.wingHz * (carry ? wc : 1) * dt, 0.3) + (dt > 0 ? (Math.random() - 0.5) * 0.02 : 0);   // 연출실 — 재생바 자리로 날개도
+    const wa = C.wingAmp * (carry ? 1 + (wc - 1) * 0.5 : 1), W2 = Math.PI * 2, wp0 = b.wph * W2, ang = wa * Math.sin(wp0), sw = C.wingSweep * Math.cos(wp0);
+    const g1 = wa * Math.sin(wp0 - 0.09 * W2), g2 = wa * Math.sin(wp0 - 0.18 * W2);
     for (const k of ['L', 'R']) { const w = b.w[k]; w.piv.rotation.set(0, sw * w.sgn, ang * w.sgn); w.pu.rotation.set(0, 0, g1 * w.sgn); w.pd.rotation.set(0, 0, g2 * w.sgn); w.gm.opacity = C.ghost; w.pu.visible = w.pd.visible = C.ghost > 0.01; }
     buzzSet(b, R.position);
     return true;
@@ -14417,7 +14419,9 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
       if (!lifts.has(ev.q.who) || u < ev.app) continue;   // 날아오는 중 — 목표만 알려 준다
       const R = ev.bee.root; R.position.copy(pos);
       const bt = C.beeTurn * Math.PI / 180, d = new T.Vector3(ax.x * Math.cos(bt) + ax.z * Math.sin(bt), 0, -ax.x * Math.sin(bt) + ax.z * Math.cos(bt));
-      orient(ev.bee, d); R.rotateX(C.grabTilt * Math.PI / 180); R.updateMatrixWorld(true);
+      orient(ev.bee, d); R.rotateX(C.grabTilt * Math.PI / 180);
+      if (C.beeWob > 0) { const wb = C.beeWob * Math.PI / 180, tt = u * Math.max(0.3, C.legSpd) * 2; R.rotateZ(wb * (Math.sin(tt * 4.3) * 0.7 + Math.sin(tt * 9.1 + 1) * 0.3)); R.rotateX(wb * 0.6 * Math.sin(tt * 3.1 + 2)); }   // b762 — 사람 무게에 휘청이며 버둥
+      R.updateMatrixWorld(true);
     }
   }
   // b731 — 떨어지는 동안 속도선(사용자 그림 — 화면 가운데에서 바깥으로 뻗는 흰 줄) · 내가 떨어질 때만 · 카메라를 켰을 때만 · 「속도선」 0 이면 없음
@@ -14698,6 +14702,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     ['size', '크기(몸 길이)', 0.4, 6, 0.05, M2], ['buzz', '붕붕 소리 크기', 0, 2, 0.05, PCT],
     ['날개 · 다리'], ['wingHz', '날갯짓 빠르기', 4, 60, 1, (v) => `${Math.round(v)}번/초`], ['wingAmp', '날갯짓 폭', 0.1, 1.5, 0.05, (v) => `${Math.round(v * 57.3)}°`], ['ghost', '잔상(번짐) 진하기', 0, 0.8, 0.02, PCT],
     ['legAmt', '다리 움직임(0 = 날개만)', 0, 1, 0.05, PCT], ['legSpd', '다리 움직임 빠르기', 0.1, 2.5, 0.05, (v) => `${(+v).toFixed(2)}배`],
+    ['wingSweep', '날개 앞뒤 휘젓기', 0, 0.8, 0.02, (v) => `${Math.round(v * 57.3)}°`], ['wingCarry', '사람을 들고 날 때 날갯짓(빠르기 · 폭 배)', 0.5, 3, 0.05, (v) => `${(+v).toFixed(2)}배`], ['legGrab', '움켜쥔 다리 꿈틀거림', 0, 4, 0.05, PCT], ['beeWob', '들고 날 때 벌 몸 휘청임(버둥)', 0, 40, 1, DEG],
     ['grabScream', '잡힐 때 비명(0 = 큰 비명 아무거나 · 움직이면 들려줌)', 0, 40, 1, 'scream'], ['screamVol', '비명 크기', 0, 1.5, 0.05, PCT],
     ['낚아채기 — 하늘 높이 들어 올려 떨군다(높이 · 빠르기는 「연출 · 카메라」 쪽)'],
     ['landStill', '땅에 박힌 뒤 팔다리 뻗고 멈춰 있는 시간', 0, 6, 0.05, SEC], ['landStreak2', '사방으로 뻗은 피 줄기(따로)', 0, 3, 0.05, PCT],
@@ -14812,7 +14817,7 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
      · 판은 그 자리에 멈춘다(봇 · 괴물 · 시간) · 왕벌은 보이기만 하고 나를 진짜로 쓰러뜨리지 않는다 · 닫으면 원래대로 · 같이 하기 중엔 못 연다 */
   const SECS = [   // b758 — 카메라 값은 모두 「벌 카메라」 창으로(여기엔 몸 · 벌 · 피만)
     { k: 'app', name: '① 날아옴', col: '#8a7a3a', a: (e) => 0, b: (e) => e.app,
-      rows: ['날아오기', 'tempo', 'app', 'size', 'buzz', '날개 · 다리', 'wingHz', 'wingAmp', 'ghost', 'legAmt', 'legSpd', '날아오기 — 떠서 노려보다 내리꽂기', 'appHoverAt', 'appDiveAt', 'appHoverD', 'appHoverH', 'appDive'] },
+      rows: ['날아오기', 'tempo', 'app', 'size', 'buzz', '날개 · 다리', 'wingHz', 'wingAmp', 'wingSweep', 'wingCarry', 'ghost', 'legAmt', 'legSpd', 'legGrab', 'beeWob', '날아오기 — 떠서 노려보다 내리꽂기', 'appHoverAt', 'appDiveAt', 'appHoverD', 'appHoverH', 'appDive'] },
     { k: 'lift', name: '② 끌려 올라감', col: '#b08a2a', a: (e) => e.app, b: (e) => e.app + e.lift,
       rows: ['올라가기', 'height', 'lift', 'liftCurve', 'liftYank', '잡는 자리 — 벌과 몸 맞추기', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', 'grabScream', 'screamVol'] },
     { k: 'top', name: '③ 꼭대기', col: '#c9a64a', a: (e) => e.app + e.lift, b: (e) => e.app + e.lift + e.ho,
@@ -15031,7 +15036,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
 #hc .hd b{font-size:14px;letter-spacing:.2em;color:#e8b04a} #hc .hd span{color:#8d877a;font-size:11px;flex:1}
 #hc button{padding:5px 8px;background:#2a210b;color:#f2e6d6;border:1px solid #8a6a1c;font:700 12px "UIF","Noto Serif KR",serif;cursor:pointer} #hc button.on{background:#6a5010;border-color:#e8b04a}
 #hc .bd{padding:8px 10px 10px}
-#hc .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px} #hc .tabs button{padding:6px 2px;border-left-width:4px} #hc .tabs button.cur{outline:2px solid #f2e6d6;outline-offset:-2px}
+#hc .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px} #hc .tabs.t2{grid-template-columns:1fr 1fr;margin-top:4px} #hc .opts{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px} #hc .opts button{padding:5px 7px;font-size:11px} #hc .tabs button{padding:6px 2px;border-left-width:4px} #hc .tabs button.cur{outline:2px solid #f2e6d6;outline-offset:-2px}
 #hc .ctl{display:flex;gap:4px;margin:6px 0 2px} #hc .ctl button{flex:1}
 #hc .note{color:#f2c070;margin:4px 0;display:none} #hc .note.on{display:block}
 #hc .scn{margin:8px 0 2px;font-size:13px;color:#d9b07a;letter-spacing:.12em}
@@ -15045,11 +15050,12 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     document.head.appendChild(st);
     const root = document.createElement('div'); root.id = 'hc';
     root.innerHTML = `<div class="hd"><b>벌 카메라</b><span>이 줄을 끌어 창 옮기기</span><button data-a="x">닫기</button></div><div class="bd">
-<div class="tabs">${SHOT.map((s, i) => `<button data-s="${i}" style="border-left-color:${s.col}">${s.name}</button>`).join('')}<button data-s="g" style="border-left-color:#555">전체 · 흔들림</button></div>
+<div class="tabs">${SHOT.map((s, i) => `<button data-s="${i}" style="border-left-color:${s.col}">${s.name}</button>`).join('')}</div><div class="tabs t2"><button data-s="w" style="border-left-color:#8a6a1c">벌 날갯짓 · 버둥</button><button data-s="g" style="border-left-color:#555">카메라 전체 · 흔들림</button></div>
 <div class="ctl"><button data-a="seg">이 장면만 반복</button><button data-a="all">처음부터 끝까지</button><button data-a="play">⏸ 멈춤</button></div>
 <div class="note"></div><div class="scn"></div>
 <div class="pg" data-pg="s"><div class="dg"><div><canvas class="ctop" width="170" height="170"></canvas><i>위에서 본 그림 — 끌면 방향 · 거리</i></div><div><canvas class="cside" width="214" height="170"></canvas><i>옆에서 본 그림 — 끌면 거리 · 높이</i></div></div>
 <div class="vals"></div><div class="row"><button data-a="def">이 장면 기본값</button><span class="svs"></span></div></div>
+<div class="pg" data-pg="w"><div class="wvals"></div><div class="row"><button data-a="wdef">이 장 기본값</button><span class="svs"></span></div><div class="n">벌 몸짓은 나 · 봇 모두 · 잡힌 사람 몸짓도 나 · 봇 모두(같이 하기도 각자 화면에서 같은 값) · 「이 장면만 반복」으로 ② 끌려 올라갈 때를 돌려 보며 맞추기 좋다</div></div>
 <div class="pg" data-pg="g"><div class="gvals"></div><div class="row"><button data-a="gdef">전체 기본값</button><span class="svs"></span></div></div>
 <div class="n">값은 움직이는 즉시 화면에 · 이 브라우저에 남는다 · 「저장」은 모두의 기본값(누를 때만) · 아래 재생바로 장면을 끌어 볼 수 있다 · 카메라는 내가 잡혔을 때만</div></div>`;
     document.body.appendChild(root);
@@ -15060,14 +15066,20 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
       ? `<label><span>${r[1]}</span></label><div class="two" data-k="${k}"><button data-v="0" class="${C[k] > 0.5 ? '' : 'on'}">${r[5](0)}</button><button data-v="1" class="${C[k] > 0.5 ? 'on' : ''}">${r[5](1)}</button></div>`
       : `<label><span>${r[1]}</span><b data-v="${k}">${r[5](C[k])}</b></label><input type="range" data-k="${k}" min="${r[2]}" max="${r[3]}" step="${r[4]}" value="${C[k]}">`);
     gvals.innerHTML = KG.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : rowH(r[0], r))).join('');
-    const fmtK = (k) => { const g = KG.find((x) => x[0] === k); if (g) return g[5](C[k]); const r = KROW.find((x) => x[0] === k.slice(3)); return r ? r[5](C[k]) : String(C[k]); };
+    // b762 — 벌 날갯짓 · 버둥 장(값은 왕벌 패널과 같은 것 — ROWS 에서 빌림) · 몸짓 고르기는 단추
+    const WK = ['벌 — 날갯짓', 'wingHz', 'wingAmp', 'wingSweep', 'wingCarry', 'ghost', '벌 — 다리 · 몸 버둥', 'legAmt', 'legSpd', 'legGrab', 'beeWob', '잡힌 사람 — 버둥', 'stMode', 'stFall2', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', 'fpFlail', 'fpWiggle'];
+    const WOPT = { stMode: '올라갈 때 몸짓', stFall2: '떨어질 때 몸짓' };
+    const wvals = $('.wvals'); wvals.innerHTML = WK.map((k) => { const r = ROWS.find((x) => x[0] === k); if (!r) return `<h5>${k}</h5>`;
+      if (WOPT[k]) return `<label><span>${WOPT[k]}</span></label><div class="opts" data-k="${k}">${MODES.map((n, i) => `<button data-ov="${i}" title="${n}">${n.split(' — ')[0]}</button>`).join('')}</div>`;
+      return `<label><span>${r[1]}</span><b data-v="${k}"></b></label><input type="range" data-k="${k}" min="${r[2]}" max="${r[3]}" step="${r[4]}" value="${C[k]}">`; }).join('');
+    const fmtK = (k) => { const g = KG.find((x) => x[0] === k); if (g) return g[5](C[k]); const r0 = ROWS.find((x) => x[0] === k); if (r0) return fmt(r0, C[k]); const r = KROW.find((x) => x[0] === k.slice(3)); return r ? r[5](C[k]) : String(C[k]); };
     const sideGeo = (D, Hh) => { const W = cside.width, Hc = cside.height, s = Math.min((W - 56) / Math.max(4, D + 1), (Hc - 40) / Math.max(5, Math.abs(Hh) + 3.2)); return { s, x0: 30, chestY: Math.max(14 + 0.75 * s, Math.min(Hc - 16 - 1.1 * s, Hc / 2 + Hh * s / 2)) }; };
-    const refresh = () => { for (const i of root.querySelectorAll('input[data-k]')) { if (document.activeElement !== i) i.value = C[i.dataset.k]; } for (const b of root.querySelectorAll('b[data-v]')) b.textContent = fmtK(b.dataset.v); for (const d of root.querySelectorAll('.two')) for (const b of d.querySelectorAll('button')) b.classList.toggle('on', (+b.dataset.v === 1) === (C[d.dataset.k] > 0.5)); draw(); };
+    const refresh = () => { for (const i of root.querySelectorAll('input[data-k]')) { if (document.activeElement !== i) i.value = C[i.dataset.k]; } for (const b of root.querySelectorAll('b[data-v]')) b.textContent = fmtK(b.dataset.v); for (const d of root.querySelectorAll('.two')) for (const b of d.querySelectorAll('button')) b.classList.toggle('on', (+b.dataset.v === 1) === (C[d.dataset.k] > 0.5)); for (const d of root.querySelectorAll('.opts')) for (const b of d.querySelectorAll('button')) b.classList.toggle('on', +b.dataset.ov === Math.round(C[d.dataset.k])); draw(); };
     const setK = (k, v, r) => { if (r) { v = Math.max(r[2], Math.min(r[3], Math.round(v / r[4]) * r[4])); v = +v.toFixed(3); } C[k] = v; save(); if (H.sync) H.sync(); refresh(); };
     // 그림 — 위에서 본 그림: 아래쪽이 방향 0°(벌 맞은편이면 벌은 위에서 온다) · 시계 방향이 + · 옆에서 본 그림: 왼쪽에 나 · 오른쪽으로 거리 · 위로 높이
     let dragS = null;
     function draw() {
-      if (!HC || HC.cur == null || HC.cur === 'g') return;
+      if (!HC || typeof HC.cur !== 'number') return;
       const D = C[key('D')], Hh = C[key('H')], Y = C[key('Y')] * Math.PI / 180, L = C[key('L')], F = C[key('F')];
       { const g = ctop.getContext('2d'), W = ctop.width, c = W / 2; g.clearRect(0, 0, W, W);
         const s = dragS && dragS.cv === ctop ? dragS.s : (W / 2 - 14) / Math.max(5, D * 1.15);
@@ -15103,7 +15115,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     };
     for (const cv of [ctop, cside]) {
       cv.addEventListener('pointerdown', (e) => {
-        if (HC.cur === 'g') return; const D = C[key('D')], Hh = C[key('H')];
+        if (typeof HC.cur !== 'number') return; const D = C[key('D')], Hh = C[key('H')];
         if (cv === ctop) dragS = { cv, s: (ctop.width / 2 - 14) / Math.max(5, D * 1.15) };
         else dragS = Object.assign({ cv }, sideGeo(D, Hh));
         try { cv.setPointerCapture(e.pointerId); } catch { /* */ } dragTo(e); e.preventDefault();
@@ -15114,8 +15126,8 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     // 장면 고르기 — 그 장면으로 가서(멈추지 않고) 그 장면만 반복 · 「전체 · 흔들림」은 그대로
     const pick = (i, keepLoop) => {
       HC.cur = i; for (const b of root.querySelectorAll('.tabs button')) b.classList.toggle('on', b.dataset.s === String(i));
-      for (const pg of root.querySelectorAll('.pg')) pg.style.display = (pg.dataset.pg === 'g') === (i === 'g') ? 'block' : 'none';
-      if (i === 'g') { $('.scn').textContent = '전체 · 흔들림'; refresh(); return; }
+      const pk = typeof i === 'number' ? 's' : i; for (const pg of root.querySelectorAll('.pg')) pg.style.display = pg.dataset.pg === pk ? 'block' : 'none';
+      if (pk !== 's') { $('.scn').textContent = pk === 'g' ? '카메라 전체 · 흔들림' : '벌 날갯짓 · 버둥'; refresh(); return; }
       $('.scn').textContent = `${SHOT[i].name} — 카메라`;
       vals.innerHTML = KROW.map((r) => rowH(key(r[0]), r)).join('');
       if (SS && !keepLoop) { SS.segK = i; sSeek(Math.max(0, SHOT[i].a(SS.ev) - 0.5)); H.ck.paused = false; }
@@ -15124,14 +15136,16 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     root.addEventListener('input', (e) => { const k = e.target && e.target.dataset && e.target.dataset.k; if (!k) return; C[k] = +e.target.value; save(); if (H.sync) H.sync(); refresh(); });
     root.addEventListener('click', (e) => {
       const tb = e.target.closest && e.target.closest('.two button'); if (tb) { const k = tb.parentNode.dataset.k; setK(k, +tb.dataset.v); tb.blur(); return; }
-      const s = e.target.dataset && e.target.dataset.s; if (s != null) { pick(s === 'g' ? 'g' : +s); e.target.blur(); return; }
+      const s = e.target.dataset && e.target.dataset.s; if (s != null) { pick(s === 'g' || s === 'w' ? s : +s); e.target.blur(); return; }
+      const ob = e.target.closest && e.target.closest('.opts button'); if (ob) { setK(ob.parentNode.dataset.k, +ob.dataset.ov); ob.blur(); return; }
       const a = e.target.dataset && e.target.dataset.a; if (!a) return; e.target.blur();
       if (a === 'x') { closeCam(); return; }
-      if (a === 'seg') { if (SS && HC.cur !== 'g') { SS.segK = HC.cur; sSeek(Math.max(0, SHOT[HC.cur].a(SS.ev) - 0.5)); H.ck.paused = false; } }
+      if (a === 'seg') { if (SS && typeof HC.cur === 'number') { SS.segK = HC.cur; sSeek(Math.max(0, SHOT[HC.cur].a(SS.ev) - 0.5)); H.ck.paused = false; } }
       if (a === 'all') { if (SS) { SS.segK = null; sSeek(0); H.ck.paused = false; } }
       if (a === 'play') { if (SS) H.ck.paused = !H.ck.paused; }
-      if (a === 'cap' && HC.cur !== 'g' && CS.my) { const k = key('Y'); let v = C[k] - CS.my * 180 / Math.PI; v = ((v + 540) % 360) - 180; setK(k, v, KR('Y')); if (G.mpApi && G.mpApi.camYaw) CS.y0 = G.mpApi.camYaw(); CS.my = 0; }
-      if (a === 'def' && HC.cur !== 'g') { for (const r of KROW) C[key(r[0])] = DEF[key(r[0])]; save(); if (H.sync) H.sync(); refresh(); }
+      if (a === 'cap' && typeof HC.cur === 'number' && CS.my) { const k = key('Y'); let v = C[k] - CS.my * 180 / Math.PI; v = ((v + 540) % 360) - 180; setK(k, v, KR('Y')); if (G.mpApi && G.mpApi.camYaw) CS.y0 = G.mpApi.camYaw(); CS.my = 0; }
+      if (a === 'wdef') { for (const k of WK) if (k in DEF) C[k] = DEF[k]; save(); if (H.sync) H.sync(); refresh(); }
+      if (a === 'def' && typeof HC.cur === 'number') { for (const r of KROW) C[key(r[0])] = DEF[key(r[0])]; save(); if (H.sync) H.sync(); refresh(); }
       if (a === 'gdef') { for (const r of KG) if (r.length > 1) C[r[0]] = DEF[r[0]]; save(); if (H.sync) H.sync(); refresh(); }
     });
     // 머리를 끌어 창 옮기기
@@ -15150,7 +15164,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
       segB.classList.toggle('on', !!(SS && SS.segK != null)); allB.classList.toggle('on', !!(SS && SS.segK == null));
       let cu = -1; if (SS) { const u = sU(), e = SS.ev; for (let i = 0; i < SHOT.length; i++) if (u >= SHOT[i].a(e)) cu = i; }
       for (const b of root.querySelectorAll('.tabs button')) b.classList.toggle('cur', b.dataset.s === String(cu));
-      if (SS && SS.segK == null && HC.cur !== 'g' && cu >= 0 && cu !== HC.cur && !dragS && !root.matches(':hover')) pick(cu, true);   // 처음부터 끝까지 볼 땐 지금 장면을 따라감(창 위에 마우스가 있으면 그대로)
+      if (SS && SS.segK == null && typeof HC.cur === 'number' && cu >= 0 && cu !== HC.cur && !dragS && !root.matches(':hover')) pick(cu, true);   // 처음부터 끝까지 볼 땐 지금 장면을 따라감(창 위에 마우스가 있으면 그대로)
       if (!SS && !hcOwn) note('연출실이 닫혀 있다 — 값은 바꿀 수 있고 게임에서 내가 잡히면 그대로 나온다');
     })();
   }
