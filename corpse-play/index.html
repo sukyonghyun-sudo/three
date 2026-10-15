@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-878 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-881 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-878'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-881'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -23357,8 +23357,8 @@ async function refreshList() {
     const n = r.currentUsers || 0, max = r.maxUsers || 3;
     for (let i = 0; i < max; i++) { const d = document.createElement('i'); d.style.setProperty('--c', HEX[i % 3]); if (i < n) d.className = 'on'; dots.appendChild(d); }
     const cnt = document.createElement('span'); cnt.textContent = `${n} / ${max}`;
-    const inPlay = r.status && /play|progress|started/i.test(String(r.status));
-    const stt = document.createElement('span'); stt.className = 'mpx-state' + (inPlay ? ' busy' : ''); stt.textContent = inPlay ? '판 진행 중' : '모이는 중';
+    // b881 — MSW 방 상태는 판 중에도 readyToStart 라 진행 여부를 알 수 없다 → 빈 자리 수로(판 중인 방에 들어가도 다음 판부터 함께한다)
+    const stt = document.createElement('span'); stt.className = 'mpx-state' + (n >= max ? ' busy' : ''); stt.textContent = n >= max ? '가득' : `빈 자리 ${max - n}`;
     meta.append(dots, cnt, stt);
     card.append(b, go, meta);
     box.appendChild(card);
@@ -23410,12 +23410,14 @@ function bind(r) {
   offs.push(r.onEvent('disconnect', onDisconnect));
   offs.push(r.onEvent('roomUpdated', () => { $('#mp-rname').textContent = r.name || ''; }));
   try { const s0 = r.getState && r.getState(); if (s0) for (const k of keys) if (s0[k] !== undefined) onState(k, s0[k]); } catch { /* 첫 상태는 곧 온다 */ }
+  try { r.request('sit', {}).catch(() => {}); } catch { /* 옛 서버 */ }   // b880 — 자리 확인(나간 지 15초 안에 다시 들어오면 MSW 가 onJoin 을 부르지 않는다)
   drawRoom();
 }
 function unbind() { while (offs.length) { const f = offs.pop(); try { f(); } catch { /* 이미 풀림 */ } } }
 async function leave() {
   const r = room;
-  room = null; unbind();
+  try { if (r) await Promise.race([r.request('bye', {}), new Promise((res) => setTimeout(res, 600))]); } catch { /* 이미 끊김 */ }   // b879 — 서버가 바로 자리를 비운다(MSW 재접속 유예 15초를 기다리지 않게)
+  room = null; unbind(); roomTitle = '';
   try { if (r) await Promise.race([Promise.resolve(r.leave()), new Promise((res) => setTimeout(res, 800))]); } catch { /* 이미 끊김 */ }
   if (everPlayed) { location.reload(); return; }       // 판을 한 번 했으면 깨끗이 다시 불러온다(혼자 하기 화면으로)
   setView('lobby'); openLobby();
@@ -23497,7 +23499,7 @@ function drawRoom() {
     else if (!u) sub.textContent = '판이 시작되면 봇이 선다';
     else if (later) sub.textContent = '다음 판부터 함께';
     if (u && u === st.host) add('ema-host', '主');
-    add('ema-state', !u ? '봇' : later ? '다음 판' : ready ? '준비 완료' : st.phase === 'lobby' ? '준비 중' : '판 중');   // b874 — 새 시안의 상태 글자(기존 시안은 숨김)
+    add('ema-state', !u ? '봇' : later ? '다음 판' : ready ? '준비 완료' : st.phase === 'lobby' ? '준비 중' : st.phase === 'ended' ? '판 끝' : st.phase === 'countdown' ? '곧 시작' : '판 중');   // b881 판 끝 · 곧 시작   // b874 — 새 시안의 상태 글자(기존 시안은 숨김)
     if (ready) { const s = add('ema-seal'); s.append('準', document.createElement('br'), '備'); }
     else if (u && st.phase === 'lobby') add('ema-wait', '준비 중');
     else if (u && st.phase === 'playing' && !later) add('ema-wait', '판 중');
