@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-826 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-827 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-826'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-827'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3045,9 +3045,9 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
    · 필터: 시스템 메시지와 같은 결(색 번짐 · 흐림 · 알갱이 · 주사선 · 세기 k)
    · 조절: 둘러보기 시험 줄 「조작 안내」 — 켜기 · 크기 · 높이 · 밝기 · 필터 · 이 브라우저에 기억 · 「저장」하면 모두의 기본값(settings 'keyHint') */
 (() => {
-  const DEF = { on: 1, size: 1, y: 24, op: 0.85, k: 0.6, blur: 0 };   // b825 — blur(px)
+  const DEF = { on: 1, size: 0.8, y: 28, op: 0.75, k: 0.6, blur: 0.7 };   // b827 — 고정(사용자 「조작 안내는 이렇게 픽스」 — 켜짐 · 80% · 28px · 밝기 75% · 블러 0.7px)
   const CF = Object.assign({}, DEF);
-  try { const o = JSON.parse(localStorage.getItem('corpse_keyhint') || 'null'); if (o) for (const k in DEF) if (typeof o[k] === 'number' && isFinite(o[k])) CF[k] = o[k]; } catch (e) { /* */ }
+  // b827 — 고정값이라 브라우저 기억 · 「저장」 값은 읽지 않는다(둘러보기 조절은 그 자리 보기만)
   const NOISE = "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.55'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>\")";
   const SCAN = 'repeating-linear-gradient(0deg,#000 0 2px,rgba(0,0,0,calc(1 - .55 * var(--khk, .6))) 2px 3px)';
   let el = null;
@@ -3074,7 +3074,7 @@ body.sr-keys-on #hud .hint{display:none!important}`;
     el.style.setProperty('--kh-y', CF.y + 'px'); el.style.setProperty('--kh-s', String(CF.size)); el.style.setProperty('--kh-o', String(CF.op)); el.style.setProperty('--khk', String(CF.k)); el.style.setProperty('--khb', CF.blur + 'px');
     document.body.classList.toggle('sr-keys-on', CF.on > 0.5);
   }
-  const save = () => { try { localStorage.setItem('corpse_keyhint', JSON.stringify(CF)); } catch (e) { /* */ } apply(); };
+  const save = () => { apply(); };
   const STEP = { size: [0.05, 0.6, 2], y: [4, 0, 260], op: [0.05, 0.1, 1], k: [0.1, 0, 1], blur: [0.1, 0, 4] };
   window.__keyHint = {
     cf: CF,
@@ -3082,7 +3082,7 @@ body.sr-keys-on #hud .hint{display:none!important}`;
     step(key, d) { const s = STEP[key]; if (!s) return; CF[key] = Math.max(s[1], Math.min(s[2], Math.round((CF[key] + d * s[0]) * 100) / 100)); save(); },
     info: () => ({ on: CF.on > 0.5, size: Math.round(CF.size * 100), y: CF.y, op: Math.round(CF.op * 100), k: Math.round(CF.k * 100), blur: Math.round(CF.blur * 10) / 10 }),
   };
-  (function reg() { const St = window.__settings; if (!St || !St.reg) { setTimeout(reg, 400); return; } St.reg('keyHint', { get: () => Object.assign({}, CF), set: (o) => { if (!o || typeof o !== 'object') return; for (const k in DEF) if (typeof o[k] === 'number' && isFinite(o[k])) CF[k] = o[k]; apply(); } }); })();
+  // b827 — 모두의 기본값(settings keyHint) 저장 · 불러오기 뺌(고정)
   // 보일 때 — 판이 도는 동안(둘러보기 포함) · 연출 · 결말 · 타는 동안 물 표지만 뜰 때는 숨김
   setInterval(() => {
     try {
