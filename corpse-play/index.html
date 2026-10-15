@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-775 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-776 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-775'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-776'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -14840,6 +14840,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   /* ── 혼자 할 때 차례 ───────────────────────────────── */
   let nextT = null;
   function schedule(dt) {
+    if (window.__hornetTimer !== true) { nextT = null; return; }   // b776 — 시간마다 나오는 왕벌 없앰(사용자 「1번 방식은 제거」) · 왕벌은 벌통을 건드릴 때만(beehive.js) · 되살리기 __hornetTimer = true
     const playing = G.started && !window.__explore && !(window.__death && window.__death.active && window.__death.active()) && !(G.game && G.game.over);
     if (!playing || mpOn() || !(C.on > 0.5) || !H.ready || SS) { nextT = null; return; }
     if (nextT === null) nextT = now() + C.every * rnd(0.65, 1.35);
@@ -14899,7 +14900,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   const NEX = ((window.__cast && window.__cast.EXPRS) || []).length || 22;
   const EXF = (v) => { const i = Math.round(v); if (!i) return '자동(비명 소리 따라)'; const E = window.__cast && window.__cast.EXPRS, e = E && E[i - 1]; return e ? `${i} · ${e.name.split(' — ')[0]}` : `${i}`; };
   const ROWS_A = [
-    ['등장'], ['tempo', '연출 전체 빠르기(1 = 원래 · 0.7 = 느리게 · 카메라 · 벌 · 몸 · 떨어짐 모두)', 0.3, 1.5, 0.05, (v) => `${(+v).toFixed(2)}배`], ['on', '나타남(1 = 켬)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['every', '나타나는 간격(평균)', 10, 240, 1, (v) => `${Math.round(v)}초`],
+    ['등장'], ['tempo', '연출 전체 빠르기(1 = 원래 · 0.7 = 느리게 · 카메라 · 벌 · 몸 · 떨어짐 모두)', 0.3, 1.5, 0.05, (v) => `${(+v).toFixed(2)}배`],
     ['app', '날아오는 시간', 1, 6, 0.1, SEC],
     ['size', '크기(몸 길이)', 0.4, 6, 0.05, M2], ['buzz', '붕붕 소리 크기', 0, 2, 0.05, PCT],
     ['날개 · 다리'], ['wingHz', '날갯짓 빠르기', 4, 60, 1, (v) => `${Math.round(v)}번/초`], ['wingAmp', '날갯짓 폭', 0.1, 1.5, 0.05, (v) => `${Math.round(v * 57.3)}°`], ['ghost', '잔상(번짐) 진하기', 0, 0.8, 0.02, PCT],
@@ -15028,7 +15029,7 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
       rows: ['떨어지기', 'fallG', '떨어지는 몸 — 몸짓 · 표정', 'stFall2', 'exFall', 'fpFlail', '몸 방향', 'fallFace', 'fallAng2', 'fallTurn', '세기', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', '추락 자세', 'aArmUp', 'aArmFwd', 'aElbow', 'aHandUp', 'aLegOut', 'aLegFwd', 'aShinOut', 'aShinFwd', 'aHeadBack', 'fpWiggle', '(예전 방식 — 얼굴 「예전」일 때)', 'fallAng', 'fallSpin'] },
     { k: 'land', name: '⑤ 땅 · 돌아옴', col: '#7a2a1c', a: (e) => e.app + e.lift + e.ho + fallT(e.h, e.fg), b: (e) => evDur(e),
       rows: ['부딪힘 — 몸', 'landStill', 'landClear', '땅에 뻗은 자세', 'lArmUp', 'lArmFwd', 'lElbow', 'lHandUp', 'lLegOut', 'lLegFwd', 'lShinOut', 'lShinFwd', 'lHeadBack', '부딪힘 — 피', 'landSplat', 'landSplatR', 'landSplatRed', 'landSplDots', 'landDrop2', 'landSpread', 'landStreak2', 'landPool2'] },
-    { k: 'all', name: '전체', rows: ['게임에서', 'on', 'every', 'tempo', '왕벌', 'size', 'buzz', 'screamVol'] },
+    { k: 'all', name: '전체', rows: ['게임에서', 'tempo', '왕벌', 'size', 'buzz', 'screamVol'] },
   ];
   let SS = null, lab = null;   // SS — 연출실 상태 { ev, loop, prevPaused, prevSpeed }
   H.studio = () => SS;
@@ -15389,13 +15390,14 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
    · 자리: 나무 밑(잎 달린 큰 소품) 2 ~ 3.5m · 본진 밖 · 설 수 있는 땅 — 「자리 뽑기」 숫자로 바뀐다 · 같이 하기는 방장 자리를 서버가 받아 굴린다
    · 건드림: 움직이는 사람(나 · 봇)이 닿는 거리 안에 들어오면 밀린 쪽으로 넘어져 구른다(원뿔이라 살짝 휘며 · 바위 · 소품에 닿으면 튕김 · 마찰로 멈춤)
      닿을 때마다 확률(chance)로 그 사람에게 왕벌 낚아채기 — 왕벌은 벌통에서 솟아 나온다 · 같은 사람은 cool 초 동안 다시 안 나옴 · 왕벌이 이미 있으면 안 나옴
+     b776 — 왕벌은 이제 벌통에서만(사용자 「시간마다 나오는 왕벌 제거 · 벌통을 건드리면 건드린 사람에게 2초쯤 뒤 · 늘은 아니고 가끔」) — 건드린 순간 확률을 굴리고 delay 초 뒤 그 사람에게
    · 같이 하기: 서버(game.server.js beehiveTick)가 같은 규칙으로 굴리고 왕벌(S.H)을 정한다 · 화면은 S.BH 를 따라 그린다
    · 소리: 가까이(range m) 가면 벌집 웅웅(fly_loop 를 낮게 두 겹) · 건드리면 확 커짐 · 끄기: 패널 「벌통」 켬/끔 */
 (() => {
   const FILE = 'corpse-props/beehive.glb', LS = 'corpse_beehive_v1';
   const DEF = {
     on: 1, n: 3, size: 0.7, seed: 0,
-    r: 0.75, chance: 0.12, cool: 60, gcool: 45, kick: 2.6, fric: 1.6, curve: 0.5,   // b765 — 가끔만(사용자 「너무 자주 발동하면 짜증」) · 확률 12% · 같은 사람 60초 · 누구든 45초
+    r: 0.75, chance: 0.12, cool: 60, gcool: 45, delay: 2, kick: 2.6, fric: 1.6, curve: 0.5,   // b765 — 가끔만(사용자 「너무 자주 발동하면 짜증」) · 확률 12% · 같은 사람 60초 · 누구든 45초
     nBee: 40, beeR: 0.45, beeH: 0.9, beeSpd: 1, beeSize: 2, beeDark: 1, agBoost: 1,
     vol: 1, range: 9,
   };
@@ -15569,12 +15571,20 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
       for (const h of BH.list) {
         if (Math.hypot(q.p.x - h.x, q.p.z - h.z) > Math.max(0.2, C.r) || now() - h.pushT < 0.5) continue;
         push(h, q.p.x, q.p.z, spd); burst(h);
-        if (Math.random() < C.chance && HN && HN.attack && HN.ready && !HN.events.length && now() - (trigT.get(q.who) || -1e9) > C.cool && now() - (BH.anyT || -1e9) > C.gcool && !busyOther(q.who) && !(window.__evBusy && window.__evBusy())) {
-          const ok = HN.attack(q.who, 'grab', { sp: { x: h.x, y: h.y + 0.5 * Math.max(0.2, C.size), z: h.z }, local: true });
-          if (ok) { trigT.set(q.who, now()); BH.anyT = now(); console.log('[beehive] 벌통을 건드렸다 → 왕벌', q.who === 'hero' ? '나' : '봇 ' + q.who.team); }
+        if (!BH.pend && Math.random() < C.chance && HN && HN.attack && HN.ready && !HN.events.length && now() - (trigT.get(q.who) || -1e9) > C.cool && now() - (BH.anyT || -1e9) > C.gcool && !busyOther(q.who) && !(window.__evBusy && window.__evBusy())) {
+          BH.pend = { who: q.who, h, at: now() + Math.max(0, C.delay) }; trigT.set(q.who, now()); BH.anyT = now(); h.ag = 1;   // b776 — 바로 말고 delay 초 뒤(그동안 벌통 벌이 들끓는다)
+          console.log('[beehive] 벌통을 건드렸다 →', (+C.delay).toFixed(1) + '초 뒤 왕벌', q.who === 'hero' ? '나' : '봇 ' + q.who.team);
         }
       }
     }
+  }
+  // b776 — 건드린 뒤 delay 초가 지나면 그 사람에게(벌통이 굴러간 자리에서 솟아 나옴) · 그새 쓰러짐 · 다른 연출 · 바위 곁이면 2.5초까지 기다렸다 없던 일로
+  function pendTick() {
+    const p = BH.pend, HN = window.__hornet; if (!p) return;
+    if (!G.started || (G.game && G.game.over) || !BH.list.includes(p.h)) { BH.pend = null; return; }
+    p.h.ag = 1; if (now() < p.at) return;
+    const ok = HN && HN.ready && !HN.events.length && !busyOther(p.who) && !(window.__evBusy && window.__evBusy()) && HN.attack(p.who, 'grab', { sp: { x: p.h.x, y: (p.h.y || 0) + 0.5 * Math.max(0.2, C.size), z: p.h.z }, local: true });
+    if (ok) { BH.pend = null; console.log('[beehive] 왕벌', p.who === 'hero' ? '나' : '봇 ' + p.who.team); } else if (now() > p.at + 2.5) BH.pend = null;
   }
   BH.test = () => {   // 가까운 벌통에서 나에게(패널 「시험」)
     const HN = window.__hornet; if (!G || !BH.list.length || !HN || !HN.ready) return '벌통 · 왕벌을 받는 중';
@@ -15589,7 +15599,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
   // 같이 하기 — 서버가 굴린 자리(S.BH = [[x, z, a, lie, ph, v] …])
   let net = null;
   window.__beehiveNet = (v) => { net = Array.isArray(v) ? v : null; };
-  BH.mine = () => { const o = { bh_on: C.on > 0.5 ? 1 : 0, bh_n: Math.round(C.n), bh_r: C.r, bh_p: C.chance, bh_cd: C.cool, bh_gcd: C.gcool, bh_kick: C.kick, bh_fric: C.fric, bh_curve: C.curve, bh_size: C.size };
+  BH.mine = () => { const o = { bh_on: C.on > 0.5 ? 1 : 0, bh_n: Math.round(C.n), bh_r: C.r, bh_p: C.chance, bh_cd: C.cool, bh_gcd: C.gcool, bh_dl: C.delay, bh_kick: C.kick, bh_fric: C.fric, bh_curve: C.curve, bh_size: C.size };
     if (G && home.length) home.forEach(([x, z], i) => { o['bh_x' + i] = +x.toFixed(2); o['bh_z' + i] = +z.toFixed(2); }); return o; };
 
   /* ── 매 프레임 ── */
@@ -15603,7 +15613,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
       if (!BH.meshes && !makeMeshes()) return;
       const t = now(), dt = Math.min(0.1, t - (last || t)); last = t;
       const live = !!G.started && C.on > 0.5 && !!(window.__nav && window.__nav.ready);
-      if (G.started && !wasStarted) { reset(); lastP.clear(); }
+      if (G.started && !wasStarted) { reset(); lastP.clear(); BH.pend = null; }
       wasStarted = !!G.started;
       if (!live) { for (const o of BH.meshes) o.visible = false; if (dots) dots.count = 0; for (const h of BH.list) if (h.snd) h.snd.g.gain.setTargetAtTime(0, h.snd.ctx.currentTime, 0.1); return; }
       if (!BH.list.length || homeKey !== Math.round(C.n) + ':' + Math.round(C.seed)) reset();
@@ -15614,7 +15624,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
         if (net) BH.list.length = net.length;
         for (const h of BH.list) { const k = Math.min(1, dt * 10); if (h.tx != null) { h.x += (h.tx - h.x) * k; h.z += (h.tz - h.z) * k; h.ph += ((h.tph || 0) - h.ph) * k; } }
       } else {
-        touchTick(dt);
+        touchTick(dt); pendTick();
         for (const h of BH.list) roll(h, dt, walkC);
       }
       // 그리기 — 선 ↔ 누움(0.35초) · 땅 높이 · 구른 각
@@ -15653,13 +15663,13 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
   const PCT = (v) => `${Math.round(v * 100)}%`, SEC = (v) => `${(+v).toFixed(0)}초`, M2 = (v) => `${(+v).toFixed(2)}m`, X2 = (v) => `${(+v).toFixed(2)}배`;
   const ROWS = [
     ['벌통'], ['on', '벌통(1 = 켬)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['n', '개수', 0, 6, 1, (v) => `${Math.round(v)}개`], ['size', '크기(높이)', 0.3, 1.6, 0.05, M2], ['seed', '자리 뽑기(0 = 나무 밑 기본 자리)', 0, 40, 1, (v) => `${Math.round(v)}번`],
-    ['건드리면'], ['r', '닿는 거리(몸 가운데에서)', 0.3, 2, 0.05, M2], ['chance', '왕벌이 나올 확률(닿을 때마다)', 0, 1, 0.05, PCT], ['cool', '같은 사람에게 다시 나오기까지', 0, 180, 1, SEC], ['gcool', '누구에게든 다시 나오기까지(전체)', 0, 180, 1, SEC],
+    ['건드리면'], ['r', '닿는 거리(몸 가운데에서)', 0.3, 2, 0.05, M2], ['chance', '왕벌이 나올 확률(닿을 때마다)', 0, 1, 0.05, PCT], ['delay', '건드린 뒤 왕벌이 나오기까지', 0, 6, 0.1, (v) => `${(+v).toFixed(1)}초`], ['cool', '같은 사람에게 다시 나오기까지', 0, 180, 1, SEC], ['gcool', '누구에게든 다시 나오기까지(전체)', 0, 180, 1, SEC],
     ['kick', '굴러가는 세기', 0, 6, 0.1, (v) => `${(+v).toFixed(1)}m/초`], ['fric', '멈추는 빠르기(마찰)', 0.2, 6, 0.1, (v) => `${(+v).toFixed(1)}`], ['curve', '구를 때 휘어짐(원뿔)', 0, 1.5, 0.05, PCT],
     ['벌 떼(점)'], ['nBee', '벌통마다 벌 수', 0, 60, 1, (v) => `${Math.round(v)}마리`], ['beeR', '맴도는 넓이', 0.15, 1.5, 0.05, M2], ['beeH', '맴도는 높이', 0.1, 2, 0.05, M2], ['beeSpd', '빠르기', 0.2, 3, 0.05, X2],
     ['beeSize', '점 크기', 0.4, 3, 0.05, X2], ['beeDark', '어둡기(1 = 그대로 · 클수록 검게 · 작으면 밝게)', 0.3, 4, 0.05, X2], ['agBoost', '건드리면 흩어지는 정도', 0, 3, 0.05, X2],
     ['벌집 소리'], ['vol', '크기', 0, 2, 0.05, PCT], ['range', '들리는 거리', 2, 25, 0.5, (v) => `${(+v).toFixed(1)}m`],
   ];
-  const MPK = ['on', 'n', 'r', 'chance', 'cool', 'kick', 'fric', 'curve', 'size'];
+  const MPK = ['on', 'n', 'r', 'chance', 'cool', 'gcool', 'delay', 'kick', 'fric', 'curve', 'size'];
   function panel() {
     const st = document.createElement('style');
     st.textContent = `#bh-btn{position:fixed;right:488px;bottom:14px;z-index:60;padding:6px 12px;background:rgba(10,8,6,.82);color:#e9e1d0;border:1px solid #5a4a3a;font:700 12px "UIF","Noto Serif KR",serif;letter-spacing:.2em;cursor:pointer}
