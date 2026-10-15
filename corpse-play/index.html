@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-842 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-843 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-842'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-843'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -17777,7 +17777,7 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
   const ex = (dt, tau) => 1 - Math.exp(-dt / Math.max(1e-4, tau));
   const S = {
     active: false, sm: null, lb: 0, lbHeld: false, lbUsed: false, drag: false, manualT: -1e9,
-    k: { drag: 0, carry: 0, chase: 0, monF: 0, base: 0 }, cd: null, lift: 0, fovAdd: 0, fovApplied: 0, save: null, cfg0: null, hintN: 0, hintArm: true,
+    k: { drag: 0, carry: 0, chase: 0, monF: 0, base: 0, ea: 0 }, eaO: 0, eaZ: null, cd: null, lift: 0, fovAdd: 0, fovApplied: 0, save: null, cfg0: null, hintN: 0, hintArm: true,
   };
   API.state = S;
 
@@ -17894,6 +17894,23 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
       if (dB > 24) S.outB = true; if (!G.started || dB > 45) S.outB = dB > 24;
       if (zb && S.outB && !(X && X.on && X.on.basecam === false)) want = ss((24 - dB) / 14) * (1 - K.chase);   // b431 — 24m 부터 천천히(10m 에서 가득 · 예전 13m → 5m 는 거의 다 와서야)
       S.zb0 = zb; K.base += (want - K.base) * ex(dt, want > K.base ? 1.4 : 1.0); }
+    /* b843 — 상대 제단 가까이(사용자 「허지용 진영에 가까이 갔을 때 진영이 잘 보이게 카메라를 조금 돌렸다가 빠져나오면서 다시 원래대로 · 시야가 많이 가린다」 · 「상대 제단도 보고 최적으로 · 어색하지 않게」)
+       미리보기: 허지용 제단은 맵 끝 바위벽 · 토리이 기둥이, 손주용 제단은 큰 벚나무 · 바위가 옆에서 다가가면 돗자리를 가린다 · 토리이 문 정면(문 → 제단 방향)에서는 잘 보인다
+       → 12m 안에서(5m 에서 가득) ① 카메라를 조금 올려 더 내려다봄(+7°) · 13% 물러나 기둥 · 바위 너머 돗자리가 보이게 ② 방향을 토리이 문 정면 쪽으로 최대 24° 만 천천히(0.9초)
+       ③ 나가면 같은 빠르기로 원래대로(돌린 만큼만 되돌림) · 실제 카메라 방향을 돌려 W 는 늘 화면 위(옆걸음 · 미끄러짐 없음) · 문이 등 뒤 쪽(±109° 밖)이면 돌리지 않음 · 돗자리 안에 들어서면 방향 보정은 풀림
+       ④ 쉬는 때: 괴물에게 쫓김 · 까마귀 · 맞는 중 · 마우스로 돌린 뒤 2.5초(돌린 쪽을 그대로 받아들임) · 내 제단(이미 내 제단 카메라가 있다) · 끄기 window.__altarCam = false */
+    { let want = 0, zb = null, best = 1e9;
+      if (G.started && window.__altarCam !== false && G.zones && G.zones.list) for (const z of G.zones.list) { if (z.team === 0) continue; const d = Math.hypot(z.cx - h.x, z.cz - h.z); if (d < best) { best = d; zb = z; } }
+      if (zb) want = ss((12 - best) / 7) * (1 - K.chase) * (1 - Math.min(1, K.crow || 0));
+      K.ea += (want - K.ea) * ex(dt, want > K.ea ? 1.2 : 1.0); if (zb && want > 0.001) { S.eaZ = zb; S.eaD = best; }
+      const cy = G.mpApi.camYaw ? G.mpApi.camYaw() : null;
+      if (cy !== null) {
+        const man = performance.now() - Math.max(S.manT || 0, S.manualT || 0) < 2500;
+        if (man) S.eaO = 0;   // 마우스로 돌렸다 — 지금 방향을 바탕으로(되돌리지 않음)
+        let tgt = 0; const z = S.eaZ, k = ss(K.ea);
+        if (!man && !hitOn && z && k > 0.001 && isFinite(z.fx)) { const gate = Math.atan2(z.fx, z.fz) + Math.PI, d = wrap(gate - (cy - S.eaO)); if (Math.abs(d) < 1.9) tgt = clamp(d, -0.42, 0.42) * k * ss(((S.eaD || 9) - 1.5) / 3); }
+        const o1 = S.eaO + (tgt - S.eaO) * ex(dt, 0.9); if (Math.abs(o1 - S.eaO) > 1e-5) G.mpApi.camYaw(cy + (o1 - S.eaO)); S.eaO = o1;
+      } }
     // 끝 장면(2026-10-09) — 판이 끝나면 3초에 걸쳐 천천히 다가가 낮아진다(거리 32% · 내려다봄 7° · 시야 4°) · 다음 판이면 바로 돌아옴 · 끄기: 시연실 「끝 장면 카메라」
     { const X = window.__fx, on = !(X && X.on && X.on.endcam === false), over = !!(G.game && G.game.over) || performance.now() < (S.endDemoUntil || 0);
       const want = on && over ? 1 : 0; K.end = (K.end || 0) + (want - (K.end || 0)) * ex(dt, want > (K.end || 0) ? 1.1 : 0.15); }
@@ -17923,13 +17940,13 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
     }
     // 목표 — 거리(휠) · 내려다봄(마우스 위아래) · 중심 높이
     const kE = ss(K.end || 0);
-    let pitchG = (c.camPitch !== undefined ? c.camPitch : 0.14) + 0.2 * ss(K.base) + 0.1 * K.drag + 0.05 * K.chase - 0.14 * K.monF + LV.slope + LV.nod - 0.12 * kE;
+    let pitchG = (c.camPitch !== undefined ? c.camPitch : 0.14) + 0.2 * ss(K.base) + 0.12 * ss(K.ea) + 0.1 * K.drag + 0.05 * K.chase - 0.14 * K.monF + LV.slope + LV.nod - 0.12 * kE;
     // 숨 참기(breathe.js) — 참는 동안 4초에 걸쳐 카메라가 8% 다가가고 시야가 3.5° 좁아진다(조여 오는 긴장) · 숨을 쉬면 0.6초에 풀림
     { const HB = window.__breath && window.__breath.hero, hz = HB && HB.hold > 0.5 ? 1 : 0; S.holdZ = (S.holdZ || 0) + (hz - (S.holdZ || 0)) * ex(dt, hz > (S.holdZ || 0) ? 3.5 : 0.6); }
     const kH = ss(S.holdZ || 0);
     const kC = K.crow || 0;   // b695 — 까마귀 클로즈업: 거리 47% 줄고(3.4 → 1.8m) · 머리 높이로 · 거의 수평(까마귀 · 얼굴이 크게)
     pitchG -= 0.1 * kC;
-    let distG = ((c.camDist || 3.4) * (1 + 0.18 * K.chase) + 0.55 * K.drag + 0.25 * K.carry) * (1 - 0.32 * kE) * (1 - 0.08 * kH) * (1 + 0.85 * ss(K.base));   // b450 — 본진에 오면 본진 바닥이 적당히 보이게 더 멀리(3.4 → 약 6.3m) · 더 내려다봄(+11°) · 중심을 본진 쪽으로 조금(사용자 「본진의 영역이 적당히 보일 정도로」)
+    let distG = ((c.camDist || 3.4) * (1 + 0.18 * K.chase) + 0.55 * K.drag + 0.25 * K.carry) * (1 - 0.32 * kE) * (1 - 0.08 * kH) * (1 + 0.85 * ss(K.base)) * (1 + 0.13 * ss(K.ea));   // b450 — 본진에 오면 본진 바닥이 적당히 보이게 더 멀리(3.4 → 약 6.3m) · 더 내려다봄(+11°) · 중심을 본진 쪽으로 조금(사용자 「본진의 영역이 적당히 보일 정도로」)
     const upK = 1 - ss((pitchG + 0.15) / 0.4);                         // 올려다볼수록 1(#14 #15)
     distG *= 1 - 0.28 * upK;
     distG *= Math.max(0.3, 1 - 0.47 * kC);
@@ -17937,6 +17954,7 @@ body.uif #csel::after { opacity: var(--t3fl, .16); }`;
 
     // 부드럽게 — 방향 · 내려다봄 · 거리는 따로(둥근 길로 돈다) · 중심점은 수평 빠르게 · 수직 느리게
     const pg = [h.x, h.y + pivH, h.z];
+    if (K.ea > 0.01 && S.eaZ) { const ke = ss(K.ea), bx = S.eaZ.cx - h.x, bz = S.eaZ.cz - h.z, bl = Math.hypot(bx, bz), m = Math.min(bl * 0.3, 1.6) * ke / Math.max(bl, 1e-3); pg[0] += bx * m; pg[2] += bz * m; }   // b843 — 중심을 상대 제단 쪽으로 조금(최대 1.6m)
     if (K.base > 0.01 && S.zb0) { const kb = ss(K.base), bx = S.zb0.cx - h.x, bz = S.zb0.cz - h.z, bl = Math.hypot(bx, bz), m = Math.min(bl * 0.4, 2.5) * kb / Math.max(bl, 1e-3); pg[0] += bx * m; pg[2] += bz * m; }
     let sm = S.sm;
     if (!sm || Math.hypot(pg[0] - sm.p[0], pg[2] - sm.p[2]) > 3 || Math.abs(pg[1] - sm.p[1]) > 3) { sm = S.sm = { yaw: yawG, pitch: pitchG, dist: distG, p: pg.slice() }; S.cd = null; }
