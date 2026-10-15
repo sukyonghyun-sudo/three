@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-762 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-763 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-762'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-763'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -14509,12 +14509,45 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   // 장면 i 의 카메라(그 순간) — 가운데는 나(가슴) · 방향은 기준 D0 에서 Y° 돈 쪽 · 높이는 (땅 + 1.1m + 몸 높이 × 따라감) + H
   function shotPose(i, ev, u, g0, D0, my, bhLag, chest) {
     const s = SHOT[i].k, P = (n) => C['k' + s + n], h = G.hero.position;
-    const yw = (P('Y') + P('O') * Math.max(0, u - SHOT[i].a(ev))) * Math.PI / 180 - my, ca = Math.cos(yw), sa = Math.sin(yw);
-    const dx = D0.x * ca - D0.z * sa, dz = D0.x * sa + D0.z * ca, D = Math.max(0.2, P('D'));
-    const x = h.x + dx * D, z = h.z + dz * D; let y = g0.y + 1.1 + bhLag * c01(P('F')) + P('H');
+    let Yd = P('Y'), Dd = P('D'), Hd = P('H'); const fx = CS.fx;
+    if (fx && (s === 'fa' || s === 'la')) { const w = s === 'la' ? 1 : 1 - ss((bhLag - 10) / 6); Yd += fx.ya * w; Dd += fx.dA * w; Hd *= 1 + (fx.hM - 1) * w; }   // b763 — 가리면 나무를 피한 자리로
+    const yw = (Yd + P('O') * Math.max(0, u - SHOT[i].a(ev))) * Math.PI / 180 - my, ca = Math.cos(yw), sa = Math.sin(yw);
+    const dx = D0.x * ca - D0.z * sa, dz = D0.x * sa + D0.z * ca, D = Math.max(0.2, Dd);
+    const x = h.x + dx * D, z = h.z + dz * D; let y = g0.y + 1.1 + bhLag * c01(P('F')) + Hd;
     const gg = gy(x, z, g0.y); if (y < gg + 0.3) y = gg + 0.3;   // 땅 밑으로는 안 들어감
     const bp = ev.bee.root.position, L = c01(P('L'));
     return { x, y, z, tx: h.x + (bp.x - h.x) * L, ty: chest + (bp.y - chest) * L, tz: h.z + (bp.z - h.z) * L, zm: Math.max(0.2, P('Z')) };
+  }
+  // b763 — 가림 피하기(사용자 「추락한 다음에 나뭇가지 · 잎에 가린 화면이 자주」 — 처음 서는 자리 1.5m 옆 소나무(잎 반지름 6.6m · 높이 11m) 밑에 떨어지면 하늘에서 내려다보는 카메라가 잎 속에 있었다)
+  //   사용자 「나무 말고도 다른 오브젝트들도 가린다」 → 나무만이 아니라 장면의 단단한 물체 모두(맵 땅 · 바위 · 돌벽 · 문(토리이 · GateShape — 맵 단단한 것 목록에 빠져 있었다) · 기와 · 소품 · 등롱 · 본진 물건 …)
+  //   빼는 것: 사람 · 괴물(뼈 달린 몸과 뼈에 달린 것) · 벌 · 피 자국 · 효과(불 · 연기 · 새 · 결말 조각) · 사원증 · 돗자리 · 본진 바닥 칠 · 반투명/더하기 빛 · 하늘(아주 큰 것) · 땅 풀(맵을 덮는 큰 투명 자르기 조각) · 물
+  let OCL = null, OCLk = '', OCLt = 0;
+  const OCX = /^(corpse-pool|hornet|carry-blood|crow-blood|fx-|end-|burn-|breath-|flush-|corpse-crows|lamp-moths|torch-motes|badge_|strawmat|zonefence)/;
+  function occl() {
+    const sc = G.scene, k = sc.children.length + ':' + ((G.props && G.props.group) ? G.props.group.children.length : 0), nw = now();
+    if (OCL && OCLk === k && nw - OCLt < 3) return OCL;
+    OCLk = k; OCLt = nw; OCL = ((G.map && G.map.solids) || []).slice(); const have = new Set(OCL), water = new Set((G.map && G.map.water) || []);
+    const walk = (o) => {
+      if (!o.visible || o.isBone || o.isSkinnedMesh || o.isPoints || o.isLine || o.isSprite || (o.name && OCX.test(o.name))) return;
+      if (o.isMesh && !have.has(o) && !water.has(o)) {
+        const m = Array.isArray(o.material) ? o.material[0] : o.material, g = o.geometry;
+        if (m && g && !(m.transparent && !(m.alphaTest > 0)) && m.blending !== 2 && m.side !== 1) {
+          if (!g.boundingSphere) g.computeBoundingSphere(); const r = g.boundingSphere.radius * o.matrixWorld.getMaxScaleOnAxis();
+          if (r > 0.15 && r < 80 && !(m.alphaTest > 0 && r > 15)) OCL.push(o);
+        }
+      }
+      for (const c of o.children) walk(c);
+    };
+    for (const c of sc.children) { let skin = false; c.traverse((x) => { if (x.isSkinnedMesh) skin = true; }); if (!skin) walk(c); }   // 뼈 달린 몸이 든 묶음(사람 · 괴물 · 시체 · 까마귀)은 통째로 뺀다
+    return OCL;
+  }
+  const ORC = { rc: null, a: null, b: null };
+  function occHit(ax, ay, az, bx, by, bz, skip) {   // a → b 사이 처음 막힌 거리(skip m 안은 무시) · 없으면 Infinity
+    if (!ORC.rc) { ORC.rc = new T.Raycaster(); ORC.a = new T.Vector3(); ORC.b = new T.Vector3(); }
+    ORC.a.set(ax, ay, az); ORC.b.set(bx - ax, by - ay, bz - az); const L = ORC.b.length(); if (L < 0.05) return Infinity; ORC.b.multiplyScalar(1 / L);
+    ORC.rc.set(ORC.a, ORC.b); ORC.rc.near = skip || 0; ORC.rc.far = L;
+    for (const q of ORC.rc.intersectObjects(occl(), false)) if (q.object.visible) return q.distance;
+    return Infinity;
   }
   const punch = (u, tG, tR) => (u > tG ? -C.kPunchG * Math.exp(-(u - tG) / 0.22) * Math.min(1, (u - tG) * 25) : 0) + (u > tR ? C.kPunchR * Math.exp(-(u - tR) / 0.45) * Math.min(1, (u - tR) * 18) : 0);
   function cine(cam, target) {
@@ -14534,12 +14567,21 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
       CS.db = C.kBase > 0.5 ? { x: CS.d0.x, z: CS.d0.z } : { x: bx / bl, z: bz / bl };
       if (C.kClear > 0.5 && window.__hnCamClear !== false) try {
         const rc = CS.rc || (CS.rc = new T.Raycaster()), tg = [...((G.map && G.map.grounds) || []), ...(((G.props && G.props.list) || []).map((q) => q.root).filter(Boolean))], o = new T.Vector3(h.x, g0.y + 1.1, h.z), dv = new T.Vector3();
-        const hit = (fr, to) => { dv.copy(to).sub(fr); const Ln = dv.length(); if (Ln < 0.1) return false; rc.set(fr, dv.normalize()); rc.far = Ln; return rc.intersectObjects(tg, true).some((q) => q.object.visible && !q.object.isSkinnedMesh); };
+        const hit = (fr, to) => occHit(fr.x, fr.y, fr.z, to.x, to.y, to.z, 0.3) < Infinity;   // b763 — 같은 가림 목록(문 · 소품 · 나무 잎까지)
+        void rc; void tg; void dv;
         const rotd = (d, a) => ({ x: d.x * Math.cos(a) - d.z * Math.sin(a), z: d.x * Math.sin(a) + d.z * Math.cos(a) }), RD = Math.PI / 180;
         const camAt = (d, s) => { const r = rotd(d, C['k' + s + 'Y'] * RD), D = C['k' + s + 'D']; return new T.Vector3(h.x + r.x * D, g0.y + 1.1 + Math.max(-0.8, C['k' + s + 'H']), h.z + r.z * D); };
         const hvp = hoverPt(ev), clear = (d) => { for (const s of from ? ['li'] : ['ap', 'li']) if (hit(o, camAt(d, s))) return false; if (!from && hit(camAt(d, 'ap'), hvp)) return false; return true; };
         const b0 = CS.db, cand = [b0, rotd(b0, 25 * RD), rotd(b0, -25 * RD), rotd(b0, 50 * RD), rotd(b0, -50 * RD), rotd(b0, 80 * RD), rotd(b0, -80 * RD), CS.d0, rotd(b0, Math.PI)];
         const f = cand.find(clear); if (f) CS.db = f;
+      } catch { /* 그대로 */ }
+      CS.fx = null; CS.arm = null;
+      if (C.kClear > 0.5 && window.__hnCamClear !== false) try {   // b763 — 떨어질 자리(지금 자리 그대로 아래로 떨어진다) · 땅 장면과 몸이 2 · 5 · 8m 높이일 때의 떨어짐 장면이 트였는지
+        const RD = Math.PI / 180, b0 = CS.db, rotd = (d, a) => ({ x: d.x * Math.cos(a) - d.z * Math.sin(a), z: d.x * Math.sin(a) + d.z * Math.cos(a) });
+        const pose = (s, c, bh) => { const P = (n) => C['k' + s + n], r = rotd(b0, (P('Y') + c.ya) * RD), D = Math.max(0.2, P('D') + c.dA); return [h.x + r.x * D, g0.y + 1.1 + bh * c01(P('F')) + P('H') * c.hM, h.z + r.z * D]; };
+        const ok = (c) => { for (const [s, bh] of [['la', 0], ['fa', 2], ['fa', 5], ['fa', 8]]) { const q = pose(s, c, bh); if (occHit(h.x, g0.y + 0.5 + bh, h.z, q[0], q[1], q[2], 0.6) < Infinity) return false; } return true; };
+        if (!ok({ ya: 0, dA: 0, hM: 1 })) { const L = []; for (const [hM, dA] of [[1, 0], [0.6, 2.5], [0.35, 4.5], [0.15, 5.5]]) for (const ya of [0, 40, -40, 90, -90, 135, -135, 180]) L.push({ ya, dA, hM }); CS.fx = L.find(ok) || { ya: 0, dA: 4.5, hM: 0.35 }; }   // 다 막히면 옆으로 낮게(남은 가림은 아래 당기기가)
+        H.camFix = CS.fx;
       } catch { /* 그대로 */ }
     }
     const D0 = CS.db || CS.d0, lag = Math.max(0, C.kLag), bhLag = bodyHS(ev, u - lag * 0.5, lag), bh = bodyHS(ev, u, 0.12);
@@ -14549,6 +14591,13 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
       const w = blendW(u, SHOT[i].a(ev), C['k' + SHOT[i].k + 'B']); if (w <= 0) continue;
       const Q = shotPose(i, ev, u, g0, D0, my, bhLag, chest);
       P = arcMix(G.hero.position, P, Q, w, Math.min(3, Math.abs(Q.y - P.y) * 0.15), 1, 0.8); zm += (Q.zm - zm) * w;   // 높이가 크게 바뀌면(땅 → 하늘) 넓게 돌아 넘어감
+    }
+    if (C.kClear > 0.5 && window.__hnCamClear !== false) {   // b763 — 나와 카메라 사이를 가리면 그 앞까지 당긴다
+      const oy = chest + 0.1, full = Math.hypot(P.x - h.x, P.y - oy, P.z - h.z); let r = 1;
+      if (full > 1) { const dh = occHit(h.x, oy, h.z, P.x, P.y, P.z, 0.6); if (dh < full) r = Math.max(0.8, dh - 0.4) / full; }
+      const nw = performance.now() / 1000, dtA = Math.min(0.1, nw - (CS.armT || nw)); CS.armT = nw;
+      CS.arm = CS.arm == null ? r : CS.arm + (r - CS.arm) * Math.min(1, dtA * (r < CS.arm ? 14 : 2.5));
+      if (CS.arm < 0.999) { P.x = h.x + (P.x - h.x) * CS.arm; P.y = oy + (P.y - oy) * CS.arm; P.z = h.z + (P.z - h.z) * CS.arm; }
     }
     { const Q0 = { x: cam.x, y: cam.y, z: cam.z, tx: target.x, ty: target.y, tz: target.z }, R = arcMix(h, Q0, P, k, 0, 1);   // 평소 카메라 ↔ 벌 카메라도 몸 둘레 호로
       cam.x = R.x; cam.y = R.y; cam.z = R.z; target.x = R.tx; target.y = R.ty; target.z = R.tz; }
