@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-858 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-860 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-858'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-860'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -5030,7 +5030,7 @@ ${HWR.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</s
             if (title) { title.style.transition = intro.pz !== undefined ? 'none' : 'opacity .5s'; title.style.opacity = u > b2 + CF.tIn && u < b3 + CF.tOut ? '1' : '0'; }
           }
         }
-        if (lose && !lose.demo) { const ec = document.getElementById('sr-end'), ef = document.getElementById('sr-endfade'), uu = (t - lose.t0) * CF.speed, hide = uu > L.MSG && (!lose.boom || (t - lose.boomT) * CF.speed < L.CARD); for (const x of [ec, ef]) if (x) x.style.visibility = hide ? 'hidden' : ''; }   // 실패 카드 — 먼저 보이고(메시지) · 연출 동안 숨고 · 터진 뒤 다시
+        if (lose && !lose.demo) { const ec = document.getElementById('sr-end'), ef = document.getElementById('sr-endfade'), uu = (t - lose.t0) * CF.speed, hide = uu > L.MSG && (!lose.boom || (t - lose.boomT) * CF.speed < L.CARD); for (const x of [ec, ef]) if (x) { const was = x.style.visibility === 'hidden'; x.style.visibility = hide ? 'hidden' : ''; if (was && !hide && x.classList.contains('on') && window.__endReplay !== false) { const c = x.className, ks = [x, ...x.querySelectorAll('button')]; for (const k of ks) k.style.transition = 'none'; x.classList.remove('on'); void x.offsetWidth; for (const k of ks) k.style.transition = ''; x.className = c; } } }   // b859 — 다시 보일 때 처음부터 나타난다 · 실패 카드 — 먼저 보이고(메시지) · 연출 동안 숨고 · 터진 뒤 다시
         if (lose && cam === G.cam) {
           // b454 — 메시지 → 얼굴 앞으로 → 4.6초 끌려 올라가며 몸부림(제 빠르기) · 비명 → 1.6초: 몸이 굳고 입이 찢어지게 벌어지고 눈이 튀어나오며 부풂 · 카메라는 얼굴로 → 0.2초 멈칫 → 펑
           const u = (t - lose.t0) * CF.speed, r0 = L.MSG, r1 = r0 + L.RISE_T, r2 = r1 + L.PRE, hero = G.hero;
@@ -6055,10 +6055,18 @@ ${R.map((r) => { if (r.length === 1) return `<h5>${r[0]}</h5>`; if (r[0] === '@'
     if (S.playing) { S.u += dt * S.rate * (CF.speed || 1); if (S.u >= e) { if (S.mode === 'studio' && S.loop) S.u = 0; else { S.u = e; if (S.mode === 'studio') S.playing = false; } } }
     if (S.playing) sounds(u0, S.u);
     if (S.mode === 'real' && S.u >= e - 1e-6) S.post = (S.post || 0) + dt; else S.post = 0;   // b812 — 연출이 끝난 뒤 흐르는 시간(웃는 장면 이어 가기)
-    if (S.mode === 'real') { const hide = S.u < e - 0.6; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) x.style.visibility = hide ? 'hidden' : ''; }   // 판 끝 카드는 연출이 끝날 때
+    if (S.mode === 'real') { const hide = S.u < e - 0.6; for (const x of [document.getElementById('sr-end'), document.getElementById('sr-endfade')]) if (x) { x.style.visibility = hide ? 'hidden' : ''; if (!hide && S.endHid) endReplay(x); } S.endHid = hide; }   // 판 끝 카드는 연출이 끝날 때 · b859 숨김이 풀리는 순간 처음부터 나타난다
     { const tt = TL(), kw = S.u >= tt.uW ? lerp(1, CF.winBright, ss((S.u - tt.uW) / 0.4)) : 1, b = CF.endBright * kw, cv = G.renderer.domElement; cv.style.filter = Math.abs(b - 1) > 0.01 ? `brightness(${b.toFixed(3)})` : ''; S.expSet = true; }   // b489 — 화면(캔버스) 밝기 — 노출값은 톤매핑에 눌려 거의 안 밝아졌다   // 결말 · 이긴 사람 장면 화면 밝기(게임 값은 그대로 · 끝나면 되돌림)
     if (D.onTick) D.onTick();
   })();
+  /* b859 — 종료 카드 등장을 숨김이 풀리는 순간부터 다시(사용자 「승리 텍스트 나오는 거 부드럽게 · 이긴 연출 끝나고 나오는 거」)
+     예전: 카드(「○○ 승리」 · 메뉴 · 어둡게 깔리는 막)는 판이 끝나는 순간 나타나기 애니메이션을 시작하고 연출 동안 숨겨만 뒀다 → 연출이 끝나면 이미 다 나타난 채로 툭
+     이제: 숨김이 풀릴 때 on 을 뺐다 다시 붙여 처음부터 — 막은 서서히 어두워지고(2.4초) · 글은 흐림에서 또렷이(1.5초) · 메뉴는 1.1 · 1.4초 뒤 차례로 */
+  function endReplay(x) {
+    if (!x || !x.classList.contains('on') || window.__endReplay === false) return;
+    const c = x.className, ks = [x, ...x.querySelectorAll('button')];   // 메뉴 단추는 따로 나타남(전환)이 걸려 있어 함께 처음으로
+    for (const k of ks) k.style.transition = 'none'; x.classList.remove('on'); void x.offsetWidth; for (const k of ks) k.style.transition = ''; x.className = c;
+  }
   function begin(mode, winner) {
     S = { mode, u: 0, playing: true, rate: 1, loop: false, seed: (Math.random() * 1e9) | 0, free: null, k0: window.__charlit ? window.__charlit.k : null };
     setup(winner);
