@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-841 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-842 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-841'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-842'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -3200,7 +3200,7 @@ body.cin-on #sr-crisis,body.dl-on #sr-crisis,body.cin-on #sr-crisis-edge,body.dl
       if (!was) { was = true; prev = null; sc0 = G.scores().slice(); }   // 판 시작 · 다시 하기 — 지금 상태부터
       const quiet = window.__crisisOff === true || (window.__cinema && window.__cinema.active && window.__cinema.active());
       const cur = G.game.bodies.map((b) => { const holder = b.held ? TEAM_ID.indexOf(b.held) : -1; let zone = -1; if (holder < 0) { const h = G.hips(b); zone = G.zoneAt(h.x, h.z); } return { holder, zone }; });
-      if (prev && !quiet) cur.forEach((c, k) => { const p = prev[k]; if (p && p.holder < 0 && p.zone === 0 && c.holder > 0) { show('내 시체를 빼앗겼다', '되 찾 아 라'); /* b838 — 누가 가져갔는지는 중요하지 않다(사용자) */ } });
+      if (prev && !quiet) cur.forEach((c, k) => { const p = prev[k]; if (p && p.holder < 0 && p.zone === 0 && c.holder > 0) { if (window.__stealMsg === true) show('내 시체를 빼앗겼다', '되 찾 아 라'); /* b842 — 가운데 알림 안 띄움(사용자) · HUD 「내 시체를 빼앗겼다」 표찰 · 붉은 화살 · 가장자리 붉은빛이 대신 · 되살리기 __stealMsg = true */ } });
       prev = cur;
       const sc = G.scores();
       if (sc0 && !quiet) for (let t = 1; t < 3; t++) if (sc[t] === 2 && sc0[t] < 2) edgePulse();   // b837 — 2구는 글 대신 표지(tension.js danger) · 여기선 가장자리만 붉게 한 번   // b834 — 「막아라」 → 「빼앗아라」(막는 기능은 없고 그 제단 시체를 빼앗아 올 수 있다 — 사용자)
@@ -3250,9 +3250,6 @@ body.cin-on #sr-crisis,body.dl-on #sr-crisis,body.cin-on #sr-crisis-edge,body.dl
       <section><h4>아래 안내 <small>G · 시체를 잡는다 / 내려놓는다</small></h4>
         <div class="bt"><button type="button" data-pp="1" class="${pinP === 1 ? 'on' : ''}">「잡는다」 띄워 두기</button><button type="button" data-pp="2" class="${pinP === 2 ? 'on' : ''}">「내려놓는다」 띄워 두기</button></div>
         ${rows('p')}<div class="cl"><span>색</span>${sw('pCol')}</div></section>
-      <section><h4>위기 알림 <small>내 시체를 빼앗겼다</small></h4>
-        <div class="bt"><button type="button" data-pc="1" class="${pinC === 1 ? 'on' : ''}">「빼앗겼다」 띄워 두기</button><button type="button" data-once>한 번 보기</button></div>
-        ${rows('c')}<div class="cl"><span>큰 줄 색</span>${sw('cAc')}</div><div class="cl"><span>작은 줄 색</span>${sw('cBc')}</div></section>
       <section><h4>조작 안내 <small>화면 아래 키 줄</small></h4>${rows('k')}</section>
       <div class="ft"><button type="button" data-def>기본값</button><span class="sv"></span></div>`;
     if (window.__settings && window.__settings.button) { const b = window.__settings.button(); if (b) el.querySelector('.sv').appendChild(b); }
