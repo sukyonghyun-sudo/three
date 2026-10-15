@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-865 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-866 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,13 +431,12 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-865'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-866'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
 </script>
 <link rel="icon" href="data:,">
-
 <title>시체쟁탈 — 屍體爭奪</title>
 <style>
   :root { --ink: #d6d2c2; --dim: #7d7b6c; --line: #3b3d34; --bg: rgba(6, 8, 7, .84); --serif: "UIF", "Noto Serif KR", "Nanum Myeongjo", "Batang", serif; }
@@ -1694,7 +1693,7 @@ body.mp-art #mp-cd.n1 { background-image: var(--art-count-n1); }
       <div class="sr-modes"><button id="start-btn" type="button">싱글플레이</button><button id="mp-btn" type="button" disabled>멀티플레이</button><button id="t3-set" type="button">설정</button></div>
     </div>
     <div class="t3-tag"><i></i><span>먼저 시체 3구를 제단에 바치는 자가 살아남는다</span><i></i></div>
-    <div class="keys">Enter 싱글플레이 · WASD 이동 · 마우스 드래그 시점 · G 시체 잡기·놓기 · Tab 조절</div>
+    <div class="keys">Enter 싱글플레이 · WASD 이동 · 마우스 드래그 시점 · G 시체 잡기·놓기</div>
     <span id="sr-clock" hidden></span>
   </div>
 </div>
@@ -7512,6 +7511,7 @@ window.__NAVGRID = {"sig":"n8|corpse/samurai_arena_lite|239d948a|-28.843|-25.541
     if (e.code === 'Escape' && !open && window.__motionFx && window.__motionFx.isOpen) {   // 동작 연출실(motion.js) 나가기
       e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) window.__motionFx.close(); return;
     }
+    if (e.code === 'Tab' && window.__tabTune !== true) { e.preventDefault(); return; }   // b866 — Tab 으로 조절 패널을 열지 않는다(사용자 「이제 아예 안 나오게」 — 둘러보기의 「조절」 단추로만 · 되살리기 __tabTune = true)
     if (e.code === 'Tab' || (e.code === 'Escape' && open)) {
       e.preventDefault(); e.stopImmediatePropagation();
       if (!e.repeat && el) toggle(e.code === 'Escape' ? false : undefined);
@@ -21549,6 +21549,46 @@ body.sr-motion-open #sr-look, body.sr-motion-open #sr-show-btn, body.sr-motion-o
     else if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') run(ITEMS[cur][0]);
   }, true);
   window.addEventListener('keyup', (e) => { if (P.open && e.code !== 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+})();
+
+</script>
+<script>/* endtest.js */
+/* 임시 — 승리 연출 바로 보기(2026-10-15 사용자: 「승리 연출을 바로 보기 위해서 플레이 화면에 임시로 보기 버튼」)
+   · 혼자 하기 판이 도는 동안 오른쪽 위에 「승리 연출 보기」 — 누르면 그 자리에서 판이 끝난다(결판 순간 → 암전 → 승리 연출 → 종료 카드)
+   · 누를 때마다 이기는 쪽이 바뀐다(봇 1 → 봇 2 → 나) · 같이 하기 · 둘러보기 · 연출 · Esc 메뉴 동안엔 숨김
+   · 출시 전에 이 파일(index.html 의 endtest.js 한 줄)만 빼면 된다 · 끄기 window.__endTestBtn = false */
+(() => {
+  let el = null, nextW = 1;
+  const nameOf = (t) => (window.__teamName ? window.__teamName(t) : `P${t + 1}`);
+  function build() {
+    const st = document.createElement('style');
+    st.textContent = `#sr-endtest{position:fixed;right:16px;top:16px;z-index:58;display:none;padding:7px 14px;background:rgba(10,4,3,.82);border:1px solid #7a1410;color:#ebe6dc;cursor:pointer;
+  font:500 14px 'Song Myung','UIF',serif;letter-spacing:.12em;text-shadow:0 1px 4px #000;box-shadow:0 0 12px rgba(0,0,0,.6)}
+#sr-endtest:hover{background:rgba(120,8,5,.85);border-color:#d21a12;color:#fff}
+#sr-endtest.on{display:block}
+#sr-endtest small{margin-left:8px;font-size:11px;color:#c9a99a;letter-spacing:.04em}`;
+    document.head.appendChild(st);
+    el = document.createElement('button'); el.type = 'button'; el.id = 'sr-endtest';
+    for (const ev of ['pointerdown', 'mousedown', 'mouseup', 'contextmenu', 'wheel']) el.addEventListener(ev, (e) => e.stopPropagation());
+    el.addEventListener('click', (e) => {
+      e.stopPropagation(); e.preventDefault();
+      const G = window.__G; if (!G || !G.started || !G.game || G.game.over || (window.__mp && window.__mp.on)) return;
+      const w = nextW; nextW = nextW === 1 ? 2 : nextW === 2 ? 0 : 1;
+      G.game.winner = w; G.game.over = true; el.blur();
+    });
+    document.body.appendChild(el);
+  }
+  setInterval(() => {
+    try {
+      if (!document.body) return;
+      if (!el) build();
+      const G = window.__G, b = document.body.classList, C = window.__cinema, D = window.__death, P = window.__pause;
+      const show = window.__endTestBtn !== false && !!(G && G.started && G.game && !G.game.over) && !(window.__mp && window.__mp.on) && !window.__explore
+        && !(C && C.active && C.active()) && !(D && D.active && D.active()) && !b.contains('cin-on') && !b.contains('dl-on') && !(P && P.open) && !(window.__volPanel && window.__volPanel.isOpen);
+      el.classList.toggle('on', show);
+      if (show) { const t = `승리 연출 보기<small>${nameOf(nextW)} 승리</small>`; if (el.innerHTML !== t) el.innerHTML = t; }
+    } catch (e) { /* */ }
+  }, 300);
 })();
 
 </script>
