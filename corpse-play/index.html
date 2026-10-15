@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-837 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-841 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-837'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-841'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2419,10 +2419,16 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     vp.copy(vc).applyMatrix4(cam.projectionMatrix);
     if (!behind && Math.abs(vp.x) < 0.95 && Math.abs(vp.y) < 0.92)
       return { on: true, x: (vp.x + 1) * 0.5 * W, y: (1 - vp.y) * 0.5 * H };
-    // b448 — 땅 위 방향으로(나침반처럼 위 = 카메라 앞 · 아래 = 뒤). 예전엔 카메라 높이 차(vc.y)를 써서 앞에 있는 낮은 본진이 「아래(뒤)」로 보였다
+    /* b838 — 화면 밖 화살(사용자 「화살표 표시 제대로인지 철저히 검토」): 예전엔 나침반식(화면 위 = 카메라 앞)이라 시야 바로 옆(오른쪽 50°)에 있는 제단이
+       화면 「위」 가장자리에서 하늘을 가리켰다 → 카메라 앞쪽이면 실제 화면 방향 그대로 가장자리에 붙이고(오른쪽이면 오른쪽 가장자리) ·
+       카메라 뒤쪽이면 땅 위 각도로 옆 → 아래 가장자리(바로 뒤 = 아래 가운데) · 땅 위의 것을 하늘(위)로 가리키지 않는다 · 예전 방식 window.__hudCompass = true */
     if (!vq) vq = vc.clone(); cam.getWorldDirection(vq); let fl = Math.hypot(vq.x, vq.z) || 1; const fx = vq.x / fl, fz = vq.z / fl;
     const wx = x - cam.position.x, wz = z - cam.position.z;
     let dx = wx * -fz + wz * fx, dy = -(wx * fx + wz * fz);
+    if (window.__hudCompass !== true) {
+      if (!behind) { dx = vp.x * W / 2; dy = -vp.y * H / 2; }
+      else { const th = Math.atan2(dx, -dy); dx = Math.sin(th); dy = Math.max(0, -Math.cos(th)); }   // 옆(90°) = 옆 가장자리 가운데 → 뒤로 갈수록 아래로 · 바로 뒤 = 아래 가운데(앞쪽 화살과 이어지게)
+    }
     if (Math.abs(dx) + Math.abs(dy) < 1e-3) dy = 1;
     const L = 60, R = W - 60, T = 110, B = H - 80;  // 위쪽은 오른쪽 위 단추 아래로
     const cx = (L + R) / 2, cy = (T + B) / 2;
@@ -2602,7 +2608,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     // 2026-10-08 사용자: 「본진 표시도 더 디테일하고 알기 쉽게」 — 내 것은 대화명 대신 「내 본진」(「陣」 도장은 사용자 「본진에 도장 표시가 왜 있어 · 이상하다」로 뺐다)
     const H = 40, SL = 25, GAP = 3, P = 10, SEAL = -6, col = soft(hex(G.colors[t])), nm0 = TEAM[t], name = nm0.length > 9 ? nm0.slice(0, 9) + '…' : nm0;   // b411 — 내 것도 대화명(2026-10-12 사용자: 「내 본진이라고 뜨는데 그렇게 말고 플레이어 이름 뜨게」)   // 남은 대화명(혼자 하기의 봇은 "P2 봇")
     const font = `800 20px ${MJ}`, fsub = `800 15px ${MJ}`;
-    const mk = pin === 'mark', name2 = mk ? (t === 0 ? '내 제단' : '') : pin ? name + ' 제단' : name,   /* b830 — 본진 → 제단(사용자) */ TI = pin ? 26 : 0;   // b829 — mark: 이름 대신 ⛩ (내 것만 「내 본진」)
+    const mk = pin === 'mark', name2 = mk ? (t === 0 ? '내 제단' : '') : pin ? name + ' 제단' : name,   /* b830 — 본진 → 제단(사용자) */ TI = pin ? (mk && t === 0 ? 31 : 26) : 0;   /* b840 — ⛩ 과 「내 제단」 사이 띄움 */   // b829 — mark: 이름 대신 ⛩ (내 것만 「내 본진」)
     mg.font = font; mg.letterSpacing = '2px'; const nw = mg.measureText(name2).width;
     mg.font = fsub; mg.letterSpacing = '1px'; const dw = mg.measureText(dist).width;
     const W = Math.ceil(P + SEAL + 6 + TI + nw + P + 3 * SL + 2 * GAP + P + dw + P + 2);
@@ -2672,6 +2678,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
      ③ 그 진영이 셋째 시체를 들고 있음: 맥박 0.5초 · 표지가 떨림 · 그 제단 빛기둥이 붉게 맥박(basefx.js) · 내 진영은 위험 연출 없음 · 끄기 window.__dangerOff = true */
   const danger = (t) => { try { if (window.__dangerOff === true || t === 0 || !G || !G.started || G.game.over) return 0; const sc = G.scores(); if (sc[t] !== 2) return 0; return G.game.bodies.some((b) => b.held === TEAM_ID[t]) ? 2 : 1; } catch (e) { return 0; } };
   window.__danger = danger;
+  window.__hudProject = (x, y, z) => project(x, y, z);   // b838 — 검토용(화면 밖 화살 자리 · 방향)
   const dangerK = (t, lvl) => { const per = lvl === 2 ? 0.5 : 1.2, v = 0.5 - 0.5 * Math.cos(t * Math.PI * 2 / per); return 0.25 + 0.75 * v; };
   function sqArt() {   // 셋째 칸 붉은 테 — 안쪽 68×68 · 바깥 14px 번짐 · 칸 위는 비움
     const S = 96, [c, g] = hcanvas(S, S, 1); g.strokeStyle = '#fff'; g.shadowColor = '#fff'; g.lineJoin = 'round';
@@ -2769,7 +2776,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
   // 겹치면 밀어낸다 — 본진 표지만 움직이고, 덜 겹친 쪽 축으로. 화면 밖으로는 못 나가게
   function resolve(us) {
     const W = innerWidth, H = innerHeight, pad = 6;
-    for (let it = 0; it < 6; it++) {
+    for (let it = 0; it < 10; it++) {
       let moved = false;
       for (const a of us) {
         if (a.fixed) continue;
@@ -2780,8 +2787,11 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
           const ox = Math.min(ax1, bx1) - Math.max(ax0, bx0) + pad, oy = Math.min(ay1, by1) - Math.max(ay0, by0) + pad;
           if (ox <= 0 || oy <= 0) continue;
           const k = b.fixed ? 1 : 0.5;
-          if (ox < oy) a.dx += ((ax0 + ax1) < (bx0 + bx1) ? -1 : 1) * ox * k;
-          else a.dy += ((ay0 + ay1) < (by0 + by1) ? -1 : 1) * oy * k;
+          // b840 — 화면 가장자리에 막혀 덜 비켜나면 다른 축으로(아래 가장자리에 표지 · 도둑 경고가 몰리면 화살이 표찰을 덮었다)
+          const cx = (d) => Math.max(8 - a.x0, Math.min(W - 8 - a.x1, d)), cy = (d) => Math.max(8 - a.y0, Math.min(H - 8 - a.y1, d));
+          const mx = () => { const n = cx(a.dx + ((ax0 + ax1) < (bx0 + bx1) ? -1 : 1) * ox * k); if (Math.abs(n - a.dx) < ox * k * 0.5) return false; a.dx = n; return true; };
+          const my = () => { const n = cy(a.dy + ((ay0 + ay1) < (by0 + by1) ? -1 : 1) * oy * k); if (Math.abs(n - a.dy) < oy * k * 0.5) return false; a.dy = n; return true; };
+          if (ox < oy) { if (!mx()) my(); } else if (!my()) mx();
           moved = true;
         }
         a.dx = Math.max(8 - a.x0, Math.min(W - 8 - a.x1, a.dx));
@@ -2831,8 +2841,8 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     const us = [];
     let uw = null, uh = null;
     if (w) {
-      setLabel(HUD.warn, `${TEAM[w.t]}${josa(TEAM[w.t], '이', '가')} 내 시체를 가져간다`,   /* b803 — 내 본진에서 가져갈 때만 뜨므로 「내 시체」(사용자) */ `${dStep(Math.hypot(w.pos.x - me.x, w.pos.z - me.z))}m`);
-      us.push(uw = layout(HUD.warn, aim(w.pos.x, w.pos.y + 2.6, w.pos.z), AR, true, hs));
+      setLabel(HUD.warn, '내 시체를 빼앗겼다',   /* b838 — 누가 가져갔는지는 중요하지 않다(사용자) — 이름 뺌 */   /* b803 — 내 본진에서 가져갈 때만 뜨므로 「내 시체」(사용자) */ `${dStep(Math.hypot(w.pos.x - me.x, w.pos.z - me.z))}m`);
+      us.push(uw = layout(HUD.warn, aim(w.pos.x, w.pos.y + 2.6, w.pos.z), AR, true, hs, Math.PI / 2));   // b838 — 화면 안이면 ▼ 로 그 사람을 내려 찍는다(예전엔 「나 → 그 사람」 쪽이라 하늘을 가리키기도 했다)
     }
     if (hm) {
       // 2026-10-08 사용자: 「왜 봇들이랑 나랑 표시가 달라 · 빈칸은 왜 안 나오노 · 통일해야지」 — 길잡이도 본진 표지와 같은 그림(이름 · 모은 칸 □□□ · 거리)
@@ -2843,7 +2853,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
     let uwt = null;
     if (wt && HUD.water) {   // 2026-10-12 사용자: 「불탈 때 물웅덩이 위치를 알려주게」 — 타는 동안만 가장 가까운 연못 쪽 · 水 표찰 + 거리
       setLabel(HUD.water, '물에 뛰어들어라', `${dStep(Math.hypot(wt.x - me.x, wt.z - me.z))}m`);
-      us.push(uwt = layout(HUD.water, aim(wt.x, wt.y + 1.2, wt.z), AR, true, hs));
+      us.push(uwt = layout(HUD.water, aim(wt.x, wt.y + 1.2, wt.z), AR, true, hs, Math.PI / 2));   // b838 — 화면 안이면 ▼
     }
     const ub = [], rings = [];
     for (const b of bs) {
@@ -2854,7 +2864,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
       if (hm2 === 'ring') { rings.push({ b, z, d }); continue; }   // b822 — C: 표지 대신 발밑 고리
       const dd = dStep(d), key = hm2 + '|' + b.n + '|' + dd;
       if (it.key !== key) { it.key = key; swapTex(it, baseTagArt(b.t, b.n, `${dd}m`, hm2 === 'pin' ? true : hm2 === 'mark' ? 'mark' : false)); }
-      const u = layout(it, p, BAR, false, hs, hm2 === 'mark' ? Math.PI / 2 : undefined);
+      const u = layout(it, p, BAR * (danger(b.t) ? 1.25 : 1), false, hs, hm2 === 'mark' ? Math.PI / 2 : undefined);   // b838 — 위험 표지 화살 크기를 자리 잡기 전에(겹침 계산이 맞게)
       if (hm2 === 'pin' && p.on) {   // b822 — A: 화살 없이 본진 바로 위에 표찰 · 아래로 줄기가 땅에 꽂힌다
         const gp = project(z.cx, G.groundAt(z.cx, z.cz) + 0.05, z.cz); u.lx = p.x; u.ly = p.y - it.h / 2 - 6; u.x0 = u.lx - it.w / 2; u.x1 = u.lx + it.w / 2; u.y0 = u.ly - it.h / 2; u.y1 = u.ly + it.h / 2;
         u.dx = Math.max(8 - u.x0, Math.min(innerWidth - 8 - u.x1, 0)); u.pin = gp.on ? gp : null; u.noArrow = true; }
@@ -2876,7 +2886,7 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
       const hot = b.n >= 2;                                          // 한 판 남았다
       const dl = danger(b.t);                                         // b837 — 상대 2구 위험(1 · 들고 오는 중 2)
       const back = b.t === 0 || dl ? 1 : 1 - 0.82 * hf;               // 쫓기는 동안 남의 표지는 물러난다(위험 표지는 그대로)
-      if (dl) { u.as *= 1.25; if (dl === 2) { u.dx += (Math.random() - 0.5) * 3; u.dy += (Math.random() - 0.5) * 2; } }
+      if (dl) { if (dl === 2) { u.dx += (Math.random() - 0.5) * 3; u.dy += (Math.random() - 0.5) * 2; } }
       const scl = (dl ? 1.2 : 1) + (dl && b.n === 2 ? 0.8 : 0.45) * slam;
       apply(u, t, 1.4, (hot || slam > 0 ? 1 : 0.86) * back, scl);
       if (u.noArrow) { it.arrow.visible = false;   // b822 — A 장소 핀: 줄기 · 땅 점
@@ -3173,8 +3183,8 @@ body.cin-on #sr-crisis,body.dl-on #sr-crisis,body.cin-on #sr-crisis-edge,body.dl
   }
   function edgePulse() { if (!el) build(); edge.classList.remove('on'); void edge.offsetWidth; edge.classList.add('on'); }
   // b834 — 패널에서 띄워 두고 보며 고치기
-  function pin(on, a, b) { if (!el) build(); if (on) { el.innerHTML = `<div class="a"></div><div class="b"></div>`; el.querySelector('.a').textContent = a || '손주용이 내 시체를 가져갔다'; el.querySelector('.b').textContent = b || '되 찾 아 라'; } el.classList.toggle('pin', !!on); }
-  window.__crisis = { show, pin, samples: [['손주용이 내 시체를 가져갔다', '되 찾 아 라'], ['허지용의 제단 · 하나 남았다', '빼 앗 아 라']] };
+  function pin(on, a, b) { if (!el) build(); if (on) { el.innerHTML = `<div class="a"></div><div class="b"></div>`; el.querySelector('.a').textContent = a || '내 시체를 빼앗겼다'; el.querySelector('.b').textContent = b || '되 찾 아 라'; } el.classList.toggle('pin', !!on); }
+  window.__crisis = { show, pin, samples: [['내 시체를 빼앗겼다', '되 찾 아 라'], ['허지용의 제단 · 하나 남았다', '빼 앗 아 라']] };
   /* b833 — 내려놓기 안내(사용자 「내 제단의 돗자리 영역에 오면 G 로 시체를 내려놓으라는 메시지」): 시체를 들고 내 제단(돗자리) 안에 들어서면 아래 시스템 메시지 자리에 「G · 시체를 내려놓는다」
      · 「G · 시체를 잡는다」와 같은 자리 · 같은 모양(본명조 · 필터) · 내려놓거나 나가면 원래 글로 · 끄기 window.__dropHintOff = true */
   const PICK = 'G · 시체를 잡는다', DROP = 'G · 시체를 내려놓는다'; let dropOn = false;
@@ -3190,7 +3200,7 @@ body.cin-on #sr-crisis,body.dl-on #sr-crisis,body.cin-on #sr-crisis-edge,body.dl
       if (!was) { was = true; prev = null; sc0 = G.scores().slice(); }   // 판 시작 · 다시 하기 — 지금 상태부터
       const quiet = window.__crisisOff === true || (window.__cinema && window.__cinema.active && window.__cinema.active());
       const cur = G.game.bodies.map((b) => { const holder = b.held ? TEAM_ID.indexOf(b.held) : -1; let zone = -1; if (holder < 0) { const h = G.hips(b); zone = G.zoneAt(h.x, h.z); } return { holder, zone }; });
-      if (prev && !quiet) cur.forEach((c, k) => { const p = prev[k]; if (p && p.holder < 0 && p.zone === 0 && c.holder > 0) { const nm = nameOf(c.holder); show(`${nm}${josa(nm, '이', '가')} 내 시체를 가져갔다`, '되 찾 아 라'); } });
+      if (prev && !quiet) cur.forEach((c, k) => { const p = prev[k]; if (p && p.holder < 0 && p.zone === 0 && c.holder > 0) { show('내 시체를 빼앗겼다', '되 찾 아 라'); /* b838 — 누가 가져갔는지는 중요하지 않다(사용자) */ } });
       prev = cur;
       const sc = G.scores();
       if (sc0 && !quiet) for (let t = 1; t < 3; t++) if (sc[t] === 2 && sc0[t] < 2) edgePulse();   // b837 — 2구는 글 대신 표지(tension.js danger) · 여기선 가장자리만 붉게 한 번   // b834 — 「막아라」 → 「빼앗아라」(막는 기능은 없고 그 제단 시체를 빼앗아 올 수 있다 — 사용자)
@@ -3240,8 +3250,8 @@ body.cin-on #sr-crisis,body.dl-on #sr-crisis,body.cin-on #sr-crisis-edge,body.dl
       <section><h4>아래 안내 <small>G · 시체를 잡는다 / 내려놓는다</small></h4>
         <div class="bt"><button type="button" data-pp="1" class="${pinP === 1 ? 'on' : ''}">「잡는다」 띄워 두기</button><button type="button" data-pp="2" class="${pinP === 2 ? 'on' : ''}">「내려놓는다」 띄워 두기</button></div>
         ${rows('p')}<div class="cl"><span>색</span>${sw('pCol')}</div></section>
-      <section><h4>위기 알림 <small>내 시체를 가져갔다</small></h4>
-        <div class="bt"><button type="button" data-pc="1" class="${pinC === 1 ? 'on' : ''}">「가져갔다」 띄워 두기</button><button type="button" data-once>한 번 보기</button></div>
+      <section><h4>위기 알림 <small>내 시체를 빼앗겼다</small></h4>
+        <div class="bt"><button type="button" data-pc="1" class="${pinC === 1 ? 'on' : ''}">「빼앗겼다」 띄워 두기</button><button type="button" data-once>한 번 보기</button></div>
         ${rows('c')}<div class="cl"><span>큰 줄 색</span>${sw('cAc')}</div><div class="cl"><span>작은 줄 색</span>${sw('cBc')}</div></section>
       <section><h4>조작 안내 <small>화면 아래 키 줄</small></h4>${rows('k')}</section>
       <div class="ft"><button type="button" data-def>기본값</button><span class="sv"></span></div>`;
