@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-753 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-761 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-753'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-761'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1903,6 +1903,8 @@ var MeshoptDecoder = (function () {
     root.innerHTML = `<div id="sr-startfade"></div><div id="sr-start"><div class="pl">신사 터</div><div class="tm"><b>初日</b><span>--:--:--</span><i></i></div><div class="ob">종료 조건 — 시체 셋을 먼저 자기 본진에 모은다</div></div><div id="sr-endfade"></div><div id="sr-end"><div class="k"></div><div class="t"></div><div class="s"></div><div class="rec"></div><div class="tally"></div><div class="r">R — 다시</div></div>
       <div id="sr-stamp"><b>경기장</b><span class="sr-day">初日</span><span id="sr-stamp-clock">--:--:--</span></div>`;
     (document.getElementById('game-root') || document.body).appendChild(root);   // 스튜디오 캡처 범위 안(종료 카드·시각)
+    // b755 — 왼쪽 아래 「— 경기장 初日 시각」 줄 숨김(사용자 「이것도 제거해」) · 시계 값은 ui.js 가 읽어 요소는 남김 · 되살리기 document.body.classList.add('sr-stamp-on')
+    { const st = document.createElement('style'); st.textContent = 'body:not(.sr-stamp-on) #sr-stamp{display:none!important}'; document.head.appendChild(st); }
     el = { end: root.querySelector('#sr-end'), fade: root.querySelector('#sr-endfade'), start: root.querySelector('#sr-start'), sfade: root.querySelector('#sr-startfade') };
     document.body.classList.add('tz-on');
     buildArt(col);
@@ -2732,7 +2734,7 @@ var MeshoptDecoder = (function () {
     const mp = window.__mp && window.__mp.on, rd = mp && window.__mpDbg ? window.__mpDbg().lastRound : 0;
     el.start.querySelector('i').textContent = mp && rd > 0 ? `판 ${rd}` : '';
     el.start.className = ''; el.sfade.className = ''; void el.start.offsetWidth;
-    el.start.className = 'on'; el.sfade.className = 'on'; startT = performance.now();
+    el.start.className = force || window.__startCardText === true ? 'on' : ''; el.sfade.className = 'on'; startT = performance.now();   // b754 — 「신사 터 · 初日 · 종료 조건」 글 카드 없앰(사용자) · 검은 화면에서 서서히는 그대로 · 되살리기 __startCardText = true
   }
   window.__startCard = () => showStart(true);
   function tickStart() {
@@ -4022,7 +4024,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
   setInterval(() => { const G = window.__G; if (!G || !G.hit || !G.hit.active || G.hit.drop) return; if (G.cfg.dragMode && G.set) G.set('dragMode', false); }, 50);
   // 마우스 끌기로 카메라 돌리기 막기
   const block = (e) => { if (!fx('nomousecam') || e.pointerType === 'touch' || window.__explore) return;   // b647 — 둘러보기에서는 마우스 끌기로 시점(사용자)
-   if (e.target && e.target.tagName === 'CANVAS') { e.stopImmediatePropagation(); } };
+   if (e.target && e.target.tagName === 'CANVAS' && !(e.target.closest && e.target.closest('#hc'))) { e.stopImmediatePropagation(); } };   // b759 — 「벌 카메라」 창의 그림(끌어서 방향 · 거리 · 높이)은 막지 않음
   addEventListener('pointerdown', block, true); addEventListener('mousedown', block, true);
   // 괴물 시작 잠
   let was = false, until = 0, keep = null;
@@ -13618,9 +13620,9 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     on: 1, every: 55, venom: 0.5, app: 2.6, size: 1.3, buzz: 1,
     wingHz: 28, wingAmp: 0.85, ghost: 0.3,
     swell: 0.75, swellUp: 1.1, swellHold: 9, lump: 0.6, venomScream: 0, screamVol: 1,
-    height: 14, lift: 2.4, grabScream: 0, landBlood: 1,
+    height: 14, lift: 2.4, grabScream: 0, landDrop2: 0,   /* b757 — landBlood → landDrop2 · 기본 0(사용자 「동그란 방울지는 피는 안 생기고 촥 퍼지기만」) */
     landStill: 1.6, landStreak: 1, lArmUp: 12, lArmFwd: -18, lElbow: 12, lHandUp: 0, lLegOut: 30, lLegFwd: -10, lShinOut: 6, lShinFwd: -4, lHeadBack: 14,   // b740 — 땅에 박힌 뒤 팔다리 뻗고 멈춰 있는 시간 · 흩뿌린 피 자국 · 뻗은 자세(°)
-    tempo: 0.7, landClear: 1, landSplat: 1, landSplatR: 1.7, landSplatRed: 0, landStreak2: 0.25, landPool2: 0,   // b752 — 연출 전체 빠르기(0.7 = 느리게 · 사용자 「카메라 텐션이 너무 빨라 인지가 안 된다」) · 땅 피 터짐(크기 · 선홍) · 줄기 · 웅덩이
+    tempo: 0.7, landClear: 1, landSplat: 1, landSplatR: 1.7, landSplatRed: 0, landSplDots: 0, landStreak2: 0.25, landPool2: 0,   // b752 — 연출 전체 빠르기(0.7 = 느리게 · 사용자 「카메라 텐션이 너무 빨라 인지가 안 된다」) · 땅 피 터짐(크기 · 선홍) · 줄기 · 웅덩이
     appDive: 2.2, appHoverD: 4.5, appHoverH: 3.2, appHoverAt: 0.5, appDiveAt: 0.82, liftYank: 0.7, cGrabShake: 1, cGrabPunch: 7, cRelPunch: 9, cAppLook0: 0.85, cAppFocus: 14,   // b749 — 날아오기: 멀리서 천천히 → 콱 내리꽂음(가속) · 쫙 올라감(처음에 확) · 잡는 순간 쿵 · 화각 · 놓는 순간 화각 · 처음엔 벌 쪽을 · 벌을 당겨 봄
     relWind: 0.4, relHoist: 0.7, relUp: 1.6, dropScream: 0, cRelShake: 0.6, relHoist2: 1.1, relUp2: 2.8, cRelShake2: 1.3, landSpread: 1, landPool: 1, fpFlail: 7,   // b738 — 놓기(들어 올렸다 내던짐 · 벌이 위로 튐 · 놓을 때 비명 · 카메라 툭) · 땅 피(사방으로 튀는 거리 · 웅덩이) · 추락하며 허우적 세기
     legAmt: 1, legSpd: 0.6, fallG: 22, topHold: 0.45, liftCurve: 1,   // b707 — 떨어지는 빠르기(중력 m/s²) · 꼭대기에서 멈칫 · 올라가는 곡선(0 일정 · 1 천천히 시작해 천천히 멈춤)                                                     // b703 — 다리 움직임(0 = 날개만) · 빠르기
@@ -13638,6 +13640,15 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     cFallD: 3.4, cFallUp: 1.6, cFallSide: 35, cFallLead: 0.6, cFallLag: 0.12, cFallFov: 12,
     cFallTop: 1, cFallAbove: 4.5, cFallOff: 1.2, cFallBlend: 0.12,   // b727 — 떨어질 때 하늘에서 내려다봄(1) ↔ 옆에서 같이(0) · 몸 위 높이 · 옆으로 비킴 · 올려다보기 → 내려다보기 넘어가는 시간(0 = 바로 컷)
     cLandShake: 1, cLandHold: 1.4,
+    // b758 — 새 벌 카메라(「벌 카메라」 창) — k{장면}{값}: 장면 ap 날아옴 · li 끌려 올라감 · tp 꼭대기 · fa 떨어짐 · la 땅 / 값 D 거리 · H 높이 · Y 방향 · L 보는 곳 · Z 확대 · F 따라감 · O 돌기 · B 넘어오는 시간
+    //   처음 값은 b757 까지 맞춰 둔 예전 카메라 모습에 가깝게(날아옴 6.5m 옆 25° · 올라감 13.5m 밖 땅에서 올려다봄 · 꼭대기 위로 옮겨 감 · 떨어짐 하늘에서 내려다봄)
+    kapD: 6.5, kapH: 1.4, kapY: 25, kapL: 0.5, kapZ: 1.1, kapF: 0, kapO: 0, kapB: 1.3,
+    kliD: 13.5, kliH: 4.9, kliY: 0, kliL: 0, kliZ: 0.8, kliF: 0.18, kliO: 18, kliB: 1.2,
+    ktpD: 3, ktpH: 5, ktpY: -60, ktpL: 0, ktpZ: 1.6, ktpF: 1, ktpO: 10, ktpB: 1.6,
+    kfaD: 1.2, kfaH: 4.3, kfaY: -90, kfaL: 0, kfaZ: 0.85, kfaF: 1, kfaO: 0, kfaB: 0.9,
+    klaD: 1.6, klaH: 4.3, klaY: -90, klaL: 0, klaZ: 0.95, klaF: 1, klaO: 6, klaB: 0.45,
+    kOn: 1, kFrom: 0, kBase: 0, kClear: 1, kHold: 1.4, kOut: 1.25, kLag: 0.19,
+    kShGrab: 1, kPunchG: 7, kShLift: 0.35, kRoll: 12, kShRel: 1.3, kPunchR: 9, kShLand: 1.5,
   };
   const H = (window.__hornet = { ready: false, cf: Object.assign({}, DEF), DEF, log: [], events: [], swells: new Map() });
   try { const sv = JSON.parse(localStorage.getItem(LS) || 'null'); if (sv) for (const k in DEF) if (typeof sv[k] === 'number' && isFinite(sv[k])) H.cf[k] = sv[k]; } catch { /* 저장 없음 */ }
@@ -14059,7 +14070,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
             if (!ev.studio || !ev.bled) { ev.bled = true; landBlood(lp, ev); } else landBlood(lp, ev, true);   // b752 — 연출실은 돌 때마다 피 터짐을 새로(값을 바꾸면 바로 보이게) if (q.who === 'hero' && window.__camKick) try { window.__camKick(1); } catch { /* */ }
             const Sc = window.__scream; if (Sc && Sc.say && Sc.pick) try { const id = Sc.pick('hit'); if (id) Sc.say(id, lp, meshesOf(q.who), { vol: 0.9 * C.screamVol }); } catch { /* */ }
           }
-          if (k >= 1 && !hold && fu >= tf + Math.max(C.cLandHold + C.cOut, ev.ls + 0.55)) return false;   // b717 — 카메라가 다 돌아올 때까지(재생바 길이와 같게)
+          if (k >= 1 && !hold && fu >= tf + Math.max(camTail(), ev.ls + 0.55)) return false;   // b717 — 카메라가 다 돌아올 때까지(재생바 길이와 같게)
         }
       }
       if (u < tR) look = hp;
@@ -14100,27 +14111,89 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
      · 그림은 캔버스로 세 장(처음 한 번) · 땅 모양을 따라 깐다(격자 점마다 땅 높이 — 경사 · 돌 턱에 묻히지 않게) · 0.14초에 확 퍼짐
      · 재질은 게임 바닥 핏자국과 같은 종류(그림 + 투명 그림 · 새 셰이더 없음) · 색은 끌린 자국과 같은 식(「선홍」 만큼 밝게) · 판 끝까지(최대 8) */
   const SPL = { tex: [], mats: [], list: [], Std: null };
-  function splTex(seed) {
-    const N = 512, cv = document.createElement('canvas'); cv.width = cv.height = N; const g = cv.getContext('2d');
-    let s = (seed * 7919 + 13) % 233280; const R = () => (s = (s * 9301 + 49297) % 233280) / 233280, c = N / 2, TAU = 6.2832;
-    g.fillStyle = '#fff';
-    const dot = (x, y, r) => { g.beginPath(); g.arc(x, y, Math.max(0.6, r), 0, TAU); g.fill(); };
-    g.beginPath(); for (let i = 0; i <= 48; i++) { const a = i / 48 * TAU, r = N * (0.11 + 0.035 * R() + 0.025 * Math.sin(a * 3 + seed) + 0.02 * Math.sin(a * 7 + seed * 2)); const x = c + Math.cos(a) * r, y = c + Math.sin(a) * r; if (i) g.lineTo(x, y); else g.moveTo(x, y); } g.closePath(); g.fill();
-    for (let i = 0; i < 9; i++) { const a = R() * TAU, r = N * (0.08 + 0.1 * R()); dot(c + Math.cos(a) * r, c + Math.sin(a) * r, N * (0.04 + 0.05 * R())); }   // 덩이 가장자리 울퉁불퉁
-    const ns = 24 + Math.floor(R() * 12);
-    for (let i = 0; i < ns; i++) {
-      const a = (i / ns) * TAU + (R() - 0.5) * 0.35, L = N * (0.17 + 0.25 * Math.pow(R(), 0.8)), w0 = N * (0.008 + 0.022 * R());
-      const ex = c + Math.cos(a) * L, ey = c + Math.sin(a) * L, px = -Math.sin(a), py = Math.cos(a), b0 = N * 0.09;
-      const bx = c + Math.cos(a) * b0, by = c + Math.sin(a) * b0;
-      g.beginPath(); g.moveTo(bx + px * w0 * 1.6, by + py * w0 * 1.6); g.quadraticCurveTo((bx + ex) / 2 + px * w0 * 0.5, (by + ey) / 2 + py * w0 * 0.5, ex + px * w0 * 0.15, ey + py * w0 * 0.15);
-      g.lineTo(ex - px * w0 * 0.15, ey - py * w0 * 0.15); g.quadraticCurveTo((bx + ex) / 2 - px * w0 * 0.5, (by + ey) / 2 - py * w0 * 0.5, bx - px * w0 * 1.6, by - py * w0 * 1.6); g.closePath(); g.fill();
-      if (R() < 0.75) dot(ex, ey, w0 * (0.8 + 1.4 * R()));                                          // 끝 방울
-      const nd = Math.floor(R() * 3); for (let k = 0; k < nd; k++) { const tt = 1.06 + 0.16 * R(); if (L * tt < N * 0.47) dot(c + Math.cos(a) * L * tt, c + Math.sin(a) * L * tt, w0 * (0.4 + 0.7 * R())); }
+  // b755 — 다시(사용자 「피 모양이 어설퍼」 · b754 도 줄기가 곧고 바늘처럼 뾰족해 성게 · 가시 그림 같았다)
+  //   · 굵은 것(고임 · 손가락 줄기 · 큰 방울)을 그린 뒤 흐리게 → 문턱으로 다시 날카롭게 = 액체끼리 녹아 붙는 모양
+  //     (줄기 밑동은 고임에 매끄럽게 · 끝은 둥글게 맺힘 · 바로 옆 방울은 줄기에 달라붙음)
+  //   · 줄기: 밑동 굵고 끝으로 가며 가늘어지다 끝에 방울이 맺힘 · 조금 휘고 출렁 · 그 너머 끊어진 방울 줄(멀수록 작고 길게)
+  //   · 그 위에 가는 것(실 줄기 몇 가닥 · 작은 방울 · 눈물방울 · 안개 점)은 또렷하게
+  //   · 알파 그림은 검은 바탕에 흰색(예전: 투명 바탕 → 재질의 투명 그림은 초록 값만 읽어 가장자리 부드러움이 사라졌다)
+  //   · 짙기는 모양에서 바로(두꺼운 고임 · 줄기 밑동은 검붉게 · 얇게 튄 끝은 밝게) + 얼룩
+  function splTex(seed, dots) {   // b757 — dots 거짓(기본) = 동그란 방울 없이 촥 퍼진 줄기 · 물보라만
+    const N = 1024, c = N / 2, TAU = Math.PI * 2, mkc = (n) => { const v = document.createElement('canvas'); v.width = v.height = n; return v; };
+    let s = (seed * 7919 + 101) % 233280; const R = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+    const RM = N * 0.48, sst = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+    const ell = (g, x, y, a, b, ang) => { if (Math.hypot(x - c, y - c) + Math.max(a, b) > RM) return; g.beginPath(); g.ellipse(x, y, Math.max(0.6, a), Math.max(0.5, b), ang, 0, TAU); g.fill(); };
+    // 눈물방울 — 바깥쪽(ang)으로 꼬리
+    const tear = (g, x, y, r, ang, tl) => { if (Math.hypot(x - c, y - c) + r * (1 + tl) > RM) return; const ca = Math.cos(ang), sa = Math.sin(ang), px = -sa, py = ca;
+      g.beginPath(); g.moveTo(x + px * r, y + py * r); g.quadraticCurveTo(x + ca * r * tl * 0.6 + px * r * 0.35, y + sa * r * tl * 0.6 + py * r * 0.35, x + ca * r * (1 + tl), y + sa * r * (1 + tl));
+      g.quadraticCurveTo(x + ca * r * tl * 0.6 - px * r * 0.35, y + sa * r * tl * 0.6 - py * r * 0.35, x - px * r, y - py * r); g.arc(x, y, r, ang + Math.PI * 1.5, ang + Math.PI * 0.5, true); g.closePath(); g.fill(); };
+    // 줄기 한 가닥 — 가운데 선(휨 · 출렁) + 굵기 함수 · 끝 자리 · 방향을 돌려줌
+    const strand = (g, a, r0, L, wf, bend, wob, ph) => {
+      const P = [], Q = [], n = 28; let ae = a;
+      for (let k = 0; k <= n; k++) {
+        const t = k / n, rr = r0 + (L - r0) * t, aa = a + bend * t * t + wob * Math.sin(t * 6 + ph) * t, w = Math.max(0.5, wf(t)); ae = aa;
+        const x = c + Math.cos(aa) * rr, y = c + Math.sin(aa) * rr, px = -Math.sin(aa), py = Math.cos(aa);
+        P.push([x + px * w, y + py * w]); Q.push([x - px * w, y - py * w]);
+      }
+      g.beginPath(); g.moveTo(P[0][0], P[0][1]); for (const p of P) g.lineTo(p[0], p[1]); for (let k = n; k >= 0; k--) g.lineTo(Q[k][0], Q[k][1]); g.closePath(); g.fill();
+      return [c + Math.cos(ae) * L, c + Math.sin(ae) * L, ae];
+    };
+    const nG = 4 + Math.floor(R() * 3), gA = []; for (let i = 0; i < nG; i++) gA.push(R() * TAU);
+    const dirA = () => (R() < 0.7 ? gA[Math.floor(R() * nG)] + (R() - 0.5) * 0.75 : R() * TAU);   // 몸에서 튄 쪽 몇 갈래로 몰림
+    // ── 굵은 것(녹아 붙을 것) ──
+    const cvA = mkc(N), A = cvA.getContext('2d'); A.fillStyle = '#fff';
+    // ① 고임 — 낮은 물결 몇 겹의 울퉁불퉁한 덩이 + 둘레 혹
+    const core = N * (0.095 + 0.03 * R()), ph = [R() * TAU, R() * TAU, R() * TAU, R() * TAU];
+    A.beginPath();
+    for (let i = 0; i <= 120; i++) { const a = i / 120 * TAU, r = core * (1 + 0.18 * Math.sin(a * 2 + ph[0]) + 0.11 * Math.sin(a * 5 + ph[1]) + 0.06 * Math.sin(a * 9 + ph[2]) + 0.03 * Math.sin(a * 17 + ph[3])); const x = c + Math.cos(a) * r, y = c + Math.sin(a) * r; if (i) A.lineTo(x, y); else A.moveTo(x, y); }
+    A.closePath(); A.fill();
+    for (let k = 0; k < 12; k++) { const a = R() * TAU, d = core * (0.75 + 0.35 * R()), r = core * (0.14 + 0.24 * R()); ell(A, c + Math.cos(a) * d, c + Math.sin(a) * d, r * 1.25, r, a); }
+    // ② 손가락 줄기 — 밑동 굵게 → 가늘게 → 끝에 맺힌 방울 → 끊어진 방울 줄
+    const nf = dots ? 16 + Math.floor(R() * 10) : 26 + Math.floor(R() * 10);
+    for (let i = 0; i < nf; i++) {
+      const a = dirA(), long = R() < 0.3, L = Math.min(RM * 0.78, core * (long ? 2.4 + 1.2 * R() : 1.3 + 1.1 * Math.pow(R(), 1.3)));
+      const w0 = core * (0.1 + 0.15 * R()), wE = dots ? w0 * (long ? 0.2 + 0.12 * R() : 0.3 + 0.2 * R()) : w0 * (0.03 + 0.05 * R()), k0 = R() * TAU;
+      const wf = (t) => (w0 + (wE - w0) * (dots ? sst(0, 0.8, t) : Math.pow(t, 0.8))) * (1 + 0.12 * Math.sin(t * 17 + k0));   // 방울 없음 — 끝까지 고르게 가늘어져 뾰족하게
+      const [ex, ey, ae] = strand(A, a, core * 0.5, L, wf, (R() - 0.5) * 0.28, (R() - 0.5) * 0.07, R() * TAU);
+      if (!dots) continue;
+      const rb = wE * (1.5 + 1.1 * R()); ell(A, ex + Math.cos(ae) * rb * 0.3, ey + Math.sin(ae) * rb * 0.3, rb * 1.3, rb, ae);
+      let d = L + rb * 1.8; const nd = Math.floor(R() * (long ? 5 : 3));
+      for (let k = 0; k < nd; k++) { d += N * (0.012 + 0.028 * R()); const rd = rb * (0.8 - 0.14 * k) * (0.55 + 0.5 * R()); if (rd < 2) break; ell(A, c + Math.cos(ae) * d, c + Math.sin(ae) * d, rd * (1.25 + 0.3 * k), rd, ae); d += rd * 1.3; }
     }
-    for (let i = 0; i < 110; i++) { const a = R() * TAU, r = N * (0.12 + 0.34 * Math.sqrt(R())); dot(c + Math.cos(a) * r, c + Math.sin(a) * r, N * (0.002 + 0.011 * Math.pow(R(), 2.2))); }   // 흩뿌린 점
-    for (let i = 0; i < 7; i++) { const a = R() * TAU, r = N * (0.2 + 0.24 * R()); dot(c + Math.cos(a) * r, c + Math.sin(a) * r, N * (0.012 + 0.016 * R())); }   // 큰 방울
-    const tx = T.CanvasTexture ? new T.CanvasTexture(cv) : new T.Texture(cv); tx.needsUpdate = true; return tx;
+    // ③ 큰 방울 — 고임 둘레(가까울수록 크고 둥글게)
+    if (dots) for (let i = 0; i < 26; i++) { const a = dirA(), d = core * (1.2 + 2.3 * Math.pow(R(), 0.9)), r = N * (0.006 + 0.012 * Math.pow(R(), 1.6)) * (1.2 - 0.5 * d / RM); ell(A, c + Math.cos(a) * d, c + Math.sin(a) * d, r * (1 + 0.8 * d / RM), r, a); }
+    // 흐리게 → 문턱(녹아 붙는 액체 모양 · 가장자리 2px 남짓 부드럽게) — 검은 바탕 흰색
+    const cvB = mkc(N), B = cvB.getContext('2d'); B.fillStyle = '#000'; B.fillRect(0, 0, N, N); B.filter = 'blur(5px)'; B.drawImage(cvA, 0, 0); B.filter = 'none';
+    { const id = B.getImageData(0, 0, N, N), dd = id.data; for (let i = 0; i < dd.length; i += 4) { const v = dd[i + 1], o = v <= 98 ? 0 : v >= 148 ? 255 : Math.round(255 * sst(98, 148, v)); dd[i] = dd[i + 1] = dd[i + 2] = o; dd[i + 3] = 255; } B.putImageData(id, 0, 0); }
+    // ── 가는 것(또렷하게) ──
+    B.fillStyle = '#fff';
+    // ④ 실 줄기 몇 가닥 — 고임 가장자리에서 길게 · 끝에 작은 방울
+    const nt = dots ? 7 + Math.floor(R() * 6) : 12 + Math.floor(R() * 8);
+    for (let i = 0; i < nt; i++) {
+      const a = dirA(), L = Math.min(RM - 14, core * (2.2 + 2 * R())), w0 = N * (0.0025 + 0.0035 * R());
+      const [ex, ey, ae] = strand(B, a, core * 0.85, L, (t) => w0 * (1 - 0.55 * t), (R() - 0.5) * 0.14, (R() - 0.5) * 0.05, R() * TAU);
+      if (dots) ell(B, ex, ey, w0 * 2, w0 * 1.4, ae);
+    }
+    // ⑤ 작은 방울 · 눈물방울 — 멀수록 작고 바깥으로 늘어짐
+    // 방울 없음 — 짧고 가는 물보라 줄(바깥으로 길쭉 · 양 끝 뾰족)
+    if (!dots) for (let i = 0; i < 260; i++) { const a = dirA() + (R() - 0.5) * 0.1, d = core * 1.05 + (RM - 30 - core * 1.05) * Math.pow(R(), 0.9), q = d / RM, w = 0.7 + 1.9 * Math.pow(R(), 2) * (1.2 - 0.6 * q), l = w * (4 + 9 * R()) * (0.7 + q); ell(B, c + Math.cos(a) * d, c + Math.sin(a) * d, l, w, a); }
+    if (dots) for (let i = 0; i < 170; i++) {
+      const a = dirA(), d = core * 1.1 + (RM - 8 - core * 1.1) * Math.pow(R(), 0.85), q = d / RM, r = N * (0.0016 + 0.0055 * Math.pow(R(), 2.2)) * (1.25 - 0.6 * q), x = c + Math.cos(a) * d, y = c + Math.sin(a) * d;
+      if (r > 2.2 && R() < 0.4) tear(B, x, y, r, a, 0.6 + 1.8 * q); else ell(B, x, y, r * (1 + 1.3 * q * R()), r, a);
+    }
+    // ⑥ 안개 점 — 가까울수록 촘촘
+    for (let i = 0; i < 900; i++) { const a = R() < 0.6 ? dirA() : R() * TAU, d = core * 0.95 + (RM - 4 - core) * Math.pow(R(), 1.5), r = 0.6 + 1.5 * Math.pow(R(), 3); ell(B, c + Math.cos(a) * d, c + Math.sin(a) * d, r * (dots ? 1.25 : 3 + 2 * R()), r * (dots ? 1 : 0.8), a); }
+    const cv2 = mkc(N), g2 = cv2.getContext('2d'); g2.fillStyle = '#000'; g2.fillRect(0, 0, N, N); g2.filter = 'blur(0.7px)'; g2.drawImage(cvB, 0, 0);
+    // 짙기 그림(색에 곱해짐) — 모양을 크게 흐린 두께로: 두꺼운 고임 · 줄기 밑동은 검붉게 · 얇은 끝 · 방울은 밝게 + 얼룩
+    const M = 256, cm = mkc(M), h = cm.getContext('2d'); h.fillStyle = '#000'; h.fillRect(0, 0, M, M); h.filter = 'blur(5px)'; h.drawImage(cvB, 0, 0, M, M); h.filter = 'none';
+    { const id = h.getImageData(0, 0, M, M), dd = id.data; for (let i = 0; i < dd.length; i += 4) { const v = Math.round(255 - 85 * sst(0.2, 0.95, dd[i + 1] / 255)); dd[i] = dd[i + 1] = dd[i + 2] = v; dd[i + 3] = 255; } h.putImageData(id, 0, 0); }
+    for (let i = 0; i < 50; i++) { const a = R() * TAU, d = M * 0.42 * Math.sqrt(R()), r = M * (0.01 + 0.035 * R()), v = Math.round(170 + 85 * R()); h.fillStyle = `rgba(${v},${v},${v},0.3)`; h.beginPath(); h.arc(M / 2 + Math.cos(a) * d, M / 2 + Math.sin(a) * d, r, 0, TAU); h.fill(); }
+    const mk = (cvs) => { const tx = T.CanvasTexture ? new T.CanvasTexture(cvs) : new T.Texture(cvs); tx.needsUpdate = true; return tx; };
+    return { a: mk(cv2), m: mk(cm) };
   }
+  // 그림 세 장은 미리 조금씩(쉬는 틈에 한 장씩) — 땅에 박히는 순간 굽느라 멈칫하지 않게
+  function splWarm() { const go = () => { if (SPL.tex.length >= 3) return; try { SPL.dots = C.landSplDots > 0.5; SPL.tex.push(splTex(SPL.tex.length + 1, SPL.dots)); } catch (e) { console.warn('[hornet] 피 그림', e); return; } (window.requestIdleCallback || ((f) => setTimeout(f, 400)))(go, { timeout: 4000 }); }; setTimeout(go, 3000); }
+  H._splTex = (sd, dots) => splTex(sd, !!dots);   // 확인용(미리보기에서 그림만 보기)
   function splColor(m) { const c = G.cfg || {}, red = Math.max(0, Math.min(1, C.landSplatRed)), bd = (isFinite(c.bloodDark) ? c.bloodDark : 0.67) * (1 - red); m.color.setRGB(0.55 - 0.42 * bd, 0.02 + 0.01 * (1 - bd), 0.02 + 0.02 * (1 - bd)); m.opacity = isFinite(c.bloodAlpha) ? c.bloodAlpha : 0.85; }
   function splat(p) {
     if (!(C.landSplat > 0)) return null;
@@ -14128,7 +14201,9 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     const N = window.__nav; if (N && N.waterAt && N.waterAt(p.x, p.z)) return null;
     if (!SPL.Std) G.scene.traverse((o) => { if (!SPL.Std && o.material && o.material.type === 'MeshStandardMaterial') SPL.Std = o.material.constructor; });
     if (!SPL.Std || !T.PlaneGeometry) return null;
-    if (!SPL.tex.length) for (let i = 0; i < 3; i++) { const tx = splTex(i + 1); SPL.tex.push(tx); SPL.mats.push(new SPL.Std({ map: tx, alphaMap: tx, roughness: 1, metalness: 0, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 })); }
+    const dots = C.landSplDots > 0.5; if (SPL.tex.length && SPL.dots !== dots) { SPL.tex.length = 0; SPL.mats.length = 0; }   // 방울 켬/끔을 바꾸면 그림을 새로(이미 깔린 자국은 그대로)
+    SPL.dots = dots; while (SPL.tex.length < 3) SPL.tex.push(splTex(SPL.tex.length + 1, dots));   // b755 — 보통은 splWarm 이 미리 구워 둠
+    while (SPL.mats.length < 3) { const tx = SPL.tex[SPL.mats.length]; SPL.mats.push(new SPL.Std({ map: tx.m, alphaMap: tx.a, roughness: 1, metalness: 0, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 })); }
     const i0 = Math.floor(Math.random() * 3), mat = SPL.mats[i0]; splColor(mat);
     const Rr = Math.max(0.3, C.landSplatR) * Math.min(3, C.landSplat), seg = 22, geo = new T.PlaneGeometry(Rr * 2, Rr * 2, seg, seg);
     geo.rotateX(-Math.PI / 2); geo.rotateY(Math.random() * Math.PI * 2);
@@ -14145,9 +14220,9 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   function landBlood(p, ev, only) {
     if (G && C.landSplat > 0) { const sp = splat(p); if (ev && ev.studio) { splKill(ev.spl); ev.spl = sp; } }
     if (only) return;
-    const gore = G.gore || (G.mpApi && G.mpApi.gore); if (!gore || !gore.drop || !(C.landBlood > 0)) return;
+    const gore = G.gore || (G.mpApi && G.mpApi.gore); if (!gore || !gore.drop || !(C.landDrop2 > 0)) return;
     // b738 — 처참하게 — 사방으로 팍(사용자 「바닥에 피가 팍 사방으로 뿌려지게」) — 낮고 빠르게 퍼지는 방울(바닥에 떨어진 자리에 자국) + 높이 튀는 방울 + 몸 밑 웅덩이
-    const n = Math.round(150 * C.landBlood), p0 = new T.Vector3(p.x, p.y + 0.2, p.z), F = Math.max(0.2, C.landSpread);
+    const n = Math.round(150 * C.landDrop2), p0 = new T.Vector3(p.x, p.y + 0.2, p.z), F = Math.max(0.2, C.landSpread);
     for (let i = 0; i < n; i++) { const a = rnd(0, 6.28), low = i % 4 !== 0, s = (low ? rnd(2.5, 8.5) : rnd(1, 3.5)) * F; gore.drop(p0, new T.Vector3(Math.cos(a) * s, low ? rnd(0.6, 2.2) : rnd(3, 6), Math.sin(a) * s)); }
     // b740 — 흩뿌린 자국 — 몸에서 사방으로 길게 뻗은 피 줄기(바닥에 바로 · 멀수록 가늘고 길게) · 사용자 「사방으로 촥 흩뿌려진 느낌」
     if (gore.streak && C.landStreak2 > 0) { const m = Math.round(34 * C.landStreak2); for (let i = 0; i < m; i++) { const a = (i / m) * 6.2832 + rnd(-0.12, 0.12), d = rnd(0.25, 2.6) * F, sp = rnd(3, 9) * (0.6 + d * 0.25), dx = Math.cos(a), dz = Math.sin(a); gore.streak(p.x + dx * d, p.z + dz * d, dx, dz, sp, rnd(1.4, 3.4) * (1.1 - Math.min(0.6, d * 0.2))); } }
@@ -14307,6 +14382,10 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
         rsv.push([root, root.position.x, root.position.y, root.position.z, root.quaternion.x, root.quaternion.y, root.quaternion.z, root.quaternion.w]);
         root.quaternion.premultiply(QR); root.position.sub(hp).applyQuaternion(QR).add(hp);
         if (L.ph === 'land') root.position.y -= (hp.y - gy(hp.x, hp.z, hp.y) - 0.12) * ss((L.lu || 0) / 0.07) * w;   // 엉덩이를 땅으로(누운 몸이 공중에 뜨지 않게)
+        // b757 — 엉덩이(돌림 축)를 몸 자리 바로 위에 고정(사용자 「누웠다 일어나기 전에 몸이 뒤로 밀리면서 이동했다 일어난다」)
+        //   쓰러지는 동작(맞음)은 엉덩이가 몸 자리보다 0.3m 남짓 뒤 · 일어나기 동작은 몸 자리 바로 위라, 일어나기로 넘어가는 0.15초에 누운 몸이 0.36m 휙 끌려갔다
+        //   → 들려 올라갈 때부터 엉덩이를 몸 자리(일어나기 동작이 시작하는 자리)에 둔다 · 일어나며(w → 0) 동작 자리로 — 거의 같은 자리라 움직임 없음 · 끄기 window.__hnHipLock = false
+        if (window.__hnHipLock !== false) { const s0 = rsv[rsv.length - 1]; root.position.x += (s0[1] - hp.x) * w; root.position.z += (s0[3] - hp.z) * w; }
         root.updateMatrixWorld(true);
       }
       // 발버둥
@@ -14408,7 +14487,74 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     const kin = ss(u / zb), kout = 1 - ss((u - tEnd) / Math.max(0.05, C.cOut));
     return 1 + (z - 1) * Math.min(kin, kout);
   }
+  /* ── b758 — 새 벌 카메라(사용자 「벌 카메라 연출할 때 더 직관적으로 쉽게 · 벌과의 거리라든지 시점이 너무 어렵다 · 기존 것 지우고 새로 · 창을 아예 분리」)
+     장면 다섯(① 날아올 때 ② 끌려 올라갈 때 ③ 꼭대기 ④ 떨어질 때 ⑤ 땅에 박힘) — 장면마다 같은 여덟 값:
+       거리(나 ↔ 카메라 · 옆으로 m) · 높이(내 가슴보다 위 + · 아래 − m) · 방향(나를 가운데 두고 돈 각 · 0° = 벌 맞은편 — 벌이 내 너머로 보임)
+       보는 곳(나 0 ↔ 벌 1) · 확대(배) · 따라감(카메라가 내 높이를 따라 오르내림 · 0 = 땅 기준에 남아 올려다봄) · 돌기(°/초) · 넘어오는 시간(앞 장면 → 이 장면 · 0 = 컷)
+     장면 사이는 경계 앞뒤 반씩 몸 둘레 호로 · 모두 연출 시간 u 로만 정한다(재생바 어디를 잡든 같은 화면) · 예전 카메라로 되돌리기 window.__hnCamOld = true */
+  const SHOT = [
+    { k: 'ap', name: '① 날아올 때', col: '#8a7a3a', a: (e) => 0 },
+    { k: 'li', name: '② 끌려 올라갈 때', col: '#b08a2a', a: (e) => e.app },
+    { k: 'tp', name: '③ 꼭대기', col: '#c9a64a', a: (e) => e.app + e.lift },
+    { k: 'fa', name: '④ 떨어질 때', col: '#c0603c', a: (e) => e.app + e.lift + e.ho },
+    { k: 'la', name: '⑤ 땅에 박힘', col: '#7a2a1c', a: (e) => e.app + e.lift + e.ho + fallT(e.h, e.fg) },
+  ];
+  const shotEnd = (i, e) => (i + 1 < SHOT.length ? SHOT[i + 1].a(e) : evDur(e));
+  const c01 = (v) => Math.max(0, Math.min(1, v));
+  const blendW = (u, b, B) => (B <= 0.001 ? (u >= b ? 1 : 0) : ss((u - (b - B / 2)) / B));
+  // 장면 i 의 카메라(그 순간) — 가운데는 나(가슴) · 방향은 기준 D0 에서 Y° 돈 쪽 · 높이는 (땅 + 1.1m + 몸 높이 × 따라감) + H
+  function shotPose(i, ev, u, g0, D0, my, bhLag, chest) {
+    const s = SHOT[i].k, P = (n) => C['k' + s + n], h = G.hero.position;
+    const yw = (P('Y') + P('O') * Math.max(0, u - SHOT[i].a(ev))) * Math.PI / 180 - my, ca = Math.cos(yw), sa = Math.sin(yw);
+    const dx = D0.x * ca - D0.z * sa, dz = D0.x * sa + D0.z * ca, D = Math.max(0.2, P('D'));
+    const x = h.x + dx * D, z = h.z + dz * D; let y = g0.y + 1.1 + bhLag * c01(P('F')) + P('H');
+    const gg = gy(x, z, g0.y); if (y < gg + 0.3) y = gg + 0.3;   // 땅 밑으로는 안 들어감
+    const bp = ev.bee.root.position, L = c01(P('L'));
+    return { x, y, z, tx: h.x + (bp.x - h.x) * L, ty: chest + (bp.y - chest) * L, tz: h.z + (bp.z - h.z) * L, zm: Math.max(0.2, P('Z')) };
+  }
+  const punch = (u, tG, tR) => (u > tG ? -C.kPunchG * Math.exp(-(u - tG) / 0.22) * Math.min(1, (u - tG) * 25) : 0) + (u > tR ? C.kPunchR * Math.exp(-(u - tR) / 0.45) * Math.min(1, (u - tR) * 18) : 0);
   function cine(cam, target) {
+    if (window.__hnCamOld === true) return cineOld(cam, target);
+    const t = hnow(), ev = H.events.find((e) => e.g === 'grab' && e.q.who === 'hero');
+    if (!ev || !(C.kOn > 0.5)) { CS.ev = null; window.__hnFov = 0; window.__hnRoll = 0; window.__hnZoom = 1; return; }
+    const u = t - ev.t0, tG = ev.app, tR = tG + ev.lift + ev.ho, tf = fallT(ev.h, ev.fg), tL = tR + tf, tEnd = tL + C.kHold;
+    const h = G.hero.position, cy = G.mpApi && G.mpApi.camYaw ? G.mpApi.camYaw() : 0;
+    if (CS.ev !== ev) { CS.ev = ev; CS.y0 = cy; const dx = cam.x - h.x, dz = cam.z - h.z, l = Math.hypot(dx, dz) || 1; CS.d0 = { x: dx / l, z: dz / l }; CS.g0 = { x: h.x, y: gy(h.x, h.z, h.y), z: h.z }; }
+    const from = C.kFrom > 0.5 ? 1 : 0, bIn = Math.max(0.05, C['k' + SHOT[from].k + 'B']), uIn = from ? tG - bIn / 2 : 0;
+    const k = Math.min(ss((u - uIn) / bIn), 1 - ss((u - tEnd) / Math.max(0.05, C.kOut)));
+    if (k <= 0.0005) { window.__hnFov = 0; window.__hnRoll = 0; window.__hnZoom = 1; return; }
+    const g0 = CS.g0, my = Math.atan2(Math.sin(cy - CS.y0), Math.cos(cy - CS.y0)); CS.my = my;   // 마우스로 끌어 돌린 만큼
+    // 방향 0° — 벌 맞은편(카메라 — 나 — 벌 · 벌이 내 너머로 날아옴) 또는 평소 카메라 쪽 · 가리면 비켜 섬(한 번만 잰다)
+    if (CS.dbEv !== ev) {
+      CS.dbEv = ev; const bx = h.x - ev.sp.x, bz = h.z - ev.sp.z, bl = Math.hypot(bx, bz) || 1;
+      CS.db = C.kBase > 0.5 ? { x: CS.d0.x, z: CS.d0.z } : { x: bx / bl, z: bz / bl };
+      if (C.kClear > 0.5 && window.__hnCamClear !== false) try {
+        const rc = CS.rc || (CS.rc = new T.Raycaster()), tg = [...((G.map && G.map.grounds) || []), ...(((G.props && G.props.list) || []).map((q) => q.root).filter(Boolean))], o = new T.Vector3(h.x, g0.y + 1.1, h.z), dv = new T.Vector3();
+        const hit = (fr, to) => { dv.copy(to).sub(fr); const Ln = dv.length(); if (Ln < 0.1) return false; rc.set(fr, dv.normalize()); rc.far = Ln; return rc.intersectObjects(tg, true).some((q) => q.object.visible && !q.object.isSkinnedMesh); };
+        const rotd = (d, a) => ({ x: d.x * Math.cos(a) - d.z * Math.sin(a), z: d.x * Math.sin(a) + d.z * Math.cos(a) }), RD = Math.PI / 180;
+        const camAt = (d, s) => { const r = rotd(d, C['k' + s + 'Y'] * RD), D = C['k' + s + 'D']; return new T.Vector3(h.x + r.x * D, g0.y + 1.1 + Math.max(-0.8, C['k' + s + 'H']), h.z + r.z * D); };
+        const hvp = hoverPt(ev), clear = (d) => { for (const s of from ? ['li'] : ['ap', 'li']) if (hit(o, camAt(d, s))) return false; if (!from && hit(camAt(d, 'ap'), hvp)) return false; return true; };
+        const b0 = CS.db, cand = [b0, rotd(b0, 25 * RD), rotd(b0, -25 * RD), rotd(b0, 50 * RD), rotd(b0, -50 * RD), rotd(b0, 80 * RD), rotd(b0, -80 * RD), CS.d0, rotd(b0, Math.PI)];
+        const f = cand.find(clear); if (f) CS.db = f;
+      } catch { /* 그대로 */ }
+    }
+    const D0 = CS.db || CS.d0, lag = Math.max(0, C.kLag), bhLag = bodyHS(ev, u - lag * 0.5, lag), bh = bodyHS(ev, u, 0.12);
+    const chest = g0.y + bh + 1.1 - 0.85 * ss((u - tL) / 0.25);   // 땅에 누우면 가슴이 낮다
+    let P = shotPose(from, ev, u, g0, D0, my, bhLag, chest), zm = P.zm;
+    for (let i = from + 1; i < SHOT.length; i++) {
+      const w = blendW(u, SHOT[i].a(ev), C['k' + SHOT[i].k + 'B']); if (w <= 0) continue;
+      const Q = shotPose(i, ev, u, g0, D0, my, bhLag, chest);
+      P = arcMix(G.hero.position, P, Q, w, Math.min(3, Math.abs(Q.y - P.y) * 0.15), 1, 0.8); zm += (Q.zm - zm) * w;   // 높이가 크게 바뀌면(땅 → 하늘) 넓게 돌아 넘어감
+    }
+    { const Q0 = { x: cam.x, y: cam.y, z: cam.z, tx: target.x, ty: target.y, tz: target.z }, R = arcMix(h, Q0, P, k, 0, 1);   // 평소 카메라 ↔ 벌 카메라도 몸 둘레 호로
+      cam.x = R.x; cam.y = R.y; cam.z = R.z; target.x = R.tx; target.y = R.ty; target.z = R.tz; }
+    const liftSh = u > tG && u < tR ? C.kShLift * 0.05 : 0, landSh = u > tL ? C.kShLand * 0.16 * Math.exp(-(u - tL) / 0.35) : 0, relSh = u > tR ? C.kShRel * 0.08 * Math.exp(-(u - tR) / 0.22) : 0, grSh = u > tG ? C.kShGrab * 0.09 * Math.exp(-(u - tG) / 0.18) : 0, a = (liftSh + landSh + relSh + grSh) * k;
+    if (a > 0.0005) { cam.x += Math.sin(u * 37.1) * a; cam.y += Math.sin(u * 41.3 + 1) * a; cam.z += Math.sin(u * 33.7 + 2) * a; target.y += Math.sin(u * 29.3) * a * 0.6; }
+    window.__hnZoom = 1 + (zm - 1) * k;
+    window.__hnFov = punch(u, tG, tR) * k;
+    window.__hnRoll = (C.kRoll * Math.PI / 180) * Math.sin(u * 1.3) * ss((u - tG) / 0.5) * (1 - ss((u - tR + 0.3) / 0.6)) * k;
+  }
+  function cineOld(cam, target) {
     const t = hnow();
     const ev = H.events.find((e) => e.g === 'grab' && e.q.who === 'hero');
     window.__hnZoom = ev ? zoomAt(ev, t - ev.t0) : 1;
@@ -14473,7 +14619,8 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     if (want && hitT != null && G.hit && G.hit.active) G.hit.t = hitT;
     if (!want && heldPause !== null) { window.__paused = heldPause; heldPause = null; hitT = null; }
   }
-  const evDur = (ev) => ev.g === 'venom' ? ev.app + 1.45 + 2.4 : ev.app + ev.lift + ev.ho + Math.max(2.6, fallT(ev.h, ev.fg) + Math.max(C.cLandHold + C.cOut, (ev.ls || 0) + 0.55));
+  const camTail = () => (window.__hnCamOld === true ? C.cLandHold + C.cOut : C.kHold + C.kOut);   // b758
+  const evDur = (ev) => ev.g === 'venom' ? ev.app + 1.45 + 2.4 : ev.app + ev.lift + ev.ho + Math.max(2.6, fallT(ev.h, ev.fg) + Math.max(camTail(), (ev.ls || 0) + 0.55));
   H.cur = () => H.events[H.events.length - 1] || null;
   H.seek = (u) => { const ev = H.cur(); if (!ev) return; ev.t0 = H.ck.t - Math.max(0, Math.min(evDur(ev) - 0.02, u)); };
   H.evDur = evDur;
@@ -14521,6 +14668,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
         return;
       }
       if (!hooked) hook();
+      if (!SPL.warm) { SPL.warm = true; splWarm(); }
       const rt = now(), rdt = Math.min(0.1, rt - (last || rt)); last = rt;
       const gev = H.events.find((e) => e.g === 'grab'), sp = H.ck.paused ? 0 : Math.max(0, H.ck.speed) * (gev ? Math.max(0.2, gev.tp || 1) : 1); H.ck.t += rdt * sp;   // b752 — 낚아채기 동안 왕벌 시계를 「연출 빠르기」로(카메라 · 벌 · 몸 · 떨어짐 모두 같이)
       const t = hnow(), dt = rdt * sp;
@@ -14557,10 +14705,10 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     ['lLegOut', '다리 벌림', 0, 90, 1, DEG], ['lLegFwd', '허벅지 들기(− 땅에 붙임)', -40, 90, 1, DEG], ['lShinOut', '정강이 바깥으로', -40, 60, 1, DEG], ['lShinFwd', '정강이 — 무릎 굽힘(−)', -90, 60, 1, DEG], ['lHeadBack', '고개 젖힘', -40, 60, 1, DEG],
     ['landSplat', '땅 피 터짐(사방으로 촥 · 0 = 없음)', 0, 2, 0.05, PCT], ['landSplatR', '피 터짐 크기(반지름)', 0.5, 4, 0.05, M2], ['landSplatRed', '피 터짐 색(0 끌린 자국과 같게 · 1 선홍)', 0, 1, 0.05, PCT],
     ['landClear', '누운 몸 땅에서 띄움(묻히지 않게 · 몸 두께 배)', 0, 2, 0.05, PCT],
-    ['landBlood', '떨어질 때 튀는 피 방울', 0, 3, 0.05, PCT], ['landSpread', '피가 사방으로 튀는 거리', 0.2, 3, 0.05, PCT], ['landPool2', '몸 밑 동그란 피 웅덩이(0 = 없음)', 0, 3, 0.05, PCT],
+    ['landDrop2', '떨어질 때 튀어 동그랗게 찍히는 피 방울(0 = 없음)', 0, 3, 0.05, PCT], ['landSplDots', '피 자국 그림에 동그란 방울', 0, 1, 1, (v) => (v > 0.5 ? '있음' : '없음 — 촥 퍼지기만')], ['landSpread', '피가 사방으로 튀는 거리', 0.2, 3, 0.05, PCT], ['landPool2', '몸 밑 동그란 피 웅덩이(0 = 없음)', 0, 3, 0.05, PCT],
   ];
   const ROWS_B = [
-    ['낚아채기 — 올라가기 · 떨어지기'], ['height', '올라가는 높이', 4, 40, 0.5, M1], ['lift', '올라가는 시간', 0.6, 8, 0.1, SEC], ['liftCurve', '올라가는 곡선(0 일정 · 1 천천히 시작해 멈춤)', 0, 1, 0.05, PCT], ['liftYank', '쫙 — 처음에 확 들어 올림', 0, 1, 0.05, PCT], ['cGrabShake', '잡는 순간 카메라 쿵', 0, 3, 0.05, PCT], ['cGrabPunch', '잡는 순간 화각 확(°)', 0, 25, 0.5, DEG],
+    ['낚아채기 — 올라가기 · 떨어지기'], ['height', '올라가는 높이', 4, 40, 0.5, M1], ['lift', '올라가는 시간', 0.6, 8, 0.1, SEC], ['liftCurve', '올라가는 곡선(0 일정 · 1 천천히 시작해 멈춤)', 0, 1, 0.05, PCT], ['liftYank', '쫙 — 처음에 확 들어 올림', 0, 1, 0.05, PCT],
     ['topHold', '꼭대기에 머무는 시간', 0, 8, 0.05, SEC], ['fallG', '떨어지는 빠르기(중력)', 4, 60, 0.5, (v) => `${(+v).toFixed(1)} (${Math.sqrt(2 * Math.max(1, C.height) / Math.max(1, v)).toFixed(2)}초에 땅)`],
     ['잡는 자리 — 벌과 몸 맞추기'], ['grabBone', '잡는 자리', 0, 4, 1, (v) => GBN[Math.round(v)]], ['grabUp', '위로', -1, 2, 0.01, M2], ['grabAlong', '몸을 따라(+ 머리 쪽)', -1.5, 1.5, 0.01, M2], ['grabSide', '옆으로', -1, 1, 0.01, M2],
     ['grabTilt', '벌 기울기', -90, 90, 1, DEG], ['beeTurn', '벌 방향', -180, 180, 1, DEG],
@@ -14569,22 +14717,11 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
     ['추락 자세(떨어질 때 몸짓 「추락」 · 몸 기준 °)'], ['aArmUp', '팔 들기(옆 → 머리 쪽)', -60, 90, 1, DEG], ['aArmFwd', '팔 앞으로(가슴 쪽)', -60, 80, 1, DEG], ['aElbow', '팔꿈치 굽힘(손을 하늘로)', 0, 150, 1, DEG], ['aHandUp', '손을 머리 쪽으로', -60, 60, 1, DEG],
     ['aLegOut', '다리 벌림(아래 → 옆)', 0, 110, 1, DEG], ['aLegFwd', '허벅지 들기(가슴 쪽)', -40, 100, 1, DEG], ['aShinOut', '정강이 바깥으로', -40, 60, 1, DEG], ['aShinFwd', '정강이 앞으로(− 무릎 더 굽힘)', -90, 60, 1, DEG],
     ['aHeadBack', '고개 젖힘', -40, 60, 1, DEG], ['fpWiggle', '팔다리 흔들림', 0, 2, 0.05, PCT], ['fpFlail', '「추락하며 허우적」 휘젓는 세기', 0, 15, 0.5, (v) => (+v).toFixed(1)],
-    ['놓기 — 떨어뜨리는 느낌'], ['relWind', '놓기 전 들어 올리는 시간', 0.1, 1.5, 0.05, SEC], ['relHoist2', '들어 올리는 높이(0 = 그냥 놓음)', 0, 3, 0.05, M2], ['relUp2', '놓자마자 벌이 위로 튀는 높이', 0, 6, 0.1, M1], ['cRelPunch', '놓는 순간 화각 확 넓어짐(°)', 0, 25, 0.5, DEG], ['dropScream', '놓을 때 비명(0 = 아무거나)', 0, 40, 1, 'scream'], ['cRelShake2', '놓는 순간 카메라 툭', 0, 3, 0.05, PCT],
+    ['놓기 — 떨어뜨리는 느낌'], ['relWind', '놓기 전 들어 올리는 시간', 0.1, 1.5, 0.05, SEC], ['relHoist2', '들어 올리는 높이(0 = 그냥 놓음)', 0, 3, 0.05, M2], ['relUp2', '놓자마자 벌이 위로 튀는 높이', 0, 6, 0.1, M1], ['dropScream', '놓을 때 비명(0 = 아무거나)', 0, 40, 1, 'scream'],
     ['liftAng', '올라갈 때 몸 각도(0° 머리 위로 · 90° 누운 채 · 180° 거꾸로)', 0, 180, 1, DEG], ['fallFace', '떨어질 때 얼굴', 0, 2, 1, (v) => FFN[Math.round(v)]], ['fallAng2', '떨어질 때 몸 각도(90° 누운 채 · 0° 선 채)', 0, 180, 1, DEG], ['fallTurn', '하늘 본 채 빙글 도는 빠르기', -180, 180, 1, (v) => `${Math.round(v)}°/초`],
     ['fallAng', '(예전 방식) 떨어질 때 몸 각도', 0, 180, 1, DEG], ['fallSpin', '(예전 방식) 굴러 떨어지는 빠르기', -360, 360, 5, (v) => `${Math.round(v)}°/초`],
-    ['카메라 — 날아올 때(벌이 오는 쪽을 보며 나와 벌을 함께)'], ['cApp', '날아올 때부터 카메라(1 = 켬 · 0 = 잡힐 때부터)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['cAppIn', '들어가는 시간', 0.1, 3, 0.05, SEC], ['cAppD2', '나와의 거리', 1.5, 15, 0.1, M1], ['cAppH2', '카메라 높이', -1, 6, 0.05, M2],
-    ['cAppLook0', '처음 시선 — 벌이 오는 쪽(1 = 벌만)', 0, 1, 0.05, PCT], ['cAppFocus', '처음에 벌을 당겨 봄(화각 −°)', 0, 30, 1, DEG], ['appHoverAt', '날아오기 — 내 앞에 떠 있기 시작(날아오는 시간의 몫)', 0.1, 0.9, 0.02, PCT], ['appDiveAt', '날아오기 — 내리꽂기 시작(몫)', 0.2, 0.98, 0.02, PCT], ['appHoverD', '떠 있는 자리 — 나와의 거리', 1.5, 12, 0.1, M1], ['appHoverH', '떠 있는 자리 — 높이', 0.5, 8, 0.1, M1],
+    ['날아오기 — 떠서 노려보다 내리꽂기'], ['appHoverAt', '내 앞에 떠 있기 시작(날아오는 시간의 몫)', 0.1, 0.9, 0.02, PCT], ['appDiveAt', '내리꽂기 시작(몫)', 0.2, 0.98, 0.02, PCT], ['appHoverD', '떠 있는 자리 — 나와의 거리', 1.5, 12, 0.1, M1], ['appHoverH', '떠 있는 자리 — 높이', 0.5, 8, 0.1, M1],
     ['appDive', '내리꽂기 가속(1 = 고르게 · 클수록 마지막에 콱)', 1, 4, 0.05, (v) => (+v).toFixed(2)],
-    ['cAppTurn', '벌 반대편으로 돌아가는 정도(0 = 지금 카메라 쪽)', 0, 1, 0.05, PCT], ['cAppLook', '시선 — 나(0) ↔ 벌(1)', 0, 1, 0.05, PCT], ['cAppSide', '옆으로 도는 각도', -90, 90, 1, DEG], ['cAppFov', '넓게(+) · 확대(−)', -30, 30, 1, DEG],
-    ['카메라 — 들어가고 돌아오기'], ['camOn2', '낚아채기 카메라(1 = 켬)', 0, 1, 1, (v) => (v > 0.5 ? '켬' : '끔')], ['cIn', '들어가는 시간', 0.1, 3, 0.05, SEC], ['cOut', '돌아오는 시간', 0.1, 4, 0.05, SEC],
-    ['카메라 — 끌려 올라갈 때(땅에서 올려다봄)'], ['cLiftD', '나와의 거리(작을수록 바로 밑에서 올려다봄)', 0.3, 15, 0.1, M1], ['cLiftH', '카메라 높이(땅에서)', 0.2, 6, 0.05, M2], ['cLiftRise', '따라 올라가는 정도', 0, 1, 0.02, PCT],
-    ['cLiftOrbit', '돌아 들어가는 빠르기', -90, 90, 1, (v) => `${Math.round(v)}°/초`], ['cLiftFov', '확대(−) · 넓게(+)', -30, 30, 1, DEG], ['cLiftShake', '잔떨림', 0, 2, 0.05, PCT], ['cLiftRoll', '기울기 흔들림', 0, 25, 0.5, DEG],
-    ['카메라 — 떨어질 때(같이 따라감)'], ['cFallD', '나와의 거리', 1, 12, 0.1, M1], ['cFallUp', '나보다 높이', -4, 6, 0.1, M1], ['cFallSide', '옆으로 도는 각도', -180, 180, 1, DEG],
-    ['cFallTop', '시선(0 옆에서 같이 · 1 하늘에서 내려다봄)', 0, 1, 0.05, (v) => (v >= 0.95 ? '하늘에서 내려다봄' : v <= 0.05 ? '옆에서 같이' : `섞음 ${Math.round(v * 100)}%`)], ['cFallAbove', '내려다볼 때 몸 위 높이', 1, 20, 0.1, M1], ['cFallOff', '내려다볼 때 옆으로 비킴', 0.3, 8, 0.1, M1], ['cFallBlend', '올려다보기 → 내려다보기 넘어가는 시간(0 컷)', 0, 1.5, 0.02, SEC],
-    ['cTopMove', '꼭대기에서 미리 하늘로 올라가는 정도(0 놓는 순간 · 1 꼭대기 처음부터)', 0, 1, 0.05, PCT], ['cFallSmooth', '떨어지는 몸 따라가는 부드러움(땅에 닿을 때 덜컥 없게)', 0, 1, 0.02, SEC],
-    ['cFallLead', '앞(아래)을 내다봄', 0, 2, 0.05, PCT], ['cFallLag', '따라가는 늦음', 0.02, 0.8, 0.01, SEC], ['cFallFov', '넓게(+) · 확대(−)', -30, 30, 1, DEG],
-    ['카메라 — 구간별 줌(1배 그대로 · 2배 두 배 확대 · 1보다 작으면 넓게)'], ['zApp', '① 날아올 때 줌', 0.5, 4, 0.05, ZM], ['zLift', '② 끌려 올라갈 때 줌', 0.5, 4, 0.05, ZM], ['zTop', '③ 꼭대기 줌', 0.5, 4, 0.05, ZM], ['zFall', '④ 떨어질 때 줌', 0.5, 4, 0.05, ZM], ['zLand', '⑤ 땅 · 돌아올 때 줌', 0.5, 4, 0.05, ZM], ['zBlend', '구간이 바뀔 때 줌이 옮겨 가는 시간', 0, 2, 0.05, SEC],
-    ['카메라 — 땅에 부딪힐 때'], ['cLandShake', '쿵 흔들림', 0, 3, 0.05, PCT], ['cLandHold', '부딪힌 뒤 머무는 시간', 0, 5, 0.1, SEC],
   ];
   const ROWS = ROWS_A.concat(ROWS_B);
   const MPK = ['on', 'every', 'venom', 'app', 'height', 'lift', 'fallG', 'topHold', 'landStill', 'tempo'];   // 같이 하기는 방장 값(서버 시간표)
@@ -14611,14 +14748,15 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
     const p = document.createElement('div'); p.id = 'hn-p';
     const rows = (R) => R.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : `<label><span>${r[1]}</span><b data-v="${r[0]}"></b></label><input type="range" data-k="${r[0]}" min="${r[2]}" max="${r[3]}" step="${r[4]}">`)).join('');
     p.innerHTML = `<h4>雀蜂 · 왕벌</h4>
-<div class="tabs"><span data-tab="a" class="on">기믹</span><span data-tab="b">연출 · 카메라</span></div>
-<button class="b" data-a="studio" style="width:100%;margin:0 0 6px;padding:9px 4px;background:#4a3808;border-color:#d8a326">🎬 연출실 — 재생바로 장면을 보며 구간별 카메라 · 연출 조절</button>
+<div class="tabs"><span data-tab="a" class="on">기믹</span><span data-tab="b">연출</span></div>
+<button class="b" data-a="studio" style="width:100%;margin:0 0 6px;padding:9px 4px;background:#4a3808;border-color:#d8a326">🎬 연출실 — 재생바로 장면을 보며 구간별 연출 조절</button>
+<button class="b" data-a="camwin" style="width:100%;margin:0 0 6px;padding:9px 4px;background:#3a2c08;border-color:#d8a326">벌 카메라 — 따로 창(장면마다 거리 · 높이 · 방향 · 확대)</button>
 <div class="bs"><button class="b" data-a="g0">▶ 낚아채기 — 나</button><button class="b" data-a="g1">▶ 낚아채기 — 가까운 봇</button></div>
 <div class="pbar"><div class="bs" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-top:6px"><button class="b" data-p="toggle">⏸ 멈춤</button><button class="b" data-p="restart">⟲ 처음부터</button><button class="b" data-p="back">◀ 0.1초</button><button class="b" data-p="fwd">0.1초 ▶</button></div>
 <label><span>연출 시간</span><b id="hn-pt">— 재생 중인 왕벌 없음</b></label><input type="range" id="hn-ps" min="0" max="10" step="0.01" value="0">
 <div class="bs" style="grid-template-columns:repeat(4,1fr);margin-top:4px"><button class="b sp" data-sp="0.1">0.1배</button><button class="b sp" data-sp="0.25">0.25배</button><button class="b sp" data-sp="0.5">0.5배</button><button class="b sp" data-sp="1">1배</button></div></div>
 <div class="pg on" data-pg="a">${rows(ROWS_A)}</div>
-<div class="pg" data-pg="b">${rows(ROWS_B)}<div class="n">카메라는 내가 잡혔을 때만 · 몸짓 · 몸 각도는 나 · 봇 모두</div></div>
+<div class="pg" data-pg="b">${rows(ROWS_B)}<div class="n">카메라는 「벌 카메라」 창에서 · 몸짓 · 몸 각도는 나 · 봇 모두</div></div>
 <div class="bs" style="margin-top:10px"><button class="b" data-a="def">이 쪽 기본값</button><span class="svs"></span></div>
 <div class="n">값은 움직이는 즉시 이 브라우저에 남는다 · 「저장」은 모두의 기본값 · 같이 하기에선 나타남 · 간격 · 비율 · 날아오는 시간 · 높이 · 올라가는 시간은 방장 값 · 쓰러져 있거나 · 맞는 중 · 불타는 사람은 노리지 않는다</div>`;
     document.body.appendChild(btn); document.body.appendChild(p);
@@ -14661,6 +14799,7 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
       }
       const spd = e.target && e.target.dataset && e.target.dataset.sp; if (spd) { H.ck.speed = +spd; return; }
       const a = e.target && e.target.dataset && e.target.dataset.a; if (!a) return;
+      if (a === 'camwin') { openCam(); return; }
       if (a === 'studio') { const m = openStudio(); if (m) { const t0 = e.target.textContent; e.target.textContent = m; setTimeout(() => { e.target.textContent = t0; }, 1800); } return; }
       if (a === 'def') { for (const r of tab === 'a' ? ROWS_A : ROWS_B) if (r.length > 1) C[r[0]] = DEF[r[0]]; save(); sync(); return; }
       const ok = H.demo(a[0] === 'v' ? 'venom' : 'grab', a[1] === '1');
@@ -14671,18 +14810,18 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
      · 구간 다섯(날아옴 · 끌려 올라감 · 꼭대기 · 떨어짐 · 땅 · 돌아옴) — 재생바 위 색 띠나 오른쪽 위 단추를 누르면 그 구간으로 · 오른쪽엔 그 구간 값만(재생하면 지금 구간을 따라 바뀐다)
      · 값은 움직이는 즉시 지금 장면에 — 높이 · 시간 · 중력도 바로(같은 순간을 다시 계산) · 이 브라우저에 남는다 · 「저장」은 모두의 기본값(직접 누를 때만)
      · 판은 그 자리에 멈춘다(봇 · 괴물 · 시간) · 왕벌은 보이기만 하고 나를 진짜로 쓰러뜨리지 않는다 · 닫으면 원래대로 · 같이 하기 중엔 못 연다 */
-  const SECS = [
+  const SECS = [   // b758 — 카메라 값은 모두 「벌 카메라」 창으로(여기엔 몸 · 벌 · 피만)
     { k: 'app', name: '① 날아옴', col: '#8a7a3a', a: (e) => 0, b: (e) => e.app,
-      rows: ['날아오기', 'tempo', 'app', 'size', 'buzz', '날개 · 다리', 'wingHz', 'wingAmp', 'ghost', 'legAmt', 'legSpd', '카메라 — 날아올 때', 'camOn2', 'cApp', 'cAppLook0', 'cAppFocus', 'cAppIn', '날아오기 — 떠서 노려보다 내리꽂기', 'appHoverAt', 'appDiveAt', 'appHoverD', 'appHoverH', 'appDive', '카메라 자리', 'cAppD2', 'cAppH2', 'cAppTurn', 'cAppLook', 'cAppSide', 'cAppFov', 'zApp', 'zBlend', '카메라 — 잡힐 때 넘어가기', 'cIn'] },
+      rows: ['날아오기', 'tempo', 'app', 'size', 'buzz', '날개 · 다리', 'wingHz', 'wingAmp', 'ghost', 'legAmt', 'legSpd', '날아오기 — 떠서 노려보다 내리꽂기', 'appHoverAt', 'appDiveAt', 'appHoverD', 'appHoverH', 'appDive'] },
     { k: 'lift', name: '② 끌려 올라감', col: '#b08a2a', a: (e) => e.app, b: (e) => e.app + e.lift,
-      rows: ['올라가기', 'height', 'lift', 'liftCurve', 'liftYank', 'cGrabShake', 'cGrabPunch', '잡는 자리 — 벌과 몸 맞추기', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', 'grabScream', 'screamVol', '카메라 — 땅에서 올려다봄', 'camOn2', 'zLift', 'zBlend', 'cLiftD', 'cLiftH', 'cLiftRise', 'cLiftOrbit', 'cLiftFov', 'cLiftShake', 'cLiftRoll'] },
+      rows: ['올라가기', 'height', 'lift', 'liftCurve', 'liftYank', '잡는 자리 — 벌과 몸 맞추기', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', 'grabScream', 'screamVol'] },
     { k: 'top', name: '③ 꼭대기', col: '#c9a64a', a: (e) => e.app + e.lift, b: (e) => e.app + e.lift + e.ho,
-      rows: ['꼭대기', 'topHold', 'height', '카메라 — 하늘로 옮겨 가기', 'cTopMove', 'cFallBlend', '놓기 — 떨어뜨리는 느낌', 'relWind', 'relHoist2', 'relUp2', 'dropScream', 'cRelShake2', 'cRelPunch', '카메라', 'zTop', 'zBlend', '잡는 자리', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK'] },
+      rows: ['꼭대기', 'topHold', 'height', '놓기 — 떨어뜨리는 느낌', 'relWind', 'relHoist2', 'relUp2', 'dropScream', '잡는 자리', 'grabBone', 'grabUp', 'grabAlong', 'grabSide', 'grabTilt', 'beeTurn', '잡힌 몸', 'stMode', 'exLift', 'liftAng', 'stK'] },
     { k: 'fall', name: '④ 떨어짐', col: '#c0603c', a: (e) => e.app + e.lift + e.ho, b: (e) => e.app + e.lift + e.ho + fallT(e.h, e.fg),
-      rows: ['떨어지기', 'fallG', '떨어지는 몸 — 몸짓 · 표정', 'stFall2', 'exFall', 'fpFlail', '몸 방향', 'fallFace', 'fallAng2', 'fallTurn', '세기', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', '추락 자세', 'aArmUp', 'aArmFwd', 'aElbow', 'aHandUp', 'aLegOut', 'aLegFwd', 'aShinOut', 'aShinFwd', 'aHeadBack', 'fpWiggle', '(예전 방식 — 얼굴 「예전」일 때)', 'fallAng', 'fallSpin', '카메라 — 떨어질 때', 'camOn2', 'zFall', 'zBlend', 'cFallTop', 'cTopMove', 'cFallBlend', 'cFallSmooth', '하늘에서 내려다봄', 'cFallAbove', 'cFallOff', '옆에서 같이 떨어짐', 'cFallD', 'cFallUp', '둘 다', 'cFallSide', 'cFallLead', 'cFallLag', 'cFallFov'] },
+      rows: ['떨어지기', 'fallG', '떨어지는 몸 — 몸짓 · 표정', 'stFall2', 'exFall', 'fpFlail', '몸 방향', 'fallFace', 'fallAng2', 'fallTurn', '세기', 'stK', 'stArm', 'stLeg', 'stHead', 'stSpd', '추락 자세', 'aArmUp', 'aArmFwd', 'aElbow', 'aHandUp', 'aLegOut', 'aLegFwd', 'aShinOut', 'aShinFwd', 'aHeadBack', 'fpWiggle', '(예전 방식 — 얼굴 「예전」일 때)', 'fallAng', 'fallSpin'] },
     { k: 'land', name: '⑤ 땅 · 돌아옴', col: '#7a2a1c', a: (e) => e.app + e.lift + e.ho + fallT(e.h, e.fg), b: (e) => evDur(e),
-      rows: ['부딪힘 — 몸', 'landStill', 'landClear', '땅에 뻗은 자세', 'lArmUp', 'lArmFwd', 'lElbow', 'lHandUp', 'lLegOut', 'lLegFwd', 'lShinOut', 'lShinFwd', 'lHeadBack', '부딪힘 — 피', 'landSplat', 'landSplatR', 'landSplatRed', 'landBlood', 'landSpread', 'landStreak2', 'landPool2', '카메라', 'camOn2', 'zLand', 'zBlend', 'cLandShake', 'cLandHold', 'cOut'] },
-    { k: 'all', name: '전체', rows: ['게임에서', 'on', 'every', 'tempo', '카메라', 'camOn2', 'cIn', 'cOut', '구간별 줌', 'zApp', 'zLift', 'zTop', 'zFall', 'zLand', 'zBlend', '왕벌', 'size', 'buzz', 'screamVol'] },
+      rows: ['부딪힘 — 몸', 'landStill', 'landClear', '땅에 뻗은 자세', 'lArmUp', 'lArmFwd', 'lElbow', 'lHandUp', 'lLegOut', 'lLegFwd', 'lShinOut', 'lShinFwd', 'lHeadBack', '부딪힘 — 피', 'landSplat', 'landSplatR', 'landSplatRed', 'landSplDots', 'landDrop2', 'landSpread', 'landStreak2', 'landPool2'] },
+    { k: 'all', name: '전체', rows: ['게임에서', 'on', 'every', 'tempo', '왕벌', 'size', 'buzz', 'screamVol'] },
   ];
   let SS = null, lab = null;   // SS — 연출실 상태 { ev, loop, prevPaused, prevSpeed }
   H.studio = () => SS;
@@ -14715,6 +14854,7 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
     endEv(SS.ev);
     window.__paused = SS.prevPaused; H.ck.paused = false; H.ck.speed = SS.prevSpeed || 1;
     SS = null; CS.ev = null; window.__hnFov = 0; window.__hnRoll = 0; window.__hnZoom = 1;
+    if (HC && hcOwn) { hcOwn = false; HC.root.style.display = 'none'; document.body.classList.remove('hc-on'); }   // b758 — 카메라 창이 연 연출실이면 같이 닫힘
     if (lab) lab.root.style.display = 'none'; document.body.classList.remove('hs-on');
   }
   H.openStudio = openStudio; H.closeStudio = closeStudio;
@@ -14724,6 +14864,7 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
     const d = evDur(ev); let u = t - ev.t0;
     if (u >= d) { if (SS.loop && !H.ck.paused) { ev.t0 = t; u = 0; ev.st = {}; } else { ev.t0 = t - (d - 0.001); u = d; if (!SS.loop) H.ck.paused = true; } }
     if (u < 0) { ev.t0 = t; u = 0; }
+    if (SS.segK != null && !H.ck.paused) { const i = SS.segK, a = Math.max(0, SHOT[i].a(ev) - 0.5), b = Math.min(d, shotEnd(i, ev) + 0.5); if (u >= b - 0.001 || u < a - 0.05) { ev.t0 = t - a; u = a; } }   // b758 — 「벌 카메라」 창: 이 장면만 반복(앞뒤 0.5초)
     const tR = ev.app + ev.lift + ev.ho;
     if (u < ev.app) ev.st.grab = false;
     if (u < tR) { ev.st.rel = false; ev.away = null; ev.fhd = null; }
@@ -14753,8 +14894,8 @@ body:not(.tz-live) #hn-btn{visibility:hidden}
 body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-on #btn-view,body.hs-on #sr-stamp,body.hs-on #cin-btn,body.hs-on #cin-p,body.hs-on #lit-cmp,body.hs-on #sr-show .tg,body.hs-on #sr-show .fxr{visibility:hidden!important}`;
     document.head.appendChild(st);
     const root = document.createElement('div'); root.id = 'hs';
-    root.innerHTML = `<div class="title pn">雀蜂 · 연출실 — 낚아채기</div><div class="warn pn">낚아채기 카메라가 「끔」이다 — 카메라 값이 화면에 안 나온다 · <button data-a="camon">카메라 켜기</button></div>
-<div class="side pn"><div class="tabs">${SECS.map((s) => `<button data-sc="${s.k}">${s.name}</button>`).join('')}</div><h4 class="scn"></h4><div class="vals"></div>
+    root.innerHTML = `<div class="title pn">雀蜂 · 연출실 — 낚아채기</div><div class="warn pn">벌 카메라가 「끔」이다 — 카메라가 평소대로 나온다 · <button data-a="camon">카메라 켜기</button></div>
+<div class="side pn"><button data-a="camwin" style="width:100%;margin:0 0 6px;padding:7px 4px;background:#4a3808;border-color:#d8a326">카메라는 따로 — 「벌 카메라」 창 열기</button><div class="tabs">${SECS.map((s) => `<button data-sc="${s.k}">${s.name}</button>`).join('')}</div><h4 class="scn"></h4><div class="vals"></div>
 <div class="row" style="margin-top:10px"><button data-a="def">이 구간 기본값</button><span class="svs"></span></div>
 <div class="n">값은 지금 장면에 바로 · 이 브라우저에 남는다 · 「저장」은 모두의 기본값 · 판은 멈춰 있고 왕벌은 보이기만 한다(진짜로 쓰러뜨리지 않음) · 화면을 마우스로 끌면 카메라를 돌려 볼 수 있다 · Space 재생 · ← → 한 프레임 · Esc 닫기</div></div>
 <div class="bar pn"><div class="seg"></div><input class="tl" type="range" min="0" max="10" step="0.001" value="0">
@@ -14797,8 +14938,9 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
       if (a === 'fwd') { sSeek(u + FR); H.ck.paused = true; }
       if (a === 'loop') { SS.loop = !SS.loop; e.target.classList.toggle('on', SS.loop); }
       if (a === 'def') { const sc = SECS.find((q) => q.k === lab.cur); if (sc) { for (const k of sc.rows) if (RK[k]) C[k] = DEF[k]; save(); if (H.sync) H.sync(); lab.cur = null; show(sc.k); } }
-      if (a === 'camon') { C.camOn2 = 1; save(); if (H.sync) H.sync(); const c = lab.cur; lab.cur = null; show(c || 'app'); }
+      if (a === 'camon') { C.kOn = 1; C.camOn2 = 1; save(); if (H.sync) H.sync(); const c = lab.cur; lab.cur = null; show(c || 'app'); }
       if (a === 'close') closeStudio();
+      if (a === 'camwin') openCam();
       e.target.blur(); sync();
     });
     root.querySelector('select').addEventListener('change', (e) => { H.ck.speed = +e.target.value; e.target.blur(); });
@@ -14825,7 +14967,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     for (const b of lab.root.querySelectorAll('.tabs button')) b.classList.toggle('cur', b.dataset.sc === sk);
     lab.tm.textContent = `${u.toFixed(2)}초 / ${d.toFixed(2)}초 · ${Math.round(u * 30)}프레임 · ${sc.name}${H.ck.paused ? ' · 멈춤' : ''}`;
     lab.play.textContent = H.ck.paused ? '▶ 재생' : '⏸ 멈춤';
-    lab.warn.style.display = C.camOn2 > 0.5 ? 'none' : 'block';   // 낚아채기 카메라가 꺼져 있으면 카메라 값은 화면에 안 나온다 — 알린다
+    lab.warn.style.display = (window.__hnCamOld === true ? C.camOn2 : C.kOn) > 0.5 ? 'none' : 'block';   // 낚아채기 카메라가 꺼져 있으면 카메라 값은 화면에 안 나온다 — 알린다
     const key = SECS.filter((s) => s.a).map((s) => s.b(e).toFixed(3)).join();
     if (lab.segKey !== key) {
       lab.segKey = key;
@@ -14834,7 +14976,185 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     for (const i of lab.seg.querySelectorAll('i')) i.classList.toggle('cur', i.dataset.sc === sk);
   }
 
-  (function waitBody() { if (!document.body) { setTimeout(waitBody, 100); return; } panel(); })();
+  /* ── b758 — 「벌 카메라」 창(따로 · 머리를 끌어 옮김) ──
+     · 위: 장면 다섯 단추(누르면 그 장면으로 가서 그 장면만 반복 — 앞뒤 0.5초 넘어가는 모습까지) · 「처음부터 끝까지」 · 재생/멈춤
+     · 그림 두 장 — 위에서 본 그림(나 · 벌이 오는 쪽 · 카메라 — 끌면 방향과 거리) · 옆에서 본 그림(나 · 땅 · 카메라 — 끌면 거리와 높이)
+     · 그 아래 값 여덟 · 「전체 · 흔들림」 장 · 열면 연출실(판 멈춤 · 낚아채기 반복)이 같이 열린다(연출실 오른쪽 값 창은 숨김 — 아래 재생바는 그대로) */
+  const KROW = [
+    ['D', '거리 — 나와 카메라 사이(옆으로)', 0.3, 25, 0.1, M1],
+    ['H', '높이 — 내 가슴보다 위(+) · 아래(−)', -6, 25, 0.1, (v) => `${v >= 0 ? '+' : ''}${(+v).toFixed(1)}m`],
+    ['Y', '방향 — 나를 가운데 두고 돈 각도', -180, 180, 1, DEG],
+    ['L', '보는 곳 — 나(0%) ↔ 벌(100%)', 0, 1, 0.05, PCT],
+    ['Z', '확대(1배 그대로 · 2배 두 배로 크게)', 0.4, 4, 0.05, ZM],
+    ['F', '카메라가 내 높이를 따라감(0% = 땅에 남아 올려다봄)', 0, 1, 0.05, PCT],
+    ['O', '천천히 돌기(0 = 멈춤)', -60, 60, 1, (v) => `${Math.round(v)}°/초`],
+    ['B', '앞 장면에서 넘어오는 시간(0 = 컷)', 0, 3, 0.05, SEC],
+  ];
+  const ONF = (v) => (v > 0.5 ? '켬' : '끔');
+  const KG = [
+    ['기본'], ['kOn', '벌 카메라', 0, 1, 1, ONF], ['kFrom', '시작', 0, 1, 1, (v) => (v > 0.5 ? '잡힐 때부터' : '날아올 때부터')],
+    ['kBase', '방향 0° 기준', 0, 1, 1, (v) => (v > 0.5 ? '평소 카메라 쪽' : '벌 맞은편')], ['kClear', '토리이 · 나무가 가리면 비켜 섬', 0, 1, 1, ONF],
+    ['kLag', '몸 따라가는 부드러움', 0, 0.8, 0.01, SEC], ['kHold', '땅에 박힌 뒤 머무는 시간', 0, 6, 0.1, SEC], ['kOut', '평소 카메라로 돌아가는 시간', 0.1, 4, 0.05, SEC],
+    ['흔들림 · 확 당김'], ['kShGrab', '잡는 순간 쿵', 0, 3, 0.05, PCT], ['kPunchG', '잡는 순간 확 당겨짐', 0, 25, 0.5, DEG], ['kShLift', '올라가는 동안 잔떨림', 0, 2, 0.05, PCT], ['kRoll', '올라가는 동안 기울어 흔들림', 0, 25, 0.5, DEG],
+    ['kShRel', '놓는 순간 툭', 0, 3, 0.05, PCT], ['kPunchR', '놓는 순간 확 넓어짐', 0, 25, 0.5, DEG], ['kShLand', '땅에 부딪힐 때 쿵', 0, 3, 0.05, PCT],
+  ];
+  let HC = null, hcOwn = false;
+  function openCam() {
+    G = window.__G;
+    if (!HC) buildCam();
+    HC.root.style.display = 'block'; document.body.classList.add('hc-on');
+    const p = document.getElementById('hn-p'); if (p) p.classList.remove('on');
+    if (!SS) { const m = openStudio(); hcOwn = !m && !!SS; HC.note(m ? `${m} — 값은 바꿀 수 있고 게임 낚아채기에 그대로 나온다` : ''); } else HC.note('');
+    HC.pick(HC.cur == null ? 0 : HC.cur, true);
+    return '';
+  }
+  function closeCam() {
+    if (!HC) return;
+    HC.root.style.display = 'none'; document.body.classList.remove('hc-on');
+    if (SS) SS.segK = null;
+    if (hcOwn && SS) { hcOwn = false; closeStudio(); }
+    hcOwn = false;
+  }
+  H.openCam = openCam; H.closeCam = closeCam;
+  function camBtn() {
+    const st = document.createElement('style');
+    st.textContent = '#hc-btn{position:fixed;right:272px;bottom:14px;z-index:60;padding:6px 12px;background:rgba(10,8,6,.82);color:#e9e1d0;border:1px solid #5a4a3a;font:700 12px "UIF","Noto Serif KR",serif;letter-spacing:.12em;cursor:pointer} body:not(.tz-live) #hc-btn,body.hs-on #hc-btn{visibility:hidden}';
+    document.head.appendChild(st);
+    const btn = document.createElement('button'); btn.id = 'hc-btn'; btn.type = 'button'; btn.textContent = '벌 카메라'; document.body.appendChild(btn);
+    btn.addEventListener('click', () => { if (HC && HC.root.style.display === 'block') closeCam(); else openCam(); });
+  }
+  function buildCam() {
+    const st = document.createElement('style');
+    st.textContent = `body.hc-on #hs .side{display:none!important}
+#hc{position:fixed;left:12px;top:12px;z-index:72;width:410px;max-height:calc(100vh - 200px);overflow-y:auto;background:rgba(12,9,7,.93);border:1px solid #8a6a1c;color:#e9e1d0;font:12px "UIF","Noto Serif KR",serif;display:none;box-shadow:0 6px 24px rgba(0,0,0,.6)}
+#hc .hd{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#2a210b;cursor:move;user-select:none;position:sticky;top:0;z-index:2}
+#hc .hd b{font-size:14px;letter-spacing:.2em;color:#e8b04a} #hc .hd span{color:#8d877a;font-size:11px;flex:1}
+#hc button{padding:5px 8px;background:#2a210b;color:#f2e6d6;border:1px solid #8a6a1c;font:700 12px "UIF","Noto Serif KR",serif;cursor:pointer} #hc button.on{background:#6a5010;border-color:#e8b04a}
+#hc .bd{padding:8px 10px 10px}
+#hc .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px} #hc .tabs button{padding:6px 2px;border-left-width:4px} #hc .tabs button.cur{outline:2px solid #f2e6d6;outline-offset:-2px}
+#hc .ctl{display:flex;gap:4px;margin:6px 0 2px} #hc .ctl button{flex:1}
+#hc .note{color:#f2c070;margin:4px 0;display:none} #hc .note.on{display:block}
+#hc .scn{margin:8px 0 2px;font-size:13px;color:#d9b07a;letter-spacing:.12em}
+#hc .dg{display:flex;gap:6px;margin:4px 0} #hc .dg div{flex:none;text-align:center} #hc .dg i{display:block;font-style:normal;font-size:10.5px;color:#8d877a;margin-top:2px}
+#hc canvas{background:#16110b;border:1px solid #3a2f20;cursor:crosshair;touch-action:none;display:block}
+#hc label{display:flex;justify-content:space-between;gap:8px;margin-top:6px;color:#c9bfae} #hc label b{color:#f2e6d6;font-weight:600;white-space:nowrap}
+#hc input[type=range]{width:100%;margin:2px 0 0} #hc h5{margin:10px 0 2px;font-size:12px;color:#d9b07a;border-top:1px solid #3a2f20;padding-top:7px;letter-spacing:.1em}
+#hc .two{display:flex;gap:4px;margin-top:3px} #hc .two button{flex:1;padding:5px 4px;font-size:11px}
+#hc .row{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;align-items:center}
+#hc .n{font-size:11px;color:#8d877a;margin-top:8px;line-height:1.5}`;
+    document.head.appendChild(st);
+    const root = document.createElement('div'); root.id = 'hc';
+    root.innerHTML = `<div class="hd"><b>벌 카메라</b><span>이 줄을 끌어 창 옮기기</span><button data-a="x">닫기</button></div><div class="bd">
+<div class="tabs">${SHOT.map((s, i) => `<button data-s="${i}" style="border-left-color:${s.col}">${s.name}</button>`).join('')}<button data-s="g" style="border-left-color:#555">전체 · 흔들림</button></div>
+<div class="ctl"><button data-a="seg">이 장면만 반복</button><button data-a="all">처음부터 끝까지</button><button data-a="play">⏸ 멈춤</button></div>
+<div class="note"></div><div class="scn"></div>
+<div class="pg" data-pg="s"><div class="dg"><div><canvas class="ctop" width="170" height="170"></canvas><i>위에서 본 그림 — 끌면 방향 · 거리</i></div><div><canvas class="cside" width="214" height="170"></canvas><i>옆에서 본 그림 — 끌면 거리 · 높이</i></div></div>
+<div class="vals"></div><div class="row"><button data-a="def">이 장면 기본값</button><span class="svs"></span></div></div>
+<div class="pg" data-pg="g"><div class="gvals"></div><div class="row"><button data-a="gdef">전체 기본값</button><span class="svs"></span></div></div>
+<div class="n">값은 움직이는 즉시 화면에 · 이 브라우저에 남는다 · 「저장」은 모두의 기본값(누를 때만) · 아래 재생바로 장면을 끌어 볼 수 있다 · 카메라는 내가 잡혔을 때만</div></div>`;
+    document.body.appendChild(root);
+    if (window.__settings && window.__settings.button) root.querySelectorAll('.svs').forEach((sv) => sv.appendChild(window.__settings.button()));
+    const $ = (q) => root.querySelector(q), vals = $('.vals'), gvals = $('.gvals'), ctop = $('.ctop'), cside = $('.cside');
+    const key = (n) => 'k' + SHOT[HC.cur].k + n;
+    const rowH = (k, r) => (r[2] === 0 && r[3] === 1 && r[4] === 1
+      ? `<label><span>${r[1]}</span></label><div class="two" data-k="${k}"><button data-v="0" class="${C[k] > 0.5 ? '' : 'on'}">${r[5](0)}</button><button data-v="1" class="${C[k] > 0.5 ? 'on' : ''}">${r[5](1)}</button></div>`
+      : `<label><span>${r[1]}</span><b data-v="${k}">${r[5](C[k])}</b></label><input type="range" data-k="${k}" min="${r[2]}" max="${r[3]}" step="${r[4]}" value="${C[k]}">`);
+    gvals.innerHTML = KG.map((r) => (r.length === 1 ? `<h5>${r[0]}</h5>` : rowH(r[0], r))).join('');
+    const fmtK = (k) => { const g = KG.find((x) => x[0] === k); if (g) return g[5](C[k]); const r = KROW.find((x) => x[0] === k.slice(3)); return r ? r[5](C[k]) : String(C[k]); };
+    const sideGeo = (D, Hh) => { const W = cside.width, Hc = cside.height, s = Math.min((W - 56) / Math.max(4, D + 1), (Hc - 40) / Math.max(5, Math.abs(Hh) + 3.2)); return { s, x0: 30, chestY: Math.max(14 + 0.75 * s, Math.min(Hc - 16 - 1.1 * s, Hc / 2 + Hh * s / 2)) }; };
+    const refresh = () => { for (const i of root.querySelectorAll('input[data-k]')) { if (document.activeElement !== i) i.value = C[i.dataset.k]; } for (const b of root.querySelectorAll('b[data-v]')) b.textContent = fmtK(b.dataset.v); for (const d of root.querySelectorAll('.two')) for (const b of d.querySelectorAll('button')) b.classList.toggle('on', (+b.dataset.v === 1) === (C[d.dataset.k] > 0.5)); draw(); };
+    const setK = (k, v, r) => { if (r) { v = Math.max(r[2], Math.min(r[3], Math.round(v / r[4]) * r[4])); v = +v.toFixed(3); } C[k] = v; save(); if (H.sync) H.sync(); refresh(); };
+    // 그림 — 위에서 본 그림: 아래쪽이 방향 0°(벌 맞은편이면 벌은 위에서 온다) · 시계 방향이 + · 옆에서 본 그림: 왼쪽에 나 · 오른쪽으로 거리 · 위로 높이
+    let dragS = null;
+    function draw() {
+      if (!HC || HC.cur == null || HC.cur === 'g') return;
+      const D = C[key('D')], Hh = C[key('H')], Y = C[key('Y')] * Math.PI / 180, L = C[key('L')], F = C[key('F')];
+      { const g = ctop.getContext('2d'), W = ctop.width, c = W / 2; g.clearRect(0, 0, W, W);
+        const s = dragS && dragS.cv === ctop ? dragS.s : (W / 2 - 14) / Math.max(5, D * 1.15);
+        g.strokeStyle = '#2e261a'; g.lineWidth = 1; const stp = D > 12 ? 5 : D > 5 ? 2 : 1;
+        for (let r = stp; r * s < W / 2; r += stp) { g.beginPath(); g.arc(c, c, r * s, 0, Math.PI * 2); g.stroke(); }
+        g.fillStyle = '#8d877a'; g.font = '10px sans-serif'; g.textAlign = 'left'; g.fillText(`원 한 칸 ${stp}m`, 4, W - 5);
+        if (C.kBase > 0.5) { g.textAlign = 'center'; g.fillText('↓ 평소 카메라 쪽', c, W - 16); }
+        else { g.strokeStyle = '#e8b04a'; g.fillStyle = '#e8b04a'; g.beginPath(); g.moveTo(c, 6); g.lineTo(c, c - 18); g.stroke(); g.beginPath(); g.moveTo(c, c - 14); g.lineTo(c - 5, c - 24); g.lineTo(c + 5, c - 24); g.fill(); g.textAlign = 'center'; g.fillText('벌이 오는 쪽', c, 16); }
+        const px = c - D * s * Math.sin(Y), py = c + D * s * Math.cos(Y);
+        g.strokeStyle = 'rgba(242,230,214,.5)'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(px, py); g.lineTo(c, c); g.stroke(); g.setLineDash([]);
+        g.fillStyle = '#c94a3a'; g.beginPath(); g.arc(c, c, 6, 0, Math.PI * 2); g.fill(); g.fillStyle = '#f2e6d6'; g.textAlign = 'center'; g.fillText('나', c, c + 18);
+        const an = Math.atan2(c - py, c - px); g.save(); g.translate(px, py); g.rotate(an); g.fillStyle = '#5ab0e8'; g.fillRect(-7, -5, 10, 10); g.beginPath(); g.moveTo(3, -3); g.lineTo(9, -6); g.lineTo(9, 6); g.lineTo(3, 3); g.fill(); g.restore();
+        g.fillStyle = '#5ab0e8'; g.fillText('카메라', Math.max(20, Math.min(W - 20, px)), Math.max(12, Math.min(W - 4, py + (py > c ? 18 : -10)))); }
+      { const g = cside.getContext('2d'), W = cside.width, Hc = cside.height; g.clearRect(0, 0, W, Hc);
+        const sg = dragS && dragS.cv === cside ? dragS : sideGeo(D, Hh), s = sg.s, x0 = sg.x0, chestY = sg.chestY, gyY = chestY + 1.1 * s;
+        g.strokeStyle = F < 0.99 ? '#6b5a3a' : '#3a2f20'; g.setLineDash(F < 0.99 ? [] : [4, 4]); g.beginPath(); g.moveTo(0, gyY); g.lineTo(W, gyY); g.stroke(); g.setLineDash([]);
+        g.fillStyle = '#8d877a'; g.font = '10px sans-serif'; g.textAlign = 'left'; g.fillText(F < 0.99 ? '땅' : '땅(카메라는 몸과 같이 움직임)', 4, Math.min(Hc - 3, gyY + 11));
+        g.strokeStyle = '#c94a3a'; g.lineWidth = 2; g.beginPath(); g.arc(x0, chestY - 0.55 * s, Math.max(3, 0.13 * s), 0, Math.PI * 2); g.moveTo(x0, chestY - 0.42 * s); g.lineTo(x0, chestY + 0.25 * s); g.lineTo(x0 - 0.18 * s, gyY); g.moveTo(x0, chestY + 0.25 * s); g.lineTo(x0 + 0.18 * s, gyY); g.moveTo(x0 - 0.3 * s, chestY - 0.1 * s); g.lineTo(x0 + 0.3 * s, chestY - 0.1 * s); g.stroke(); g.lineWidth = 1;
+        const cx = x0 + D * s, cy2 = chestY - Hh * s;
+        g.strokeStyle = 'rgba(242,230,214,.5)'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(cx, cy2); g.lineTo(x0, chestY); g.stroke(); g.setLineDash([]);
+        if (L > 0.02) { g.strokeStyle = 'rgba(232,176,74,.6)'; g.beginPath(); g.moveTo(cx, cy2); g.lineTo(x0 - 26 * L, chestY - 40 * L); g.stroke(); g.fillStyle = '#e8b04a'; g.textAlign = 'center'; g.fillText('벌', Math.max(8, x0 - 26 * L), chestY - 40 * L - 4); }
+        const an = Math.atan2(chestY - cy2, x0 - cx); g.save(); g.translate(cx, cy2); g.rotate(an); g.fillStyle = '#5ab0e8'; g.fillRect(-7, -5, 10, 10); g.beginPath(); g.moveTo(3, -3); g.lineTo(9, -6); g.lineTo(9, 6); g.lineTo(3, 3); g.fill(); g.restore();
+        g.fillStyle = '#f2e6d6'; g.textAlign = 'center'; g.fillText('나', x0, chestY - 0.75 * s - 4);
+        g.fillStyle = '#5ab0e8'; g.fillText(`${D.toFixed(1)}m · ${Hh >= 0 ? '+' : ''}${Hh.toFixed(1)}m`, Math.min(W - 40, Math.max(40, cx)), Math.max(11, Math.min(Hc - 4, cy2 + (cy2 < chestY ? -9 : 17))));
+      }
+    }
+    const fromCv = (cv, e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+    const KR = (n) => KROW.find((x) => x[0] === n);
+    const dragTo = (e) => {
+      if (!dragS) return; const [x, y] = fromCv(dragS.cv, e);
+      if (dragS.cv === ctop) { const c = ctop.width / 2, dx = x - c, dy = y - c; setK(key('Y'), Math.atan2(-dx, dy) * 180 / Math.PI, KR('Y')); setK(key('D'), Math.hypot(dx, dy) / dragS.s, KR('D')); }
+      else { setK(key('D'), (x - dragS.x0) / dragS.s, KR('D')); setK(key('H'), (dragS.chestY - y) / dragS.s, KR('H')); }
+    };
+    for (const cv of [ctop, cside]) {
+      cv.addEventListener('pointerdown', (e) => {
+        if (HC.cur === 'g') return; const D = C[key('D')], Hh = C[key('H')];
+        if (cv === ctop) dragS = { cv, s: (ctop.width / 2 - 14) / Math.max(5, D * 1.15) };
+        else dragS = Object.assign({ cv }, sideGeo(D, Hh));
+        try { cv.setPointerCapture(e.pointerId); } catch { /* */ } dragTo(e); e.preventDefault();
+      });
+      cv.addEventListener('pointermove', dragTo);
+      const up = () => { dragS = null; draw(); }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+    }
+    // 장면 고르기 — 그 장면으로 가서(멈추지 않고) 그 장면만 반복 · 「전체 · 흔들림」은 그대로
+    const pick = (i, keepLoop) => {
+      HC.cur = i; for (const b of root.querySelectorAll('.tabs button')) b.classList.toggle('on', b.dataset.s === String(i));
+      for (const pg of root.querySelectorAll('.pg')) pg.style.display = (pg.dataset.pg === 'g') === (i === 'g') ? 'block' : 'none';
+      if (i === 'g') { $('.scn').textContent = '전체 · 흔들림'; refresh(); return; }
+      $('.scn').textContent = `${SHOT[i].name} — 카메라`;
+      vals.innerHTML = KROW.map((r) => rowH(key(r[0]), r)).join('');
+      if (SS && !keepLoop) { SS.segK = i; sSeek(Math.max(0, SHOT[i].a(SS.ev) - 0.5)); H.ck.paused = false; }
+      refresh();
+    };
+    root.addEventListener('input', (e) => { const k = e.target && e.target.dataset && e.target.dataset.k; if (!k) return; C[k] = +e.target.value; save(); if (H.sync) H.sync(); refresh(); });
+    root.addEventListener('click', (e) => {
+      const tb = e.target.closest && e.target.closest('.two button'); if (tb) { const k = tb.parentNode.dataset.k; setK(k, +tb.dataset.v); tb.blur(); return; }
+      const s = e.target.dataset && e.target.dataset.s; if (s != null) { pick(s === 'g' ? 'g' : +s); e.target.blur(); return; }
+      const a = e.target.dataset && e.target.dataset.a; if (!a) return; e.target.blur();
+      if (a === 'x') { closeCam(); return; }
+      if (a === 'seg') { if (SS && HC.cur !== 'g') { SS.segK = HC.cur; sSeek(Math.max(0, SHOT[HC.cur].a(SS.ev) - 0.5)); H.ck.paused = false; } }
+      if (a === 'all') { if (SS) { SS.segK = null; sSeek(0); H.ck.paused = false; } }
+      if (a === 'play') { if (SS) H.ck.paused = !H.ck.paused; }
+      if (a === 'cap' && HC.cur !== 'g' && CS.my) { const k = key('Y'); let v = C[k] - CS.my * 180 / Math.PI; v = ((v + 540) % 360) - 180; setK(k, v, KR('Y')); if (G.mpApi && G.mpApi.camYaw) CS.y0 = G.mpApi.camYaw(); CS.my = 0; }
+      if (a === 'def' && HC.cur !== 'g') { for (const r of KROW) C[key(r[0])] = DEF[key(r[0])]; save(); if (H.sync) H.sync(); refresh(); }
+      if (a === 'gdef') { for (const r of KG) if (r.length > 1) C[r[0]] = DEF[r[0]]; save(); if (H.sync) H.sync(); refresh(); }
+    });
+    // 머리를 끌어 창 옮기기
+    { const hd = $('.hd'); let d0 = null;
+      hd.addEventListener('pointerdown', (e) => { if (e.target.tagName === 'BUTTON') return; const r = root.getBoundingClientRect(); d0 = [e.clientX - r.left, e.clientY - r.top]; try { hd.setPointerCapture(e.pointerId); } catch { /* */ } });
+      hd.addEventListener('pointermove', (e) => { if (!d0) return; root.style.left = `${Math.max(0, Math.min(innerWidth - 120, e.clientX - d0[0]))}px`; root.style.top = `${Math.max(0, Math.min(innerHeight - 40, e.clientY - d0[1]))}px`; });
+      hd.addEventListener('pointerup', () => { d0 = null; }); }
+    const note = (m) => { const n = $('.note'); n.textContent = m; n.classList.toggle('on', !!m); };
+    HC = { root, cur: null, pick, note, draw, refresh };
+    // 재생 따라 — 지금 장면 표시 · 반복 단추 · 재생 단추
+    (function tick() {
+      requestAnimationFrame(tick);
+      if (root.style.display !== 'block') return;
+      const segB = $('[data-a=seg]'), allB = $('[data-a=all]'), plB = $('[data-a=play]');
+      plB.textContent = H.ck.paused ? '▶ 재생' : '⏸ 멈춤';
+      segB.classList.toggle('on', !!(SS && SS.segK != null)); allB.classList.toggle('on', !!(SS && SS.segK == null));
+      let cu = -1; if (SS) { const u = sU(), e = SS.ev; for (let i = 0; i < SHOT.length; i++) if (u >= SHOT[i].a(e)) cu = i; }
+      for (const b of root.querySelectorAll('.tabs button')) b.classList.toggle('cur', b.dataset.s === String(cu));
+      if (SS && SS.segK == null && HC.cur !== 'g' && cu >= 0 && cu !== HC.cur && !dragS && !root.matches(':hover')) pick(cu, true);   // 처음부터 끝까지 볼 땐 지금 장면을 따라감(창 위에 마우스가 있으면 그대로)
+      if (!SS && !hcOwn) note('연출실이 닫혀 있다 — 값은 바꿀 수 있고 게임에서 내가 잡히면 그대로 나온다');
+    })();
+  }
+  (function waitBody() { if (!document.body) { setTimeout(waitBody, 100); return; } panel(); camBtn(); })();
   // 「저장」(settings.js — 모두의 기본값)
   (function reg() {
     if (!window.__settings || !window.__settings.reg) { setTimeout(reg, 500); return; }
@@ -15015,7 +15335,7 @@ body.hs-on #hn-btn,body.hs-on #hn-p,body.hs-on #hud,body.hs-on #prompt,body.hs-o
     st.textContent = `:root{--uilift:56px}
 #hud{bottom:calc(14px + var(--uilift))!important}
 #sr-stamp{bottom:calc(18px + var(--uilift))!important}
-#sr-tune-btn,#sr-show-btn,#lit-cmp,#cin-btn,#hn-btn,#cf-btn{bottom:calc(14px + var(--uilift))!important}
+#sr-tune-btn,#sr-show-btn,#lit-cmp,#cin-btn,#hn-btn,#hc-btn,#cf-btn{bottom:calc(14px + var(--uilift))!important}
 #cin-p,#hn-p{bottom:calc(52px + var(--uilift))!important}
 #sr-look{bottom:calc(46px + var(--uilift))!important}
 #sr-tour{bottom:calc(58px + var(--uilift))!important}
