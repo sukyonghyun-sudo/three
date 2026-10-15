@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-827 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-828 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-827'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-828'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -2660,11 +2660,10 @@ body.sr-play #sr-tune-btn,body.sr-play #sr-show-btn,body.sr-play #hw-btn,body.sr
      지금(cur) · A 장소 핀(pin — 화살 없이 본진 위 표찰 + 땅에 꽂힌 줄기 · 토리이 기호 + 「○○ 본진」 · 화면 밖은 가장자리 화살) · C 발밑 고리(ring — 내 발밑 점선 원 + 본진 쪽 눈금 + 토리이 · 거리)
      둘러보기 「본진 표지 ‹ ›」 · 이 브라우저에 기억 · 「저장」하면 모두의 기본값(settings 'hudStyle') */
   const HSTY = { mode: 'cur', list: [['cur', '지금'], ['pin', 'A 장소 핀'], ['ring', 'C 발밑 고리']] };
-  try { const v = localStorage.getItem('corpse_hudstyle'); if (v && HSTY.list.some((x) => x[0] === v)) HSTY.mode = v; } catch (e) { /* */ }
+  // b828 — 원래 표지로 고정(사용자 「원래 허드로 바꿔놔」) · 브라우저 기억 · 「저장」 값은 읽지 않는다 · 둘러보기에서 고르면 그 자리 보기만
   window.__hudStyle = { list: HSTY.list, get: () => HSTY.mode, name: () => (HSTY.list.find((x) => x[0] === HSTY.mode) || HSTY.list[0])[1],
-    set(m) { if (!HSTY.list.some((x) => x[0] === m)) return; HSTY.mode = m; try { localStorage.setItem('corpse_hudstyle', m); } catch (e) { /* */ } for (const it of HUD.base || []) if (it) it.key = ''; },
+    set(m) { if (!HSTY.list.some((x) => x[0] === m)) return; HSTY.mode = m; for (const it of HUD.base || []) if (it) it.key = ''; },
     step(d) { const i = Math.max(0, HSTY.list.findIndex((x) => x[0] === HSTY.mode)), n = HSTY.list.length; window.__hudStyle.set(HSTY.list[(i + d + n) % n][0]); } };
-  (function regHS() { const St = window.__settings; if (!St || !St.reg) { setTimeout(regHS, 400); return; } St.reg('hudStyle', { get: () => HSTY.mode, set: (v) => { if (typeof v === 'string') window.__hudStyle.set(v); } }); })();
   const blinkK = (t) => { const v = 0.5 - 0.5 * Math.cos(t * Math.PI * 2 / 1.4); return 0.95 * Math.pow(v, 1.6); };
   function frameArt() {   // 빛나는 둥근 네모 테 — 안쪽 네모 324×100(시체 세 칸 비율) · 바깥 18px 은 번짐
     const W = 360, H = 136, [c, g] = hcanvas(W, H, 1);
