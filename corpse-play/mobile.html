@@ -155,21 +155,71 @@ html.mt-on #sr-keys { display: none !important; }   /* 판 아래 키보드 안�
   let lastTouch = -1e9;
   for (const ty of ['touchstart', 'touchend']) addEventListener(ty, () => { lastTouch = performance.now(); }, { capture: true, passive: true });
   for (const ty of ['mouseover', 'mouseout', 'mouseenter', 'mouseleave', 'mousemove']) addEventListener(ty, (e) => { if (performance.now() - lastTouch < 1000) e.stopImmediatePropagation(); }, true);
-  // 누르기 보증 — 판 밖에서 단추를 톡 눌렀는데 0.38초 안에 누르기(click)가 안 오면 대신 누른다
+  // 누르기 보증(b911 — 사용자 아이폰 홈 화면 실행 「캐릭터 선택화면에서 시작 버튼 안 눌려」)
+  //   손가락을 뗀 자리에서 지금 맨 위에 열린 창의 단추를 좌표로 직접 찾는다(덮개 · 회전 뒤 터치 어긋남 · 사파리가 누르기를 버려도)
+  //   0.36초 안에 진짜 누르기가 어느 단추에 닿았으면 그대로 둔다 · 안 왔거나 단추 아닌 곳(덮개 · 빈 곳)에 닿았으면 찾은 단추를 누른다
+  //   맨 위 창만 본다 — 설정 창이 떠 있으면 그 아래 타이틀 메뉴는 안 누른다
   const CLICKABLE = 'button, a[href], label, input, select, [data-a], [data-k], [data-i], [data-v], [data-q], [data-sc], [data-an], .fr, .ok, [role=button]';
-  let tapS = null, clickedAt = -1e9;
-  addEventListener('click', () => { clickedAt = performance.now(); }, true);
+  const shown = (e) => !!(e && e.getClientRects().length && getComputedStyle(e).display !== 'none' && getComputedStyle(e).visibility !== 'hidden');
+  const LAYERS = [
+    [() => D.querySelector('#sr-vol.on'), '.gq em, .row'],
+    [() => (window.__pause && window.__pause.open ? D.getElementById('sr-pause') : null), 'button'],
+    [() => D.querySelector('#sr-end.on'), 'button, [data-a]'],
+    [() => D.querySelector('#cin-how.on'), '.ok, .pick span, button'],
+    [() => D.querySelector('#csel.on'), '.scene-start, .scene-back, .fr'],
+    [() => { const e = D.getElementById('start'); return e && e.style.display !== 'none' && shown(e) ? e : null; }, '.sr-modes button'],
+  ];
+  const btnAt = (x, y) => {
+    for (const [get, sel] of LAYERS) {
+      const L = get(); if (!L || !shown(L)) continue;
+      let best = null, ba = Infinity;
+      for (const b of L.querySelectorAll(sel)) {
+        if (b.disabled) continue;
+        const r = b.getBoundingClientRect(), pad = 12; if (r.width < 2 || r.height < 2) continue;
+        if (x < r.left - pad || x > r.right + pad || y < r.top - pad || y > r.bottom + pad) continue;
+        const cs = getComputedStyle(b); if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+        const ar = r.width * r.height; if (ar < ba) { ba = ar; best = b; }
+      }
+      return best;
+    }
+    return null;
+  };
+  let tapS = null, lastClick = { t: -1e9, el: null };
+  addEventListener('click', (e) => { lastClick = { t: performance.now(), el: e.target }; }, true);
   addEventListener('touchstart', (e) => {
     const t = e.changedTouches && e.changedTouches[0];
     tapS = t && e.touches.length === 1 ? { x: t.clientX, y: t.clientY, t: performance.now(), el: e.target, play: playing() } : null;
   }, { capture: true, passive: true });
   addEventListener('touchend', (e) => {
     const s = tapS, t = e.changedTouches && e.changedTouches[0]; tapS = null;
-    if (!s || !t || s.play || performance.now() - s.t > 700 || Math.hypot(t.clientX - s.x, t.clientY - s.y) > 14) return;
-    const el = s.el && s.el.closest && s.el.closest(CLICKABLE); if (!el || (root && root.contains(el))) return;
+    if (!s || !t || s.play || performance.now() - s.t > 800 || Math.hypot(t.clientX - s.x, t.clientY - s.y) > 16) return;
+    if (root && s.el && root.contains(s.el)) return;
+    const near = s.el && s.el.closest && s.el.closest(CLICKABLE);
+    const el = btnAt(t.clientX, t.clientY) || btnAt(s.x, s.y) || near; if (!el) return;
     const t0 = performance.now();
-    setTimeout(() => { if (clickedAt >= t0 - 30 || !el.isConnected || el.disabled) return; el.click(); }, 380);
+    setTimeout(() => {
+      const c = lastClick;
+      if (c.t >= t0 - 40 && c.el && (el.contains(c.el) || (c.el.closest && c.el.closest(CLICKABLE)))) return;   // 진짜 누르기가 단추에 닿았다
+      if (!el.isConnected || el.disabled || !shown(el)) return;
+      el.click();
+    }, 360);
   }, { capture: true, passive: true });
+  // 아이폰 홈 화면 실행 — 돌린 뒤 화면이 살짝 밀려 터치가 어긋나는 것 되돌리기
+  const unshift = () => { try { if (scrollX || scrollY) scrollTo(0, 0); } catch { /* 넘어간다 */ } };
+  addEventListener('resize', () => { unshift(); setTimeout(unshift, 300); });
+  addEventListener('orientationchange', () => setTimeout(unshift, 300));
+  // 오류가 나면 화면 위에 잠깐 보인다(휴대폰에는 개발자 창이 없어 원인을 못 본다 — 평소엔 안 보임)
+  let errEl = null;
+  const showErr = (m) => {
+    if (/NotAllowed|AbortError|aborted|user agent|play\(\)|interrupted|ResizeObserver/i.test(String(m))) return;   // 소리 자동 재생 막힘 등 — 정상
+    try {
+      if (!D.body) return; if (!errEl) { errEl = D.createElement('div'); errEl.id = 'mt-err'; errEl.style.cssText = 'position:fixed;left:50%;top:6px;transform:translateX(-50%);z-index:2147483001;max-width:80vw;padding:4px 10px;background:rgba(40,0,0,.78);color:#ffd9d0;font:11px/1.4 sans-serif;border-radius:4px;pointer-events:none;white-space:pre-wrap;display:none'; D.body.appendChild(errEl); }
+      errEl.textContent = '오류 — ' + String(m).slice(0, 220); errEl.style.display = 'block'; clearTimeout(showErr.t); showErr.t = setTimeout(() => { errEl.style.display = 'none'; }, 9000);
+    } catch { /* 넘어간다 */ }
+  };
+  addEventListener('error', (e) => { if (e && e.message) showErr(e.message + (e.filename ? ' @' + String(e.filename).split('/').pop() + ':' + e.lineno : '')); });
+  addEventListener('unhandledrejection', (e) => { const r = e && e.reason; showErr((r && (r.message || r)) || 'promise'); });
+  { const w0 = console.warn; console.warn = function (...a) { try { if (typeof a[0] === 'string' && /실패/.test(a[0])) showErr(a.map((x) => (x && x.message) || String(x)).join(' ')); } catch { /* 넘어간다 */ } return w0.apply(this, a); }; }
   // 소리 깨우기 — 아이폰은 손가락을 뗄 때만 허락
   const wakeA = () => { const G = window.__G; try { if (G && G.warmAudio && !(G.audio && G.audio.ctx && G.audio.ctx.state === 'running')) G.warmAudio(); } catch { /* 넘어간다 */ } };
   addEventListener('touchend', wakeA, { capture: true, passive: true }); addEventListener('click', wakeA, true);
