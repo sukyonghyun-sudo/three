@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-884 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-885 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -431,7 +431,7 @@ html.sa-m:not(.sa-play) #sam-restart, html.sa-m:not(.sa-play) #sam-menu { displa
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-884'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-885'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -8388,6 +8388,8 @@ window.__ratingImg = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAM
     let kind = on ? 'm17' : !!src16 && realTeam(bot) === 2 ? 'm16' : 'son';
     // b589 — 캐릭터 선택(charselect.js): 내가 고른 몸 말고 남은 둘을 봇이(혼자 하기만)
     if (!on && C.botOverride && !(window.__mp && window.__mp.on)) { const k = C.botOverride[realTeam(bot)]; if ((k === 'm17' && src && C.done) || (k === 'm16' && src16) || k === 'son') kind = k; }
+    // b885 — 같이 하기: 서버가 판마다 자리마다 겹치지 않게 정한 캐릭터(사람 · 봇 모두 · mp.js setChars) — 모두의 화면에서 같은 자리가 같은 캐릭터
+    { const mk = window.__mp && window.__mp.on && window.__mpChars && window.__mpChars[realTeam(bot)]; if ((mk === 'm17' && src && C.done) || (mk === 'm16' && src16) || mk === 'son') kind = mk; }
     const glasses = kind === 'm16';
     const geo = kind === 'm17' ? fit(sm) : glasses ? fitToC(src16, sm) : son.geo;
     if (!geo) return;
@@ -23401,7 +23403,7 @@ function bind(r) {
   lastChat = 0; chatMsgs.length = 0; redrawChat();
   slotSig.fill('');
   $('#mp-rname').textContent = r.name || '';
-  const keys = ['phase', 'seats', 'ready', 'ctl', 'host', 'cd', 'auto', 'round', 'P', 'B', 'M', 'S', 'W', 'endT', 'chat', 'T'];   // b874 auto — 저절로 시작까지 남은 초
+  const keys = ['phase', 'seats', 'ready', 'ctl', 'host', 'cd', 'auto', 'round', 'P', 'B', 'M', 'S', 'W', 'endT', 'chat', 'T', 'CH'];   // b885 CH — 자리마다 캐릭터   // b874 auto — 저절로 시작까지 남은 초
   for (const k of keys) offs.push(r.onStateChange(k, (v) => onState(k, v)));
   offs.push(r.onMessage('hit', onHit));
   offs.push(r.onMessage('breath', onBreath));
@@ -23442,6 +23444,7 @@ function onState(k, v) {
     case 'S': if (MP.on) { window.__mpScores = localScores(v); try { window.__G.mpApi.refresh(); } catch { /* 넘어간다 */ } } break;
     case 'chat': onChat(v); break;
     case 'T': if (MP.on) applyTune(v); break;
+    case 'CH': if (MP.on) { setChars(); relabelBots(); refreshHud(); } break;   // b885
     case 'R': if (MP.on && window.__crowNet) window.__crowNet(v, myTeam); break;   // b665 — 까마귀 공격(서버가 고른 팀)
     case 'H': if (MP.on && window.__hornetNet) window.__hornetNet(v, myTeam); break;
     case 'BH': if (MP.on && window.__beehiveNet) window.__beehiveNet(v); break;   // b764 — 벌통(서버가 굴린 자리)   // b699 — 왕벌(서버가 고른 팀 · 기믹 · 시간표)
@@ -23598,6 +23601,7 @@ function beginRound() {
   if (G.carry.heldBody) { pendingGrab = true; G.set('dragMode', false); pendingGrab = false; }   // 지난 판에 들고 있던 것 — 서버에 알리지 않고 내려놓는다
   G.mpApi.rezone();
   G.mpApi.restart();
+  setChars();   // b885 — 서버가 정한 내 캐릭터 · 남의 캐릭터(relabelBots 가 입힌다)
   { const e = st.P && st.P[myTeam], h = G.hero.position, N = window.__nav;   // b873 — 내 몸도 서버가 정한 시작 자리(돗자리 가운데)에 — 예전엔 본진 기본 자리(토리이 한가운데)에 서서 P1 은 「설 수 없는 곳」으로 튕겼다(3인 시험)
     if (e && isFinite(e.x) && isFinite(e.z)) { let y = N && N.okAt ? N.okAt(e.x, e.z) : null; if (y === null || y === undefined) y = G.groundAt ? G.groundAt(e.x, e.z) : h.y; if (window.__matLift && isFinite(y)) y = window.__matLift(e.x, e.z, y); if (isFinite(y)) { h.set(e.x, y, e.z); if (isFinite(e.r)) G.mpApi.setYaw(e.r); } } }
   relabelBots();
@@ -23610,6 +23614,14 @@ function beginRound() {
   G.monster.tgt = null;
   if (!G.started) G.mpApi.start();
   feedSys(`판 ${st.round} — 시체 셋을 먼저 내 제단에`);   // b830 — 본진 → 제단
+}
+// b885 — 캐릭터: 서버가 판마다 자리마다 겹치지 않게 정한다(st.CH · 실제 자리 번호) — 내 몸은 heroWear · 남의 몸(사람 · 봇)은 cast.js apply 가 __mpChars 를 본다
+function setChars() {
+  const C = window.__cast, ch = st.CH;
+  if (!C || !Array.isArray(ch) || myTeam < 0) return;
+  window.__mpChars = ch.slice();
+  const k = ch[myTeam];
+  if (k && C.heroKind !== k && C.heroWear) Promise.resolve(C.heroWear(k)).catch((e) => console.warn('[mp] 내 캐릭터', e));
 }
 function refreshHud() { try { if (window.__tension && window.__tension.refresh) window.__tension.refresh(); } catch (e) { console.warn('[mp] 표지 다시 그리기', e); } }
 // 봇 머리 위 이름표 — 사람은 닉네임, 빈 자리는 "P2 봇"
