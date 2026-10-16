@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-896 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-898 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -322,7 +322,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-896'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-898'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -7816,6 +7816,19 @@ window.__ratingImg = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAM
   }, true);
 
   function warmAudio() { try { window.__G && window.__G.warmAudio(); } catch { /* 소리를 못 켜도 게임은 간다 */ } }
+  // b897 — 첫 클릭 · 첫 키에 소리를 깨운다(사용자 「시작할 때 음악이 안 나온다」) — 브라우저는 사람이 누르기 전에는 소리를 막아서,
+  //   불러오는 동안 만든 소리 판이 잠긴 채로 남았다(예전엔 「싱글플레이」를 눌러야 풀렸다) → 등급 안내를 넘기는 클릭 · 타이틀 클릭 · 아무 키든 그 순간 풀어 타이틀 음악부터 나온다
+  // b898 — 타이틀 메뉴 · 등급 안내가 키를 먼저 받아 넘기지 않으면(방향키 등) 위 듣기에 닿지 않았다 → 브라우저가 「사람이 한 번이라도 눌렀다」고 아는지
+  //   (navigator.userActivation)를 짧게 살펴 그때 깨운다 · 처음 켜질 때까지만(게임이 일부러 끄는 것은 건드리지 않음)
+  {
+    const EV = ['pointerdown', 'keydown', 'touchstart'];
+    const on = () => { try { const A = window.__G && window.__G.audio; return !!(A && A.ctx && A.ctx.state === 'running'); } catch { return false; } };
+    let iv = 0;
+    const stop = () => { for (const t of EV) removeEventListener(t, wake, true); clearInterval(iv); };
+    function wake() { warmAudio(); if (on()) stop(); }
+    for (const t of EV) addEventListener(t, wake, true);
+    iv = setInterval(() => { if (on()) { stop(); return; } const U = navigator.userActivation; if (U && U.hasBeenActive) warmAudio(); }, 300);
+  }
 
   function checks(G) {
     const N = window.__nav;
