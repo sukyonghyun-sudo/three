@@ -51,6 +51,9 @@ html.mt-on #sr-keys { display: none !important; }   /* 판 아래 키보드 안�
 #mt-rot b { display: block; font-size: 40px; margin-bottom: 18px; transform: rotate(90deg); }
 @media (orientation: portrait) { #mt-rot { display: grid; } }
 #sr-vol .ln::before { height: 26vh; }
+#sr-vol #mt-gfx { position: relative; display: flex; align-items: center; width: 100%; height: 6vh; padding: 0 0 0 2.6vw; box-sizing: border-box; cursor: pointer; font: 500 2.3vh/6vh 'Song Myung', 'UIF', serif; color: #e8e4dc; text-shadow: 0 2px 8px rgba(0, 0, 0, .9); }
+#sr-vol #mt-gfx .nm { width: 6.6vw; min-width: 84px; flex: 0 0 auto; }
+html.mt-on #sr-pause .pz > small, html.mt-on #csel .hint { display: none !important; }   /* 키보드 안내 줄(Esc · ↑↓ · Enter) — 휴대폰엔 없음 */
 #sr-vol .gq { display: flex; flex: 1 1 auto; justify-content: space-between; padding-right: .4vw; }
 #sr-vol .gq em { font-style: normal; padding: 0 .9vw; color: rgba(232, 228, 220, .42); transition: color .15s; }
 #sr-vol .gq em.on { color: #fff; text-shadow: 0 0 10px rgba(255, 60, 40, .85), 0 2px 8px rgba(0, 0, 0, .9); }`;
@@ -165,12 +168,12 @@ html.mt-on #sr-keys { display: none !important; }   /* 판 아래 키보드 안�
     [() => D.querySelector('#sr-vol.on'), '.gq em, .row'],
     [() => (window.__pause && window.__pause.open ? D.getElementById('sr-pause') : null), 'button'],
     [() => D.querySelector('#sr-end.on'), 'button, [data-a]'],
-    [() => D.querySelector('#cin-how.on'), '.ok, .pick span, button'],
+    [() => D.querySelector('#cin-how.on'), '.ok, .pick span, button', () => (howT && performance.now() - howT > 700 ? D.querySelector('#cin-how .ok') : null)],   // b912 — 카드 아무 데나 눌러도 확인(나타나고 0.7초 뒤부터)
     [() => D.querySelector('#csel.on'), '.scene-start, .scene-back, .fr'],
     [() => { const e = D.getElementById('start'); return e && e.style.display !== 'none' && shown(e) ? e : null; }, '.sr-modes button'],
   ];
   const btnAt = (x, y) => {
-    for (const [get, sel] of LAYERS) {
+    for (const [get, sel, any] of LAYERS) {
       const L = get(); if (!L || !shown(L)) continue;
       let best = null, ba = Infinity;
       for (const b of L.querySelectorAll(sel)) {
@@ -180,7 +183,7 @@ html.mt-on #sr-keys { display: none !important; }   /* 판 아래 키보드 안�
         const cs = getComputedStyle(b); if (cs.visibility === 'hidden' || cs.display === 'none') continue;
         const ar = r.width * r.height; if (ar < ba) { ba = ar; best = b; }
       }
-      return best;
+      return best || (any ? any() : null);
     }
     return null;
   };
@@ -204,6 +207,21 @@ html.mt-on #sr-keys { display: none !important; }   /* 판 아래 키보드 안�
       el.click();
     }, 360);
   }, { capture: true, passive: true });
+  // b912 — 살아남는 법 카드가 화면보다 크면 들어올 때까지 줄인다(사용자 아이폰 「조작법 화면에서 확인 버튼이 안 보여서 못 누른다」)
+  let howT = 0;
+  const visH = () => { const v = window.visualViewport; return Math.min(innerHeight, v && v.height > 0 ? v.height : 1e9); };
+  const visW = () => { const v = window.visualViewport; return Math.min(innerWidth, v && v.width > 0 ? v.width : 1e9); };
+  setInterval(() => {
+    const h = D.querySelector('#cin-how.on'); if (!h) { howT = 0; return; }
+    if (!howT) howT = performance.now();
+    const inn = h.querySelector('.in'); if (!inn) return;
+    const els = [inn, h.querySelector('.ok')].filter(Boolean).map((e) => e.getBoundingClientRect()).filter((r) => r.height > 0);
+    if (!els.length) return;
+    const top = Math.min(...els.map((r) => r.top)), bot = Math.max(...els.map((r) => r.bottom)), right = Math.max(...els.map((r) => r.right));
+    const cur = +inn.style.zoom || 1, f = Math.min((visH() - 12) / Math.max(1, bot - top), (visW() - 8) / Math.max(1, right));
+    const z = Math.max(0.35, Math.min(1, cur * f));
+    if (f < 0.995 || (cur < 1 && f > 1.04)) { if (Math.abs(z - cur) > 0.004) inn.style.zoom = z.toFixed(3); }
+  }, 120);
   // 아이폰 홈 화면 실행 — 돌린 뒤 화면이 살짝 밀려 터치가 어긋나는 것 되돌리기
   const unshift = () => { try { if (scrollX || scrollY) scrollTo(0, 0); } catch { /* 넘어간다 */ } };
   addEventListener('resize', () => { unshift(); setTimeout(unshift, 300); });
@@ -237,12 +255,16 @@ html.mt-on #sr-keys { display: none !important; }   /* 판 아래 키보드 안�
   setInterval(() => {
     const v = D.getElementById('sr-vol'); if (!v || D.getElementById('mt-gfx')) return;
     const back = v.querySelector('.row[data-k="back"]'); if (!back) return;
-    const r = D.createElement('div'); r.className = 'row'; r.id = 'mt-gfx'; r.dataset.k = 'gfx';
+    const r = D.createElement('div'); r.className = 'mrow'; r.id = 'mt-gfx';   // b912 — class 'row' 를 쓰면 vol.js paint 가 막대(.bar)를 찾다 멎어 설정 창이 두 번째부터 안 열렸다
     r.innerHTML = '<span class="nm">화질</span><span class="gq">' + GQ.map((n, i) => '<em data-q="' + i + '">' + n + '</em>').join('') + '</span>';
     back.parentNode.insertBefore(r, back);
     r.addEventListener('click', (e) => { const q = e.target.closest && e.target.closest('[data-q]'); setQ(q ? +q.dataset.q : gq + 1); });
     paintQ();
   }, 250);
+  // 판 중 안내 「G · 시체를 잡는다 / 내려놓는다」 → 휴대폰 단추 이름(crisis.js · game.js 가 글을 바꿀 때마다)
+  { const fixP = () => { const p = D.getElementById('prompt'); if (!p) return false; const t = p.textContent || ''; if (/^G · /.test(t)) p.textContent = t.replace(/^G · /, /내려놓/.test(t) ? '놓기 · ' : '잡기 · '); return true; };
+    const hookP = () => { const p = D.getElementById('prompt'); if (!p) { setTimeout(hookP, 500); return; } fixP(); new MutationObserver(fixP).observe(p, { childList: true, characterData: true, subtree: true }); };
+    hookP(); }
   window.__mt = { playing, keys: held, get gfx() { return gq; }, setGfx: setQ };
 })();
 
@@ -819,8 +841,8 @@ html.mt-on #sr-keys { display: none !important; }   /* 판 아래 키보드 안�
   document.head.appendChild(st);
   let last = '';
   function upd() {
-    const W = Math.max(1, innerWidth), H = Math.max(1, innerHeight);
-    const k = touch ? 1 : Math.max(0.4, Math.min(2.5, Math.min(H / REF_H, W / REF_W)));
+    const VV = window.visualViewport, W = Math.max(1, Math.min(innerWidth, VV && VV.width > 0 ? VV.width : 1e9)), H = Math.max(1, Math.min(innerHeight, VV && VV.height > 0 ? VV.height : 1e9));
+    const k = touch ? 1 : Math.max(0.2, Math.min(2.5, Math.min(H / REF_H, W / REF_W)));
     const key = W + 'x' + H + '|' + k.toFixed(4); if (key === last) return; last = key;
     R.style.setProperty('--uik', k.toFixed(4));
     if (touch) { R.style.setProperty('--sw', '1vw'); R.style.setProperty('--sh', '1vh'); R.style.setProperty('--smin', '1vmin'); }
@@ -5119,7 +5141,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
   // b778 — 「시체 3구를 서로 뺏어서 제일 먼저 3구를 모으는 사람이 승리한다 이런 식으로」 · 「방향키로도 이동 가능하다고」 · 키 묶음은 줄에서 안 끊김(.kg)
   const HOW = [
     { k: 'goal', t: '목표', l: [`괴물과 방해 요소를 피해 <b>시체 3구</b>를 서로 빼앗아`, `가장 먼저 <b>내 제단</b>에 3구를 바치는 사람이 <b>승리</b>한다`] },
-    { k: 'keys', t: '조작', l: [`<span class="kg">방향키 ${K('↑')}${K('↓')}${K('←')}${K('→')}</span> 또는 <span class="kg">${K('W')}${K('A')}${K('S')}${K('D')}</span> 이동`, `<span class="kg">${K('G')} 또는 ${K('Space')}</span> 시체 잡기 / 놓기`] },
+    { k: 'keys', t: '조작', l: [`화면 <span class="kg">왼쪽</span>을 누른 채 끌어 이동`, `오른쪽 아래 <span class="kg">${K('잡기')}</span> 단추로 시체 잡기 / 놓기`] },
   ];
   const TIP = '';
   const HCSS = `#cin-how{position:absolute;inset:0;z-index:45;color:#e7e2d4;font-family:"UIF","Song Myung","Noto Serif KR",serif;opacity:0;transition:opacity .9s;pointer-events:none}
@@ -5194,7 +5216,7 @@ body:not(.tz-live) #lit-cmp{visibility:hidden}`;
   function howRender() {
     if (!how) return;
     how.className = how.className.replace(/\bv\d\b/g, '').trim() + ' v' + hv;
-    how.innerHTML = `${hv === 2 ? '' : '<div class="shade"></div>'}<div class="in">${howBody(hv)}<button class="ok" type="button">확인<small>Enter</small></button></div>`;
+    how.innerHTML = `${hv === 2 ? '' : '<div class="shade"></div>'}<div class="in">${howBody(hv)}<button class="ok" type="button">확인</button></div>`;
     how.querySelector('.ok').addEventListener('click', (e) => { e.stopPropagation(); howOk(); });
     how.querySelectorAll('.pick span').forEach((s) => s.addEventListener('click', (e) => { e.stopPropagation(); CN.howPick(+s.dataset.v); }));
     howFilter();
