@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-893 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-894 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -322,7 +322,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-893'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-894'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -1132,7 +1132,7 @@ body.sr-tune-open #btn-view { visibility: hidden; }   /* 패널 뒤로 비친다
 #start.t3-noKeys .card.t3 .keys { display: none; }
 /* b893 — 「※전체화면으로 플레이 해주세요」(사용자 · 타이틀 왼쪽 아래) — 한 줄 말과 같은 글꼴 · 타이틀 필터 · 전체 화면이면 숨김(title.js html.t3-isfull) */
 #start .t3-full { position: absolute; z-index: 2; left: calc(clamp(28px, 7vw, 130px) + 6px); bottom: 6vh; pointer-events: none; white-space: nowrap;
-  font: 400 15px 'Song Myung', 'UIF', serif; letter-spacing: .14em; color: #9d9584; text-shadow: 0 1px 6px #000; transition: opacity .6s;
+  font: 400 18px 'Song Myung', 'UIF', serif; letter-spacing: .14em; color: rgba(244, 240, 232, .78); text-shadow: 0 1px 6px #000; transition: opacity .6s;   /* b894 — 조금 크게 · 옅은 흰색(사용자) */
   filter: sepia(var(--t3fs, .32)) saturate(var(--t3ft, .82)) contrast(var(--t3fc, 1.08)) brightness(var(--t3fbr, 1)) blur(var(--t3fb, .35px)) drop-shadow(var(--t3fa, 1.2px) 0 0 rgba(255, 0, 0, var(--t3fac, .18))) drop-shadow(calc(var(--t3fa, 1.2px) * -1) 0 0 rgba(0, 200, 255, calc(var(--t3fac, .18) * .7))); }
 #start.t3-pre .t3-full, html.t3-isfull #start .t3-full { opacity: 0; }
 /* b547 — 타이틀 등장 연출 전엔 글을 숨겨 둔다(title.js playIntro 가 푼다) · 필터를 패널 값으로(--t3f*) */
