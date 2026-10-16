@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-890 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
+<!-- 시체 쟁탈전 — 단독판(MSW 없이 · 혼자 하기와 봇) · MSW 판 b20260930-891 에서 만듦 · 모델 · 소리는 GitHub sukyonghyun-sudo/three corpse-play/a/ 에서 받는다.
      이 파일 하나면 된다 — 내 PC 에서 더블클릭해도, 온라인 링크로 열어도 같다. 설정 저장 · 같이 하기는 MSW 판에서만.
      만든 곳: Desktop/whick/build-corpse-standalone.js (직접 고치지 말 것) -->
 <html lang="ko">
@@ -322,7 +322,7 @@
   window.__CLIP_URL = { run: './clips/son_run.js', hit: './clips/son_hit.js', getup: './clips/son_getup.js', mWalk: './clips/monster/walking.js', mAttack: './clips/monster/attack.js' };
   window.__CLIP_P = {};
   for (const [k, src] of Object.entries(window.__CLIP_URL)) {
-    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-890'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
+    window.__CLIP_P[k] = (window.__CLIPS && window.__CLIPS[k]) ? Promise.resolve() : new Promise((res, rej) => { const s = document.createElement('script'); s.src = src + '?v=b20260930-891'; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
     window.__CLIP_P[k].catch(() => {});
   }
 })();
@@ -14632,7 +14632,7 @@ window.__badgeImg = {"son": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/
         return !!(Bn && Bn.burning && Bn.burning('hero'));
       }
       const b = q.who;
-      if (b.stun > 0 || (b.knockT || 0) > 0 || b.a === 6 || b.a === 7) return true;
+      if (b.stun > 0 || b.a === 6 || b.a === 7) return true;   // b891 — knockT 는 맞은 뒤 0 으로 안 돌아온다(game.js · mp.js) → 한 번 맞은 봇 · 사람은 그 판 내내 까마귀 · 왕벌이 안 노렸다 — 맞아 날아가는 동안은 stun > 0 이 이미 걸러 준다
       if (rl && rl.has && rl.has(b)) return true;
       return !!(Bn && Bn.burning && Bn.burning(b));
     } catch { return false; }
@@ -15240,7 +15240,7 @@ body:not(.tz-live) #cf-btn{visibility:hidden}
   const crowAny = () => { const F = window.__crowflock; try { return !!(F && F.active && F.active()); } catch { return false; } };
   window.__evBusy = () => H.events.length > 0 || crowAny();
   window.__monSkip = (who) => { try { return H.busy(who) || crowOn(who); } catch { return false; } };
-  window.__busy = (who) => { try { if (H.busy(who) || crowOn(who)) return true; if (who === 'hero') return !!(G && G.hit && G.hit.active); return who.stun > 0 || (who.knockT || 0) > 0; } catch { return false; } };
+  window.__busy = (who) => { try { if (H.busy(who) || crowOn(who)) return true; if (who === 'hero') return !!(G && G.hit && G.hit.active); return who.stun > 0; /* b891 — knockT 는 맞은 뒤 0 으로 안 돌아와 한 번 맞은 봇은 판 내내 「바쁜」 걸로 보였다 */ } catch { return false; } };
 
   /* ── 소리 — 붕붕(파리 떼 녹음을 낮게 · 두 겹) ────────────── */
   function au() { const A = G && G.audio; return A && A.ctx && A.out && G.cfg.sound !== false ? A : null; }
