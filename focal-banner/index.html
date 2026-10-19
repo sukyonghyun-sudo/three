@@ -21698,7 +21698,7 @@ details p { margin: 6px 0 2px; font-size: 13px; color: var(--ink2); line-height:
     </section>
     <section class="block">
       <h2><span class="tag">3</span>만들기 설정</h2>
-      <div class="field"><span class="lb">빈자리 채우기<small>요소를 옮기고 남은 배경</small></span><div class="seg" role="group" aria-label="빈자리 채우기"><button type="button" data-bg="fill" aria-pressed="true" title="주변 색으로 자연스럽게 이어요">이어 채우기</button><button type="button" data-bg="blur" aria-pressed="false" title="배경을 흐리게 깔아 요소가 돋보여요">흐리게</button><button type="button" data-bg="solid" aria-pressed="false" title="배경을 한 가지 색에 가깝게">단색</button></div></div>
+      <div class="field"><span class="lb">빈자리 채우기<small>요소를 옮기고 남은 배경</small></span><div class="seg" role="group" aria-label="빈자리 채우기"><button type="button" data-bg="auto" aria-pressed="true" title="배경이 단순하면 이어 채우고, 복잡한 그림이면 흐리게 깔아요">자동</button><button type="button" data-bg="fill" aria-pressed="false" title="주변 색으로 자연스럽게 이어요">이어 채우기</button><button type="button" data-bg="blur" aria-pressed="false" title="배경을 흐리게 깔아 요소가 돋보여요">흐리게</button><button type="button" data-bg="solid" aria-pressed="false" title="배경을 한 가지 색에 가깝게">단색</button></div></div>
       <div class="field"><label class="lb" for="pad">바깥 여백<small>가장자리와 요소 사이</small></label><div class="range"><input type="range" id="pad" min="0" max="14" value="6"><output id="padOut" for="pad">6%</output></div></div>
       <div class="field"><label class="lb" for="boost">「꼭」 요소 키우기<small>다른 요소보다 더 크게</small></label><div class="range"><input type="range" id="boost" min="0" max="80" value="30"><output id="boostOut" for="boost">30%</output></div></div>
     </section>
@@ -21738,7 +21738,7 @@ details p { margin: 6px 0 2px; font-size: 13px; color: var(--ink2); line-height:
         <div class="pop" id="setPop" hidden></div>
       </div>
       <div class="board">
-        <div class="boardhd"><span class="dotlg"><i></i>파란 점 = 이 사이즈에 추천하는 배치</span><span>배너를 누르면 실제 크기로 보고 <b>손으로 다듬을 수</b> 있어요</span><label class="check" title="스토리 · 릴스(9:16)는 위아래가 앱 화면에 가려져요. 글자 · 버튼 · 로고를 그 안쪽에 놓아요"><input type="checkbox" id="safeOn"> 스토리 안전 영역 지키기</label><span>배치 — 분할: 이미지와 글을 나눠 놓기 · 반대: 좌우(위아래) 바꾸기 · 원래: 원본 자리 그대로</span></div>
+        <div class="boardhd"><span class="dotlg"><i></i>파란 점 = 이 사이즈에 추천하는 배치</span><span>배너를 누르면 실제 크기로 보고 <b>손으로 다듬을 수</b> 있어요</span><label class="check" title="스토리 · 릴스(9:16)는 위아래가 앱 화면에 가려져요. 글자 · 버튼 · 로고를 그 안쪽에 놓아요"><input type="checkbox" id="safeOn"> 스토리 안전 영역 지키기</label><span>배치 — 분할: 이미지와 글을 나눠 놓기 · 반대: 좌우(위아래) 바꾸기 · 원래: 원본 자리 그대로 · 맞춤: 원본을 오리지 않고 키워 맞추기(배경이 그림이면 추천)</span></div>
         <div class="results" id="results"></div>
       </div>
     </section>
@@ -21766,7 +21766,7 @@ details p { margin: 6px 0 2px; font-size: 13px; color: var(--ink2); line-height:
       <ol class="hsteps">
         <li><span class="n">1</span><b>메인 배너 올리기</b><p>다 만든 배너를 올려요. <b>PSD</b>면 레이어가 그대로 요소가 되고, <b>PNG · JPG</b>면 <b>AI가 알아서</b> 타이틀 · 버튼 · 로고 · 메인 이미지를 찾아 종류와 중요도까지 정해요. 바로 결과로 넘어가요.</p></li>
         <li><span class="n">2</span><b>요소 · 중요도 정하기</b><p>AI가 찾은 결과가 마음에 안 들 때만 고쳐요. 배너 위를 끌어 <b>상자로 짚거나</b>, <b>AI로 잡기</b>로 눌러요. 요소마다 <b>꼭 · 보통 · 여유</b>를 골라요. 사이즈가 작을수록 여유 → 보통 순서로 빠지고, 꼭은 끝까지 크게 남아요.</p></li>
-        <li><span class="n">3</span><b>사이즈 고르고 받기</b><p>사이즈를 적거나 고르면 한 번에 만들어져요. 사이즈마다 <b>분할 · 반대 · 원래</b> 배치를 바꿔 보고, 눌러서 크게 보면 손으로 다듬을 수 있어요. 마지막에 <b>전부 받기</b>.</p></li>
+        <li><span class="n">3</span><b>사이즈 고르고 받기</b><p>사이즈를 적거나 고르면 한 번에 만들어져요. 사이즈마다 <b>분할 · 반대 · 원래 · 맞춤</b> 배치를 바꿔 보고, 눌러서 크게 보면 손으로 다듬을 수 있어요. 마지막에 <b>전부 받기</b>.</p></li>
       </ol>
       <div class="hgrid">
         <section><h4>단축키</h4><dl class="keys"><dt>V</dt><dd>고르기</dd><dt>M</dt><dd>상자로 짚기</dd><dt>W</dt><dd>자동으로 잡기</dd><dt>A</dt><dd>AI로 잡기</dd><dt>B · E</dt><dd>칠하기 · 지우기</dd><dt>[ ]</dt><dd>붓 크기</dd><dt>Shift</dt><dd>고른 요소에 더하기</dd><dt>Delete</dt><dd>고른 요소 지우기</dd><dt>Ctrl+Z</dt><dd>되돌리기</dd><dt>휠 · 방향키</dt><dd>크게 보기에서 크기 · 위치 다듬기</dd></dl></section>
@@ -21775,8 +21775,10 @@ details p { margin: 6px 0 2px; font-size: 13px; color: var(--ink2); line-height:
           <details><summary>어떤 도구로 짚으면 좋아요?</summary><p>글자 · 로고 · 버튼은 <b>상자로 짚기</b>가 가장 정확해요(상자 안에서 모양대로 따요). 인물 · 제품 · 캐릭터는 <b>AI로 잡기</b>로 한 번 누르세요. 빠진 곳은 칠하기, 더 잡힌 곳은 지우기로 다듬어요.</p></details>
           <details><summary>PSD 레이어 효과(테두리 · 그림자)는요?</summary><p>효과가 있는 레이어는 완성된 그림에서 모양대로 잘라 와서 효과가 그대로 남아요.</p></details>
           <details><summary>짚지 않은 글자가 배경에 보여요</summary><p>PNG · JPG는 짚은 요소만 옮길 수 있어요. 배너 속 글자 · 버튼 · 로고는 모두 짚어 주세요. 짚은 자리는 주변 색으로 자연스럽게 채워요.</p></details>
+          <details><summary>배경이 그림 · 사진이라 복잡해요</summary><p>바다 · 하늘 · 소품이 가득한 배너는 요소를 오려 옮기면 빈자리가 티 나요. 그래서 AI가 <b>타이틀 · 메인 이미지 · 로고 · 표기 문구</b>만 짚고 풍경은 배경으로 둬요. 비율이 비슷하면 원본을 그대로 키워 맞추는 <b>맞춤</b> 배치가 추천되고, 세로로 길면 장면은 두고 글만 빈 하늘로 옮겨요. <b>PSD</b>가 있으면 PSD를 올리는 게 가장 깔끔해요.</p></details>
+          <details><summary>「확률형 아이템 포함」 같은 표기는요?</summary><p><b>표기 문구</b>로 짚어 두면 어떤 사이즈에서도 빠지지 않고, 읽힐 만한 크기로 구석에 들어가요. 아래 · 위 끝의 작은 글은 AI가 알아서 표기 문구로 잡아요.</p></details>
           <details><summary>작업은 저장되나요?</summary><p>배너 · 요소 · 사이즈 · 내 세트 · 손본 것까지 이 브라우저에 자동으로 저장돼요. 다른 PC나 다른 브라우저에서는 다시 올려야 해요.</p></details>
-          <details><summary>결과가 마음에 안 들어요</summary><p>① 배치를 분할 · 반대 · 원래로 바꿔 보고 ② 중요도를 조정하고 ③ 크게 보기에서 직접 끌어 다듬어 보세요. 다듬은 것은 그 사이즈에만 저장돼요.</p></details>
+          <details><summary>결과가 마음에 안 들어요</summary><p>① 배치를 분할 · 반대 · 원래 · 맞춤으로 바꿔 보고 ② 중요도를 조정하고 ③ 크게 보기에서 직접 끌어 다듬어 보세요. 다듬은 것은 그 사이즈에만 저장돼요.</p></details>
         </section>
       </div>
     </div>
@@ -21808,11 +21810,12 @@ const KINDS = {
   logo: { label: '로고', z: 8, minH: [12, 16] },
   main: { label: '메인 이미지', z: 3, minH: [28, 48] },
   etc: { label: '기타 장식', z: 2, minH: [14, 22] },
+  note: { label: '표기 문구', z: 9, text: true, min: [7, 9] },
   bg: { label: '배경', z: 0 },
 };
 const IMP = { 1: '꼭 · 크게', 2: '보통', 3: '여유 있으면' };
 const ICOL = { 1: 'var(--i1)', 2: 'var(--i2)', 3: 'var(--i3)' }, IRGB = { 1: [255, 77, 46], 2: [255, 163, 26], 3: [19, 169, 154] };
-const defImp = (k) => ({ title: 1, main: 1, cta: 2, sub: 2, logo: 2, etc: 3, bg: 2 }[k] || 2);
+const defImp = (k) => ({ title: 1, main: 1, cta: 2, sub: 2, logo: 2, etc: 3, bg: 2, note: 1 }[k] || 2);
 const PRESETS = [
   ['구글 디스플레이 (GDN)', [[300, 250, '미디엄 렉탱글'], [336, 280, '라지 렉탱글'], [728, 90, '리더보드'], [970, 90, '라지 리더보드'], [970, 250, '빌보드'], [300, 600, '하프 페이지'], [160, 600, '와이드 스카이스크래퍼'], [320, 50, '모바일 배너'], [320, 100, '라지 모바일 배너'], [468, 60, '배너']]],
   ['소셜 · 피드', [[1080, 1080, '정사각 피드 1:1'], [1080, 1350, '세로 피드 4:5'], [1080, 1920, '스토리 · 릴스 9:16'], [1200, 628, '링크 공유 1.91:1']]],
@@ -21820,26 +21823,28 @@ const PRESETS = [
 ];
 const NAMES = Object.fromEntries(PRESETS.flatMap(([, l]) => l.map(([w, h, n]) => [w + 'x' + h, n])));
 const ratioName = (w, h) => { const r = w / h; return r >= 1 ? `가로 ${+r.toFixed(2)}:1` : `세로 1:${+(h / w).toFixed(2)}`; };
-const VARS = [['분할', '이미지와 글을 나눠 놓기'], ['반대', '좌우 · 위아래를 바꿔 놓기'], ['원래', '원본 자리를 따라 놓기']], VLET = ['A', 'B', 'C'];
+const VARS = [['분할', '이미지와 글을 나눠 놓기'], ['반대', '좌우 · 위아래를 바꿔 놓기'], ['원래', '원본 자리를 따라 놓기'], ['맞춤', '원본을 오리지 않고 그대로 키우고 옮겨 맞추기 — 배경이 복잡한 그림일 때 가장 자연스러워요']], VLET = ['A', 'B', 'C', 'D'];
 const VICON = [
   '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3" width="13" height="10" rx="1.6"/><rect x="3" y="4.5" width="4.5" height="7" rx=".8" fill="currentColor" stroke="none"/><path d="M9.5 6h3.5M9.5 8.3h2.5M9.5 10.6h3"/></svg>',
   '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3" width="13" height="10" rx="1.6"/><rect x="8.5" y="4.5" width="4.5" height="7" rx=".8" fill="currentColor" stroke="none"/><path d="M3 6h3.5M3 8.3h2.5M3 10.6h3"/></svg>',
   '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="3" width="13" height="10" rx="1.6"/><circle cx="11" cy="9" r="2.2" fill="currentColor" stroke="none"/><path d="M3.5 6h4M3.5 8.3h3"/></svg>',
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="13" height="10" rx="1.6"/><path d="M5 6.5V5h1.5M11 6.5V5H9.5M5 9.5V11h1.5M11 9.5V11H9.5"/></svg>',
 ];
 const IMPL = { 1: '꼭', 2: '보통', 3: '여유' }, IMPT = { 1: '꼭 — 어떤 사이즈에서도 크게 남아요', 2: '보통 — 자리가 되면 함께 들어가요', 3: '여유 — 자리가 좁으면 가장 먼저 빠져요' };
 
 /* ───────── 상태 ───────── */
-const DEF = { sizes: [[300, 250], [728, 90], [300, 600], [320, 50], [160, 600], [1080, 1080], [1200, 628], [1080, 1920]], pick: {}, sets: null, labels: {}, adj: {}, safe: true, exp: { fmt: 'png', scale: 1, limOn: false, lim: 150, name: 'banner_{가로}x{세로}_{배치}' }, style: { pad: 6, boost: 30, bg: 'fill' }, tool: 'box', brush: 28, tol: 42 };
+const DEF = { sizes: [[300, 250], [728, 90], [300, 600], [320, 50], [160, 600], [1080, 1080], [1200, 628], [1080, 1920]], pick: {}, sets: null, labels: {}, adj: {}, safe: true, exp: { fmt: 'png', scale: 1, limOn: false, lim: 150, name: 'banner_{가로}x{세로}_{배치}' }, style: { pad: 6, boost: 30, bg: 'auto' }, tool: 'box', brush: 28, tol: 42 };
 const S = Object.assign(structuredClone(DEF), store.get('focal-banner-v2', {}));
 S.exp = Object.assign(structuredClone(DEF.exp), S.exp); S.style = Object.assign(structuredClone(DEF.style), S.style);
-const saveS = debounce(() => store.set('focal-banner-v2', { sizes: S.sizes, pick: S.pick, exp: S.exp, style: S.style, tool: S.tool, brush: S.brush, tol: S.tol, sets: S.sets, labels: S.labels, adj: S.adj, safe: S.safe }), 300);
+if (!S.styleV3) { if (S.style.bg === 'fill') S.style.bg = 'auto'; S.styleV3 = true; }   // 빈자리 채우기 기본값이 「자동」으로 바뀜
+const saveS = debounce(() => store.set('focal-banner-v2', { sizes: S.sizes, pick: S.pick, exp: S.exp, style: S.style, tool: S.tool, brush: S.brush, tol: S.tol, sets: S.sets, labels: S.labels, adj: S.adj, safe: S.safe, styleV3: S.styleV3 }), 300);
 if (!Array.isArray(S.sets)) S.sets = [{ id: 'ex1', name: '예시 · 구글 디스플레이 기본 5종', sizes: [[300, 250], [336, 280], [728, 90], [300, 600], [320, 50]] }];
 let M = null;        // 메인 배너 { name, src: 'image'|'psd'|'sample', W, H, cv, ow, oh }
 let C = [];          // 구성 요소 { id, name, kind, imp, use, z, n, mask, rect, own:{cv,x,y}|null, fx }
 let SEL = null, BG = null, MATTE = null, NSEQ = 1;
 const comp = (id) => C.find((c) => c.id === id) || null;
 const zKey = (c) => (M && M.src === 'image' ? KINDS[c.kind].z * 1e4 + c.n : c.z);
-const geomChanged = () => { BG = null; MATTE = null; for (const q of C) if (!q.own) { q._pc = null; q._th = null; } };
+const geomChanged = () => { BG = null; MATTE = null; FITSRC.clear(); for (const q of C) if (!q.own) { q._pc = null; q._th = null; } };
 const dirty = (c) => { if (c) { c._pc = null; c._th = null; c._dirty = true; } geomChanged(); saveProject(); renderSteps(); };   // 모양(마스크)이 바뀜
 const touch = (c) => { if (c) { c._pc = null; c._dirty = true; } saveProject(); renderSteps(); };   // 이름 · 종류 · 중요도 · 넣기/빼기만
 
@@ -22005,6 +22010,7 @@ function inpaint(srcCv, hole) {
 }
 function erode(mk, W, H, r) { if (r <= 0) return mk; const inv = new Uint8Array(mk.length); for (let i = 0; i < mk.length; i++) inv[i] = mk[i] ? 0 : 1; const d = dilate(inv, W, H, r), o = new Uint8Array(mk.length); for (let i = 0; i < mk.length; i++) o[i] = d[i] ? 0 : 1; return o; }
 const haloR = () => Math.max(4, Math.round(Math.min(M.W, M.H) * 0.03));
+function isBusy() { if (!M || M.src !== 'image') return false; if (M._busy == null) { const m = bgModel(new Uint8Array(M.W * M.H)); M._busy = !(m && m.inFrac > 0.4 && m.inMed < 9); } return M._busy; }
 // 배경이 단색 · 그라데이션인지 — 요소 밖 화소에 2차 곡면(색마다)을 맞춰 보고, 잘 맞으면 그 곡면이 「원래 배경」
 function bgModel(skip) {
   const W = M.W, H = M.H, md = pix(), step = Math.max(1, Math.round(Math.sqrt((W * H) / 7000))), pts = [];
@@ -22060,8 +22066,9 @@ function background() {
     const d = x.getImageData(0, 0, M.W, M.H).data, hole = new Uint8Array(M.W * M.H); let n = 0; for (let i = 0; i < hole.length; i++) if (d[i * 4 + 3] < 200) { hole[i] = 1; n++; }
     if (n) base = inpaint(base, hole);
   } else base = C.some((c) => c.kind !== 'bg') ? matteInfo().B : M.cv;
-  if (S.style.bg === 'blur' || S.style.bg === 'solid') {
-    const k = S.style.bg === 'solid' ? 1 / 64 : 1 / 14, sm = mkCanvas(M.W * k, M.H * k); ctx2(sm).drawImage(base, 0, 0, sm.width, sm.height);
+  const mode = S.style.bg === 'auto' ? (isBusy() ? 'blur' : 'fill') : S.style.bg;
+  if (mode === 'blur' || mode === 'solid') {
+    const k = mode === 'solid' ? 1 / 64 : 1 / 14, sm = mkCanvas(M.W * k, M.H * k); ctx2(sm).drawImage(base, 0, 0, sm.width, sm.height);
     const out = mkCanvas(M.W, M.H), ox = ctx2(out); ox.imageSmoothingQuality = 'high'; ox.drawImage(sm, 0, 0, M.W, M.H); base = out;
   }
   return (BG = base);
@@ -22147,7 +22154,7 @@ function keepGroup(cs, Z, opt = {}) {
   const w = g.w * s, h = g.h * s;
   let x = opt.align === 'left' ? Z.x : opt.align === 'right' ? Z.x + Z.w - w : Z.x + (Z.w - w) / 2;
   let y = opt.vAlign === 'top' ? Z.y : opt.vAlign === 'bottom' ? Z.y + Z.h - h : Z.y + (Z.h - h) / 2;
-  if (opt.bleed) { if (opt.bleed.b && g.y + g.h >= M.H - 2) y = opt.bleed.b - h; if (opt.bleed.r && g.x + g.w >= M.W - 2) x = opt.bleed.r - w; if (opt.bleed.l != null && g.x <= 1) x = opt.bleed.l; }
+  if (opt.bleed) { if (opt.bleed.t != null && g.y <= 1) y = opt.bleed.t; if (opt.bleed.b && g.y + g.h >= M.H - 2) y = opt.bleed.b - h; if (opt.bleed.r && g.x + g.w >= M.W - 2) x = opt.bleed.r - w; if (opt.bleed.l != null && g.x <= 1) x = opt.bleed.l; }
   return cs.map((c) => { const p = piece(c); return { c, x: x + (p.x - g.x) * s, y: y + (p.y - g.y) * s, s }; });
 }
 // 글 묶음 — 원래 모양 · 세로로 쌓기 중 중요한 글이 더 크게 보이는 쪽
@@ -22189,6 +22196,14 @@ function logoPlace(lg, W, H, cl, pad, m, v) {
   if (v === 1 && !center) x = left ? W - pad - w : pad;
   return { c: lg, x, y, s };
 }
+function notePlace(nt, W, H, cl, pad, m, lr) {
+  const p = piece(nt), lh = p.h / p.lines, want = clamp(lh * Math.min(W / M.W, H / M.H) * 1.15, KINDS.note.min[m >= 200 ? 1 : 0], Math.max(KINDS.note.min[1], m * 0.045));
+  let s = want / lh; if (p.w * s > W * (cl === 'strip' ? 0.3 : 0.9)) s = W * (cl === 'strip' ? 0.3 : 0.9) / p.w;
+  const w = p.w * s, h = p.h * s, cx = (p.x + p.w / 2) / M.W, top = (p.y + p.h / 2) / M.H < 0.35, e = Math.max(3, Math.round(pad * 0.6));
+  let x = cl === 'strip' ? W - e - w : cx < 0.38 ? e : cx > 0.62 ? W - e - w : (W - w) / 2, y = cl === 'strip' ? H - e * 0.6 - h : top ? e : H - e - h;
+  if (lr && over({ x, y, w, h }, lr)) x = x + w / 2 < W / 2 ? W - e - w : e;
+  return { c: nt, x, y, s };
+}
 const over = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
 const rectOf = (o) => { const p = piece(o.c); return { x: o.x, y: o.y, w: p.w * o.s, h: p.h * o.s }; };
 function carve(Z, r, gap) {   // 칸에서 로고 자리를 뺀다
@@ -22198,31 +22213,32 @@ function carve(Z, r, gap) {   // 칸에서 로고 자리를 뺀다
 }
 function arrange(W, H, v, P) {
   const m = Math.min(W, H), cl = cls(W, H), pad = Math.round(m * S.style.pad / 100) + (cl === 'strip' ? Math.round(H * 0.06) : 0), boost = S.style.boost / 100;
-  const hero = P.filter(HERO), text = P.filter(TEXT), lg = P.find((c) => c.kind === 'logo');
+  const hero = P.filter(HERO), text = P.filter(TEXT), lg = P.find((c) => c.kind === 'logo'), nt = P.find((c) => c.kind === 'note');
+  const gH = hero.length ? gBox(hero) : null, hR = !!gH && gH.x + gH.w >= M.W - 2 && gH.x > 1, hL = !!gH && gH.x <= 1 && gH.x + gH.w < M.W - 2;
   let ops = [];
   if (v === 2) ops = keepLayout(W, H, P, pad);
   else {
-    const first = v === 0, lo = lg ? logoPlace(lg, W, H, cl, pad, m, v) : null, lr = lo ? rectOf(lo) : null;
-    if (lo) ops.push(lo);
+    const first = v === 0, lo = lg ? logoPlace(lg, W, H, cl, pad, m, v) : null, lr = lo ? rectOf(lo) : null, no = nt ? notePlace(nt, W, H, cl, pad, m, lr) : null, nr = no ? rectOf(no) : null;
+    if (lo) ops.push(lo); if (no) ops.push(no);
     const full = { x: 0, y: 0, w: W, h: H }, inner = { x: pad, y: pad, w: W - 2 * pad, h: H - 2 * pad };
     const align = inferAlign(text.length ? text : P);
     if (!hero.length) {
-      const Z = carve(inner, lr, pad * 0.5);
+      const Z = carve(carve(inner, lr, pad * 0.5), nr, pad * 0.5);
       ops.push(...(cl === 'strip' ? rowText(text, Z) : textGroup(text, Z, first ? (align === 'right' ? 'center' : align === 'left' ? 'left' : 'center') : 'center', boost)));
     } else if (cl === 'strip') {
-      const g = gBox(hero), slot = clamp(H * (g.w / g.h) * 1.05, H * 0.9, W * 0.36), start = lr ? lr.x + lr.w + pad : pad;
+      const g = gBox(hero), slot = clamp(H * (g.w / g.h) * 1.05, H * 0.9, W * 0.36), start = lr ? lr.x + lr.w + pad : pad, first = hR ? v !== 0 : v === 0;
       const HZ = first ? { x: start, y: 0, w: slot, h: H } : { x: W - slot, y: 0, w: slot, h: H };
       const TZ = first ? { x: HZ.x + HZ.w + pad, y: pad, w: W - (HZ.x + HZ.w + pad) - pad, h: H - 2 * pad } : { x: start, y: pad, w: W - slot - start - pad, h: H - 2 * pad };
-      ops.push(...keepGroup(hero, inset2(HZ, 2), { bleed: { b: H } }));
-      if (TZ.w > 20) ops.push(...rowText(text, TZ));
+      ops.push(...keepGroup(hero, inset2(HZ, 2), { bleed: { b: H, r: hR && !first ? W : null, l: hL && first ? 0 : null } }));
+      if (TZ.w > 20) ops.push(...rowText(text, carve(TZ, nr, pad * 0.5)));
     } else {
       const heroFirst = Math.min(...hero.map((c) => c.imp)) <= Math.min(9, ...text.map((c) => c.imp));
       if (cl === 'wide') {
-        const f = clamp(0.48 + (heroFirst ? 0.06 : -0.06), 0.34, 0.62), hw = Math.round(W * f);
+        const first = hR ? v !== 0 : v === 0, f = clamp(0.48 + (heroFirst ? 0.06 : -0.06), 0.34, 0.62), hw = Math.round(W * f);
         const HZ = first ? { x: 0, y: 0, w: hw, h: H } : { x: W - hw, y: 0, w: hw, h: H };
         const TZ0 = first ? { x: hw + pad * 0.5, y: pad, w: W - hw - pad * 1.5, h: H - 2 * pad } : { x: pad, y: pad, w: W - hw - pad * 1.5, h: H - 2 * pad };
         ops.push(...keepGroup(hero, carve(inset2(HZ, pad * 0.5), lr, pad * 0.4), { bleed: { b: H, l: first ? 0 : null, r: first ? null : W } }));
-        if (text.length) ops.push(...textGroup(text, carve(TZ0, lr, pad * 0.5), align === 'center' ? 'center' : 'left', boost));
+        if (text.length) ops.push(...textGroup(text, carve(carve(TZ0, lr, pad * 0.5), nr, pad * 0.5), align === 'center' ? 'center' : 'left', boost));
       } else {
         const vertical = cl === 'tall' || cl === 'sky', cta = vertical ? text.filter((c) => c.kind === 'cta') : [], tx = text.filter((c) => !cta.includes(c));
         let bandH = 0; if (cta.length) { const cb = gBox(cta); bandH = Math.min(H * 0.16, cb.h * Math.min((W - 2 * pad) / cb.w, 3) + pad); }
@@ -22230,9 +22246,20 @@ function arrange(W, H, v, P) {
         const heroTop = cl === 'square' ? first : !first;
         const HZ = heroTop ? { x: 0, y: 0, w: W, h: hh } : { x: 0, y: R.h - hh, w: W, h: hh };
         const TZ0 = heroTop ? { x: pad, y: hh + pad * 0.3, w: W - 2 * pad, h: R.h - hh - pad * 1.3 } : { x: pad, y: pad, w: W - 2 * pad, h: R.h - hh - pad * 1.3 };
-        ops.push(...keepGroup(hero, carve(inset2(HZ, pad * 0.5), lr, pad * 0.4), { bleed: !heroTop || !bandH ? { b: heroTop ? null : R.h } : null, vAlign: heroTop ? 'bottom' : 'bottom' }));
-        if (tx.length) ops.push(...textGroup(tx, carve(TZ0, lr, pad * 0.5), 'center', boost));
+        ops.push(...keepGroup(hero, carve(inset2(HZ, pad * 0.5), lr, pad * 0.4), { bleed: { b: heroTop ? null : R.h, t: heroTop ? 0 : null, r: hR ? W : null, l: hL ? 0 : null }, vAlign: 'bottom' }));
+        if (tx.length) ops.push(...textGroup(tx, carve(carve(TZ0, lr, pad * 0.5), nr, pad * 0.5), 'center', boost));
         if (cta.length) ops.push(...keepGroup(cta, { x: pad, y: H - bandH, w: W - 2 * pad, h: bandH - pad * 0.6 }, { sMax: 3 }));
+        if (vertical) {
+          const hOps = ops.filter((o) => hero.includes(o.c)), tOps = ops.filter((o) => tx.includes(o.c)), U = (os) => { const rs = os.map(rectOf), y0 = Math.min(...rs.map((r) => r.y)), y1 = Math.max(...rs.map((r) => r.y + r.h)); return { y: y0, h: y1 - y0 }; };
+          if (hOps.length && tOps.length) {
+            const hr = U(hOps), tr = U(tOps), g = Math.max(pad * 0.8, H * 0.03), top = lr && lr.y < H / 2 ? lr.y + lr.h + pad * 0.5 : pad, bot = R.h - pad * 0.5, above = hr.y < tr.y;
+            const gapNow = above ? tr.y - hr.y - hr.h : hr.y - tr.y - tr.h, bleed = hr.y + hr.h >= R.h - 1 && !above, shift = (os, d) => os.forEach((o) => { o.y += d; });
+            if (gapNow > g * 1.6) {
+              if (bleed) { const free = hr.y - g - top; shift(tOps, top + Math.max(0, (free - tr.h) * 0.62) - tr.y); }
+              else { const bh = hr.h + tr.h + g, y0 = Math.max(top, top + (bot - top - bh) / 2); if (above) { shift(hOps, y0 - hr.y); shift(tOps, y0 + hr.h + g - tr.y); } else { shift(tOps, y0 - tr.y); shift(hOps, y0 + tr.h + g - hr.y); } }
+            }
+          }
+        }
       }
     }
   }
@@ -22267,10 +22294,81 @@ function keepLayout(W, H, P, pad) {
 }
 const SAFE = (W, H) => { const r = W / H; return S.safe && r > 0.5 && r < 0.62 && W >= 600 ? { t: Math.round(H * 0.13), b: Math.round(H * 0.18), name: '스토리 · 릴스 앱 화면' } : null; };
 const adjKey = (W, H, v) => `${W}x${H}:${v}`;
+function fitBox(W, A, pad) {
+  const use = C.filter((c) => c.use && c.kind !== 'bg' && c.kind !== 'logo' && c.kind !== 'note'), boxes = (f) => use.filter(f).map((c) => piece(c)).filter(Boolean);
+  const uni = (bs) => { const x0 = Math.min(...bs.map((b) => b.x)), y0 = Math.min(...bs.map((b) => b.y)), x1 = Math.max(...bs.map((b) => b.x + b.w)), y1 = Math.max(...bs.map((b) => b.y + b.h)); return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; };
+  const sCover = Math.max(W / M.W, (A.y * 2 + A.h) / M.H), fits = (U, s2) => U.w * s2 <= A.w - 2 * pad + 0.5 && U.h * s2 <= A.h - 2 * pad + 0.5;
+  for (const lv of [3, 2, 1]) { const bs = boxes((c) => c.imp <= lv); if (!bs.length) continue; const U = uni(bs); if (fits(U, sCover)) return { U, s: sCover, sCover }; }
+  const b1 = boxes((c) => c.imp === 1), U = b1.length ? uni(b1) : use.length ? uni(boxes(() => true)) : { x: M.W * 0.1, y: M.H * 0.1, w: M.W * 0.8, h: M.H * 0.8 };
+  return { U, s: Math.min(sCover, (A.w - 2 * pad) / U.w, (A.h - 2 * pad) / U.h), sCover };
+}
+const FITSRC = new Map();   // 맞춤에서 구석으로 옮기는 로고 · 표기 문구 자리를 지운 원본
+function fitSource(cs) {
+  if (!cs.length) return M.cv;
+  const key = cs.map((c) => c.id).sort().join(','); if (FITSRC.has(key)) return FITSRC.get(key);
+  const W = M.W, H = M.H, hole = new Uint8Array(W * H); for (const c of cs) { const r = Math.max(3, Math.round(Math.min(W, H) * (TEXT(c) || c.kind === 'note' ? 0.022 : 0.012))), d = dilate(c.mask, W, H, r); for (let i = 0; i < hole.length; i++) if (d[i]) hole[i] = 1; }
+  const out = inpaint(M.cv, hole), k = 1 / 10, sm = mkCanvas(W * k, H * k); ctx2(sm).drawImage(out, 0, 0, sm.width, sm.height);
+  const bl = mkCanvas(W, H), bx = ctx2(bl); bx.imageSmoothingQuality = 'high'; bx.drawImage(sm, 0, 0, W, H);
+  const fm = dilate(hole, W, H, Math.round(Math.min(W, H) * 0.01)), soft = boxBlur(Uint8ClampedArray.from(fm, (v) => v * 255), W, H, Math.max(2, Math.round(Math.min(W, H) * 0.012)));
+  const mc = mkCanvas(W, H), mx = ctx2(mc), id = mx.createImageData(W, H); for (let i = 0; i < soft.length; i++) id.data[i * 4 + 3] = soft[i]; mx.putImageData(id, 0, 0);
+  bx.globalCompositeOperation = 'destination-in'; bx.drawImage(mc, 0, 0); ctx2(out).drawImage(bl, 0, 0);
+  FITSRC.set(key, out); return out;
+}
+function renderFit(x, W, H, sz) {
+  const A = { x: 0, y: sz ? sz.t : 0, w: W, h: sz ? H - sz.t - sz.b : H }, m = Math.min(W, H), pad = Math.round(m * 0.04), r1 = fitBox(W, A, pad);
+  const hero = C.filter((c) => c.use && HERO(c) && piece(c)), txt = C.filter((c) => c.use && TEXT(c) && piece(c));
+  let s = r1.s, dw = M.W * s, dh = M.H * s, ox, oy, TZ = null;
+  const cover = () => { ox = dw >= W ? clamp(ox, W - dw, 0) : clamp(ox, Math.min(0, W - dw), Math.max(0, W - dw)); oy = dh >= H ? clamp(oy, H - dh, 0) : clamp(oy, Math.min(0, H - dh), Math.max(0, H - dh)); };
+  if (r1.s >= r1.sCover * 0.8 || !hero.length || !txt.length) {   // 다 들어감 — 그대로 키우고 옮기기만
+    const U = r1.U; ox = W / 2 - (U.x + U.w / 2) * s; oy = A.y + A.h / 2 - (U.y + U.h / 2) * s; if (dw < W) ox = (W - dw) / 2; cover();
+  } else {   // 다 안 들어감 — 메인 이미지는 장면째 두고, 글만 오려서 빈 쪽(원래 글이 있던 쪽)으로
+    const hb = gBox(hero), tb = gBox(txt), vert = W / H < M.W / M.H, first = vert ? tb.y + tb.h / 2 <= hb.y + hb.h / 2 : tb.x + tb.w / 2 <= hb.x + hb.w / 2, g = pad * 0.6;
+    for (const f of [0.62, 0.52, 0.44]) {
+      const R = vert ? { x: pad, y: first ? A.y + A.h * (1 - f) : A.y + pad, w: W - 2 * pad, h: A.h * f - pad } : { x: first ? W * (1 - f) : pad, y: A.y + pad, w: W * f - pad, h: A.h - 2 * pad };
+      s = Math.min(r1.sCover, R.w / hb.w, R.h / hb.h); dw = M.W * s; dh = M.H * s;
+      ox = R.x + (R.w - hb.w * s) / 2 - hb.x * s; oy = (vert ? (first ? R.y + R.h - hb.h * s : R.y) : R.y + (R.h - hb.h * s) / 2) - hb.y * s;
+      if (hb.y + hb.h >= M.H - 2) oy = H - (sz && !vert ? sz.b : 0) - dh;   // 아래로 잘린 인물은 아래 끝에 붙인 채
+      cover();
+      const hr = { x: ox + hb.x * s, y: oy + hb.y * s, w: hb.w * s, h: hb.h * s };
+      TZ = vert ? (first ? { x: pad, y: A.y + pad, w: W - 2 * pad, h: hr.y - g - A.y - pad } : { x: pad, y: hr.y + hr.h + g, w: W - 2 * pad, h: A.y + A.h - pad - hr.y - hr.h - g }) : (first ? { x: pad, y: A.y + pad, w: hr.x - g - pad, h: A.h - 2 * pad } : { x: hr.x + hr.w + g, y: A.y + pad, w: W - pad - hr.x - hr.w - g, h: A.h - 2 * pad });
+      if (vert ? TZ.h >= A.h * 0.2 : TZ.w >= W * 0.26) break;
+    }
+  }
+  // 로고 · 표기 문구 — 화면 밖으로 잘려 나가면 원래 자리를 지우고 구석에 다시 놓는다
+  const win = { x: -ox / s, y: -oy / s, w: W / s, h: H / s }, cl = cls(W, H), ops = [], moved = [];
+  const lg = C.find((c) => c.use && c.kind === 'logo'), nt = C.find((c) => c.use && c.kind === 'note');
+  const seen = (c) => { const p = piece(c); return p ? over(p, win) / (p.w * p.h) : 1; };
+  const tiny = (c) => { const p = piece(c); return p && KINDS[c.kind].min && (p.h / p.lines) * s < KINDS[c.kind].min[m >= 200 ? 1 : 0]; };
+  let lr = null;
+  if (lg && seen(lg) < 0.97) { const o = logoPlace(lg, W, H, cl, pad, m, 0); o.y = Math.max(o.y, A.y + (o.y < H / 2 ? pad * 0.5 : 0)); ops.push(o); moved.push(lg); lr = rectOf(o); }
+  let nr = null;
+  const tOps = TZ && TZ.w > 4 && TZ.h > 4 ? textGroup(txt, carve(TZ, lr, pad * 0.5), 'center', S.style.boost / 100) : [];
+  if (nt && (seen(nt) < 0.97 || tiny(nt) || TZ)) {   // 표기 문구 — 네 구석 중 메인 · 글 · 로고와 안 겹치는 곳(안전 영역 안)
+    const o = notePlace(nt, W, H, cl, pad, m, lr), w = piece(nt).w * o.s, h = piece(nt).h * o.s, e = Math.max(3, Math.round(pad * 0.6));
+    const busyR = [lr, ...tOps.map(rectOf), ...hero.map((c) => { const p = piece(c); return { x: ox + p.x * s, y: oy + p.y * s, w: p.w * s, h: p.h * s }; })].filter(Boolean);
+    const yb = A.y + A.h - e - h, yt = A.y + e, cands = [[o.x, sz && o.y > H / 2 ? yb : o.y], [W - e - w, yb], [e, yb], [W - e - w, yt], [e, yt]];
+    const ok = cands.find(([cx, cy]) => !busyR.some((r) => over({ x: cx, y: cy, w, h }, r) > 0)) || cands[0];
+    o.x = ok[0]; o.y = ok[1]; ops.push(o); moved.push(nt); nr = rectOf(o);
+  }
+  if (tOps.length) { ops.push(...tOps); moved.push(...txt); }
+  const src = fitSource(moved.filter((c) => seen(c) > 0.001 || dw < W - 0.5 || dh < H - 0.5));
+  if (dw < W - 0.5 || dh < H - 0.5) {   // 남는 곳 — (옮긴 것을 지운) 원본을 흐리게 크게 깔고 살짝 어둡게
+    const k = 1 / 30, sm = mkCanvas(M.W * k, M.H * k); ctx2(sm).drawImage(C.some((c) => c.kind !== 'bg') ? matteInfo().B : M.cv, 0, 0, sm.width, sm.height);
+    const c2 = Math.max(W / M.W, H / M.H) * 1.08, bw = M.W * c2, bh = M.H * c2; x.imageSmoothingQuality = 'high'; x.drawImage(sm, (W - bw) / 2, (H - bh) / 2, bw, bh); x.fillStyle = 'rgba(0,0,0,.1)'; x.fillRect(0, 0, W, H);
+  }
+  const t = mkCanvas(Math.ceil(dw), Math.ceil(dh)), tx = ctx2(t); tx.imageSmoothingQuality = 'high'; tx.drawImage(src, 0, 0, t.width, t.height);
+  const fe = Math.max(8, Math.round(m * 0.07));   // 원본 가장자리가 화면 안에 보이면 부드럽게 녹인다
+  const fade = (x0, y0, x1, y1) => { const mc = mkCanvas(t.width, t.height), mx = mc.getContext('2d'), g = mx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, '#000'); mx.fillStyle = g; mx.fillRect(0, 0, t.width, t.height); tx.globalCompositeOperation = 'destination-in'; tx.drawImage(mc, 0, 0); tx.globalCompositeOperation = 'source-over'; };
+  if (ox > 0.5) fade(0, 0, fe, 0); if (ox + dw < W - 0.5) fade(t.width, 0, t.width - fe, 0); if (oy > 0.5) fade(0, 0, 0, fe); if (oy + dh < H - 0.5) fade(0, t.height, 0, t.height - fe);
+  x.drawImage(t, ox, oy, dw, dh);
+  for (const o of ops) drawPiece(x, piece(o.c), o.x, o.y, o.s);
+  return ops.map((o) => ({ ...o, w: piece(o.c).w * o.s, h: piece(o.c).h * o.s }));
+}
 function render(W, H, v, scale = 1) {
   const cv = mkCanvas(W * scale, H * scale), x = cv.getContext('2d'); x.scale(scale, scale);
   if (!M) return { canvas: cv, dropped: [], ops: [] };
   const sz = SAFE(W, H), AH = sz ? H - sz.t - sz.b : H;
+  if (v === 3) { const ops = renderFit(x, W, H, sz); return { canvas: cv, dropped: [], small: [], ops, hidden: [], safe: sz, touched: false, fit: true }; }
   const bg = background(), k = Math.max(W / M.W, H / M.H), bw = M.W * k, bh = M.H * k;
   x.imageSmoothingQuality = 'high'; x.drawImage(bg, (W - bw) / 2, (H - bh) / 2, bw, bh);
   let P = C.filter((c) => c.use && c.kind !== 'bg' && piece(c));
@@ -22285,7 +22383,8 @@ function render(W, H, v, scale = 1) {
   }
   // 안전 영역 아래로 옮기고 · 손본 것(크게 보기에서 끈 것)을 얹는다
   const A = S.adj[adjKey(W, H, v)] || {}, hidden = [];
-  const ops = res.ops.map((o) => ({ ...o, y: o.y + (sz ? sz.t : 0) })).filter((o) => { if (A[o.c.id] && A[o.c.id].hide) { hidden.push(o.c); return false; } return true; }).map((o) => {
+  const ops = res.ops.map((o) => { if (!sz) return o; const p = piece(o.c);   // 안전 영역 — 위 · 아래 끝에 붙은(잘린) 그림은 진짜 끝까지 이어 붙인다
+    if (HERO(o.c) && p.y <= 1 && o.y <= 0.5) return o; if (HERO(o.c) && p.y + p.h >= M.H - 1 && o.y + p.h * o.s >= AH - 0.5) return { ...o, y: o.y + sz.t + sz.b }; return { ...o, y: o.y + sz.t }; }).filter((o) => { if (A[o.c.id] && A[o.c.id].hide) { hidden.push(o.c); return false; } return true; }).map((o) => {
     const a = A[o.c.id], p = piece(o.c); if (!a) return { ...o, w: p.w * o.s, h: p.h * o.s };
     const s2 = o.s * (a.k || 1), w0 = p.w * o.s, h0 = p.h * o.s, w1 = p.w * s2, h1 = p.h * s2;
     return { c: o.c, s: s2, x: o.x + (w0 - w1) / 2 + (a.dx || 0), y: o.y + (h0 - h1) / 2 + (a.dy || 0), w: w1, h: h1 };
@@ -22303,7 +22402,7 @@ async function openFile(f) {
   const isPsd = /\.psd$/i.test(f.name || '') || /photoshop|psd/i.test(f.type || '');
   if (!isPsd && !(f.type || '').startsWith('image/')) { toast('PSD · PNG · JPG · WEBP 파일을 올려 주세요'); return; }
   busy(isPsd ? 'PSD 레이어를 읽는 중…' : '배너를 여는 중…');
-  try { if (isPsd) await openPSD(f); else { const el = await loadEl(f), { cv } = fitWork(el, el.naturalWidth, el.naturalHeight); setMaster({ name: f.name || '붙여넣은 배너', src: 'image', W: cv.width, H: cv.height, cv, ow: el.naturalWidth, oh: el.naturalHeight }, []); busy(''); const n = await autoDetect(true); if (n) showTab('vary'); else toast('배너 위를 끌어서 요소를 짚어 주세요'); } }
+  try { if (isPsd) await openPSD(f); else { const el = await loadEl(f), { cv } = fitWork(el, el.naturalWidth, el.naturalHeight); setMaster({ name: f.name || '붙여넣은 배너', src: 'image', W: cv.width, H: cv.height, cv, ow: el.naturalWidth, oh: el.naturalHeight }, []); busy(''); const n = window.__noAuto ? 0 : await autoDetect(true); if (n) showTab('vary'); else toast('배너 위를 끌어서 요소를 짚어 주세요'); } }
   catch (e) { console.warn(e); toast('파일을 읽지 못했어요. 다른 파일로 해 보세요'); }
   finally { busy(''); }
 }
@@ -22312,32 +22411,72 @@ async function openPSD(f) {
   await new Promise((r) => setTimeout(r, 30));
   const psd = agPsd.readPsd(await f.arrayBuffer(), { skipThumbnail: true });
   const k = Math.min(1, WORK / Math.max(psd.width, psd.height)), W = Math.round(psd.width * k), H = Math.round(psd.height * k);
-  const drawL = (x, L) => { if (L.hidden) return; x.save(); x.globalAlpha *= L.opacity == null ? 1 : L.opacity > 1 ? L.opacity / 255 : L.opacity; if (L.children) L.children.forEach((ch) => drawL(x, ch)); else if (L.canvas) x.drawImage(L.canvas, (L.left || 0) * k, (L.top || 0) * k, L.canvas.width * k, L.canvas.height * k); x.restore(); };
+  const op = (v) => (v == null ? 1 : v > 1 ? v / 255 : v);
+  const BL = { screen: 'screen', 'linear dodge': 'lighter', lighten: 'lighten', 'color dodge': 'color-dodge', multiply: 'multiply', darken: 'darken', 'color burn': 'color-burn', 'linear burn': 'multiply', overlay: 'overlay', 'soft light': 'soft-light', 'hard light': 'hard-light', difference: 'difference', exclusion: 'exclusion', hue: 'hue', saturation: 'saturation', color: 'color', luminosity: 'luminosity' };
+  const LIGHT = new Set(['screen', 'linear dodge', 'lighten', 'color dodge']), DARK = new Set(['multiply', 'darken', 'color burn', 'linear burn']);
+  // 레이어 한 장(마스크 · 투명도 적용) — 따로 꺼낼 땐 스크린류는 검정을, 곱하기류는 흰색을 투명으로 바꿔 보통 합성으로 같은 모양이 되게
+  const rasterL = (L, extract) => {
+    const c0 = L.canvas; if (!c0 || !c0.width || !c0.height) return null;
+    const cv = mkCanvas(c0.width, c0.height), x = ctx2(cv); x.drawImage(c0, 0, 0);
+    const mk = L.mask; if (mk && mk.canvas && !mk.disabled) {
+      const mc = mkCanvas(c0.width, c0.height), mx = ctx2(mc); const dv = mk.defaultColor || 0; mx.fillStyle = `rgb(${dv},${dv},${dv})`; mx.fillRect(0, 0, mc.width, mc.height); mx.drawImage(mk.canvas, (mk.left || 0) - (L.left || 0), (mk.top || 0) - (L.top || 0));
+      const md = mx.getImageData(0, 0, mc.width, mc.height).data, id = x.getImageData(0, 0, cv.width, cv.height); for (let i = 0; i < md.length; i += 4) id.data[i + 3] = id.data[i + 3] * md[i] / 255; x.putImageData(id, 0, 0);
+    }
+    if (extract && (LIGHT.has(L.blendMode) || DARK.has(L.blendMode))) {
+      const id = x.getImageData(0, 0, cv.width, cv.height), d = id.data, light = LIGHT.has(L.blendMode);
+      for (let i = 0; i < d.length; i += 4) { if (!d[i + 3]) continue; if (light) { const mxv = Math.max(d[i], d[i + 1], d[i + 2]); if (mxv < 1) { d[i + 3] = 0; continue; } const a = mxv / 255; d[i] = d[i] / a; d[i + 1] = d[i + 1] / a; d[i + 2] = d[i + 2] / a; d[i + 3] *= a; } else { const mn = Math.min(d[i], d[i + 1], d[i + 2]), a = (255 - mn) / 255; if (a < 0.004) { d[i + 3] = 0; continue; } for (let ch = 0; ch < 3; ch++) d[i + ch] = clamp((d[i + ch] - (1 - a) * 255) / a, 0, 255); d[i + 3] *= a; } }
+      x.putImageData(id, 0, 0);
+    }
+    return cv;
+  };
+  // 레이어(그룹이면 안쪽까지)를 W×H 캔버스에 — 클리핑 마스크는 바로 아래 기준 레이어 모양 안에만
+  const renderL = (L, extract) => {
+    if (L.hidden) return null;
+    const out = mkCanvas(W, H), x = ctx2(out); x.imageSmoothingQuality = 'high';
+    if (L.children) {
+      let base = null;
+      for (const ch of L.children) {
+        const r = renderL(ch, extract); if (!ch.clipping) base = r; if (!r) continue;
+        let src = r; if (ch.clipping) { if (!base) continue; const t = mkCanvas(W, H), tx = ctx2(t); tx.drawImage(r, 0, 0); tx.globalCompositeOperation = 'destination-in'; tx.drawImage(base, 0, 0); src = t; }
+        x.save(); if (!extract && BL[ch.blendMode]) x.globalCompositeOperation = BL[ch.blendMode]; x.drawImage(src, 0, 0); x.restore();
+      }
+    } else { const r = rasterL(L, extract); if (!r) return null; x.drawImage(r, (L.left || 0) * k, (L.top || 0) * k, r.width * k, r.height * k); }
+    const a = op(L.opacity) * (L.children ? 1 : op(L.fillOpacity)); if (a < 1) { const t = mkCanvas(W, H), tx = ctx2(t); tx.globalAlpha = a; tx.drawImage(out, 0, 0); return t; }
+    return out;
+  };
+  const drawL = (x, L) => { const r = renderL(L, true); if (r) x.drawImage(r, 0, 0); };
   const comp0 = mkCanvas(W, H), cx = ctx2(comp0); cx.imageSmoothingQuality = 'high';
-  if (psd.canvas) cx.drawImage(psd.canvas, 0, 0, W, H); else (psd.children || []).forEach((L) => drawL(cx, L));
+  if (psd.canvas) cx.drawImage(psd.canvas, 0, 0, W, H); else { const r0 = renderL({ children: psd.children || [] }, false); if (r0) cx.drawImage(r0, 0, 0); }
   const hasFx = (L) => !!(L.effects && !L.effects.disabled && Object.keys(L.effects).some((q) => !['scale', 'disabled'].includes(q))) || !!(L.children && L.children.some(hasFx));
-  const tops = (psd.children || []).filter((L) => !L.hidden), texts = [];
+  const tops = (psd.children || []).filter((L) => !L.hidden), texts = [], cd = cx.getImageData(0, 0, W, H).data;
   const list = [];
   tops.forEach((L, i) => {
     const full = mkCanvas(W, H), fx = ctx2(full); drawL(fx, L);
     const d = fx.getImageData(0, 0, W, H).data, mk = new Uint8Array(W * H); for (let p = 0; p < mk.length; p++) mk[p] = d[p * 4 + 3] > 10 ? 1 : 0;
     const b = bbox(mk, W, H); if (!b) return;
-    const effect = hasFx(L);
+    // 레이어 픽셀이 통째로 검정인데 완성본엔 색이 있으면(고급 개체 등에서 생김) 완성본 색을 쓴다
+    let nn = 0, blk = 0, cb = 0; for (let p = 0; p < mk.length; p++) if (mk[p]) { const i = p * 4; nn++; if (Math.max(d[i], d[i + 1], d[i + 2]) < 14) blk++; cb += Math.max(cd[i], cd[i + 1], cd[i + 2]); }
+    const effect = hasFx(L) || (nn > 50 && blk > nn * 0.97 && cb / nn > 50);
     const crop = mkCanvas(b.w, b.h); ctx2(crop).drawImage(full, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h);
     const size = L.text && L.text.style && L.text.style.fontSize ? L.text.style.fontSize * Math.abs((L.text.transform && L.text.transform[3]) || 1) : 0;
     if (L.text) texts.push({ i, size: size || b.h });
     list.push({ L, i, mk, b, effect, crop });
   });
-  const maxText = Math.max(0, ...texts.map((t) => t.size));
+  const namedTitle = list.some(({ L }) => /타이틀|title|제목|헤드|headline|메인\s*카피|main\s*copy/.test((L.name || '').toLowerCase()));
+  const maxText = Math.max(0, ...texts.filter((t) => !/확률형|법적|유의|표기|※/.test((tops[t.i] || {}).name || '')).map((t) => t.size));
   const comps = list.map(({ L, i, mk, b, effect, crop }) => {
     const nm = (L.name || '').toLowerCase(), area = b.w * b.h / (W * H);
-    let kind = /로고|logo|\bci\b|\bbi\b/.test(nm) ? 'logo' : /버튼|btn|button|cta/.test(nm) ? 'cta' : /배경|\bbg\b|background|back/.test(nm) ? 'bg' : /타이틀|title|제목|헤드|headline|메인\s*카피|main\s*copy/.test(nm) ? 'title' : /서브|sub|부제|설명|desc|copy|문구/.test(nm) ? 'sub' : /캐릭|인물|모델|char|person|people|제품|product|item|메인|main|key/.test(nm) ? 'main' : null;
-    if (!kind) { if (L.text) { const t = texts.find((q) => q.i === i); kind = t && t.size >= maxText * 0.92 ? 'title' : 'sub'; } else if (area > 0.82 && i <= 1) kind = 'bg'; else kind = 'etc'; }
+    let kind = /생성형\s*채우기|generative|제거\s*도구|remove\s*tool|복구\s*브러시|healing|내용\s*인식|content.?aware/.test(nm) ? 'bg' : /확률형|법적|유의\s*사항|표기|disclaimer|legal|notice|caption|※/.test(nm) ? 'note' : /로고|logo|\bci\b|\bbi\b/.test(nm) ? 'logo' : /버튼|btn|button|cta/.test(nm) ? 'cta' : /배경|\bbg\b|background|back/.test(nm) ? 'bg' : /타이틀|title|제목|헤드|headline|메인\s*카피|main\s*copy/.test(nm) ? 'title' : /서브|sub|부제|설명|desc|copy|문구/.test(nm) ? 'sub' : /캐릭|인물|모델|char|person|people|제품|product|item|메인|main|key/.test(nm) ? 'main' : null;
+    const edge = b.y + b.h > H * 0.86 || b.y < H * 0.1;
+    if (!kind) { if (L.text) { const t = texts.find((q) => q.i === i), sz2 = t ? t.size : b.h; kind = edge && (sz2 < maxText * 0.42 || b.h < H * 0.045) ? 'note' : !namedTitle && t && t.size >= maxText * 0.92 ? 'title' : 'sub'; } else if (area > 0.82 && i <= 1) kind = 'bg'; else kind = 'etc'; }
     let mask = mk; if (effect) mask = dilate(mk, W, H, Math.max(2, Math.round(Math.max(W, H) * 0.004)));
     return { id: uid(), name: L.name || `레이어 ${i + 1}`, kind, imp: defImp(kind), use: true, z: i, n: NSEQ++, mask, rect: false, own: effect ? null : { cv: crop, x: b.x, y: b.y }, fx: effect };
   });
   // 장식(etc) 중 가장 큰 것은 메인 이미지로
-  const etcs = comps.filter((c) => c.kind === 'etc'); if (!comps.some((c) => c.kind === 'main') && etcs.length) { const big = etcs.sort((a, b) => (bbox(b.mask, W, H).w * bbox(b.mask, W, H).h) - (bbox(a.mask, W, H).w * bbox(a.mask, W, H).h))[0]; big.kind = 'main'; big.imp = 1; }
+  // 이름이 로고여도 크게 가운데 있는 「타이틀 로고(BI)」는 타이틀 — 타이틀이 따로 없을 때
+  if (!comps.some((c) => c.kind === 'title')) { const big = comps.filter((c) => c.kind === 'logo').map((c) => ({ c, b: bbox(c.mask, W, H) })).filter(({ b }) => b.w * b.h > W * H * 0.05 || b.w > W * 0.35).sort((a, b) => b.b.w * b.b.h - a.b.w * a.b.h)[0]; if (big) { big.c.kind = 'title'; big.c.imp = 1; } }
+  const dense = (c) => { const bb = bbox(c.mask, W, H); let n = 0; for (let i = 0; i < c.mask.length; i++) n += c.mask[i]; return n * (n / (bb.w * bb.h)); };
+  const etcs = comps.filter((c) => c.kind === 'etc'); if (!comps.some((c) => c.kind === 'main') && etcs.length) { const big = etcs.sort((a, b) => dense(b) - dense(a))[0]; big.kind = 'main'; big.imp = 1; }
   setMaster({ name: f.name, src: 'psd', W, H, cv: comp0, ow: psd.width, oh: psd.height }, comps);
   toast(`레이어 ${comps.length}개를 요소로 불러왔어요. 왼쪽에서 종류와 중요도만 확인해 주세요`);
 }
@@ -22493,6 +22632,7 @@ function guessKind(b, mk) {
   const nearCorner = (b.x < M.W * 0.2 || b.x + b.w > M.W * 0.8) && (b.y < M.H * 0.22 || b.y + b.h > M.H * 0.78);
   let mid = 1; if (mk) { const yy = Math.round(b.y + b.h / 2); let n = 0; for (let x = b.x; x < b.x + b.w; x++) n += mk[yy * M.W + x]; mid = n / b.w; }
   if (ar >= 1.8 && ar <= 7 && fill > 0.6 && fill < 0.999 && mid > 0.9 && area < 0.06 && !has('cta')) return 'cta';   // 꽉 찬 납작한 모양(모양대로 딴 것) — 버튼
+  if (ar > 4 && b.h < M.H * 0.05 && (b.y > M.H * 0.82 || b.y + b.h < M.H * 0.14) && !has('note')) return 'note';
   if (area < 0.03 && nearCorner && !has('logo')) return 'logo';
   if (area > 0.12 && ar < 2.2) return has('main') ? 'etc' : 'main';
   if (ar > 1.3) { if (!has('title')) return 'title'; if (!has('sub')) return 'sub'; if (!has('cta') && area < 0.05 && b.h < M.H * 0.16) return 'cta'; return 'sub'; }
@@ -22658,7 +22798,7 @@ function fillHoles(mk, W, H, b) {   // 덩어리 안쪽 구멍 메우기(상자 
 async function detectLocal() {
   const W = M.W, H = M.H, md = pix(), N = W * H, area = N;
   const model = bgModel(new Uint8Array(N));
-  const smooth = !!(model && model.inFrac > 0.4 && model.inMed < 3.2);
+  const smooth = !!(model && model.inFrac > 0.4 && model.inMed < 9);
   const res = new Float32Array(N);
   if (smooth) { const c3 = [0, 0, 0]; for (let p = 0; p < N; p++) { model.at(p, c3); const i = p * 4; res[p] = (Math.abs(md[i] - c3[0]) + Math.abs(md[i + 1] - c3[1]) + Math.abs(md[i + 2] - c3[2])) / 3; } }
   else { const k = 1 / 24, sm = mkCanvas(W * k, H * k); ctx2(sm).drawImage(M.cv, 0, 0, sm.width, sm.height); const bl = mkCanvas(W, H), bx = ctx2(bl); bx.imageSmoothingQuality = 'high'; bx.drawImage(sm, 0, 0, W, H); const bd = bx.getImageData(0, 0, W, H).data; for (let p = 0; p < N; p++) { const i = p * 4; res[p] = (Math.abs(md[i] - bd[i]) + Math.abs(md[i + 1] - bd[i + 1]) + Math.abs(md[i + 2] - bd[i + 2])) / 3; } }
@@ -22671,7 +22811,7 @@ async function detectLocal() {
   const parts = P.filter(Boolean).filter((q) => q.n >= minSz).map((q) => ({ ...q, w: q.x1 - q.x0 + 1, h: q.y1 - q.y0 + 1, mr: q.sr / q.n })).filter((q) => q.mr > (smooth ? 30 : 58));   // 옅은 번짐 · 그림자 조각은 요소가 아님
   for (const q of parts) q.fill = q.n / (q.w * q.h);
   // 글자 잇기 — 옆 글자(키가 비슷 · 같은 줄 · 글자 크기만큼 가까움) · 한글 위아래 자모(겹쳐 쌓임)
-  const L = parts.filter((q) => q.h >= 6 && q.h <= H * 0.5 && q.w <= W * 0.6 && q.fill < 0.86).sort((a, b) => b.n - a.n).slice(0, 1500), par = new Map(L.map((q) => [q, q]));
+  const L = parts.filter((q) => q.h >= 6 && q.h <= H * 0.5 && q.w <= W * 0.6 && (q.fill < 0.86 || Math.min(q.w, q.h) / Math.max(q.w, q.h) < 0.34)).sort((a, b) => b.n - a.n).slice(0, 1500), par = new Map(L.map((q) => [q, q]));
   const find = (q) => { while (par.get(q) !== q) { par.set(q, par.get(par.get(q))); q = par.get(q); } return q; };
   const join = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) par.set(ra, rb); };
   for (let a = 0; a < L.length; a++) for (let b = a + 1; b < L.length; b++) {
@@ -22681,7 +22821,7 @@ async function detectLocal() {
     else if (xov > Math.min(A.w, B.w) * 0.5 && ygap >= -2 && ygap < mh * 0.28 && Math.max(A.w, B.w) < mh * 3) join(A, B);
   }
   const clus = new Map(); for (const q of L) { const r = find(q); if (!clus.has(r)) clus.set(r, []); clus.get(r).push(q); }
-  let lines = [...clus.values()].map((ps) => { const x0 = Math.min(...ps.map((q) => q.x0)), y0 = Math.min(...ps.map((q) => q.y0)), x1 = Math.max(...ps.map((q) => q.x1)), y1 = Math.max(...ps.map((q) => q.y1)), hs = ps.map((q) => q.h).sort((a, b) => a - b); return { ps, b: { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 }, lh: hs[Math.floor(hs.length / 2)], n: ps.reduce((a, q) => a + q.n, 0) }; })
+  let lines = [...clus.values()].map((ps) => { const x0 = Math.min(...ps.map((q) => q.x0)), y0 = Math.min(...ps.map((q) => q.y0)), x1 = Math.max(...ps.map((q) => q.x1)), y1 = Math.max(...ps.map((q) => q.y1)), hs0 = ps.filter((q) => Math.min(q.w, q.h) / Math.max(q.w, q.h) >= 0.34), hs = (hs0.length ? hs0 : ps).map((q) => q.h).sort((a, b) => a - b); return { ps, b: { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 }, lh: hs[Math.floor(hs.length / 2)], n: ps.reduce((a, q) => a + q.n, 0) }; })
     .filter((t) => t.ps.length >= 2 && t.b.w / t.lh >= 1.3);
   // 줄 → 글 덩어리(키가 비슷하고 위아래로 붙은 줄)
   for (let changed = true; changed;) {
@@ -22700,7 +22840,7 @@ async function detectLocal() {
   }
   { const taken = new Set(lines.flatMap((t) => t.ps));
     for (const q of parts) { if (taken.has(q)) continue; const cx = q.x0 + q.w / 2, cy = q.y0 + q.h / 2;
-      const t = lines.find((t2) => q.h < t2.lh * 1.6 && q.w < t2.lh * 3 && cx > t2.b.x - t2.lh * 0.9 && cx < t2.b.x + t2.b.w + t2.lh * 0.9 && cy > t2.b.y - t2.lh * 0.35 && cy < t2.b.y + t2.b.h + t2.lh * 0.35);
+      const t = lines.find((t2) => q.h < Math.max(t2.lh * 1.6, t2.b.h * 1.08) && q.w < t2.lh * 3 && cx > t2.b.x - t2.lh * 0.9 && cx < t2.b.x + t2.b.w + t2.lh * 0.9 && cy > t2.b.y - t2.lh * 0.35 && cy < t2.b.y + t2.b.h + t2.lh * 0.35);
       if (t) { t.ps.push(q); t.n += q.n; taken.add(q); const x0 = Math.min(t.b.x, q.x0), y0 = Math.min(t.b.y, q.y0), x1 = Math.max(t.b.x + t.b.w, q.x1 + 1), y1 = Math.max(t.b.y + t.b.h, q.y1 + 1); t.b = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; } } }
   const inText = new Set(lines.flatMap((t) => t.ps));
   // 그림 — 글이 아닌 조각을 가까운 것끼리
@@ -22748,14 +22888,94 @@ async function detectLocal() {
     btn = { l: -1, b: pb, pm, n: pb.w * pb.h, line: t }; break;
   }
   if (btn) { usedObjs.add(btn); if (btn.line) usedLines.add(btn.line); const inside = lines.filter((t) => t.b.x >= btn.b.x - 2 && t.b.y >= btn.b.y - 2 && t.b.x + t.b.w <= btn.b.x + btn.b.w + 2 && t.b.y + t.b.h <= btn.b.y + btn.b.h + 2); for (const t of inside) { const k = out.findIndex((o) => o.lines && o.lines.includes(t)); if (k >= 0) out.splice(k, 1); } out.push({ kind: 'cta', lines: inside, objs: btn.pm ? [] : [btn], pm: btn.pm || null, fillIt: true }); }
-  const pics = objs.filter((q) => !usedObjs.has(q) && q.b.w < W * 0.85 && q.b.h < H * 0.95 && q.ar < 5 && q.ar > 0.2).sort((a, c) => c.n - a.n);
+  const pics = objs.filter((q) => !usedObjs.has(q) && q.b.w < W * 0.85 && q.ar < 5 && q.ar > 0.2)   // 위아래로 꽉 찬(잘린) 상품 · 인물도.sort((a, c) => c.n - a.n);
   if (smooth) pics.filter((q) => q.b.w * q.b.h < area * 0.5).forEach((q, i) => { out.push({ kind: i === 0 ? 'main' : 'etc', objs: [q], obj: true, cx: q.cx, cy: q.cy }); });
   else {   // 조각 중 크고 덩어리진 것 몇 개 — 그 자리를 AI 로 눌러 보고, 적당한 크기의 물체로 잡히는 것만
     const cand = rest.filter((q) => !usedObjs.has(q) && q.n > N * 0.003 && q.w / q.h < 3.5 && q.h / q.w < 3.5).sort((a, c) => c.n - a.n).slice(0, 4);
     cand.forEach((q) => out.push({ kind: 'main', objs: [], obj: true, aiOnly: true, cx: q.x0 + q.w / 2, cy: q.y0 + q.h / 2, part: q }));
   }
   if (!title) { const k = out.findIndex((o) => o.kind === 'sub'); if (k >= 0) out[k].kind = 'title'; }
-  return { out, fg, cc, oc, om, smooth };
+  return { out, fg, cc, oc, om, smooth, parts };
+}
+// 표기 문구 — 위 · 아래 끝의 작은 흰 글자(또는 검은 글자) 한 줄(확률형 아이템 포함 · 이미지는 연출된 것 등) — 배경 무늬와 섞이지 않게 아주 밝은(어두운) 화소만으로 글자를 찾는다
+function detectNote(taken) {
+  const W = M.W, H = M.H, N = W * H, md = pix(); let best = null;
+  for (const light of [true, false]) {
+    const mk = new Uint8Array(N);
+    for (let y = 0; y < H; y++) { if (!(y > H * 0.8 || y < H * 0.14)) continue; for (let x = 0; x < W; x++) { const p = y * W + x, i = p * 4, mx = Math.max(md[i], md[i + 1], md[i + 2]), mn = Math.min(md[i], md[i + 1], md[i + 2]); if (light ? mn > 200 && mx - mn < 45 : mx < 50) mk[p] = 1; } }
+    const cc = labelCC(dilate(mk, W, H, 1), W, H), P = new Map();
+    for (let p = 0; p < N; p++) { if (!mk[p]) continue; const l = cc.lab[p], x = p % W, y = (p / W) | 0; let q = P.get(l); if (!q) { q = { l, x0: x, y0: y, x1: x, y1: y, n: 0 }; P.set(l, q); } q.n++; if (x < q.x0) q.x0 = x; if (x > q.x1) q.x1 = x; if (y < q.y0) q.y0 = y; if (y > q.y1) q.y1 = y; }
+    const ps = [...P.values()].map((q) => ({ ...q, w: q.x1 - q.x0 + 1, h: q.y1 - q.y0 + 1 })).filter((q) => q.h >= Math.max(6, H * 0.01) && q.h <= H * 0.05 && q.w <= q.h * 6 && q.n >= 6 && q.n / (q.w * q.h) > 0.12 && q.n / (q.w * q.h) < 0.85 && !taken.some((t) => t[Math.round(q.y0 + q.h / 2) * W + Math.round(q.x0 + q.w / 2)]));
+    const par = new Map(ps.map((q) => [q, q])), fd = (q) => { while (par.get(q) !== q) q = par.get(q); return q; };
+    for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) { const A = ps[i], B = ps[j], mh = Math.max(A.h, B.h); if (Math.abs((A.y0 + A.y1) - (B.y0 + B.y1)) / 2 < mh * 0.4 && Math.max(A.x0, B.x0) - Math.min(A.x1, B.x1) < mh * 1.4 && mh / Math.min(A.h, B.h) < 1.8) par.set(fd(A), fd(B)); }
+    const grp = new Map(); for (const q of ps) { const r = fd(q); if (!grp.has(r)) grp.set(r, []); grp.get(r).push(q); }
+    for (const g of grp.values()) {
+      if (g.length < 3) continue;
+      const x0 = Math.min(...g.map((q) => q.x0)), x1 = Math.max(...g.map((q) => q.x1)), y0 = Math.min(...g.map((q) => q.y0)), y1 = Math.max(...g.map((q) => q.y1)), w = x1 - x0 + 1, h = y1 - y0 + 1;
+      if (w < h * 4 || h > H * 0.06) continue;
+      if (!best || g.length > best.g.length) best = { g, mk, cc, x0, x1, y0, y1, light };
+    }
+  }
+  if (!best) return null;
+  const out = new Uint8Array(N), e = 2;
+  for (let y = Math.max(0, best.y0 - e); y <= Math.min(H - 1, best.y1 + e); y++) for (let x = Math.max(0, best.x0 - e); x <= Math.min(W - 1, best.x1 + e); x++) { const p = y * W + x, i = p * 4, mx = Math.max(md[i], md[i + 1], md[i + 2]), mn = Math.min(md[i], md[i + 1], md[i + 2]); if (best.light ? mn > 150 : mx < 95) out[p] = 1; }
+  return dilate(out, W, H, 2);
+}
+async function detectBusy(det) {
+  const W = M.W, H = M.H, N = W * H, m0 = Math.min(W, H), { fg, parts, cc } = det, acc = [];
+  await aiReady();
+  // 누를 자리 — 큰 덩어리의 가운데 + 화면을 고르게 나눈 칸 중 진한 곳(이미 딴 것 · 풍경으로 버린 것 안은 건너뜀)
+  const seeds = [];
+  for (const q of parts.filter((q2) => q2.n > N * 0.0012 && q2.w < W * 0.8 && q2.h < H * 0.9).sort((a, b) => b.n - a.n).slice(0, 10)) {
+    const cx = q.x0 + q.w / 2, cy = q.y0 + q.h / 2; let px = -1, py = -1, best = 1e18;
+    for (let y = q.y0; y <= q.y1; y += 2) for (let x = q.x0; x <= q.x1; x += 2) { const p = y * W + x; if (fg[p] && cc.lab[p] === q.l) { const d = (x - cx) ** 2 + (y - cy) ** 2; if (d < best) { best = d; px = x; py = y; } } }
+    if (px >= 0) seeds.push([px, py]);
+  }
+  const GX = 6, GY = 4, grid = [];
+  for (let gy = 0; gy < GY; gy++) for (let gx = 0; gx < GX; gx++) {
+    const x0 = Math.round(W * (0.05 + 0.9 * gx / GX)), x1 = Math.round(W * (0.05 + 0.9 * (gx + 1) / GX)), y0 = Math.round(H * (0.06 + 0.88 * gy / GY)), y1 = Math.round(H * (0.06 + 0.88 * (gy + 1) / GY)), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    let n = 0, t = 0, px = -1, py = -1, best = 1e18; for (let y = y0; y < y1; y += 2) for (let x = x0; x < x1; x += 2) { t++; if (fg[y * W + x]) { n++; const d = (x - cx) ** 2 + (y - cy) ** 2; if (d < best) { best = d; px = x; py = y; } } }
+    if (px >= 0 && n / t > 0.08) grid.push([px, py, n / t]);
+  }
+  seeds.push(...grid.sort((a, b) => b[2] - a[2]));
+  const seen = new Uint8Array(N), fgd = dilate(fg, W, H, 2); let probes = 0;
+  // 물체 둘레는 대부분 뚜렷한 경계(외곽선 · 색 차이) 위에 있다 — 바다 · 하늘 덩어리는 경계가 흐려서 걸러진다
+  const edgeFrac = (mk, b) => { let nb = 0, ne = 0; for (let y = b.y; y < b.y + b.h; y++) for (let p = y * W + b.x, pe = p + b.w; p < pe; p++) { if (!mk[p]) continue; const x = p % W; if ((x > 0 && !mk[p - 1]) || (x < W - 1 && !mk[p + 1]) || (p >= W && !mk[p - W]) || (p < N - W && !mk[p + W])) { nb++; if (fgd[p]) ne++; } } return nb ? ne / nb : 0; };
+  let k = 0;
+  for (const [px, py] of seeds) {
+    k++; if (seen[py * W + px]) continue;
+    busy(`AI가 배너를 살펴보는 중이에요… ${Math.round(k / seeds.length * 100)}%`);
+    const r = await aiMask(px, py, true); probes++; if (!r) continue;
+    const b = bbox(r.mk); let a = 0; if (b) for (let y = b.y; y < b.y + b.h; y++) for (let i = y * W + b.x, ie = i + b.w; i < ie; i++) if (r.mk[i]) { a++; seen[i] = 1; } if (!b || a < N * 0.002 || a > N * 0.4 || b.w > W * 0.85 || b.h > H * 0.92) continue;
+    if (b.x <= 2 || b.y <= 2 || b.x + b.w >= W - 2 || (b.y + b.h >= H - 2 && (b.h < H * 0.35 || b.w > b.h * 1.3))) continue;   // 화면 끝에 걸린 것은 풍경(부두 · 바다 · 배) — 아래로 잘린 세로로 긴 인물만 예외
+    if (edgeFrac(r.mk, b) < 0.85) continue;
+    let skip = false;
+    for (let j = acc.length - 1; j >= 0; j--) { const o = acc[j]; let ov = 0; const ix0 = Math.max(b.x, o.b.x), ix1 = Math.min(b.x + b.w, o.b.x + o.b.w), iy0 = Math.max(b.y, o.b.y), iy1 = Math.min(b.y + b.h, o.b.y + o.b.h); for (let y = iy0; y < iy1; y++) for (let i = y * W + ix0, ie = y * W + ix1; i < ie; i++) if (r.mk[i] && o.mk[i]) ov++; if (ov > o.a * 0.6 && a > o.a * 1.5) acc.splice(j, 1); else if (ov > Math.min(a, o.a) * 0.5) { skip = true; break; } }
+    if (!skip) acc.push({ mk: r.mk, alpha: r.alpha, a, b, cx: b.x + b.w / 2, cy: b.y + b.h / 2, ar: b.w / b.h, seed: [px, py] });
+  }
+  const sol = (o) => Math.min(1, o.a / (o.b.w * o.b.h) / 0.5), ar = (o) => o.a / N, cen = (o) => 1 - 0.6 * Math.hypot((o.cx - W / 2) / W, (o.cy - H / 2) / H) / 0.7;
+  const gap = (a, b) => Math.max(0, Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w), Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h));
+  const cornerD = (o) => Math.min(Math.hypot(o.cx / W, o.cy / H), Math.hypot(1 - o.cx / W, o.cy / H), Math.hypot(o.cx / W, 1 - o.cy / H), Math.hypot(1 - o.cx / W, 1 - o.cy / H));
+  const title = acc.filter((o) => o.ar >= 1.5 && o.cy < H * 0.78 && ar(o) > 0.012).sort((a, b) => b.a - a.a)[0] || null;
+  const main = acc.filter((o) => o !== title && o.ar > 0.3 && o.ar < 2.4 && ar(o) > 0.01).sort((a, b) => b.a * cen(b) * sol(b) - a.a * cen(a) * sol(a))[0] || null;   // 꽉 찬 물체(인물 · 상품) 우선 — 가는 선 효과(네온 · 소용돌이)는 뒤로
+  const logo = acc.filter((o) => o !== title && o !== main && ar(o) < 0.035 && cornerD(o) < 0.3).sort((a, b) => cornerD(a) - cornerD(b))[0] || null;
+  const fine = async (o) => { if (!o || !o.seed) return; busy('AI가 가장자리를 다듬는 중이에요…'); const r = await aiMask(o.seed[0], o.seed[1]); if (!r) return; let a = 0, ov = 0; for (let i = 0; i < N; i++) if (r.mk[i]) { a++; if (o.mk[i]) ov++; } if (ov > Math.max(a, o.a) * 0.7) { o.mk = r.mk; o.alpha = r.alpha; } };
+  await fine(title); await fine(main);
+  const res = [], used = new Set([title, main, logo]);
+  if (title) res.push({ kind: 'title', mk: title.mk, alpha: title.alpha });
+  const xov = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+  for (const o of acc) if (!used.has(o) && title && o.ar >= 2.2 && ar(o) > 0.004 && gap(o.b, title.b) < m0 * 0.06 && xov(o.b, title.b) > o.b.w * 0.5) { res.push({ kind: 'sub', mk: o.mk, alpha: o.alpha }); used.add(o); }
+  if (main) {   // 메인에 붙은 것(말풍선 등)은 같이 움직이게 하나로
+    let mk = main.mk, alpha = main.alpha;
+    for (const o of acc) { if (used.has(o) || o.a >= main.a) continue; const eb = { x: main.b.x - main.b.w * 0.08, y: main.b.y - main.b.h * 0.08, w: main.b.w * 1.16, h: main.b.h * 1.16 }; if (over(o.b, eb) / (o.b.w * o.b.h) < 0.8) continue; mk = mk.slice(); alpha = alpha.slice(); for (let i = 0; i < N; i++) if (o.mk[i]) { mk[i] = 1; alpha[i] = Math.max(alpha[i], o.alpha[i]); } used.add(o); }
+    res.push({ kind: 'main', mk, alpha });
+  }
+  if (logo) {   // 로고 — 둘레 배경(구름 등)이 딸려 오지 않게 진한 부분 근처만
+    const near = dilate(fg, W, H, 4), mk = new Uint8Array(N); for (let i = 0; i < N; i++) if (logo.mk[i] && near[i]) mk[i] = 1;
+    const bb = bbox(mk); if (bb) res.push({ kind: 'logo', mk: fillHoles(dilate(mk, W, H, 1), W, H, bb), alpha: null });
+  }
+  const nm = detectNote(res.map((r2) => r2.mk)); if (nm) res.push({ kind: 'note', mk: nm, alpha: null });
+  res.acc = acc; res.probes = probes; return res;
 }
 async function autoDetect(auto) {
   if (!M) { toast('먼저 메인 배너를 올려 주세요'); return 0; }
@@ -22765,6 +22985,19 @@ async function autoDetect(auto) {
   let det;
   try { det = await detectLocal(); } catch (e) { console.warn('[auto]', e); busy(''); toast('자동으로 찾지 못했어요. 상자로 짚어 주세요'); return 0; }
   const { out, fg, smooth } = det, W = M.W, H = M.H;
+  if (!smooth) {   // 복잡한 배경 — AI 로 물체마다 따 본다(안 되면 아래의 글자 · 덩어리 방식)
+    let list = null; try { list = await detectBusy(det); } catch (e) { console.warn('[auto busy]', e); }
+    if (list && !list.some((o) => o.kind === 'title')) { det.extraNote = list.find((o) => o.kind === 'note') || null; list = null; }
+    if (list && list.length) {
+      const prev = C.slice(); pushUndo({ t: 'all', prev }); for (const c of C) idb.delComp(c.id);
+      C = []; SEL = null; geomChanged(); const cnt = {};
+      for (const o of list) { if (!bbox(o.mk)) continue; cnt[o.kind] = (cnt[o.kind] || 0) + 1; C.push({ id: uid(), name: KINDS[o.kind].label + (cnt[o.kind] > 1 ? ' ' + cnt[o.kind] : ''), kind: o.kind, imp: defImp(o.kind), use: true, z: C.length, n: NSEQ++, mask: o.mk, rect: false, own: null, fx: false, alpha: o.alpha, touched: true, auto: true }); }
+      for (const c of C) c._dirty = true;
+      geomChanged(); saveProject(); busy(''); renderComps(); drawEditor(true); renderResults(); showMini();
+      toast(`AI가 요소 ${C.length}개를 찾았어요 · 배경이 그림이라 풍경(하늘 · 바다 · 소품)은 배경으로 두고, 비슷한 비율은 「맞춤」으로 만들었어요`);
+      return C.length;
+    }
+  }
   if (!out.length) { busy(''); toast('찾은 요소가 없어요. 「상자로 짚기」나 「AI로 잡기」로 짚어 주세요'); return 0; }
   const prev = C.slice(); pushUndo({ t: 'all', prev });
   for (const c of C) idb.delComp(c.id);
@@ -22803,6 +23036,7 @@ async function autoDetect(auto) {
     const c = { id: uid(), name: KINDS[o.kind].label + (cnt[o.kind] > 1 ? ' ' + cnt[o.kind] : ''), kind: o.kind, imp: defImp(o.kind), use: true, z: C.length, n: NSEQ++, mask, rect: false, own: null, fx: false, alpha, touched: true, auto: true };
     C.push(c); made++;
   }
+  if (det.extraNote && !C.some((c) => c.kind === 'note')) { const nb = bbox(det.extraNote.mk), cy = Math.round(nb.y + nb.h / 2) * W + Math.round(nb.x + nb.w / 2); const hit = C.find((c) => c.mask[cy]); if (!hit || (hit.kind === 'sub' && bbox(hit.mask).h < nb.h * 2)) { if (hit) C.splice(C.indexOf(hit), 1); C.push({ id: uid(), name: KINDS.note.label, kind: 'note', imp: 1, use: true, z: C.length, n: NSEQ++, mask: det.extraNote.mk, rect: false, own: null, fx: false, alpha: null, touched: true, auto: true }); made++; } }
   // 서브카피가 여럿이면 가장 작은 글은 「여유」
   const subs = C.filter((c) => c.kind === 'sub'); if (subs.length > 1) { subs.sort((a, c2) => bbox(a.mask).h - bbox(c2.mask).h)[0].imp = 3; }
   for (const c of C) c._dirty = true;
@@ -22812,9 +23046,11 @@ async function autoDetect(auto) {
   return made;
 }
 const N0 = () => M.W * M.H;
-async function aiMask(px, py) {   // AI로 잡기의 마스크만(요소는 안 만듦)
+let AISM = null;   // 빨리 훑어볼 때 쓰는 작은 그림(마스크는 덜 매끈하지만 1.5배쯤 빠름)
+async function aiMask(px, py, fast) {   // AI로 잡기의 마스크만(요소는 안 만듦)
   const seg = await aiReady(); let conf = null, w = 0, h = 0;
-  seg.segment(M.cv, { keypoint: { x: clamp(px / M.W, 0, 1), y: clamp(py / M.H, 0, 1) } }, (res) => { const m = res.confidenceMasks && res.confidenceMasks[0]; if (m) { w = m.width; h = m.height; conf = m.getAsFloat32Array().slice(); } if (res.close) res.close(); });
+  if (fast && (!AISM || AISM.M !== M)) { const k = Math.min(1, 640 / Math.max(M.W, M.H)), sm = mkCanvas(M.W * k, M.H * k); ctx2(sm).drawImage(M.cv, 0, 0, sm.width, sm.height); AISM = { M, id: ctx2(sm).getImageData(0, 0, sm.width, sm.height) }; }
+  seg.segment(fast ? AISM.id : M.cv, { keypoint: { x: clamp(px / M.W, 0, 1), y: clamp(py / M.H, 0, 1) } }, (res) => { const m = res.confidenceMasks && res.confidenceMasks[0]; if (m) { w = m.width; h = m.height; conf = m.getAsFloat32Array().slice(); } if (res.close) res.close(); });
   if (!conf) return null;
   const alpha = new Uint8Array(M.W * M.H), mk = new Uint8Array(M.W * M.H);
   for (let y = 0; y < M.H; y++) { const sy = Math.min(h - 1, Math.floor(y * h / M.H)); for (let x = 0; x < M.W; x++) { const v = conf[sy * w + Math.min(w - 1, Math.floor(x * w / M.W))], p = y * M.W + x; alpha[p] = Math.round(clamp(v, 0, 1) * 255); if (v > 0.5) mk[p] = 1; } }
@@ -22829,7 +23065,7 @@ async function aiFind() {
   const k = Math.min(1, 1280 / Math.max(M.W, M.H)), c = mkCanvas(M.W * k, M.H * k); c.getContext('2d').drawImage(M.cv, 0, 0, c.width, c.height);
   aiCtl = new AbortController(); btn.lastChild.textContent = '멈추기 (찾는 중…)';
   try {
-    const res = await SAMPLE.json('This is a finished advertising banner. List its separate design components so they can be re-laid-out for other banner sizes. Reply with only a JSON array like [{"kind":"title","label":"메인 타이틀","importance":1,"x":0.05,"y":0.2,"w":0.45,"h":0.3}]. kind is one of: title (headline text), sub (secondary copy), cta (button), logo, main (key character, person or product), etc (other decoration). importance: 1 = must stay large in every size, 2 = normal, 3 = drop first when space is tight. x, y, w, h are fractions (0-1) of the image width and height from the top-left, tightly around each component. Do not include the background. Labels: short Korean (1-4 words). At most 8 items.', { images: [await toBlob(c, 'image/jpeg', 0.9)], signal: aiCtl.signal });
+    const res = await SAMPLE.json('This is a finished advertising banner. List its separate design components so they can be re-laid-out for other banner sizes. Reply with only a JSON array like [{"kind":"title","label":"메인 타이틀","importance":1,"x":0.05,"y":0.2,"w":0.45,"h":0.3}]. kind is one of: title (headline text), sub (secondary copy), cta (button), logo, main (key character, person or product), etc (other decoration), note (small legal or disclaimer text such as 확률형 아이템 포함). importance: 1 = must stay large in every size, 2 = normal, 3 = drop first when space is tight. x, y, w, h are fractions (0-1) of the image width and height from the top-left, tightly around each component. Do not include the background. Labels: short Korean (1-4 words). At most 8 items.', { images: [await toBlob(c, 'image/jpeg', 0.9)], signal: aiCtl.signal });
     const list = (Array.isArray(res) ? res : []).filter((q) => q && KINDS[q.kind] && q.kind !== 'bg').slice(0, 8);
     if (!list.length) { toast('찾은 요소가 없어요. 직접 지정해 주세요'); return; }
     for (const q of list) {
@@ -22906,7 +23142,7 @@ function bindSizes() {
   document.addEventListener('click', (e) => { for (const [p, b] of [['#pop', '#presetBtn'], ['#setPop', '#setBtn'], ['#expPop', '#expBtn']]) { const P = $(p); if (!P.hidden && !P.contains(e.target) && !$(b).contains(e.target)) { P.hidden = true; $(b).setAttribute('aria-expanded', 'false'); } } });
 }
 const keyOf = (w, h) => w + 'x' + h;
-const recVar = (w, h) => (M && Math.abs(Math.log((w / h) / (M.W / M.H))) < 0.3 ? 2 : 0);
+const recVar = (w, h) => (!M ? 0 : isBusy() ? (cls(w, h) === 'strip' ? 0 : 3) : Math.abs(Math.log((w / h) / (M.W / M.H))) < 0.3 ? 2 : 0);
 const pickOf = (w, h) => (S.pick[keyOf(w, h)] != null ? S.pick[keyOf(w, h)] : recVar(w, h));
 const TOKENS = [['{이름}', '배너 파일 이름'], ['{가로}', '가로 px'], ['{세로}', '세로 px'], ['{배치}', 'A · B · C'], ['{사이즈이름}', '예: 미디엄 렉탱글'], ['{날짜}', '오늘 날짜']];
 const today = () => { const d = new Date(), z = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}`; };
