@@ -21505,6 +21505,9 @@ select.kind { appearance: none; -webkit-appearance: none; border: 0; background:
 .tools button:hover { color: var(--ink); }
 .tools button[aria-pressed="true"] { background: var(--panel); color: var(--accent-2); box-shadow: var(--shadow-sm), 0 0 0 1px var(--line); }
 .tools button.aitool svg { color: #a855f7; }
+.btn.autobtn { background: linear-gradient(135deg, #7c3aed, #3657ff); border-color: transparent; color: #fff; box-shadow: 0 4px 14px rgba(124, 58, 237, .28); }
+.btn.autobtn:hover { filter: brightness(1.08); }
+.btn.autobtn svg { color: #fff; }
 .tools button.aitool[aria-pressed="true"] { color: #7c3aed; }
 .toolopt { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink2); font-weight: 600; }
 .toolopt input[type="range"] { width: 120px; accent-color: var(--accent); }
@@ -21676,7 +21679,7 @@ details p { margin: 6px 0 2px; font-size: 13px; color: var(--ink2); line-height:
       <div class="drop" id="drop" tabindex="0" role="button" aria-label="메인 배너 파일 고르기">
         <svg class="art" viewBox="0 0 132 84" aria-hidden="true"><rect x="30" y="6" width="96" height="58" rx="7" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/><rect x="18" y="14" width="96" height="58" rx="7" fill="var(--panel)" stroke="var(--line)" stroke-width="1.5"/><rect x="6" y="22" width="96" height="58" rx="7" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><rect x="15" y="34" width="38" height="7" rx="3" fill="var(--i1)"/><rect x="15" y="45" width="28" height="4" rx="2" fill="var(--ink3)"/><rect x="15" y="58" width="22" height="9" rx="4.5" fill="var(--accent)"/><circle cx="80" cy="52" r="14" fill="var(--i2)" opacity=".85"/><path d="M54 12v14m-7-7h14" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg>
         <b>다 만든 메인 배너를 올려 주세요</b>
-        <p>PSD를 올리면 레이어가 그대로 요소가 돼요.<br>PNG · JPG는 다음 단계에서 요소를 직접 짚어 주면 돼요.</p>
+        <p>PSD는 레이어가 그대로 요소가 되고,<br>PNG · JPG는 <b>AI가 알아서 요소를 찾아</b> 바로 만들어 드려요.</p>
         <span class="btn sm">파일 고르기</span>
         <small>끌어다 놓거나 Ctrl+V 로 붙여넣어도 돼요</small>
       </div>
@@ -21714,7 +21717,7 @@ details p { margin: 6px 0 2px; font-size: 13px; color: var(--ink2); line-height:
         </div>
         <label class="toolopt" id="optBrush" hidden>붓 크기 <input type="range" id="brush" min="4" max="160" value="28"><output id="brushOut">28</output></label>
         <label class="toolopt" id="optTol" hidden>민감도 <input type="range" id="tol" min="10" max="120" value="42" title="낮을수록 비슷한 색까지 함께 잡아요"><output id="tolOut">42</output></label>
-        <button type="button" class="btn sm" id="aiBtn" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5 9.4 6.6 14.5 8 9.4 9.4 8 14.5 6.6 9.4 1.5 8l5.1-1.4z"/></svg>AI로 요소 찾기</button>
+        <button type="button" class="btn autobtn" id="aiBtn" title="AI가 배너 속 요소를 알아서 찾고 종류 · 중요도까지 정해요"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 1.5 9.4 6.6 14.5 8 9.4 9.4 8 14.5 6.6 9.4 1.5 8l5.1-1.4z"/></svg>AI 자동으로 짚기</button>
         <span class="sp"></span>
         <button type="button" class="btn ghost sm" id="undoBtn" title="되돌리기 (Ctrl+Z)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3 2.5 6l3 3"/><path d="M2.5 6h7a4 4 0 0 1 0 8h-2"/></svg>되돌리기</button>
         <button type="button" class="btn primary" id="goVary">다음: 사이즈 고르기<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
@@ -21761,8 +21764,8 @@ details p { margin: 6px 0 2px; font-size: 13px; color: var(--ink2); line-height:
     <header><h3 id="helpTitle">포컬 배너 사용법</h3><span class="sp"></span><button type="button" class="btn ghost sm" id="helpClose">닫기</button></header>
     <div class="hbody">
       <ol class="hsteps">
-        <li><span class="n">1</span><b>메인 배너 올리기</b><p>다 만든 배너를 올려요. <b>PSD</b>면 레이어가 그대로 요소가 되고, <b>PNG · JPG</b>면 다음 단계에서 요소를 짚어 줘요.</p></li>
-        <li><span class="n">2</span><b>요소 · 중요도 정하기</b><p>배너 위를 끌어 <b>상자로 짚거나</b>, 눌러서 <b>자동으로 잡아요</b>. 요소마다 <b>꼭 · 보통 · 여유</b>를 골라요. 사이즈가 작을수록 여유 → 보통 순서로 빠지고, 꼭은 끝까지 크게 남아요.</p></li>
+        <li><span class="n">1</span><b>메인 배너 올리기</b><p>다 만든 배너를 올려요. <b>PSD</b>면 레이어가 그대로 요소가 되고, <b>PNG · JPG</b>면 <b>AI가 알아서</b> 타이틀 · 버튼 · 로고 · 메인 이미지를 찾아 종류와 중요도까지 정해요. 바로 결과로 넘어가요.</p></li>
+        <li><span class="n">2</span><b>요소 · 중요도 정하기</b><p>AI가 찾은 결과가 마음에 안 들 때만 고쳐요. 배너 위를 끌어 <b>상자로 짚거나</b>, <b>AI로 잡기</b>로 눌러요. 요소마다 <b>꼭 · 보통 · 여유</b>를 골라요. 사이즈가 작을수록 여유 → 보통 순서로 빠지고, 꼭은 끝까지 크게 남아요.</p></li>
         <li><span class="n">3</span><b>사이즈 고르고 받기</b><p>사이즈를 적거나 고르면 한 번에 만들어져요. 사이즈마다 <b>분할 · 반대 · 원래</b> 배치를 바꿔 보고, 눌러서 크게 보면 손으로 다듬을 수 있어요. 마지막에 <b>전부 받기</b>.</p></li>
       </ol>
       <div class="hgrid">
@@ -22009,19 +22012,20 @@ function bgModel(skip) {
   if (pts.length < 200) return null;
   const feat = (p) => { const x = (p % W) / W - 0.5, y = ((p / W) | 0) / H - 0.5; return [1, x, y, x * x, x * y, y * y]; };
   const solve = (A, b) => { const n = 6, m = A.map((r, i) => [...r, b[i]]); for (let c = 0; c < n; c++) { let piv = c; for (let r = c + 1; r < n; r++) if (Math.abs(m[r][c]) > Math.abs(m[piv][c])) piv = r; [m[c], m[piv]] = [m[piv], m[c]]; const d = m[c][c] || 1e-9; for (let k = c; k <= n; k++) m[c][k] /= d; for (let r = 0; r < n; r++) if (r !== c) { const f2 = m[r][c]; for (let k = c; k <= n; k++) m[r][k] -= f2 * m[c][k]; } } return m.map((r) => r[n]); };
-  let use = pts, coef = null, med = 0;
+  let use = pts, coef = null, med = 0, inMed = 0, inFrac = 0;
   for (let it = 0; it < 3; it++) {
     coef = [0, 1, 2].map((ch) => { const A = Array.from({ length: 6 }, () => new Array(6).fill(0)), b = new Array(6).fill(0); for (const p of use) { const f2 = feat(p), v = md[p * 4 + ch]; for (let i = 0; i < 6; i++) { b[i] += f2[i] * v; for (let j = 0; j < 6; j++) A[i][j] += f2[i] * f2[j]; } } for (let i = 0; i < 6; i++) A[i][i] += 1e-6; return solve(A, b); });
     const res = pts.map((p) => { const f2 = feat(p); let s2 = 0; for (let ch = 0; ch < 3; ch++) { let v = 0; for (let i = 0; i < 6; i++) v += coef[ch][i] * f2[i]; s2 += Math.abs(md[p * 4 + ch] - v); } return s2 / 3; });
     const sorted = res.slice().sort((a, b) => a - b); med = sorted[Math.floor(sorted.length * 0.5)];
     const cut = Math.max(6, med * 2.5); use = pts.filter((p, i) => res[i] <= cut);
+    const ins = res.filter((v) => v <= cut).sort((a, b) => a - b); inMed = ins.length ? ins[Math.floor(ins.length / 2)] : 99; inFrac = ins.length / Math.max(1, res.length);
     if (use.length < 150) break;
   }
   const at = (p, out) => { const f2 = feat(p); for (let ch = 0; ch < 3; ch++) { let v = 0; for (let i = 0; i < 6; i++) v += coef[ch][i] * f2[i]; out[ch] = v; } return out; };
   // 판정은 모든 표본으로(맞는 것만 골라 낸 뒤가 아니라) — 대부분이 매끈한 그라데이션일 때만 「고른 배경」(노을 · 산 · 사진은 아님)
   const allRes = pts.map((p) => { const f2 = feat(p); let s2 = 0; for (let ch = 0; ch < 3; ch++) { let v = 0; for (let i = 0; i < 6; i++) v += coef[ch][i] * f2[i]; s2 += Math.abs(md[p * 4 + ch] - v); } return s2 / 3; }).sort((a, b) => a - b);
   const q = (t) => allRes[Math.min(allRes.length - 1, Math.floor(allRes.length * t))], med2 = q(0.5), p80 = q(0.8), p90 = q(0.9);
-  return { at, med: med2, p80, p90, smooth: med2 < 3.5 && p80 < 8 && p90 < 16 };
+  return { at, med: med2, p80, p90, inMed, inFrac, smooth: med2 < 3.5 && p80 < 8 && p90 < 16 };
 }
 // 배경이 고르면 — 요소에 붙은 반투명한 것(번짐 꼬리 · 빛 · 그림자)을 따라가 요소에 붙이고(진한 다른 그림은 안 따라감) · 그 둘레까지 구멍으로 잡아 배경을 채운다 → 배경엔 아무것도 남지 않는다
 function matteInfo() {
@@ -22042,7 +22046,8 @@ function matteInfo() {
     }
     D.set(c.id, d);
   }
-  const hole = new Uint8Array(W * H); for (const c of comps) { const d = D.has(c.id) && smooth.get(c.id) ? D.get(c.id) : dilate(c.mask, W, H, 2); for (let i = 0; i < hole.length; i++) if (d[i]) hole[i] = 1; }
+  const padTxt = Math.max(3, Math.round(Math.min(W, H) * 0.009));   // 복잡한 배경 — 글자 테두리 · 그림자까지 비워야 채운 자리에 얼룩이 안 남는다
+  const hole = new Uint8Array(W * H); for (const c of comps) { const d = D.has(c.id) && smooth.get(c.id) ? D.get(c.id) : dilate(c.mask, W, H, c.own ? 2 : ['title', 'sub', 'cta', 'logo'].includes(c.kind) ? padTxt : 3); for (let i = 0; i < hole.length; i++) if (d[i]) hole[i] = 1; }
   const B = comps.length ? inpaint(M.cv, hole) : M.cv;
   return (MATTE = { B, bd: ctx2(B).getImageData(0, 0, W, H).data, D, smooth, model });
 }
@@ -22298,7 +22303,7 @@ async function openFile(f) {
   const isPsd = /\.psd$/i.test(f.name || '') || /photoshop|psd/i.test(f.type || '');
   if (!isPsd && !(f.type || '').startsWith('image/')) { toast('PSD · PNG · JPG · WEBP 파일을 올려 주세요'); return; }
   busy(isPsd ? 'PSD 레이어를 읽는 중…' : '배너를 여는 중…');
-  try { if (isPsd) await openPSD(f); else { const el = await loadEl(f), { cv } = fitWork(el, el.naturalWidth, el.naturalHeight); setMaster({ name: f.name || '붙여넣은 배너', src: 'image', W: cv.width, H: cv.height, cv, ow: el.naturalWidth, oh: el.naturalHeight }, []); toast('좋아요! 이제 배너 위를 끌어서 요소를 짚어 주세요'); } }
+  try { if (isPsd) await openPSD(f); else { const el = await loadEl(f), { cv } = fitWork(el, el.naturalWidth, el.naturalHeight); setMaster({ name: f.name || '붙여넣은 배너', src: 'image', W: cv.width, H: cv.height, cv, ow: el.naturalWidth, oh: el.naturalHeight }, []); busy(''); const n = await autoDetect(true); if (n) showTab('vary'); else toast('배너 위를 끌어서 요소를 짚어 주세요'); } }
   catch (e) { console.warn(e); toast('파일을 읽지 못했어요. 다른 파일로 해 보세요'); }
   finally { busy(''); }
 }
@@ -22420,7 +22425,7 @@ function renderComps() {
   if (!M || !C.length) {
     const e = document.createElement('div'); e.className = 'empty-list';
     e.innerHTML = '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="8" width="30" height="24" rx="4" stroke-dasharray="3 2.4"/><path d="M12 16h10M12 21h7" stroke-linecap="round"/><circle cx="28" cy="22" r="3.5"/></svg>';
-    const p = document.createElement('span'); p.textContent = !M ? '메인 배너를 올리면 여기에 요소가 생겨요.' : '오른쪽 배너 위를 끌어서 상자로 짚거나, 눌러서 자동으로 잡아 보세요. 짚은 요소가 여기에 하나씩 쌓여요.'; e.append(p); box.append(e); renderSteps(); return;
+    const p = document.createElement('span'); p.textContent = !M ? '메인 배너를 올리면 AI가 알아서 요소를 찾아 여기에 채워요.' : 'AI에게 맡기거나, 오른쪽 배너 위를 끌어서 직접 짚어 보세요.'; e.append(p); if (M && M.src === 'image') { const ab = document.createElement('button'); ab.type = 'button'; ab.className = 'btn sm autobtn'; ab.textContent = '✦ AI 자동으로 짚기'; ab.onclick = (ev) => { ev.stopPropagation(); autoDetect(false); }; e.append(ab); } box.append(e); renderSteps(); return;
   }
   for (const c of C.slice().sort((a, b) => zKey(b) - zKey(a))) {
     const row = document.createElement('div'); row.className = 'comp' + (c.id === SEL ? ' sel' : '') + (c.use ? '' : ' off'); row.style.setProperty('--c', c.kind === 'bg' ? 'var(--ink3)' : ICOL[c.imp]);
@@ -22451,6 +22456,7 @@ function undo() {
   if (u.t === 'mask') { const c = comp(u.id); if (c) { c.mask = u.prev; if (u.prevAlpha !== undefined) c.alpha = u.prevAlpha; dirty(c); } }
   else if (u.t === 'new') { const c = comp(u.id); if (c) { C = C.filter((q) => q !== c); idb.delComp(c.id); if (SEL === c.id) SEL = null; geomChanged(); saveProject(); } }
   else if (u.t === 'del') { C.splice(u.i, 0, u.c); dirty(u.c); }
+  else if (u.t === 'all') { for (const c of C) idb.delComp(c.id); C = u.prev; for (const c of C) c._dirty = true; geomChanged(); saveProject(); }
   renderComps(); drawEditor(true); renderResults(); hideMini();
 }
 function sizeEditor() {
@@ -22624,6 +22630,197 @@ async function aiGrab(px, py, add) {
   toast(`AI가 「${KINDS[c.kind].label}」(으)로 잡았어요. 종류가 다르면 아래 줄에서 바꿔 주세요`);
 }
 
+/* AI 자동으로 짚기 — 배너를 올리면 알아서 요소를 찾고 종류 · 중요도를 정한다(이 브라우저 안에서)
+   ① 배경을 곡면으로 맞춰(단색 · 그라데이션) 배경과 다른 화소를 모은다 · 배경이 복잡하면 넓게 흐린 배경과 견준다
+   ② 가까운 화소끼리 묶어 덩어리로 · 글자처럼 작은 조각이 많은 덩어리는 「글」, 큰 덩어리는 「그림」
+   ③ 글: 글자가 가장 큰 것 = 타이틀 · 꽉 찬 납작한 모양 = 버튼 · 구석의 작은 글 = 로고 · 나머지 = 서브카피
+      그림: 가장 큰 것 = 메인 이미지(AI로 잡기로 가장자리를 깔끔하게) · 구석의 작은 것 = 로고 · 나머지 = 기타 장식 */
+function labelCC(mk, W, H) {   // 4방향 이어진 덩어리 번호
+  const lab = new Int32Array(W * H), sizes = [0], st = [];
+  let n = 0;
+  for (let i = 0; i < mk.length; i++) {
+    if (!mk[i] || lab[i]) continue;
+    n++; let cnt = 0; lab[i] = n; st.push(i);
+    while (st.length) { const p = st.pop(), x = p % W; cnt++; if (x > 0 && mk[p - 1] && !lab[p - 1]) { lab[p - 1] = n; st.push(p - 1); } if (x < W - 1 && mk[p + 1] && !lab[p + 1]) { lab[p + 1] = n; st.push(p + 1); } if (p >= W && mk[p - W] && !lab[p - W]) { lab[p - W] = n; st.push(p - W); } if (p + W < mk.length && mk[p + W] && !lab[p + W]) { lab[p + W] = n; st.push(p + W); } }
+    sizes.push(cnt);
+  }
+  return { lab, n, sizes };
+}
+function fillHoles(mk, W, H, b) {   // 덩어리 안쪽 구멍 메우기(상자 테두리에서 닿지 않는 빈 곳)
+  const out = mk.slice(), seen = new Uint8Array(W * H), st = [];
+  const inB = (x, y) => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h;
+  for (let x = b.x; x < b.x + b.w; x++) for (const y of [b.y, b.y + b.h - 1]) { const p = y * W + x; if (!mk[p] && !seen[p]) { seen[p] = 1; st.push(p); } }
+  for (let y = b.y; y < b.y + b.h; y++) for (const x of [b.x, b.x + b.w - 1]) { const p = y * W + x; if (!mk[p] && !seen[p]) { seen[p] = 1; st.push(p); } }
+  while (st.length) { const p = st.pop(), x = p % W, y = (p / W) | 0; for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) { if (!inB(nx, ny)) continue; const q = ny * W + nx; if (!mk[q] && !seen[q]) { seen[q] = 1; st.push(q); } } }
+  for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) { const p = y * W + x; if (!seen[p]) out[p] = 1; }
+  return out;
+}
+async function detectLocal() {
+  const W = M.W, H = M.H, md = pix(), N = W * H, area = N;
+  const model = bgModel(new Uint8Array(N));
+  const smooth = !!(model && model.inFrac > 0.4 && model.inMed < 3.2);
+  const res = new Float32Array(N);
+  if (smooth) { const c3 = [0, 0, 0]; for (let p = 0; p < N; p++) { model.at(p, c3); const i = p * 4; res[p] = (Math.abs(md[i] - c3[0]) + Math.abs(md[i + 1] - c3[1]) + Math.abs(md[i + 2] - c3[2])) / 3; } }
+  else { const k = 1 / 24, sm = mkCanvas(W * k, H * k); ctx2(sm).drawImage(M.cv, 0, 0, sm.width, sm.height); const bl = mkCanvas(W, H), bx = ctx2(bl); bx.imageSmoothingQuality = 'high'; bx.drawImage(sm, 0, 0, W, H); const bd = bx.getImageData(0, 0, W, H).data; for (let p = 0; p < N; p++) { const i = p * 4; res[p] = (Math.abs(md[i] - bd[i]) + Math.abs(md[i + 1] - bd[i + 1]) + Math.abs(md[i + 2] - bd[i + 2])) / 3; } }
+  const T = smooth ? Math.max(16, model.inMed * 5) : 46, fg = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (res[p] > T) fg[p] = 1;
+  // 조각 — 1px 이어 붙인 덩어리마다 크기 · 상자 · 진하기
+  const cc = labelCC(dilate(fg, W, H, 1), W, H), P = new Array(cc.n + 1);
+  for (let p = 0; p < N; p++) { if (!fg[p]) continue; const l = cc.lab[p], x = p % W, y = (p / W) | 0; let q = P[l]; if (!q) q = P[l] = { l, x0: x, y0: y, x1: x, y1: y, n: 0, sr: 0 }; q.n++; q.sr += res[p]; if (x < q.x0) q.x0 = x; if (x > q.x1) q.x1 = x; if (y < q.y0) q.y0 = y; if (y > q.y1) q.y1 = y; }
+  const minSz = Math.max(12, Math.round(N * 0.00008));
+  const parts = P.filter(Boolean).filter((q) => q.n >= minSz).map((q) => ({ ...q, w: q.x1 - q.x0 + 1, h: q.y1 - q.y0 + 1, mr: q.sr / q.n })).filter((q) => q.mr > (smooth ? 30 : 58));   // 옅은 번짐 · 그림자 조각은 요소가 아님
+  for (const q of parts) q.fill = q.n / (q.w * q.h);
+  // 글자 잇기 — 옆 글자(키가 비슷 · 같은 줄 · 글자 크기만큼 가까움) · 한글 위아래 자모(겹쳐 쌓임)
+  const L = parts.filter((q) => q.h >= 6 && q.h <= H * 0.5 && q.w <= W * 0.6 && q.fill < 0.86).sort((a, b) => b.n - a.n).slice(0, 1500), par = new Map(L.map((q) => [q, q]));
+  const find = (q) => { while (par.get(q) !== q) { par.set(q, par.get(par.get(q))); q = par.get(q); } return q; };
+  const join = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) par.set(ra, rb); };
+  for (let a = 0; a < L.length; a++) for (let b = a + 1; b < L.length; b++) {
+    const A = L[a], B = L[b], mh = Math.max(A.h, B.h), nh = Math.min(A.h, B.h);
+    const yov = Math.min(A.y1, B.y1) - Math.max(A.y0, B.y0), xgap = Math.max(A.x0, B.x0) - Math.min(A.x1, B.x1), xov = -xgap, ygap = Math.max(A.y0, B.y0) - Math.min(A.y1, B.y1);
+    if (yov > nh * 0.4 && mh / nh < 2.8 && xgap < mh * 1.05) join(A, B);
+    else if (xov > Math.min(A.w, B.w) * 0.5 && ygap >= -2 && ygap < mh * 0.28 && Math.max(A.w, B.w) < mh * 3) join(A, B);
+  }
+  const clus = new Map(); for (const q of L) { const r = find(q); if (!clus.has(r)) clus.set(r, []); clus.get(r).push(q); }
+  let lines = [...clus.values()].map((ps) => { const x0 = Math.min(...ps.map((q) => q.x0)), y0 = Math.min(...ps.map((q) => q.y0)), x1 = Math.max(...ps.map((q) => q.x1)), y1 = Math.max(...ps.map((q) => q.y1)), hs = ps.map((q) => q.h).sort((a, b) => a - b); return { ps, b: { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 }, lh: hs[Math.floor(hs.length / 2)], n: ps.reduce((a, q) => a + q.n, 0) }; })
+    .filter((t) => t.ps.length >= 2 && t.b.w / t.lh >= 1.3);
+  // 줄 → 글 덩어리(키가 비슷하고 위아래로 붙은 줄)
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const a of lines) for (const c of lines) {
+      if (a === c || a.dead || c.dead) continue;
+      const r = a.lh / c.lh, gapY = Math.max(a.b.y, c.b.y) - Math.min(a.b.y + a.b.h, c.b.y + c.b.h), ox = Math.min(a.b.x + a.b.w, c.b.x + c.b.w) - Math.max(a.b.x, c.b.x);
+      const yov2 = Math.min(a.b.y + a.b.h, c.b.y + c.b.h) - Math.max(a.b.y, c.b.y), xgap2 = -ox;
+      const sameRow = r > 0.6 && r < 1.65 && yov2 > Math.min(a.b.h, c.b.h) * 0.5 && xgap2 < Math.max(a.lh, c.lh) * 2.2;
+      if (sameRow || (r > 0.72 && r < 1.38 && gapY >= -2 && gapY < Math.max(a.lh, c.lh) * 0.9 && ox > -Math.max(a.lh, c.lh))) {
+        const x0 = Math.min(a.b.x, c.b.x), y0 = Math.min(a.b.y, c.b.y), x1 = Math.max(a.b.x + a.b.w, c.b.x + c.b.w), y1 = Math.max(a.b.y + a.b.h, c.b.y + c.b.h);
+        a.b = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; a.ps = a.ps.concat(c.ps); a.n += c.n; a.lh = (a.lh + c.lh) / 2; c.dead = true; changed = true;
+      }
+    }
+    lines = lines.filter((q) => !q.dead);
+  }
+  { const taken = new Set(lines.flatMap((t) => t.ps));
+    for (const q of parts) { if (taken.has(q)) continue; const cx = q.x0 + q.w / 2, cy = q.y0 + q.h / 2;
+      const t = lines.find((t2) => q.h < t2.lh * 1.6 && q.w < t2.lh * 3 && cx > t2.b.x - t2.lh * 0.9 && cx < t2.b.x + t2.b.w + t2.lh * 0.9 && cy > t2.b.y - t2.lh * 0.35 && cy < t2.b.y + t2.b.h + t2.lh * 0.35);
+      if (t) { t.ps.push(q); t.n += q.n; taken.add(q); const x0 = Math.min(t.b.x, q.x0), y0 = Math.min(t.b.y, q.y0), x1 = Math.max(t.b.x + t.b.w, q.x1 + 1), y1 = Math.max(t.b.y + t.b.h, q.y1 + 1); t.b = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }; } } }
+  const inText = new Set(lines.flatMap((t) => t.ps));
+  // 그림 — 글이 아닌 조각을 가까운 것끼리
+  const rest = parts.filter((q) => !inText.has(q)), restL = new Set(rest.map((q) => q.l)), om = new Uint8Array(N);
+  for (let p = 0; p < N; p++) if (fg[p] && restL.has(cc.lab[p])) om[p] = 1;
+  const g = clamp(Math.round(Math.min(W, H) * 0.012), 3, 16), oc = labelCC(dilate(om, W, H, g), W, H), OG = new Map();
+  for (let p = 0; p < N; p++) { if (!om[p]) continue; const l = oc.lab[p], x = p % W, y = (p / W) | 0; let q = OG.get(l); if (!q) { q = { l, x0: x, y0: y, x1: x, y1: y, n: 0, sx: 0, sy: 0 }; OG.set(l, q); } q.n++; q.sx += x; q.sy += y; if (x < q.x0) q.x0 = x; if (x > q.x1) q.x1 = x; if (y < q.y0) q.y0 = y; if (y > q.y1) q.y1 = y; }
+  const objs = [...OG.values()].map((q) => ({ ...q, b: { x: q.x0, y: q.y0, w: q.x1 - q.x0 + 1, h: q.y1 - q.y0 + 1 }, cx: q.sx / q.n, cy: q.sy / q.n })).filter((q) => q.n > N * 0.0012);
+  for (const q of objs) {   // 구멍 메운 모양으로 — 꽉 찬 납작한 모양이면 버튼
+    let k = 0; const mk2 = new Uint8Array(N); for (let y = q.b.y; y < q.b.y + q.b.h; y++) for (let x = q.b.x; x < q.b.x + q.b.w; x++) { const p = y * W + x; if (om[p] && oc.lab[p] === q.l) mk2[p] = 1; }
+    const fh = fillHoles(mk2, W, H, q.b); for (let y = q.b.y; y < q.b.y + q.b.h; y++) for (let x = q.b.x; x < q.b.x + q.b.w; x++) k += fh[y * W + x];
+    q.fill = k / (q.b.w * q.b.h); q.ar = q.b.w / q.b.h; const yy = Math.round(q.b.y + q.b.h / 2); let m2 = 0; for (let x = q.b.x; x < q.b.x + q.b.w; x++) m2 += fh[yy * W + x]; q.mid = m2 / q.b.w;
+    let dom = 0, domC = null; { const hist = new Map(), sums = new Map(); let tot = 0; for (let y = q.b.y; y < q.b.y + q.b.h; y += 2) for (let x = q.b.x; x < q.b.x + q.b.w; x += 2) { const p = y * W + x; if (!fh[p]) continue; const i = p * 4, kk = ((md[i] >> 5) << 6) | ((md[i + 1] >> 5) << 3) | (md[i + 2] >> 5); hist.set(kk, (hist.get(kk) || 0) + 1); const sm2 = sums.get(kk) || [0, 0, 0]; sm2[0] += md[i]; sm2[1] += md[i + 1]; sm2[2] += md[i + 2]; sums.set(kk, sm2); tot++; } for (const [kk, v] of hist) if (v / Math.max(1, tot) > dom) { dom = v / Math.max(1, tot); const sm2 = sums.get(kk); domC = [sm2[0] / v, sm2[1] / v, sm2[2] / v]; } }
+    const ringC = modeColor(md, ringIdx(q.b.x - 5, q.b.y - 5, q.b.x + q.b.w + 4, q.b.y + q.b.h + 4, 2)), differs = !!domC && dist(domC, 0, ringC) > 45;
+    const hasText = lines.some((t) => t.b.x >= q.b.x - 3 && t.b.y >= q.b.y - 3 && t.b.x + t.b.w <= q.b.x + q.b.w + 3 && t.b.y + t.b.h <= q.b.y + q.b.h + 3);
+    q.btn = q.ar >= 1.7 && q.ar <= 8 && q.fill > 0.72 && q.mid > 0.88 && dom > 0.45 && differs && (smooth || hasText) && q.b.h < H * 0.3 && q.b.w * q.b.h < area * 0.08;
+  }
+  const nearCorner = (b) => (b.x + b.w / 2 < W * 0.32 || b.x + b.w / 2 > W * 0.68) && (b.y + b.h / 2 < H * 0.26 || b.y + b.h / 2 > H * 0.74);
+  const out = [];
+  lines.sort((a, c) => c.lh - a.lh || c.n - a.n);
+  const title = lines[0];
+  // 로고 — 구석의 작은 마크(+ 바로 옆의 짧은 글)
+  const usedLines = new Set(), usedObjs = new Set();
+  let logo = null;
+  for (const o of objs.filter((q) => !q.btn && q.b.w * q.b.h < area * 0.03 && nearCorner(q.b)).sort((a, c) => c.n - a.n)) {
+    const t = lines.find((t2) => t2 !== title && Math.abs((t2.b.y + t2.b.h / 2) - (o.b.y + o.b.h / 2)) < o.b.h * 0.8 && Math.min(Math.abs(t2.b.x - (o.b.x + o.b.w)), Math.abs(o.b.x - (t2.b.x + t2.b.w))) < o.b.h * 1.6);
+    logo = { obj: o, line: t || null }; usedObjs.add(o); if (t) usedLines.add(t); break;
+  }
+  if (!logo) { const t = lines.find((t2) => t2 !== title && title && t2.lh < title.lh * 0.5 && nearCorner(t2.b) && t2.b.w * t2.b.h < area * 0.03); if (t) { logo = { obj: null, line: t }; usedLines.add(t); } }
+  for (const t of lines) { if (usedLines.has(t)) continue; out.push({ kind: t === title ? 'title' : 'sub', lines: [t] }); }
+  if (logo) out.push({ kind: 'logo', lines: logo.line ? [logo.line] : [], objs: logo.obj ? [logo.obj] : [] });
+  let btn = objs.filter((q) => q.btn && !usedObjs.has(q)).sort((a, c) => c.n - a.n)[0];
+  if (!btn) for (const t of lines) {   // 글 둘레가 한 가지 색 — 그 색 영역을 넓혀 버튼 모양으로
+    if (t === title || usedLines.has(t) || (title && t.lh > title.lh * 0.7)) continue;
+    const e = Math.max(3, Math.round(t.lh * 0.45)), ring = ringIdx(t.b.x - e, t.b.y - e, t.b.x + t.b.w + e, t.b.y + t.b.h + e, 2), col = modeColor(md, ring);
+    let same = 0; for (const i of ring) if (dist(md, i, col) < 36) same++;
+    if (same < ring.length * 0.72) continue;
+    const far = modeColor(md, ringIdx(t.b.x - e * 5, t.b.y - e * 4, t.b.x + t.b.w + e * 5, t.b.y + t.b.h + e * 4, 2)); if (dist(col, 0, far) < 45) continue;   // 바탕이 곧 배경이면 버튼 아님
+    const lim = { x0: Math.max(0, t.b.x - t.lh * 3), y0: Math.max(0, t.b.y - t.lh * 1.5), x1: Math.min(W - 1, t.b.x + t.b.w + t.lh * 3), y1: Math.min(H - 1, t.b.y + t.b.h + t.lh * 1.5) }, pm = new Uint8Array(N), st = [];
+    const seed = ring.find((i) => dist(md, i, col) < 36) / 4; pm[seed] = 1; st.push(seed);
+    while (st.length) { const p = st.pop(), x = p % W, y = (p / W) | 0; for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) { if (nx < lim.x0 || nx > lim.x1 || ny < lim.y0 || ny > lim.y1) continue; const q2 = ny * W + nx; if (!pm[q2] && dist(md, q2 * 4, col) < 40) { pm[q2] = 1; st.push(q2); } } }
+    const pb = bbox(pm, W, H); if (!pb) continue;
+    const ar2 = pb.w / pb.h, touchesLim = pb.x <= lim.x0 + 1 || pb.y <= lim.y0 + 1 || pb.x + pb.w >= lim.x1 || pb.y + pb.h >= lim.y1;
+    if (ar2 < 1.5 || ar2 > 9 || touchesLim || pb.w < t.b.w || pb.h < t.b.h) continue;
+    btn = { l: -1, b: pb, pm, n: pb.w * pb.h, line: t }; break;
+  }
+  if (btn) { usedObjs.add(btn); if (btn.line) usedLines.add(btn.line); const inside = lines.filter((t) => t.b.x >= btn.b.x - 2 && t.b.y >= btn.b.y - 2 && t.b.x + t.b.w <= btn.b.x + btn.b.w + 2 && t.b.y + t.b.h <= btn.b.y + btn.b.h + 2); for (const t of inside) { const k = out.findIndex((o) => o.lines && o.lines.includes(t)); if (k >= 0) out.splice(k, 1); } out.push({ kind: 'cta', lines: inside, objs: btn.pm ? [] : [btn], pm: btn.pm || null, fillIt: true }); }
+  const pics = objs.filter((q) => !usedObjs.has(q) && q.b.w < W * 0.85 && q.b.h < H * 0.95 && q.ar < 5 && q.ar > 0.2).sort((a, c) => c.n - a.n);
+  if (smooth) pics.filter((q) => q.b.w * q.b.h < area * 0.5).forEach((q, i) => { out.push({ kind: i === 0 ? 'main' : 'etc', objs: [q], obj: true, cx: q.cx, cy: q.cy }); });
+  else {   // 조각 중 크고 덩어리진 것 몇 개 — 그 자리를 AI 로 눌러 보고, 적당한 크기의 물체로 잡히는 것만
+    const cand = rest.filter((q) => !usedObjs.has(q) && q.n > N * 0.003 && q.w / q.h < 3.5 && q.h / q.w < 3.5).sort((a, c) => c.n - a.n).slice(0, 4);
+    cand.forEach((q) => out.push({ kind: 'main', objs: [], obj: true, aiOnly: true, cx: q.x0 + q.w / 2, cy: q.y0 + q.h / 2, part: q }));
+  }
+  if (!title) { const k = out.findIndex((o) => o.kind === 'sub'); if (k >= 0) out[k].kind = 'title'; }
+  return { out, fg, cc, oc, om, smooth };
+}
+async function autoDetect(auto) {
+  if (!M) { toast('먼저 메인 배너를 올려 주세요'); return 0; }
+  if (M.src !== 'image') { toast('PSD는 레이어가 이미 요소로 들어와 있어요'); return 0; }
+  if (SAMPLE && !auto) { await aiFind(); return C.length; }   // Claude 페이지 — Claude 가 보고 찾기
+  busy('AI가 배너를 살펴보는 중이에요…'); await new Promise((r) => setTimeout(r, 40));
+  let det;
+  try { det = await detectLocal(); } catch (e) { console.warn('[auto]', e); busy(''); toast('자동으로 찾지 못했어요. 상자로 짚어 주세요'); return 0; }
+  const { out, fg, smooth } = det, W = M.W, H = M.H;
+  if (!out.length) { busy(''); toast('찾은 요소가 없어요. 「상자로 짚기」나 「AI로 잡기」로 짚어 주세요'); return 0; }
+  const prev = C.slice(); pushUndo({ t: 'all', prev });
+  for (const c of C) idb.delComp(c.id);
+  C = []; SEL = null; geomChanged();
+  let aiOk = true, made = 0;
+  const cnt = {};
+  const { cc, oc, om } = det;
+  for (const o of out) {
+    const mk = new Uint8Array(W * H), pl = new Set((o.lines || []).flatMap((t) => t.ps.map((q) => q.l))), ol = new Set((o.objs || []).map((q) => q.l));
+    let bx0 = W, by0 = H, bx1 = -1, by1 = -1;
+    for (const t of o.lines || []) { bx0 = Math.min(bx0, t.b.x); by0 = Math.min(by0, t.b.y); bx1 = Math.max(bx1, t.b.x + t.b.w); by1 = Math.max(by1, t.b.y + t.b.h); }
+    for (const q of o.objs || []) { bx0 = Math.min(bx0, q.b.x); by0 = Math.min(by0, q.b.y); bx1 = Math.max(bx1, q.b.x + q.b.w); by1 = Math.max(by1, q.b.y + q.b.h); }
+    if (o.aiOnly) { bx0 = o.part.x0; by0 = o.part.y0; bx1 = o.part.x1 + 1; by1 = o.part.y1 + 1; }
+    if (bx1 < 0) continue;
+    for (let y = by0; y < by1; y++) for (let x = bx0; x < bx1; x++) { const p = y * W + x; if (fg[p] && (pl.has(cc.lab[p]) || (om[p] && ol.has(oc.lab[p])))) mk[p] = 1; }
+    let mask = dilate(mk, W, H, 2), alpha = null;
+    const box = { x: Math.max(0, bx0 - 3), y: Math.max(0, by0 - 3), w: Math.min(W, bx1 + 3) - Math.max(0, bx0 - 3), h: Math.min(H, by1 + 3) - Math.max(0, by0 - 3) };
+    if (o.pm) for (let i = 0; i < mask.length; i++) if (o.pm[i]) mask[i] = 1;
+    if (o.fillIt) { const bb2 = bbox(mask); if (bb2) mask = fillHoles(mask, W, H, bb2); }
+    if (o.obj) {   // 그림 — AI 로 가장자리까지 · 안 되면 묶음(구멍 메움)
+      let px = o.cx, py = o.cy; if (!mk[Math.round(py) * W + Math.round(px)]) { let best = 1e18; for (let y = by0; y < by1; y += 2) for (let x = bx0; x < bx1; x += 2) if (mk[y * W + x]) { const d = (x - o.cx) ** 2 + (y - o.cy) ** 2; if (d < best) { best = d; px = x; py = y; } } }
+      if (o.aiOnly) {   // 이미 잡은 것 안이면 건너뜀 · AI 가 1~45% 크기의 물체로 잡고 글과 크게 안 겹칠 때만
+        const pp = Math.round(py) * W + Math.round(px); if (C.some((c) => c.mask[pp])) continue;
+        let r2 = null; if (aiOk) { busy('AI가 메인 이미지를 찾는 중이에요…'); try { r2 = await aiMask(px, py); } catch (e) { aiOk = false; } } if (!r2) continue;
+        let an = 0, tov = 0; const b2 = bbox(r2.mk); for (let i = 0; i < r2.mk.length; i++) if (r2.mk[i]) { an++; if (C.some((c) => c.kind !== 'main' && c.kind !== 'etc' && c.mask[i])) tov++; }
+        if (!b2 || an < N0() * 0.01 || an > N0() * 0.45 || b2.w > W * 0.8 || tov > an * 0.2) continue;
+        o.kind = C.some((c) => c.kind === 'main') ? 'etc' : 'main'; mask = r2.mk; alpha = r2.alpha;
+      } else {
+      let r = null; if (aiOk) { busy(`AI가 「${KINDS[o.kind].label}」 가장자리를 따는 중이에요…`); try { r = await aiMask(px, py); } catch (e) { aiOk = false; } }
+      if (r) { let ov = 0, an = 0, gn = 0; for (let i = 0; i < mk.length; i++) { if (r.mk[i]) { an++; if (mask[i]) ov++; } if (mk[i]) gn++; } if (an > gn * 0.2 && ov > an * 0.55 && an < N0() * 0.7) { mask = r.mk; alpha = r.alpha; } else r = null; }
+      if (!r) { if (!smooth) continue; mask = fillHoles(mask, W, H, box); }
+      }
+    }
+    const b = bbox(mask); if (!b) continue;
+    cnt[o.kind] = (cnt[o.kind] || 0) + 1;
+    const c = { id: uid(), name: KINDS[o.kind].label + (cnt[o.kind] > 1 ? ' ' + cnt[o.kind] : ''), kind: o.kind, imp: defImp(o.kind), use: true, z: C.length, n: NSEQ++, mask, rect: false, own: null, fx: false, alpha, touched: true, auto: true };
+    C.push(c); made++;
+  }
+  // 서브카피가 여럿이면 가장 작은 글은 「여유」
+  const subs = C.filter((c) => c.kind === 'sub'); if (subs.length > 1) { subs.sort((a, c2) => bbox(a.mask).h - bbox(c2.mask).h)[0].imp = 3; }
+  for (const c of C) c._dirty = true;
+  geomChanged(); saveProject(); busy('');
+  renderComps(); drawEditor(true); renderResults(); showMini();
+  toast(made ? `AI가 요소 ${made}개를 찾았어요${smooth ? '' : ' · 배경이 복잡해서 빠진 게 있으면 「AI로 잡기」로 눌러 주세요'}` : '찾은 요소가 없어요. 직접 짚어 주세요');
+  return made;
+}
+const N0 = () => M.W * M.H;
+async function aiMask(px, py) {   // AI로 잡기의 마스크만(요소는 안 만듦)
+  const seg = await aiReady(); let conf = null, w = 0, h = 0;
+  seg.segment(M.cv, { keypoint: { x: clamp(px / M.W, 0, 1), y: clamp(py / M.H, 0, 1) } }, (res) => { const m = res.confidenceMasks && res.confidenceMasks[0]; if (m) { w = m.width; h = m.height; conf = m.getAsFloat32Array().slice(); } if (res.close) res.close(); });
+  if (!conf) return null;
+  const alpha = new Uint8Array(M.W * M.H), mk = new Uint8Array(M.W * M.H);
+  for (let y = 0; y < M.H; y++) { const sy = Math.min(h - 1, Math.floor(y * h / M.H)); for (let x = 0; x < M.W; x++) { const v = conf[sy * w + Math.min(w - 1, Math.floor(x * w / M.W))], p = y * M.W + x; alpha[p] = Math.round(clamp(v, 0, 1) * 255); if (v > 0.5) mk[p] = 1; } }
+  return { mk, alpha };
+}
+
 /* AI 로 요소 찾기 — claude 「sample」 이미지 · 없으면 단추 숨김 */
 let SAMPLE = null, aiCtl = null;
 async function aiFind() {
@@ -22645,7 +22842,7 @@ async function aiFind() {
   } catch (e) {
     const code = e && e.code;
     if (code !== 'cancelled') toast(code === 'not_granted' || code === 'sampling_disabled' || code === 'images_unavailable' ? 'AI 찾기를 쓸 수 없어요. 직접 지정해 주세요' : code === 'rate_limited' ? '요청이 많아요. 잠시 뒤 다시 눌러 주세요' : 'AI 찾기에 실패했어요. 직접 지정해 주세요');
-    if (code === 'not_granted' || code === 'sampling_disabled' || code === 'images_unavailable') btn.hidden = true;
+    if (code === 'not_granted' || code === 'sampling_disabled' || code === 'images_unavailable') SAMPLE = null;
   } finally { aiCtl = null; btn.lastChild.textContent = 'AI로 요소 찾기'; }
 }
 
@@ -22879,7 +23076,7 @@ function bindAll() {
   bindPV();
   const bgB = $$('[data-bg]'), syncBg = () => bgB.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.bg === S.style.bg))); syncBg(); bgB.forEach((b) => (b.onclick = () => { S.style.bg = b.dataset.bg; syncBg(); BG = null; saveS(); renderResults(); }));
   for (const [id, key] of [['pad', 'pad'], ['boost', 'boost']]) { const r = $('#' + id), o = $('#' + id + 'Out'); r.value = S.style[key]; o.textContent = S.style[key] + '%'; r.oninput = () => { S.style[key] = +r.value; o.textContent = r.value + '%'; saveS(); renderResults(); }; }
-  $('#zipBtn').onclick = saveZip; $('#aiBtn').onclick = aiFind; $('#sampleHelp').onclick = (e) => { e.preventDefault(); $('#helpModal').hidden = false; };
+  $('#zipBtn').onclick = saveZip; $('#aiBtn').onclick = () => autoDetect(false); $('#sampleHelp').onclick = (e) => { e.preventDefault(); $('#helpModal').hidden = false; };
   window.addEventListener('resize', debounce(() => { if (!$('#tabVary').hidden) doResults(); }, 220));
 }
 
@@ -22903,7 +23100,7 @@ function bindAll() {
   renderMaster(); renderComps(); showTab(M && M.src === 'sample' ? 'vary' : 'mark');
   if (window.claude && window.claude.use) {
     window.claude.use('downloads').then((d) => { DL = d; }).catch(() => {});
-    window.claude.use('sample').then(async (s) => { if (!s) return; const lim = await s.limits().catch(() => null); if (lim && lim.images) { SAMPLE = s; $('#aiBtn').hidden = false; } }).catch(() => {});
+    window.claude.use('sample').then(async (s) => { if (!s) return; const lim = await s.limits().catch(() => null); if (lim && lim.images) SAMPLE = s; }).catch(() => {});
   }
 })();
 </script>
