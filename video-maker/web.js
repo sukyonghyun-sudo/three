@@ -332,8 +332,29 @@ startRender = async function () {
       fastStart: writable ? false : 'in-memory',
       firstTimestampBehavior: 'offset',
     });
-    const venc = new VideoEncoder({ output: (c, m) => muxer.addVideoChunk(c, m), error: (er) => { encErr = er; } });
-    venc.configure(vcfg);
+    // 영상 인코더: 브라우저는 노는(탭이 가려진 동안 등) 인코더를 회수해 가므로(「Codec reclaimed」),
+    // 회수되거나 닫혀 있으면 새로 만들어 이어 간다. 새 인코더의 첫 장면은 키프레임으로.
+    let venc = null, needKey = true;
+    const isReclaim = (er) => er && (er.name === 'QuotaExceededError' || /reclaim/i.test(er.message || ''));
+    const makeEncoder = () => {
+      const enc = new VideoEncoder({
+        output: (c, m) => muxer.addVideoChunk(c, m),
+        error: (er) => { if (!isReclaim(er)) encErr = er; },   // 회수는 다음 장면에서 새 인코더로 이어 감
+      });
+      enc.configure(vcfg);
+      needKey = true;
+      return enc;
+    };
+    const encoder = () => {
+      if (!venc || venc.state === 'closed') venc = makeEncoder();
+      return venc;
+    };
+    // 지금 인코더에 쌓인 것을 내보내고 닫는다 (탭이 가려질 때 — 회수되기 전에 안전하게)
+    const parkEncoder = () => {
+      const old = venc;
+      venc = null;
+      if (old && old.state === 'configured') old.flush().then(() => old.close(), () => {});
+    };
 
     // 소리: 1024 샘플씩 AAC로
     if (acfg) {
@@ -371,7 +392,9 @@ startRender = async function () {
         wg.globalAlpha = 1;
       }
       const f = new VideoFrame(fsrc, { timestamp: Math.round((k / WEB_FPS) * 1e6), duration: Math.round(1e6 / WEB_FPS) });
-      venc.encode(f, { keyFrame: k % (WEB_FPS * 2) === 0 });
+      const enc = encoder();
+      enc.encode(f, { keyFrame: needKey || k % (WEB_FPS * 2) === 0 });
+      needKey = false;
       f.close();
       k++;
     };
@@ -400,6 +423,7 @@ startRender = async function () {
       onVis = () => {
         if (document.hidden) {
           src.pause();
+          parkEncoder();
           setRenderUI('running', (k / total) * 0.97, { note: '이 탭으로 돌아오면 이어서 만들어요' });
         } else resume();
       };
@@ -415,16 +439,20 @@ startRender = async function () {
         setRenderUI('running', (k / total) * 0.97, { note: left >= 60 ? `약 ${Math.ceil(left / 60)}분 남음` : '' });
         if (k >= total || t >= e - 0.001 || src.ended) { finish(); return; }
         // 인코더가 밀리면(이 PC가 실시간보다 느리면) 재생을 잠깐 멈추고 따라잡게 한다 — 메모리가 끝없이 쌓이지 않게
-        if (venc.encodeQueueSize > 30 && !waitEnc) {
+        const enc = venc;
+        if (enc && enc.state === 'configured' && enc.encodeQueueSize > 30 && !waitEnc) {
           waitEnc = true;
           src.pause();
           const drain = () => {
-            if (venc.encodeQueueSize > 8 && !encErr) return;
-            venc.removeEventListener('dequeue', drain);
+            if (enc.state === 'configured' && enc.encodeQueueSize > 8 && !encErr) return;
+            enc.removeEventListener('dequeue', drain);
+            clearTimeout(drainGuard);
             waitEnc = false;
             resume();
           };
-          venc.addEventListener('dequeue', drain);
+          // 그사이 인코더가 회수되면 dequeue가 안 오므로 시간으로도 풀어 준다
+          const drainGuard = setTimeout(drain, 3000);
+          enc.addEventListener('dequeue', drain);
         }
       };
       const onFrame = (now, meta) => {
@@ -446,8 +474,9 @@ startRender = async function () {
     });
     src.pause();
     while (k < total) emit();   // 끝에 모자란 칸은 마지막 장면으로
-    await venc.flush();
-    venc.close();
+    const last = encoder();
+    await last.flush();
+    last.close();
     if (encErr) throw encErr;
     muxer.finalize();
     if (S.lastResult?.url) URL.revokeObjectURL(S.lastResult.url);
