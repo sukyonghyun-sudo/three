@@ -18,7 +18,7 @@ if (REMOTE) {
   persist = function (body) {
     try {
       const t = JSON.parse(body);
-      localStorage.setItem(REMOTE_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on, mute: !!t.render?.mute }));
+      localStorage.setItem(REMOTE_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on, mute: !!t.render?.mute, lang: t.lang, rating: t.rating?.on }));
     } catch (e) { /* 저장소를 못 써도 계속 */ }
   };
   syncFromServer = async function () {};
@@ -32,6 +32,8 @@ function applyRemotePrefs(tpl) {
     if (p.crf) tpl.render.crf = p.crf;
     if (typeof p.notice === 'boolean') tpl.notice = { on: p.notice };
     if (typeof p.mute === 'boolean') tpl.render.mute = p.mute;
+    if (LANGS[p.lang]) tpl.lang = p.lang;
+    if (typeof p.rating === 'boolean') tpl.rating = { on: p.rating };
   } catch (e) { /* 기본값 */ }
 }
 
@@ -492,20 +494,43 @@ function buildQuality() {
   }
 }
 
+// ---------------------------------------------------------------- 영상 언어 (같은 배치에 글씨만 바뀐다)
+
+function buildLang() {
+  const box = $('#langPick');
+  box.innerHTML = '';
+  for (const [id, L] of Object.entries(LANGS)) {
+    box.append(h('button', {
+      class: id === langOf() ? 'on' : '',
+      title: id === 'zh' ? '번체 중국어 (대만)' : '',
+      onclick: () => {
+        if (id === langOf()) return;
+        S.tpl.lang = id;
+        changed();
+        buildLang();
+      },
+    }, L.label));
+  }
+  // 언어마다 다른 안내 문구, 연령 표기는 중국어일 때만
+  $('#noticeHint').textContent = `「${LANGS[langOf()].notice}」 처음 3초`;
+  $('#ratingRow').hidden = !LANGS[langOf()].rating;
+}
+
 // ---------------------------------------------------------------- 시작
 
-// 미리보기: 문구는 고른 구간의 처음 3초 동안만 보인다 (영상이 없으면 위치를 보여 주려고 계속 표시)
+// 미리보기: 문구·연령 표기는 고른 구간의 처음 3초 동안만 보인다 (영상이 없으면 위치를 보여 주려고 계속 표시)
 function noticeLoop() {
   const nc = $('#noticeCv');
   if (nc) {
     const rel = vid.currentSrc && duration() ? (vid.currentTime || 0) - trimVals().s : 0;
-    nc.style.opacity = S.tpl?.notice?.on ? noticeAlpha(rel) : 0;
+    nc.style.opacity = noticeAlpha(rel);
   }
   requestAnimationFrame(noticeLoop);
 }
 
 function bindSimple() {
   $('#noticeOn').addEventListener('change', (e) => { S.tpl.notice = { on: e.target.checked }; changed(); });
+  $('#ratingOn').addEventListener('change', (e) => { S.tpl.rating = { on: e.target.checked }; changed(); });
   $('#muteOut').addEventListener('change', (e) => { S.tpl.render.mute = e.target.checked; saveSoon(); });
   $('#gameName').addEventListener('input', (e) => { S.tpl.gameName = e.target.value; changed(); });
   $('#drop').addEventListener('click', () => $('#fileVideo').click());
@@ -547,7 +572,9 @@ async function simpleInit() {
   loadFaces();
   buildQuality();
   $('#noticeOn').checked = !!S.tpl.notice?.on;
+  $('#ratingOn').checked = !!S.tpl.rating?.on;
   $('#muteOut').checked = !!S.tpl.render.mute;
+  buildLang();
   noticeLoop();
   updatePlay();
   updateVideoInfo();

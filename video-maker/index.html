@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>송나정 전용 동영상 생성기</title>
-<link rel="stylesheet" href="simple.css?v=7c572f03">
+<link rel="stylesheet" href="simple.css?v=9eceef16">
 </head>
 <body data-app="simple">
 
@@ -28,6 +28,10 @@
     <div class="title">
       <b>송나정 전용 동영상 생성기</b>
       <span>영상 넣고, 이름 쓰고, 만들기만 누르면 끝!</span>
+    </div>
+    <div class="lang" role="group" aria-label="영상 언어">
+      <span>영상 언어</span>
+      <div id="langPick" class="seg"></div>
     </div>
     <div id="share" class="share" hidden>
       <span>사내 공유 주소</span>
@@ -95,7 +99,12 @@
         <label class="check">
           <input type="checkbox" id="noticeOn" checked>
           <span class="box"></span>
-          <span class="txt"><b>확률형 아이템 안내 문구</b><small>「확률형 아이템이 포함되어 있을 수 있습니다.」 처음 3초</small></span>
+          <span class="txt"><b>확률형 아이템 안내 문구</b><small id="noticeHint">「확률형 아이템이 포함되어 있을 수 있습니다.」 처음 3초</small></span>
+        </label>
+        <label class="check" id="ratingRow" hidden>
+          <input type="checkbox" id="ratingOn" checked>
+          <span class="box"></span>
+          <span class="txt"><b>연령 표기</b><small>영상 왼쪽 위에 「輔15級」 처음 3초</small></span>
         </label>
         <label class="check">
           <input type="checkbox" id="muteOut">
@@ -130,10 +139,10 @@
 
 <div id="toast" hidden></div>
 <script src="styles.js?v=4e24cf4d"></script>
-<script src="app.js?v=fd2bc152"></script>
+<script src="app.js?v=35c3c6a1"></script>
 <script src="vendor/mp4-muxer.min.js?v=e5924873"></script>
 <script src="vendor/ffmpeg/ffmpeg.js?v=ee0b63f2"></script>
-<script src="web.js?v=0f76c7fc"></script>
-<script src="simple.js?v=3134400b"></script>
+<script src="web.js?v=08369a1f"></script>
+<script src="simple.js?v=78df22cc"></script>
 </body>
 </html>

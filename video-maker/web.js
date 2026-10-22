@@ -23,6 +23,8 @@ api = async function (url, body) {
         if (p.crf) tpl.render.crf = p.crf;
         if (typeof p.notice === 'boolean') tpl.notice = { on: p.notice };
         if (typeof p.mute === 'boolean') tpl.render.mute = p.mute;
+        if (typeof p.lang === 'string') tpl.lang = p.lang;
+        if (typeof p.rating === 'boolean') tpl.rating = { on: p.rating };
       }
     } catch (e) { /* 저장소를 못 쓰면 기본값 */ }
     tpl.lastVideo = null;
@@ -35,7 +37,7 @@ api = async function (url, body) {
 persist = function (body) {
   try {
     const t = JSON.parse(body);
-    localStorage.setItem(WEB_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on, mute: !!t.render?.mute }));
+    localStorage.setItem(WEB_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on, mute: !!t.render?.mute, lang: t.lang, rating: t.rating?.on }));
   } catch (e) { /* 저장소를 못 써도 계속 */ }
 };
 

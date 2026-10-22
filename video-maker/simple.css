@@ -218,6 +218,13 @@ dialog#resultDlg::backdrop { background: rgba(80, 60, 120, .45); }
 .help a { display: block; text-align: center; padding: 10px; border-radius: 12px; background: var(--grad); color: #fff; font-weight: 700; text-decoration: none; word-break: break-all; }
 
 /* 사내 공유 주소 (켠 PC에만 보임) */
+.lang { margin-left: auto; display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 16px; padding: 6px 6px 6px 16px; box-shadow: var(--shadow); }
+.lang > span { color: var(--muted); font-size: 12.5px; }
+.lang + .share { margin-left: 0; }
+.seg { display: flex; gap: 3px; background: #f7f4fd; border-radius: 12px; padding: 3px; }
+.seg button { border-radius: 9px; padding: 6px 15px; font-weight: 700; font-size: 13.5px; color: var(--muted); background: transparent; transition: all .15s; }
+.seg button:hover:not(.on) { color: var(--ink); }
+.seg button.on { background: var(--grad); color: #fff; box-shadow: 0 4px 12px rgba(177, 140, 255, .3); }
 .share { margin-left: auto; display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 16px; padding: 8px 8px 8px 16px; box-shadow: var(--shadow); }
 .share span { color: var(--muted); font-size: 12.5px; }
 .share b { font-size: 15px; color: #7d66c8; letter-spacing: .01em; }

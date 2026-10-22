@@ -90,7 +90,16 @@
    "locked": false,
    "keepRatio": true,
    "shiftWith": "game_name",
-   "shiftK": -0.5
+   "shiftK": -0.5,
+   "srcByLang": {
+    "zh": {
+     "src": "assets/contest5/title_zh.png",
+     "x": 73.5,
+     "y": 328.5,
+     "w": 550,
+     "h": 188.5
+    }
+   }
   },
   {
    "id": "name_box",
@@ -185,7 +194,16 @@
    "locked": false,
    "keepRatio": true,
    "shiftWith": "game_name",
-   "shiftK": 0.5
+   "shiftK": 0.5,
+   "srcByLang": {
+    "zh": {
+     "src": "assets/contest5/copy_zh.png",
+     "x": 72,
+     "y": 711.5,
+     "w": 448,
+     "h": 91
+    }
+   }
   },
   {
    "id": "copyright",
@@ -218,6 +236,10 @@
   }
  ],
  "notice": {
+  "on": true
+ },
+ "lang": "ko",
+ "rating": {
   "on": true
  }
 }

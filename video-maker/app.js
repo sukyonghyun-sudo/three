@@ -67,6 +67,22 @@ const ICON = {
 const TYPE_LABEL = { image: '이미지', text: '글자', video: '영상', shape: '도형', button: '버튼' };
 const BUTTON_TEXT = '플레이 하러가기';
 
+// 영상 언어: 배치는 같고 글씨만 바뀐다. 그림 레이어는 srcByLang[언어]의 그림·자리로, 버튼·안내 문구는 아래 글자로
+const LANGS = {
+  ko: { label: '한국어', button: BUTTON_TEXT, notice: '확률형 아이템이 포함되어 있을 수 있습니다.' },
+  zh: { label: '中文', button: '前往遊玩', notice: '可能含有機率型商品。', rating: true },
+};
+const langOf = () => (LANGS[S.tpl?.lang] ? S.tpl.lang : 'ko');
+
+// 지금 언어에서 그림 레이어가 쓸 그림과 자리
+function imageOf(L) {
+  const o = L.srcByLang?.[langOf()];
+  return o ? { src: o.src, x: o.x ?? L.x, y: o.y ?? L.y, w: o.w ?? L.w, h: o.h ?? L.h } : L;
+}
+
+// 연령 표기 배지 (대만 「輔15級」, 중국어일 때): 영상 왼쪽 위, 안내 문구와 같이 처음 NOTICE.sec초 동안만
+const RATING = { src: 'assets/rating/tw_15.png', size: 48, left: 24, top: 24 };
+
 // ---------------------------------------------------------------- 상태
 
 const S = {
@@ -120,6 +136,8 @@ function migrate(t) {
   t.gameName = t.gameName ?? '';
   t.design = t.design || 'night';
   t.notice = Object.assign({ on: true }, t.notice);
+  t.rating = Object.assign({ on: true }, t.rating);
+  t.lang = LANGS[t.lang] ? t.lang : 'ko';
   for (const L of t.layers) {
     L.visible = L.visible ?? true;
     L.opacity = L.opacity ?? 1;
@@ -223,7 +241,12 @@ function changed(opts = {}) {
 // ---------------------------------------------------------------- 이미지
 
 function loadImages() {
-  const srcs = new Set(S.tpl.layers.filter((l) => l.src).map((l) => l.src));
+  // 다른 언어 그림과 연령 표기도 미리 불러 둔다 (언어를 바꾸면 바로 보이게)
+  const srcs = new Set([RATING.src]);
+  for (const l of S.tpl.layers) {
+    if (l.src) srcs.add(l.src);
+    for (const o of Object.values(l.srcByLang || {})) srcs.add(o.src);
+  }
   return Promise.all([...srcs].filter((s) => !S.images[s]).map((src) => new Promise((res) => {
     const im = new Image();
     im.onload = () => { S.images[src] = im; res(); };
@@ -330,7 +353,8 @@ function famForFace(face) {
     return null;
   }
   const name = (f) => (f && S.fontReady[f.id] ? `"${S.fontReady[f.id]}", ` : '');
-  return `${name(face)}${back && back !== face ? name(back) : ''}sans-serif`;
+  // 두 폰트에 다 없는 한자(중국어 게임 이름의 번체 글자 등)는 번체 글꼴로
+  return `${name(face)}${back && back !== face ? name(back) : ''}"Microsoft JhengHei", "PingFang TC", sans-serif`;
 }
 
 function fontLabel(ref) {
@@ -591,10 +615,11 @@ function drawLayer(ctx, L) {
   const dy = shiftOf(L);
   if (dy) ctx.translate(0, dy);
   if (L.type === 'image') {
-    const im = S.images[L.src];
+    const P = imageOf(L);
+    const im = S.images[P.src];
     const g = growOf(L.growWith);
     if (im && g) drawStretched(ctx, im, L, g, layerById(L.growWith).growSlope || 0);
-    else if (im) ctx.drawImage(im, L.x, L.y, L.w, L.h);
+    else if (im) ctx.drawImage(im, P.x, P.y, P.w, P.h);
   } else if (L.type === 'shape') {
     if (L.gradient) {
       const g = ctx.createLinearGradient(L.x, 0, L.x + L.w, 0);
@@ -607,7 +632,8 @@ function drawLayer(ctx, L) {
   } else if (L.type === 'button') {
     const st = VT.BUTTONS[(S.tempButton && S.tempButton.layerId === L.id && S.tempButton.style) || L.style] || VT.BUTTONS.white;
     const fam = buttonFam(st.font);
-    if (fam) st.draw(ctx, { x: L.x, y: L.y, w: L.w, h: L.h }, L.text || BUTTON_TEXT, fam);
+    const text = langOf() === 'ko' ? L.text || BUTTON_TEXT : LANGS[langOf()].button;
+    if (fam) st.draw(ctx, { x: L.x, y: L.y, w: L.w, h: L.h }, text, fam);
   } else if (L.type === 'text') {
     const trying = S.tempFont && S.tempFont.layerId === L.id;
     if (L.useImage && L.src && !trying) {
@@ -693,14 +719,25 @@ function drawOver(ctx) {
 }
 
 // 「확률형 아이템 포함」 문구: 영상 영역 오른쪽 아래, 영상 시작 후 NOTICE.sec초 동안만 (마지막 fade초에 사라짐)
-const NOTICE = { text: '확률형 아이템이 포함되어 있을 수 있습니다.', sec: 3, fade: 0.3, size: 23, right: 38, bottom: 30 };
+// 글자는 언어별(LANGS[].notice)
+const NOTICE = { sec: 3, fade: 0.3, size: 23, right: 38, bottom: 30 };
 
-// 문구만 투명한 판에 그린다. 꺼져 있거나 글꼴을 아직 못 불러왔으면 false
+// 처음 몇 초만 보이는 것(안내 문구·연령 표기)을 투명한 판에 그린다. 그릴 게 없거나 글꼴을 아직 못 불러왔으면 false
 function drawNotice(ctx) {
   const V = videoLayer();
-  if (!S.tpl.notice?.on || !V) return false;
-  const fam = buttonFam('noto');
-  if (!fam) return false;
+  if (!V) return false;
+  const lang = LANGS[langOf()];
+  const text = !!S.tpl.notice?.on;
+  const fam = text ? buttonFam('noto') : '';
+  if (text && !fam) return false;
+  const badge = lang.rating && S.tpl.rating?.on ? S.images[RATING.src] : null;
+  if (badge) {
+    ctx.save();
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(badge, V.x + RATING.left, V.y + RATING.top, RATING.size, RATING.size);
+    ctx.restore();
+  }
+  if (!text) return !!badge;
   ctx.save();
   ctx.font = `700 ${NOTICE.size}px ${fam}`;
   ctx.textAlign = 'right';
@@ -710,7 +747,7 @@ function drawNotice(ctx) {
   ctx.shadowBlur = 6;
   ctx.shadowOffsetY = 1;
   ctx.fillStyle = '#FFFFFF';
-  ctx.fillText(NOTICE.text, V.x + V.w - NOTICE.right, V.y + V.h - NOTICE.bottom);
+  ctx.fillText(lang.notice, V.x + V.w - NOTICE.right, V.y + V.h - NOTICE.bottom);
   ctx.restore();
   return true;
 }
