@@ -347,6 +347,14 @@ function bindTrim() {
     updateTrimUI();
   });
   vid.addEventListener('loadedmetadata', () => { updateTrimUI(); vid.currentTime = trimVals().s; });
+  // 영상이 준비되거나 못 열면 미리보기를 다시 그려 안내 칸과 영상을 바꿔 보여 준다
+  vid.addEventListener('loadeddata', () => { S.video.error = ''; redraw(); });
+  vid.addEventListener('error', () => {
+    if (!vid.currentSrc) return;
+    if (!S.video.error) S.video.error = '이 브라우저에서 미리보기가 안 되는 형식이에요';
+    updateVideoInfo();
+    redraw();
+  });
   vid.addEventListener('play', updatePlay);
   vid.addEventListener('pause', updatePlay);
   $('#btnPlay').addEventListener('click', () => { if (!vid.currentSrc) return; if (vid.paused) vid.play().catch(() => {}); else vid.pause(); });

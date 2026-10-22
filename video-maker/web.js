@@ -50,6 +50,7 @@ loadVideoFile = function (file) {
   vid.src = url;
   vid.play().catch(() => {});
   updateVideoInfo();
+  redraw();
   vid.addEventListener('loadedmetadata', () => {
     S.video.info = { duration: vid.duration, width: vid.videoWidth, height: vid.videoHeight, fpsValue: WEB_FPS, audio: true };
     S.video.uploading = false;
