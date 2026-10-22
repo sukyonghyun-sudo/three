@@ -511,9 +511,11 @@ function buildLang() {
       },
     }, L.label));
   }
-  // 언어마다 다른 안내 문구, 연령 표기는 중국어일 때만
-  $('#noticeHint').textContent = `「${LANGS[langOf()].notice}」 처음 3초`;
-  $('#ratingRow').hidden = !LANGS[langOf()].rating;
+  // 확률형 안내 문구는 한국어일 때만, 연령 표기는 중국어일 때만
+  const lang = LANGS[langOf()];
+  $('#noticeRow').hidden = !lang.notice;
+  if (lang.notice) $('#noticeHint').textContent = `「${lang.notice}」 처음 3초`;
+  $('#ratingRow').hidden = !lang.rating;
 }
 
 // ---------------------------------------------------------------- 시작

@@ -68,9 +68,10 @@ const TYPE_LABEL = { image: '이미지', text: '글자', video: '영상', shape:
 const BUTTON_TEXT = '플레이 하러가기';
 
 // 영상 언어: 배치는 같고 글씨만 바뀐다. 그림 레이어는 srcByLang[언어]의 그림·자리로, 버튼·안내 문구는 아래 글자로
+// (notice가 없는 언어는 확률형 안내 문구를 넣지 않는다)
 const LANGS = {
   ko: { label: '한국어', button: BUTTON_TEXT, notice: '확률형 아이템이 포함되어 있을 수 있습니다.' },
-  zh: { label: '中文', button: '前往遊玩', notice: '可能含有機率型商品。', rating: true },
+  zh: { label: '中文', button: '前往遊玩', rating: true },
 };
 const langOf = () => (LANGS[S.tpl?.lang] ? S.tpl.lang : 'ko');
 
@@ -81,7 +82,7 @@ function imageOf(L) {
 }
 
 // 연령 표기 배지 (대만 「輔15級」, 중국어일 때): 영상 왼쪽 위, 안내 문구와 같이 처음 NOTICE.sec초 동안만
-const RATING = { src: 'assets/rating/tw_15.png', size: 48, left: 24, top: 24 };
+const RATING = { src: 'assets/rating/tw_15.png', size: 58, left: 24, top: 24 };
 
 // ---------------------------------------------------------------- 상태
 
@@ -727,7 +728,7 @@ function drawNotice(ctx) {
   const V = videoLayer();
   if (!V) return false;
   const lang = LANGS[langOf()];
-  const text = !!S.tpl.notice?.on;
+  const text = !!(lang.notice && S.tpl.notice?.on);
   const fam = text ? buttonFam('noto') : '';
   if (text && !fam) return false;
   const badge = lang.rating && S.tpl.rating?.on ? S.images[RATING.src] : null;
