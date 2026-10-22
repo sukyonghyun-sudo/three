@@ -30,7 +30,6 @@ function applyRemotePrefs(tpl) {
     if (!p) return;
     if (typeof p.gameName === 'string') tpl.gameName = p.gameName;
     if (p.crf) tpl.render.crf = p.crf;
-    if (typeof p.notice === 'boolean') tpl.notice = { on: p.notice };
     if (typeof p.mute === 'boolean') tpl.render.mute = p.mute;
     if (LANGS[p.lang]) tpl.lang = p.lang;
     if (typeof p.rating === 'boolean') tpl.rating = { on: p.rating };
@@ -506,6 +505,11 @@ function buildLang() {
       onclick: () => {
         if (id === langOf()) return;
         S.tpl.lang = id;
+        // 안내 문구가 있는 언어(한국어)로 오면 문구는 다시 켠 상태로
+        if (LANGS[id].notice) {
+          S.tpl.notice = { on: true };
+          $('#noticeOn').checked = true;
+        }
         changed();
         buildLang();
       },
@@ -514,6 +518,7 @@ function buildLang() {
   // 확률형 안내 문구는 한국어일 때만, 연령 표기는 중국어일 때만
   const lang = LANGS[langOf()];
   $('#noticeRow').hidden = !lang.notice;
+  $('#optTitle').textContent = lang.notice ? '화질 · 문구 · 소리' : '화질 · 연령 표기 · 소리';
   if (lang.notice) $('#noticeHint').textContent = `「${lang.notice}」 처음 3초`;
   $('#ratingRow').hidden = !lang.rating;
 }
@@ -568,6 +573,7 @@ async function simpleInit() {
   const tpl = await api('/api/template');
   lastSynced = JSON.stringify(tpl);
   if (REMOTE) applyRemotePrefs(tpl);
+  tpl.notice = { on: true };   // 확률형 안내 문구는 열 때마다 켠 상태로 시작
   await setTemplate(tpl, false);
   showShareAddress();
   pushHistory();

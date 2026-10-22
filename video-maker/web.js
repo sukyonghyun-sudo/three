@@ -21,7 +21,6 @@ api = async function (url, body) {
       if (p) {
         if (typeof p.gameName === 'string') tpl.gameName = p.gameName;
         if (p.crf) tpl.render.crf = p.crf;
-        if (typeof p.notice === 'boolean') tpl.notice = { on: p.notice };
         if (typeof p.mute === 'boolean') tpl.render.mute = p.mute;
         if (typeof p.lang === 'string') tpl.lang = p.lang;
         if (typeof p.rating === 'boolean') tpl.rating = { on: p.rating };
