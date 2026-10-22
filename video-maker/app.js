@@ -693,7 +693,7 @@ function drawOver(ctx) {
 }
 
 // 「확률형 아이템 포함」 문구: 영상 영역 오른쪽 아래, 영상 시작 후 NOTICE.sec초 동안만 (마지막 fade초에 사라짐)
-const NOTICE = { text: '확률형 아이템 포함', sec: 3, fade: 0.3, size: 23, right: 38, bottom: 30 };
+const NOTICE = { text: '확률형 아이템이 포함되어 있을 수 있습니다.', sec: 3, fade: 0.3, size: 23, right: 38, bottom: 30 };
 
 // 문구만 투명한 판에 그린다. 꺼져 있거나 글꼴을 아직 못 불러왔으면 false
 function drawNotice(ctx) {

@@ -10,7 +10,8 @@
 window.VT_WEB = true;
 const WEB_KEY = 'vt_web_prefs_v1';
 const WEB_FPS = 30;
-const WEB_BITRATE = { 23: 8e6, 18: 16e6, 14: 28e6 };   // 화질(CRF 값)별 비트레이트
+const WEB_BITRATE = { 23: 6e6, 18: 10e6, 14: 16e6 };   // 화질(CRF 값)별 비트레이트 (영상 자리가 1208×680이라 이 정도면 충분)
+const LONG_SEC = 150;   // 이보다 긴 구간은 메모리에 쌓지 않고 고른 파일에 바로 쓴다
 
 api = async function (url, body) {
   if (url === '/api/template' && body === undefined) {
@@ -122,14 +123,24 @@ async function convertInBrowser(file, url) {
     updateVideoInfo();
     redraw();
   };
+  // 브라우저 안 변환은 원본 길이의 5배쯤 걸리고 파일 전체를 메모리에 올린다
+  if (file.size > 1.6e9) {
+    Object.assign(v, { preparing: false, error: '영상이 너무 커서 브라우저에서 바꿀 수 없어요' });
+    showPcHelp();
+    updateVideoInfo();
+    redraw();
+    return;
+  }
+  const estMin = Math.ceil(((v.info?.duration || 0) * 5) / 60);
+  const convLabel = '브라우저에서 볼 수 있게 바꾸는 중' + (estMin >= 2 ? ` (약 ${estMin}분)` : '');
   Object.assign(v, { preparing: true, error: '' });
   show('변환 도구 준비 중 (처음 한 번)', 0);
   let ff;
   try {
     ff = await getFFmpeg((p) => show('변환 도구 내려받는 중 (처음 한 번)', p));
     if (S.video !== v) return;
-    show('브라우저에서 볼 수 있게 바꾸는 중', 0);
-    const onProg = ({ progress }) => show('브라우저에서 볼 수 있게 바꾸는 중', clamp(progress || 0, 0, 0.99));
+    show(convLabel, 0);
+    const onProg = ({ progress }) => show(convLabel, clamp(progress || 0, 0, 0.99));
     ff.on('progress', onProg);
     const inName = 'in' + ((file.name.match(/\.[A-Za-z0-9]+$/) || ['.mov'])[0]).toLowerCase();
     await ff.writeFile(inName, new Uint8Array(await file.arrayBuffer()));
@@ -204,7 +215,7 @@ function webSafeName(s) {
 
 // 영상 자리에 맞춤 방식대로 그린다 (테두리·둥근 모서리는 위에 덮는 그림이 처리)
 function drawVideoFit(g, src, V) {
-  const vw = src.videoWidth, vh = src.videoHeight;
+  const vw = src.videoWidth || src.displayWidth, vh = src.videoHeight || src.displayHeight;   // 영상 요소 또는 VideoFrame
   if (!vw || !vh) return;
   if (V.fit === 'stretch') { g.drawImage(src, V.x, V.y, V.w, V.h); return; }
   if (V.fit === 'contain') {
@@ -239,6 +250,8 @@ async function pickConfig(Enc, list) {
   return null;
 }
 
+let renderSrc = null;   // 만드는 동안 페이지에 붙여 두는 재생용 영상
+
 startRender = async function () {
   if (S.rendering) return;
   if (!S.video.file) { toast('먼저 영상을 넣어 주세요'); return; }
@@ -248,10 +261,26 @@ startRender = async function () {
     setRenderUI('error', 0, { error: '이 브라우저는 영상 만들기를 지원하지 않아요. 크롬이나 엣지 최신 버전으로 열어 주세요.' });
     return;
   }
+  // 긴 영상: 만든 영상이 1GB를 넘을 수 있어 메모리에 쌓지 않고, 저장할 파일을 먼저 골라 거기에 바로 쓴다
+  // (버튼을 누른 직후여야 저장 창을 띄울 수 있어서 맨 먼저 묻는다)
+  const V0 = videoLayer(), dur0 = S.video.info?.duration || vid.duration || 0;
+  const len0 = V0.trimDuration > 0 ? Math.min(V0.trimDuration, dur0 - (V0.trimStart || 0)) : dur0 - (V0.trimStart || 0);
+  let handle = null;
+  if (len0 > LONG_SEC && window.showSaveFilePicker) {
+    try {
+      handle = await window.showSaveFilePicker({
+        suggestedName: `${webSafeName(S.tpl.gameName)}_${webStamp()}.mp4`,
+        types: [{ description: 'MP4 영상', accept: { 'video/mp4': ['.mp4'] } }],
+      });
+    } catch (err) {
+      if (err.name === 'AbortError') return;   // 저장할 곳을 고르지 않음
+      handle = null;
+    }
+  }
   S.rendering = true;
   $('#btnRender').disabled = true;
   setRenderUI('running', 0);
-  let encErr = null;
+  let encErr = null, writable = null, onVis = null;
   try {
     await S.facesReady;
     S.tempFont = null;
@@ -276,6 +305,10 @@ startRender = async function () {
     src.muted = true;
     src.playsInline = true;
     src.preload = 'auto';
+    // 페이지에 붙여 둬야(보이지 않게) 크롬이 장면 신호를 계속 보낸다 — 떼어 두면 몇 초 뒤 신호가 끊긴다
+    src.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1';
+    document.body.append(src);
+    renderSrc = src;
     src.src = S.video.url;
     await new Promise((res, rej) => { src.onloadeddata = res; src.onerror = () => rej(new Error('영상을 읽지 못했어요')); });
     const dur = src.duration;
@@ -291,11 +324,12 @@ startRender = async function () {
     const acfg = audio && 'AudioEncoder' in window ? await pickConfig(AudioEncoder, ['mp4a.40.2', 'opus']
       .map((codec) => ({ codec, sampleRate: audio.sr, numberOfChannels: audio.ch, bitrate: 192000 }))) : null;
 
+    if (handle) writable = await handle.createWritable();
     const muxer = new Mp4Muxer.Muxer({
-      target: new Mp4Muxer.ArrayBufferTarget(),
+      target: writable ? new Mp4Muxer.FileSystemWritableFileStreamTarget(writable) : new Mp4Muxer.ArrayBufferTarget(),
       video: { codec: 'avc', width: W, height: H },
       audio: acfg ? { codec: acfg.codec === 'opus' ? 'opus' : 'aac', sampleRate: acfg.sampleRate, numberOfChannels: acfg.numberOfChannels } : undefined,
-      fastStart: 'in-memory',
+      fastStart: writable ? false : 'in-memory',
       firstTimestampBehavior: 'offset',
     });
     const venc = new VideoEncoder({ output: (c, m) => muxer.addVideoChunk(c, m), error: (er) => { encErr = er; } });
@@ -318,10 +352,10 @@ startRender = async function () {
     }
 
     // 화면: 고른 구간을 실제 속도로 재생하며, 30fps 칸마다 그때의 장면을 합성해 넣는다
-    const compose = () => {
+    const compose = (pic = src) => {
       g.fillStyle = '#000';
       g.fillRect(0, 0, W, H);
-      drawVideoFit(g, src, V);
+      drawVideoFit(g, pic, V);
       g.drawImage(over, 0, 0);
     };
     let k = 0;
@@ -345,23 +379,70 @@ startRender = async function () {
     await new Promise((res) => { src.onseeked = res; });
     compose();
     await new Promise((res, rej) => {
-      // 끝까지 재생되면 다음 장면 신호가 오지 않으므로 끝남 신호로도 마친다
-      // 끝나면 남은 장면 신호는 무시한다 (늦게 온 진행률이 「완료」를 덮지 않게)
-      let finished = false, cb = 0;
-      const finish = () => { if (finished) return; finished = true; src.cancelVideoFrameCallback(cb); res(); };
-      src.onended = finish;
-      const step = (now, meta) => {
+      // 장면 신호(requestVideoFrameCallback)가 오면 그 장면의 정확한 시각으로 찍는다.
+      // 신호가 끊기면(0.3초 넘게 없으면) 그동안만 타이머가 지금 재생 위치로 대신 찍는다.
+      // 끝까지 재생되면 신호가 더 오지 않으므로 끝남 신호로도 마치고, 끝난 뒤 온 신호는 무시한다.
+      let finished = false, cb = 0, waitEnc = false;
+      let lastFrame = performance.now(), rvfcSeen = false;   // 장면 신호가 한 번도 안 왔으면 처음부터 타이머로 찍는다
+      const finish = () => {
         if (finished) return;
-        if (encErr) { finished = true; rej(encErr); return; }
-        const t = meta ? meta.mediaTime : src.currentTime;
-        compose();
-        while (k < total && s + k / WEB_FPS <= t + 0.001) emit();
-        setRenderUI('running', (k / total) * 0.97);
-        if (k >= total || t >= e - 0.001 || src.ended) finish();
-        else cb = src.requestVideoFrameCallback(step);
+        finished = true;
+        src.cancelVideoFrameCallback(cb);
+        clearInterval(guard);
+        res();
       };
-      cb = src.requestVideoFrameCallback(step);
-      src.play().catch(rej);
+      const resume = () => {
+        if (finished || waitEnc || document.hidden) return;
+        lastFrame = performance.now();
+        src.play().catch(() => {});
+      };
+      // 다른 탭으로 가면 장면이 안 들어오므로 멈췄다가, 돌아오면 이어서 만든다
+      onVis = () => {
+        if (document.hidden) {
+          src.pause();
+          setRenderUI('running', (k / total) * 0.97, { note: '이 탭으로 돌아오면 이어서 만들어요' });
+        } else resume();
+      };
+      document.addEventListener('visibilitychange', onVis);
+      src.onended = finish;
+      const step = (t, pic) => {
+        if (finished) return;
+        if (encErr) { finished = true; clearInterval(guard); rej(encErr); return; }
+        // 이 장면보다 앞선 칸들은 직전 장면으로 채우고(그 시각에 실제로 보이던 장면), 그다음 새 장면을 그려 둔다
+        while (k < total && s + k / WEB_FPS < t - 0.001) emit();
+        compose(pic);
+        const left = Math.max(0, e - t);
+        setRenderUI('running', (k / total) * 0.97, { note: left >= 60 ? `약 ${Math.ceil(left / 60)}분 남음` : '' });
+        if (k >= total || t >= e - 0.001 || src.ended) { finish(); return; }
+        // 인코더가 밀리면(이 PC가 실시간보다 느리면) 재생을 잠깐 멈추고 따라잡게 한다 — 메모리가 끝없이 쌓이지 않게
+        if (venc.encodeQueueSize > 30 && !waitEnc) {
+          waitEnc = true;
+          src.pause();
+          const drain = () => {
+            if (venc.encodeQueueSize > 8 && !encErr) return;
+            venc.removeEventListener('dequeue', drain);
+            waitEnc = false;
+            resume();
+          };
+          venc.addEventListener('dequeue', drain);
+        }
+      };
+      const onFrame = (now, meta) => {
+        if (finished) return;
+        lastFrame = performance.now();
+        rvfcSeen = true;
+        step(meta.mediaTime);
+        if (!finished) cb = src.requestVideoFrameCallback(onFrame);
+      };
+      const guard = setInterval(() => {
+        if (finished || waitEnc || src.paused || (rvfcSeen && performance.now() - lastFrame < 300)) return;
+        // 화면에 그려지지 않는 동안은 지금 장면을 VideoFrame으로 뽑아 그 장면의 정확한 시각으로 찍는다
+        let vf = null;
+        try { vf = new VideoFrame(src); } catch (er) { vf = null; }
+        if (vf) { step(vf.timestamp / 1e6, vf); vf.close(); } else step(src.currentTime);
+      }, 15);
+      cb = src.requestVideoFrameCallback(onFrame);
+      if (document.hidden) onVis(); else src.play().catch(rej);
     });
     src.pause();
     while (k < total) emit();   // 끝에 모자란 칸은 마지막 장면으로
@@ -369,16 +450,32 @@ startRender = async function () {
     venc.close();
     if (encErr) throw encErr;
     muxer.finalize();
-    const blob = new Blob([muxer.target.buffer], { type: 'video/mp4' });
-    const output = `${webSafeName(S.tpl.gameName)}_${webStamp()}.mp4`;
     if (S.lastResult?.url) URL.revokeObjectURL(S.lastResult.url);
-    S.lastResult = { url: URL.createObjectURL(blob), name: output };
-    h('a', { href: S.lastResult.url, download: output }).click();   // 다운로드 폴더에 저장
-    setRenderUI('done', 1, { output, url: S.lastResult.url });
-    toast('다운로드 폴더에 저장했어요: ' + output, 4000);
+    if (writable) {
+      // 고른 파일에 이미 다 써졌다
+      await writable.close();
+      writable = null;
+      const file = await handle.getFile();
+      S.lastResult = { url: URL.createObjectURL(file), name: handle.name };
+      setRenderUI('done', 1, { output: handle.name, url: S.lastResult.url, saved: true });
+      toast('저장했어요: ' + handle.name, 4000);
+    } else {
+      const blob = new Blob([muxer.target.buffer], { type: 'video/mp4' });
+      const output = `${webSafeName(S.tpl.gameName)}_${webStamp()}.mp4`;
+      S.lastResult = { url: URL.createObjectURL(blob), name: output };
+      h('a', { href: S.lastResult.url, download: output }).click();   // 다운로드 폴더에 저장
+      setRenderUI('done', 1, { output, url: S.lastResult.url });
+      toast('다운로드 폴더에 저장했어요: ' + output, 4000);
+    }
   } catch (err) {
-    setRenderUI('error', 0, { error: err.message || String(err) });
+    const msg = /allocation|memory|Array buffer/i.test(String(err))
+      ? '영상이 너무 길어 메모리가 모자라요. 크롬·엣지 최신 버전에서 다시 하거나 구간을 나눠 주세요'
+      : err.message || String(err);
+    setRenderUI('error', 0, { error: msg });
+    if (writable) { try { await writable.abort(); } catch (er) { /* 무시 */ } }
   } finally {
+    if (onVis) document.removeEventListener('visibilitychange', onVis);
+    if (renderSrc) { renderSrc.pause(); renderSrc.removeAttribute('src'); renderSrc.load(); renderSrc.remove(); renderSrc = null; }
     S.rendering = false;
     $('#btnRender').disabled = false;
   }

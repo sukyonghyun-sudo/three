@@ -454,13 +454,14 @@ setRenderUI = function (state, progress = 0, info = {}) {
   $('#renderError').hidden = state !== 'error';
   fill.style.width = state === 'running' ? Math.round(progress * 100) + '%' : '0';
   if (state === 'waiting') label.textContent = '영상 준비가 끝나면 시작해요…';
-  else if (state === 'running') label.textContent = `만드는 중… ${Math.round(progress * 100)}%`;
+  else if (state === 'running') label.textContent = `만드는 중… ${Math.round(progress * 100)}%${info.note ? ' · ' + info.note : ''}`;
   else label.textContent = '영상 만들기 ✨';
   if (state === 'running') $('#result').hidden = true;
   if (state === 'done') {
     $('#result').hidden = false;
     $('#resultFile').textContent = info.output;
     $('#btnView').onclick = () => showResult(info.output, info.url);
+    $('#btnFolder').hidden = !!info.saved;   // 웹에서 직접 고른 파일에 저장했으면 다시 받을 필요 없음
     if (info.url) {
       // 웹 버전: 파일은 다운로드 폴더로
       $('#btnFolder').textContent = '다시 받기';
