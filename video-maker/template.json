@@ -9,7 +9,7 @@
  "gameName": "",
  "lastVideo": null,
  "render": {
-  "crf": 18,
+  "crf": 14,
   "preset": "medium",
   "mute": false
  },

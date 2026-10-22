@@ -755,9 +755,15 @@ function placeVideo() {
   if (!V) return;
   vid.style.objectFit = { cover: 'cover', contain: 'contain', stretch: 'fill' }[V.fit] || 'cover';
   vid.style.background = V.bgColor || '#000';
-  const has = !!vid.currentSrc && !S.video.error;
+  const has = !!vid.currentSrc && !S.video.error && !S.video.preparing;
   vid.style.visibility = has ? 'visible' : 'hidden';
-  $('#placeholder').style.display = V.visible && !has ? 'flex' : 'none';
+  const ph = $('#placeholder');
+  ph.style.display = V.visible && !has ? 'flex' : 'none';
+  // 안내 문구: 미리보기 사본을 만드는 중이면 진행률, 못 여는 형식이면 그 안내
+  if (!ph.dataset.idle) ph.dataset.idle = ph.innerHTML;
+  if (S.video.preparing) ph.textContent = `미리보기 준비 중… ${Math.round((S.video.prepProgress || 0) * 100)}%`;
+  else if (S.video.error && S.video.name) ph.textContent = S.video.error;
+  else ph.innerHTML = ph.dataset.idle;
 }
 
 function fitStage() {
@@ -1492,6 +1498,7 @@ function loadVideoFile(file) {
     S.video.info = j.info;
     S.tpl.lastVideo = { id: j.id, name: file.name };
     saveSoon();
+    if (j.info.needsPreview) usePreviewCopy(j.id);
     updateVideoInfo();
     if (selLayer()?.type === 'video') buildProps();
     if (S.renderQueued) startRender();
@@ -1504,11 +1511,45 @@ async function restoreVideo(lv) {
   try {
     const info = await api(`/api/video/${lv.id}/info`);
     S.video = { id: lv.id, name: lv.name, info, uploading: false, progress: 1, url: null, error: '' };
-    vid.src = `/api/video/${lv.id}`;
+    if (info.needsPreview) usePreviewCopy(lv.id);
+    else vid.src = `/api/video/${lv.id}`;
     updateVideoInfo();
   } catch (e) {
     S.tpl.lastVideo = null;
   }
+}
+
+// 브라우저가 못 여는 영상(HEVC 4:4:4 .mov 등): 서버가 만드는 미리보기용 사본이 준비되면 그걸로 보여 준다.
+// 최종 영상은 서버가 원본으로 만든다.
+async function usePreviewCopy(id) {
+  vid.removeAttribute('src');
+  vid.load();
+  S.video.preparing = true;
+  S.video.prepProgress = 0;
+  redraw();
+  for (;;) {
+    if (S.video.id !== id) return;   // 그사이 다른 영상을 넣었으면 그만
+    let info;
+    try { info = await api(`/api/video/${id}/info`); } catch (e) { info = null; }
+    const pv = info?.preview || {};
+    if (pv.state === 'done') break;
+    if (pv.state === 'error') {
+      S.video.preparing = false;
+      S.video.error = '미리보기를 만들지 못했어요 (영상 만들기는 됩니다)';
+      updateVideoInfo();
+      redraw();
+      return;
+    }
+    S.video.prepProgress = pv.progress || 0;
+    updateVideoInfo();
+    redraw();
+    await sleep(400);
+  }
+  S.video.preparing = false;
+  S.video.prepProgress = 1;
+  vid.src = `/api/video/${id}/preview`;
+  vid.play().catch(() => {});
+  updateVideoInfo();
 }
 
 function togglePlay() {

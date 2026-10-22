@@ -54,6 +54,21 @@ loadVideoFile = function (file) {
   vid.addEventListener('loadedmetadata', () => {
     S.video.info = { duration: vid.duration, width: vid.videoWidth, height: vid.videoHeight, fpsValue: WEB_FPS, audio: true };
     S.video.uploading = false;
+    // 소리·길이만 읽히고 화면은 못 그리는 형식 (HEVC 4:4:4·ProRes .mov 등). PC·브라우저마다 다르다
+    const cannot = () => {
+      if (S.video.url !== url) return;
+      vid.pause();
+      S.video.error = '이 영상 형식은 이 브라우저가 화면을 못 그려요. mp4(H.264)로 바꿔 넣거나 PC 버전을 써 주세요';
+      updateVideoInfo();
+      redraw();
+    };
+    if (!vid.videoWidth) cannot();
+    else {
+      // 크기는 읽혀도 실제 장면이 하나도 안 나오면 못 그리는 것
+      let got = false;
+      vid.requestVideoFrameCallback(() => { got = true; });
+      setTimeout(() => { if (!got && !vid.paused) cannot(); }, 2500);
+    }
     updateVideoInfo();
   }, { once: true });
   vid.addEventListener('error', () => {
@@ -125,6 +140,7 @@ async function pickConfig(Enc, list) {
 startRender = async function () {
   if (S.rendering) return;
   if (!S.video.file) { toast('먼저 영상을 넣어 주세요'); return; }
+  if (S.video.error) { toast(S.video.error, 5000); return; }
   if (!('VideoEncoder' in window) || !window.Mp4Muxer) {
     setRenderUI('error', 0, { error: '이 브라우저는 영상 만들기를 지원하지 않아요. 크롬이나 엣지 최신 버전으로 열어 주세요.' });
     return;

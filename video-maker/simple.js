@@ -371,6 +371,7 @@ updateVideoInfo = function () {
   const sub = [];
   if (v.info) sub.push(`${v.info.width}×${v.info.height}`, fmt(v.info.duration));
   if (v.uploading) sub.push(`준비 중 ${Math.round(v.progress * 100)}%`);
+  if (v.preparing) sub.push(`미리보기 준비 중 ${Math.round((v.prepProgress || 0) * 100)}%`);
   if (v.error) sub.push(v.error);
   sub.push('눌러서 다른 영상으로 바꾸기');
   $('#dropSub').textContent = sub.join(' · ');
