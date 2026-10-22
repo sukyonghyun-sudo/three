@@ -21,6 +21,7 @@ api = async function (url, body) {
         if (typeof p.gameName === 'string') tpl.gameName = p.gameName;
         if (p.crf) tpl.render.crf = p.crf;
         if (typeof p.notice === 'boolean') tpl.notice = { on: p.notice };
+        if (typeof p.mute === 'boolean') tpl.render.mute = p.mute;
       }
     } catch (e) { /* 저장소를 못 쓰면 기본값 */ }
     tpl.lastVideo = null;
@@ -33,7 +34,7 @@ api = async function (url, body) {
 persist = function (body) {
   try {
     const t = JSON.parse(body);
-    localStorage.setItem(WEB_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on }));
+    localStorage.setItem(WEB_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on, mute: !!t.render?.mute }));
   } catch (e) { /* 저장소를 못 써도 계속 */ }
 };
 

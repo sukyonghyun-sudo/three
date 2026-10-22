@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>송나정 전용 동영상 생성기</title>
-<link rel="stylesheet" href="simple.css?v=2602ad43">
+<link rel="stylesheet" href="simple.css?v=7c572f03">
 </head>
 <body data-app="simple">
 
@@ -90,12 +90,17 @@
       </div>
 
       <div class="card step">
-        <div class="step-h"><span class="num">4</span><b>화질 · 문구</b></div>
+        <div class="step-h"><span class="num">4</span><b>화질 · 문구 · 소리</b></div>
         <div id="quality" class="pills"></div>
         <label class="check">
           <input type="checkbox" id="noticeOn" checked>
           <span class="box"></span>
           <span class="txt"><b>확률형 아이템 포함 문구</b><small>영상 오른쪽 아래, 처음 3초 동안만</small></span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="muteOut">
+          <span class="box"></span>
+          <span class="txt"><b>만든 영상에서 소리 빼기</b><small>체크하면 원본 영상 소리 없이 만들어요</small></span>
         </label>
       </div>
 
@@ -128,7 +133,7 @@
 <script src="app.js?v=cabfcf73"></script>
 <script src="vendor/mp4-muxer.min.js?v=e5924873"></script>
 <script src="vendor/ffmpeg/ffmpeg.js?v=ee0b63f2"></script>
-<script src="web.js?v=4694122b"></script>
-<script src="simple.js?v=2f11808a"></script>
+<script src="web.js?v=9ba1a494"></script>
+<script src="simple.js?v=27d7337b"></script>
 </body>
 </html>

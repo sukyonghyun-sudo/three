@@ -18,7 +18,7 @@ if (REMOTE) {
   persist = function (body) {
     try {
       const t = JSON.parse(body);
-      localStorage.setItem(REMOTE_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on }));
+      localStorage.setItem(REMOTE_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on, mute: !!t.render?.mute }));
     } catch (e) { /* 저장소를 못 써도 계속 */ }
   };
   syncFromServer = async function () {};
@@ -31,6 +31,7 @@ function applyRemotePrefs(tpl) {
     if (typeof p.gameName === 'string') tpl.gameName = p.gameName;
     if (p.crf) tpl.render.crf = p.crf;
     if (typeof p.notice === 'boolean') tpl.notice = { on: p.notice };
+    if (typeof p.mute === 'boolean') tpl.render.mute = p.mute;
   } catch (e) { /* 기본값 */ }
 }
 
@@ -504,6 +505,7 @@ function noticeLoop() {
 
 function bindSimple() {
   $('#noticeOn').addEventListener('change', (e) => { S.tpl.notice = { on: e.target.checked }; changed(); });
+  $('#muteOut').addEventListener('change', (e) => { S.tpl.render.mute = e.target.checked; saveSoon(); });
   $('#gameName').addEventListener('input', (e) => { S.tpl.gameName = e.target.value; changed(); });
   $('#drop').addEventListener('click', () => $('#fileVideo').click());
   $('#fileVideo').addEventListener('change', (e) => { if (e.target.files[0]) loadVideoFile(e.target.files[0]); e.target.value = ''; });
@@ -544,6 +546,7 @@ async function simpleInit() {
   loadFaces();
   buildQuality();
   $('#noticeOn').checked = !!S.tpl.notice?.on;
+  $('#muteOut').checked = !!S.tpl.render.mute;
   noticeLoop();
   updatePlay();
   updateVideoInfo();

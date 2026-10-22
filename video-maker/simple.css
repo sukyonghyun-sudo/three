@@ -201,7 +201,7 @@ dialog#resultDlg::backdrop { background: rgba(80, 60, 120, .45); }
 }
 
 /* 체크박스 */
-.check { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 14px; background: #faf7ff; cursor: pointer; user-select: none; }
+.check { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 10px 12px; border-radius: 14px; background: #faf7ff; cursor: pointer; user-select: none; }
 .check input { position: absolute; opacity: 0; pointer-events: none; }
 .check .box { width: 22px; height: 22px; flex: none; border-radius: 7px; border: 2px solid #d4c6f3; background: #fff; display: flex; align-items: center; justify-content: center; transition: all .15s; }
 .check input:checked + .box { background: var(--grad); border-color: transparent; }
