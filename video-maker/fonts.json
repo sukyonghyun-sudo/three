@@ -1,0 +1,30 @@
+[
+ {
+  "id": "w0",
+  "family": "Noto Sans KR",
+  "familyEn": "Noto Sans KR",
+  "style": "Thin",
+  "full": "Noto Sans KR Thin",
+  "postscript": "",
+  "hangul": true,
+  "index": 0,
+  "collection": false,
+  "origin": "web",
+  "file": "NotoSansKR-VF.ttf",
+  "url": "fonts/NotoSansKR-VF.ttf"
+ },
+ {
+  "id": "w1",
+  "family": "메이플스토리",
+  "familyEn": "Maplestory",
+  "style": "Bold",
+  "full": "Maplestory Bold",
+  "postscript": "",
+  "hangul": true,
+  "index": 0,
+  "collection": false,
+  "origin": "web",
+  "file": "Maplestory Bold.ttf",
+  "url": "fonts/Maplestory-Bold.ttf"
+ }
+]

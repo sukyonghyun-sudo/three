@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>송나정 전용 동영상 생성기</title>
+<link rel="stylesheet" href="simple.css">
+</head>
+<body data-app="simple">
+
+<!-- 시작 인트로 -->
+<div id="intro">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div id="introFx"></div>
+  <div class="intro-card">
+    <div class="intro-top">최고다</div>
+    <div class="intro-name"><span>송</span><span>나</span><span>정</span></div>
+    <div class="intro-sub">- 전용 동영상 생성기 -</div>
+  </div>
+  <div class="intro-skip">누르면 바로 시작해요</div>
+</div>
+
+<div id="app">
+  <div class="bg-blob p1"></div><div class="bg-blob p2"></div><div class="bg-blob p3"></div>
+
+  <header>
+    <div class="mark">✦</div>
+    <div class="title">
+      <b>송나정 전용 동영상 생성기</b>
+      <span>영상 넣고, 이름 쓰고, 만들기만 누르면 끝!</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="left">
+      <div class="card preview">
+        <div id="stageArea">
+          <div id="stage">
+            <video id="vid" muted loop playsinline></video>
+            <div id="placeholder">오른쪽에서 영상을 넣어 주세요</div>
+            <canvas id="over" width="1920" height="1080"></canvas>
+            <canvas id="noticeCv" width="1920" height="1080"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card trim">
+        <div class="step-h"><span class="num">3</span><b>쓸 구간</b><em id="trimInfo">영상을 넣으면 고를 수 있어요</em></div>
+        <div class="trim-row">
+          <button id="btnPlay" class="round" title="재생 / 멈춤 (Space)" aria-label="재생"></button>
+          <div id="track">
+            <div id="trackSel"></div>
+            <div id="playhead"></div>
+            <div class="handle" id="hStart" data-k="s"><i></i><span></span></div>
+            <div class="handle" id="hEnd" data-k="e"><i></i><span></span></div>
+          </div>
+          <button id="btnTrimReset" class="ghost">전체</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="card step">
+        <div class="step-h"><span class="num">1</span><b>영상</b></div>
+        <button id="drop" class="drop">
+          <span class="drop-ic">♡</span>
+          <span id="dropText">영상을 끌어다 놓거나 눌러서 고르세요</span>
+          <small id="dropSub">mp4 · mov · webm</small>
+        </button>
+        <input type="file" id="fileVideo" accept="video/*,.mov,.mkv,.avi" hidden>
+      </div>
+
+      <div class="card step">
+        <div class="step-h"><span class="num">2</span><b>게임 이름</b></div>
+        <input id="gameName" type="text" placeholder="게임 이름을 입력하세요" spellcheck="false" autocomplete="off">
+        <div class="hint">길면 알아서 작아지고, 많이 길면 두 줄로 나뉘어요</div>
+      </div>
+
+      <div class="card step">
+        <div class="step-h"><span class="num">4</span><b>화질 · 문구</b></div>
+        <div id="quality" class="pills"></div>
+        <label class="check">
+          <input type="checkbox" id="noticeOn" checked>
+          <span class="box"></span>
+          <span class="txt"><b>확률형 아이템 포함 문구</b><small>영상 오른쪽 아래, 처음 3초 동안만</small></span>
+        </label>
+      </div>
+
+      <button id="btnRender" class="make"><span id="makeLabel">영상 만들기 ✨</span><i id="makeFill"></i></button>
+      <div id="result" class="card result" hidden>
+        <div class="result-h">완성됐어요! 🎉</div>
+        <div id="resultFile" class="file"></div>
+        <div class="result-btns">
+          <button id="btnView">바로 보기</button>
+          <button id="btnFolder" class="ghost">폴더 열기</button>
+        </div>
+      </div>
+      <div id="renderError" class="err" hidden></div>
+    </aside>
+  </main>
+</div>
+
+<dialog id="resultDlg">
+  <video id="resultVid" controls></video>
+  <div class="dlg-row">
+    <span id="resultName"></span>
+    <div class="spacer"></div>
+    <button id="resultReveal" class="ghost">폴더에서 보기</button>
+    <button id="resultClose">닫기</button>
+  </div>
+</dialog>
+
+<div id="toast" hidden></div>
+<script src="styles.js"></script>
+<script src="app.js"></script>
+<script src="vendor/mp4-muxer.min.js"></script>
+<script src="web.js"></script>
+<script src="simple.js"></script>
+</body>
+</html>

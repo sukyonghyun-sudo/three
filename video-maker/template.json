@@ -1,0 +1,223 @@
+{
+ "version": 1,
+ "designName": "개발 콘테스트 (PSD 5)",
+ "design": "contest5",
+ "canvas": {
+  "w": 1920,
+  "h": 1080
+ },
+ "gameName": "",
+ "lastVideo": null,
+ "render": {
+  "crf": 18,
+  "preset": "medium",
+  "mute": false
+ },
+ "layers": [
+  {
+   "id": "bg",
+   "name": "배경",
+   "type": "image",
+   "src": "assets/contest5/bg.jpg",
+   "x": 0,
+   "y": 0,
+   "w": 1920,
+   "h": 1080,
+   "visible": true,
+   "opacity": 1,
+   "locked": true,
+   "keepRatio": true
+  },
+  {
+   "id": "video",
+   "name": "영상 영역",
+   "type": "video",
+   "x": 674,
+   "y": 163,
+   "w": 1208,
+   "h": 680,
+   "visible": true,
+   "opacity": 1,
+   "locked": false,
+   "keepRatio": true,
+   "slant": 0,
+   "frameStyle": "glass",
+   "fit": "cover",
+   "bgColor": "#000000",
+   "radius": 0,
+   "border": {
+    "on": false,
+    "width": 3,
+    "color": "#FFFFFF"
+   },
+   "shadow": {
+    "on": false,
+    "blur": 30,
+    "offset": 10,
+    "color": "#030A26",
+    "opacity": 0.5
+   },
+   "trimStart": 0,
+   "trimDuration": 0
+  },
+  {
+   "id": "logo",
+   "name": "로고: WORLDS",
+   "type": "image",
+   "src": "assets/contest5/logo.png",
+   "x": 199,
+   "y": 141,
+   "w": 314,
+   "h": 135,
+   "visible": true,
+   "opacity": 1,
+   "locked": false,
+   "keepRatio": true,
+   "shiftWith": "game_name",
+   "shiftK": -0.5
+  },
+  {
+   "id": "title",
+   "name": "타이틀",
+   "type": "image",
+   "src": "assets/contest5/title.png",
+   "x": 84,
+   "y": 332,
+   "w": 538,
+   "h": 181,
+   "visible": true,
+   "opacity": 1,
+   "locked": false,
+   "keepRatio": true,
+   "shiftWith": "game_name",
+   "shiftK": -0.5
+  },
+  {
+   "id": "name_box",
+   "name": "게임 이름 박스",
+   "type": "image",
+   "src": "assets/contest5/name_box.png",
+   "x": 72,
+   "y": 566,
+   "w": 541,
+   "h": 108,
+   "visible": true,
+   "opacity": 1,
+   "locked": false,
+   "keepRatio": true,
+   "growWith": "game_name",
+   "shiftWith": "game_name",
+   "shiftK": -0.5
+  },
+  {
+   "id": "game_name",
+   "name": "게임 이름",
+   "type": "text",
+   "text": "게임 이름",
+   "bind": "gameName",
+   "x": 163,
+   "y": 581,
+   "w": 363,
+   "h": 76,
+   "visible": true,
+   "opacity": 1,
+   "locked": false,
+   "keepRatio": false,
+   "font": {
+    "family": "Noto Sans KR",
+    "style": "Thin",
+    "file": "NotoSansKR-VF.ttf"
+   },
+   "weight": 900,
+   "maxSize": 57,
+   "lineHeight": 1.22,
+   "letterSpacing": 15,
+   "align": "center",
+   "valign": "middle",
+   "wrap": false,
+   "balance2": true,
+   "quote": false,
+   "skew": 0,
+   "fill": [
+    "#FFFFFF",
+    "#B0DAFF"
+   ],
+   "stroke": {
+    "on": true,
+    "width": 2.5,
+    "color": "#00103C"
+   },
+   "depth": {
+    "on": false,
+    "size": 3,
+    "color": "#00103C"
+   },
+   "glow": {
+    "on": false,
+    "width": 2,
+    "color": "#FFFFFF",
+    "opacity": 0.6
+   },
+   "shadow": {
+    "on": true,
+    "blur": 6,
+    "offset": 3,
+    "color": "#000A30",
+    "opacity": 0.7
+   },
+   "grow2": 48,
+   "growSlope": 0.628,
+   "twoLineBelow": 0.6,
+   "shiftWith": "game_name",
+   "shiftK": -0.5
+  },
+  {
+   "id": "copy",
+   "name": "카피",
+   "type": "image",
+   "src": "assets/contest5/copy.png",
+   "x": 72,
+   "y": 713,
+   "w": 461,
+   "h": 86,
+   "visible": true,
+   "opacity": 1,
+   "locked": false,
+   "keepRatio": true,
+   "shiftWith": "game_name",
+   "shiftK": 0.5
+  },
+  {
+   "id": "copyright",
+   "name": "저작권 문구",
+   "type": "image",
+   "src": "assets/contest5/copyright.png",
+   "x": 1030,
+   "y": 1034,
+   "w": 488,
+   "h": 18,
+   "visible": true,
+   "opacity": 1,
+   "locked": false,
+   "keepRatio": true
+  },
+  {
+   "id": "play_button",
+   "name": "플레이 버튼",
+   "type": "button",
+   "style": "white",
+   "text": "플레이 하러가기",
+   "x": 1088,
+   "y": 902,
+   "w": 380,
+   "h": 84,
+   "visible": true,
+   "opacity": 1,
+   "locked": false,
+   "keepRatio": true
+  }
+ ],
+ "notice": {
+  "on": true
+ }
+}
