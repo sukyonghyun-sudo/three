@@ -761,7 +761,7 @@ function placeVideo() {
   ph.style.display = V.visible && !has ? 'flex' : 'none';
   // 안내 문구: 미리보기 사본을 만드는 중이면 진행률, 못 여는 형식이면 그 안내
   if (!ph.dataset.idle) ph.dataset.idle = ph.innerHTML;
-  if (S.video.preparing) ph.textContent = `미리보기 준비 중… ${Math.round((S.video.prepProgress || 0) * 100)}%`;
+  if (S.video.preparing) ph.textContent = `${S.video.prepLabel || '미리보기 준비 중'}… ${Math.round((S.video.prepProgress || 0) * 100)}%`;
   else if (S.video.error && S.video.name) ph.textContent = S.video.error;
   else ph.innerHTML = ph.dataset.idle;
 }

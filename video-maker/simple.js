@@ -10,6 +10,45 @@ const QUALITY = [
 ];
 const MIN_TRIM = 0.3;
 
+// 사내 다른 PC에서 이 프로그램(내 PC 버전)에 접속한 사람: 배치는 그대로 쓰고,
+// 게임 이름·화질·문구 설정은 각자 브라우저에 기억하며, 결과는 내려받기로 받는다
+const REMOTE = !window.VT_WEB && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+const REMOTE_KEY = 'vt_remote_prefs_v1';
+if (REMOTE) {
+  persist = function (body) {
+    try {
+      const t = JSON.parse(body);
+      localStorage.setItem(REMOTE_KEY, JSON.stringify({ gameName: t.gameName, crf: t.render?.crf, notice: t.notice?.on }));
+    } catch (e) { /* 저장소를 못 써도 계속 */ }
+  };
+  syncFromServer = async function () {};
+}
+
+function applyRemotePrefs(tpl) {
+  try {
+    const p = JSON.parse(localStorage.getItem(REMOTE_KEY) || 'null');
+    if (!p) return;
+    if (typeof p.gameName === 'string') tpl.gameName = p.gameName;
+    if (p.crf) tpl.render.crf = p.crf;
+    if (typeof p.notice === 'boolean') tpl.notice = { on: p.notice };
+  } catch (e) { /* 기본값 */ }
+}
+
+// 이 PC에서 켠 사람에게만: 사내 다른 사람이 접속할 주소
+async function showShareAddress() {
+  if (REMOTE || window.VT_WEB) return;
+  let share;
+  try { share = await api('/api/share'); } catch (e) { return; }
+  if (!share?.url || !share.host) return;
+  const box = $('#share');
+  if (!box) return;
+  $('#shareUrl').textContent = share.url;
+  $('#shareCopy').onclick = () => {
+    navigator.clipboard?.writeText(share.url).then(() => toast('주소를 복사했어요'), () => toast(share.url, 5000));
+  };
+  box.hidden = false;
+}
+
 // ---------------------------------------------------------------- 인트로: 컬러 아스키 댄서
 
 const BPM = 128;
@@ -361,6 +400,35 @@ function updatePlay() {
   $('#btnPlay').innerHTML = vid.paused ? ICON.play : ICON.pause;
 }
 
+// 미리보기 소리: 브라우저는 사용자가 화면을 한 번 누르기 전에는 소리 나는 자동 재생을 막으므로,
+// 처음엔 음소거로 재생하다가 아무 데나 누르거나 키를 누르면 (소리 켬 상태일 때) 소리를 켠다
+let soundOn = true, userActed = false;
+try { soundOn = localStorage.getItem('vt_sound') !== 'off'; } catch (e) { /* 기본 켬 */ }
+
+function applySound() {
+  vid.muted = !(soundOn && userActed);
+  const b = $('#btnSound');
+  b.innerHTML = soundOn ? ICON.sound : ICON.mute;
+  b.classList.toggle('off', !soundOn);
+  b.title = soundOn ? '미리보기 소리 끄기 (M)' : '미리보기 소리 켜기 (M)';
+}
+
+function bindSound() {
+  const acted = () => { if (!userActed) { userActed = true; applySound(); } };
+  window.addEventListener('pointerdown', acted, true);
+  window.addEventListener('keydown', acted, true);
+  window.addEventListener('drop', acted, true);
+  $('#btnSound').addEventListener('click', () => {
+    soundOn = !soundOn;
+    try { localStorage.setItem('vt_sound', soundOn ? 'on' : 'off'); } catch (e) { /* 무시 */ }
+    applySound();
+  });
+  window.addEventListener('keydown', (e) => {
+    if ((e.key === 'm' || e.key === 'M') && !e.target.matches('input, textarea')) $('#btnSound').click();
+  });
+  applySound();
+}
+
 // app.js가 영상 상태가 바뀔 때 부르는 함수를 이 화면에 맞게 바꾼다
 updateVideoInfo = function () {
   const v = S.video;
@@ -371,7 +439,7 @@ updateVideoInfo = function () {
   const sub = [];
   if (v.info) sub.push(`${v.info.width}×${v.info.height}`, fmt(v.info.duration));
   if (v.uploading) sub.push(`준비 중 ${Math.round(v.progress * 100)}%`);
-  if (v.preparing) sub.push(`미리보기 준비 중 ${Math.round((v.prepProgress || 0) * 100)}%`);
+  if (v.preparing) sub.push(`${v.prepLabel || '미리보기 준비 중'} ${Math.round((v.prepProgress || 0) * 100)}%`);
   if (v.error) sub.push(v.error);
   sub.push('눌러서 다른 영상으로 바꾸기');
   $('#dropSub').textContent = sub.join(' · ');
@@ -396,6 +464,12 @@ setRenderUI = function (state, progress = 0, info = {}) {
       // 웹 버전: 파일은 다운로드 폴더로
       $('#btnFolder').textContent = '다시 받기';
       $('#btnFolder').onclick = () => h('a', { href: info.url, download: info.output }).click();
+    } else if (REMOTE) {
+      // 사내 다른 PC에서 접속: 만든 영상은 내 PC에 있으니 내려받기로
+      const href = '/output/' + encodeURIComponent(info.output);
+      $('#btnFolder').textContent = '내려받기';
+      $('#btnFolder').onclick = () => h('a', { href, download: info.output }).click();
+      h('a', { href, download: info.output }).click();
     } else {
       $('#btnFolder').onclick = () => api('/api/open-output?file=' + encodeURIComponent(info.output), {});
     }
@@ -454,6 +528,7 @@ function bindSimple() {
   $('#resultClose').addEventListener('click', () => { $('#resultVid').pause(); $('#resultDlg').close(); });
   $('#resultDlg').addEventListener('close', () => $('#resultVid').pause());
   bindTrim();
+  bindSound();
   new ResizeObserver(fitStage).observe($('#stageArea'));
 }
 
@@ -462,7 +537,9 @@ async function simpleInit() {
   bindSimple();
   const tpl = await api('/api/template');
   lastSynced = JSON.stringify(tpl);
+  if (REMOTE) applyRemotePrefs(tpl);
   await setTemplate(tpl, false);
+  showShareAddress();
   pushHistory();
   loadFaces();
   buildQuality();

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>송나정 전용 동영상 생성기</title>
-<link rel="stylesheet" href="simple.css?v=c862d6f7">
+<link rel="stylesheet" href="simple.css?v=2602ad43">
 </head>
 <body data-app="simple">
 
@@ -29,6 +29,11 @@
       <b>송나정 전용 동영상 생성기</b>
       <span>영상 넣고, 이름 쓰고, 만들기만 누르면 끝!</span>
     </div>
+    <div id="share" class="share" hidden>
+      <span>사내 공유 주소</span>
+      <b id="shareUrl"></b>
+      <button id="shareCopy">복사</button>
+    </div>
   </header>
 
   <main>
@@ -48,6 +53,7 @@
         <div class="step-h"><span class="num">3</span><b>쓸 구간</b><em id="trimInfo">영상을 넣으면 고를 수 있어요</em></div>
         <div class="trim-row">
           <button id="btnPlay" class="round" title="재생 / 멈춤 (Space)" aria-label="재생"></button>
+          <button id="btnSound" class="round soft" title="미리보기 소리 켜기 / 끄기 (M)" aria-label="소리"></button>
           <div id="track">
             <div id="trackSel"></div>
             <div id="playhead"></div>
@@ -68,6 +74,13 @@
           <small id="dropSub">mp4 · mov · webm</small>
         </button>
         <input type="file" id="fileVideo" accept="video/*,.mov,.mkv,.avi" hidden>
+      </div>
+
+      <div id="pcHelp" class="card help" hidden>
+        <b>이 영상은 여기서 열 수 없어요</b>
+        <span>회사 안에서는 PC 버전 주소로 열면 어떤 영상이든 바로 돼요</span>
+        <a id="pcHelpLink" target="_blank" rel="noopener" hidden></a>
+        <small>또는 영상을 mp4(H.264)로 바꿔서 넣어 주세요</small>
       </div>
 
       <div class="card step">
@@ -112,9 +125,10 @@
 
 <div id="toast" hidden></div>
 <script src="styles.js?v=4e24cf4d"></script>
-<script src="app.js?v=4a09b73b"></script>
+<script src="app.js?v=cabfcf73"></script>
 <script src="vendor/mp4-muxer.min.js?v=e5924873"></script>
-<script src="web.js?v=d4c6a63c"></script>
-<script src="simple.js?v=c0a36d14"></script>
+<script src="vendor/ffmpeg/ffmpeg.js?v=ee0b63f2"></script>
+<script src="web.js?v=4694122b"></script>
+<script src="simple.js?v=2f11808a"></script>
 </body>
 </html>

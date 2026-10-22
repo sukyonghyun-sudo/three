@@ -42,6 +42,7 @@ restoreVideo = async function () {};
 
 loadVideoFile = function (file) {
   if (S.video.url) URL.revokeObjectURL(S.video.url);
+  if ($('#pcHelp')) $('#pcHelp').hidden = true;
   const url = URL.createObjectURL(file);
   S.video = { id: 'local', name: file.name, info: null, uploading: true, progress: 0, url, error: '', file };
   const V = videoLayer();
@@ -54,13 +55,11 @@ loadVideoFile = function (file) {
   vid.addEventListener('loadedmetadata', () => {
     S.video.info = { duration: vid.duration, width: vid.videoWidth, height: vid.videoHeight, fpsValue: WEB_FPS, audio: true };
     S.video.uploading = false;
-    // 소리·길이만 읽히고 화면은 못 그리는 형식 (HEVC 4:4:4·ProRes .mov 등). PC·브라우저마다 다르다
+    // 소리·길이만 읽히고 화면은 못 그리는 형식 (HEVC 4:4:4·ProRes .mov 등, PC·브라우저마다 다르다)
+    // → 브라우저 안에서 H.264로 바꿔서 쓴다
     const cannot = () => {
-      if (S.video.url !== url) return;
-      vid.pause();
-      S.video.error = '이 영상 형식은 이 브라우저가 화면을 못 그려요. mp4(H.264)로 바꿔 넣거나 PC 버전을 써 주세요';
-      updateVideoInfo();
-      redraw();
+      if (S.video.url !== url || S.video.preparing) return;
+      convertInBrowser(file, url);
     };
     if (!vid.videoWidth) cannot();
     else {
@@ -73,10 +72,112 @@ loadVideoFile = function (file) {
   }, { once: true });
   vid.addEventListener('error', () => {
     S.video.uploading = false;
-    S.video.error = '이 브라우저에서 열 수 없는 영상 형식이에요 (mp4·webm을 써 주세요)';
-    updateVideoInfo();
+    if (S.video.url === url) convertInBrowser(file, url);
   }, { once: true });
 };
+
+// ---------------------------------------------------------------- 브라우저 안 변환 (ffmpeg.wasm)
+
+const FF_CORE = 'vendor/ffmpeg-core/ffmpeg-core.js';
+const FF_WASM = 'vendor/ffmpeg-core/ffmpeg-core.wasm';
+let ffmpegReady = null;
+
+// 변환 도구(약 32MB)를 한 번만 내려받는다. onProgress(0~1)
+function getFFmpeg(onProgress) {
+  if (!ffmpegReady) {
+    ffmpegReady = (async () => {
+      const res = await fetch(FF_WASM);
+      if (!res.ok) throw new Error('변환 도구를 내려받지 못했어요');
+      const total = +res.headers.get('content-length') || 32e6;
+      const reader = res.body.getReader();
+      const parts = [];
+      let got = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        parts.push(value);
+        got += value.length;
+        onProgress(Math.min(0.99, got / total));
+      }
+      const wasmURL = URL.createObjectURL(new Blob(parts, { type: 'application/wasm' }));
+      const ff = new FFmpegWASM.FFmpeg();
+      await ff.load({ coreURL: new URL(FF_CORE, location.href).href, wasmURL });
+      return ff;
+    })().catch((e) => { ffmpegReady = null; throw e; });
+  }
+  return ffmpegReady;
+}
+
+async function convertInBrowser(file, url) {
+  const v = S.video;
+  if (v.url !== url) return;
+  vid.pause();
+  vid.removeAttribute('src');
+  vid.load();
+  const show = (label, p) => {
+    if (S.video !== v) return;
+    v.prepLabel = label;
+    v.prepProgress = p;
+    updateVideoInfo();
+    redraw();
+  };
+  Object.assign(v, { preparing: true, error: '' });
+  show('변환 도구 준비 중 (처음 한 번)', 0);
+  let ff;
+  try {
+    ff = await getFFmpeg((p) => show('변환 도구 내려받는 중 (처음 한 번)', p));
+    if (S.video !== v) return;
+    show('브라우저에서 볼 수 있게 바꾸는 중', 0);
+    const onProg = ({ progress }) => show('브라우저에서 볼 수 있게 바꾸는 중', clamp(progress || 0, 0, 0.99));
+    ff.on('progress', onProg);
+    const inName = 'in' + ((file.name.match(/\.[A-Za-z0-9]+$/) || ['.mov'])[0]).toLowerCase();
+    await ff.writeFile(inName, new Uint8Array(await file.arrayBuffer()));
+    // 영상 자리가 1208×680이라 720p면 충분하다 (해독이 대부분의 시간이라 크기를 줄여도 크게 빨라지진 않음)
+    const code = await ff.exec(['-i', inName, '-map', '0:v:0', '-map', '0:a:0?', '-vf', "scale=-2:'min(720,ih)',format=yuv420p",
+      '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', 'out.mp4']);
+    ff.off('progress', onProg);
+    await ff.deleteFile(inName).catch(() => {});
+    if (code !== 0) throw new Error('변환하지 못했어요');
+    const data = await ff.readFile('out.mp4');
+    await ff.deleteFile('out.mp4').catch(() => {});
+    if (S.video !== v) return;
+    const nf = new File([data], file.name.replace(/\.[^.]+$/, '') + '.mp4', { type: 'video/mp4' });
+    URL.revokeObjectURL(url);
+    const nurl = URL.createObjectURL(nf);
+    Object.assign(v, { url: nurl, file: nf, preparing: false, converted: true });
+    vid.addEventListener('loadedmetadata', () => {
+      v.info = { duration: vid.duration, width: vid.videoWidth, height: vid.videoHeight, fpsValue: WEB_FPS, audio: true };
+      updateVideoInfo();
+    }, { once: true });
+    vid.src = nurl;
+    vid.play().catch(() => {});
+    updateVideoInfo();
+    redraw();
+  } catch (e) {
+    if (S.video !== v) return;
+    // 메모리가 모자라는 등 변환이 안 되면 다음 변환을 위해 도구를 다시 띄운다
+    try { ff?.terminate(); } catch (er) { /* 무시 */ }
+    ffmpegReady = null;
+    Object.assign(v, { preparing: false, error: '이 영상은 브라우저에서 바꾸지 못했어요' });
+    showPcHelp();
+    updateVideoInfo();
+    redraw();
+  }
+}
+
+// 브라우저로는 안 되는 영상: 사내 PC 버전 주소로 안내 (share.json에 주소가 있을 때)
+async function showPcHelp() {
+  const box = $('#pcHelp');
+  if (!box) return;
+  let share = null;
+  try { share = await (await fetch('share.json', { cache: 'no-cache' })).json(); } catch (e) { /* 없음 */ }
+  $('#pcHelpLink').hidden = !share?.url;
+  if (share?.url) {
+    $('#pcHelpLink').href = share.url;
+    $('#pcHelpLink').textContent = share.url;
+  }
+  box.hidden = false;
+}
 
 showResult = function (name, url) {
   const dlg = $('#resultDlg');
@@ -140,6 +241,7 @@ async function pickConfig(Enc, list) {
 startRender = async function () {
   if (S.rendering) return;
   if (!S.video.file) { toast('먼저 영상을 넣어 주세요'); return; }
+  if (S.video.preparing) { toast('영상을 바꾸는 중이에요. 끝나면 만들 수 있어요'); return; }
   if (S.video.error) { toast(S.video.error, 5000); return; }
   if (!('VideoEncoder' in window) || !window.Mp4Muxer) {
     setRenderUI('error', 0, { error: '이 브라우저는 영상 만들기를 지원하지 않아요. 크롬이나 엣지 최신 버전으로 열어 주세요.' });
@@ -243,17 +345,21 @@ startRender = async function () {
     compose();
     await new Promise((res, rej) => {
       // 끝까지 재생되면 다음 장면 신호가 오지 않으므로 끝남 신호로도 마친다
-      src.onended = () => res();
+      // 끝나면 남은 장면 신호는 무시한다 (늦게 온 진행률이 「완료」를 덮지 않게)
+      let finished = false, cb = 0;
+      const finish = () => { if (finished) return; finished = true; src.cancelVideoFrameCallback(cb); res(); };
+      src.onended = finish;
       const step = (now, meta) => {
-        if (encErr) { rej(encErr); return; }
+        if (finished) return;
+        if (encErr) { finished = true; rej(encErr); return; }
         const t = meta ? meta.mediaTime : src.currentTime;
         compose();
         while (k < total && s + k / WEB_FPS <= t + 0.001) emit();
         setRenderUI('running', (k / total) * 0.97);
-        if (k >= total || t >= e - 0.001 || src.ended) res();
-        else src.requestVideoFrameCallback(step);
+        if (k >= total || t >= e - 0.001 || src.ended) finish();
+        else cb = src.requestVideoFrameCallback(step);
       };
-      src.requestVideoFrameCallback(step);
+      cb = src.requestVideoFrameCallback(step);
       src.play().catch(rej);
     });
     src.pause();
