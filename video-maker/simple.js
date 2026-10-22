@@ -217,13 +217,10 @@ async function audioReady() {
   return ac;
 }
 
-// 한 번 열 때마다 한 번만 (새로고침해서는 다시 안 나온다)
+// 열 때마다(새로고침 포함) 나온다. 확인용으로 ?intro=0 을 붙이면 건너뜀
 async function playIntro() {
   const el = $('#intro');
-  let seen = false;
-  try { seen = sessionStorage.getItem('introShown') === '1'; sessionStorage.setItem('introShown', '1'); } catch (e) { /* 무시 */ }
-  if (new URLSearchParams(location.search).get('intro') === '0') seen = true;   // 확인용: ?intro=0 이면 건너뜀
-  if (seen) { el.remove(); document.body.classList.add('ready'); return; }
+  if (new URLSearchParams(location.search).get('intro') === '0') { el.remove(); document.body.classList.add('ready'); return; }
   sparkles();
   const canvas = h('canvas', { id: 'dancer' });
   el.insertBefore(canvas, $('.intro-card', el));
