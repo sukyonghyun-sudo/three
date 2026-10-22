@@ -71,7 +71,7 @@ const BUTTON_TEXT = '플레이 하러가기';
 // (notice가 없는 언어는 확률형 안내 문구를 넣지 않는다)
 const LANGS = {
   ko: { label: '한국어', button: BUTTON_TEXT, notice: '확률형 아이템이 포함되어 있을 수 있습니다.' },
-  zh: { label: '中文', button: '前往遊玩', rating: true },
+  zh: { label: '中文', button: '前往遊玩', buttonLs: 1.5, rating: true },   // 한자는 붙어 보여 버튼 자간을 조금 벌린다
 };
 const langOf = () => (LANGS[S.tpl?.lang] ? S.tpl.lang : 'ko');
 
@@ -634,7 +634,7 @@ function drawLayer(ctx, L) {
     const st = VT.BUTTONS[(S.tempButton && S.tempButton.layerId === L.id && S.tempButton.style) || L.style] || VT.BUTTONS.white;
     const fam = buttonFam(st.font);
     const text = langOf() === 'ko' ? L.text || BUTTON_TEXT : LANGS[langOf()].button;
-    if (fam) st.draw(ctx, { x: L.x, y: L.y, w: L.w, h: L.h }, text, fam);
+    if (fam) st.draw(ctx, { x: L.x, y: L.y, w: L.w, h: L.h, ls: LANGS[langOf()].buttonLs || 0 }, text, fam);
   } else if (L.type === 'text') {
     const trying = S.tempFont && S.tempFont.layerId === L.id;
     if (L.useImage && L.src && !trying) {

@@ -180,13 +180,13 @@ const VT = (() => {
 
   // ---------------------------------------------------------------- 버튼
 
-  // 글자 + 오른쪽 ▶ 를 한 덩어리로 가운데 정렬
+  // 글자 + 오른쪽 ▶ 를 한 덩어리로 가운데 정렬. b.ls = 언어별로 더 벌리는 자간(px)
   function label(g, b, text, fam, weight, color, opt = {}) {
     const size = Math.round(b.h * (opt.scale || 0.36));
     g.save();
     g.font = `${weight} ${size}px ${fam}`;
     g.textBaseline = 'middle';
-    g.letterSpacing = (opt.ls ?? -0.5) + 'px';
+    g.letterSpacing = (opt.ls ?? -0.5) + (b.ls || 0) + 'px';
     const tw = g.measureText(text).width;
     const icon = size * 0.62;
     const gap = size * 0.42;
@@ -276,7 +276,7 @@ const VT = (() => {
         g.fillStyle = gr;
         g.fill();
         gloss(g, b.x, b.y, b.w, h, r, 0.45);
-        label(g, { x: b.x, y: b.y, w: b.w, h }, text, fam, 800, '#FFFFFF', { textShadow: 'rgba(150,50,0,0.55)' });
+        label(g, { ...b, h }, text, fam, 800, '#FFFFFF', { textShadow: 'rgba(150,50,0,0.55)' });
       },
     },
     glass: {
@@ -310,7 +310,7 @@ const VT = (() => {
         g.fillStyle = gr;
         g.fill();
         gloss(g, b.x, b.y, b.w, h, r, 0.5);
-        label(g, { x: b.x, y: b.y, w: b.w, h }, text, fam, 400, '#101C44', { scale: 0.42, ls: 0 });
+        label(g, { ...b, h }, text, fam, 400, '#101C44', { scale: 0.42, ls: 0 });
       },
     },
     rainbow: {
