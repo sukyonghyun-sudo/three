@@ -631,9 +631,17 @@ function jointsOf(f){const{cx,cz,crotchS:cr,yArmS:a,Hs,mnY,torsoW,half,legX}=f,s
  const leg=sg=>[[cx+sg*legX,cr+.02*Hs,cz],[cx+sg*legX,mnY+.52*(cr-mnY),cz+.01],[cx+sg*legX,mnY+.07*(cr-mnY),cz],[cx+sg*legX,mnY+.02,cz+.06*Hs]];
  J.push([cx,cr+.05*Hs,cz],[cx,cr+.4*(a-cr),cz],[cx,cr+.75*(a-cr),cz],[cx,a+.04*Hs,cz],[cx,a+.08*Hs,cz],[cx,f.topS,cz]);
  return J.concat(arm(1),arm(-1),leg(1),leg(-1))}
-function autoRig(m){let skinned=false;m.traverse(o=>{if(o.isSkinnedMesh)skinned=true});if(skinned)return'own';
+const MAXV=a=>{const A=a.array||(a.data&&a.data.array);return A instanceof Int8Array?127:A instanceof Uint8Array?255:A instanceof Int16Array?32767:A instanceof Uint16Array?65535:1};
+// which way does the model face? shoes stick out in front of the ankles
+function facing(m){m.updateMatrixWorld(true);const inv=new T.Matrix4().copy(m.matrixWorld).invert(),P=[],v=new T.Vector3();
+ m.traverse(o=>{if(!o.isMesh)return;const a=o.geometry.attributes.position,mt=new T.Matrix4().multiplyMatrices(inv,o.matrixWorld),d=a.normalized?MAXV(a):1,st=Math.max(1,Math.floor(a.count/6000));
+  for(let i=0;i<a.count;i+=st){v.set(a.getX(i)/d,a.getY(i)/d,a.getZ(i)/d).applyMatrix4(mt);P.push(v.x,v.y,v.z)}});
+ let mn=1e9,mx=-1e9;for(let i=1;i<P.length;i+=3){mn=Math.min(mn,P[i]);mx=Math.max(mx,P[i])}const H=mx-mn;let zf=0,n1=0,za=0,n2=0;
+ for(let i=0;i<P.length;i+=3){const y=P[i+1]-mn;if(y<.035*H){zf+=P[i+2];n1++}else if(y>.07*H&&y<.14*H){za+=P[i+2];n2++}}
+ return(n1&&n2)?(Math.sign(zf/n1-za/n2)||1):1}
+function autoRig(m,force){let skinned=false;m.traverse(o=>{if(o.isSkinnedMesh)skinned=true});if(skinned&&!force)return'own';
+ const oldRoots=[];m.traverse(o=>{if(o.isBone&&!(o.parent&&o.parent.isBone))oldRoots.push(o)});
  m.updateMatrixWorld(true);const inv=new T.Matrix4().copy(m.matrixWorld).invert(),meshes=[];m.traverse(o=>{if(o.isMesh)meshes.push(o)});if(!meshes.length)return'';
- const MAXV=a=>{const A=a.array||(a.data&&a.data.array);return A instanceof Int8Array?127:A instanceof Uint8Array?255:A instanceof Int16Array?32767:A instanceof Uint16Array?65535:1};
  const toFloat=g=>{const n=new T.BufferGeometry();['position','normal','uv','color'].forEach(k=>{const a=g.attributes[k];if(!a)return;const it=a.itemSize,d=a.normalized?MAXV(a):1,arr=new Float32Array(a.count*it),get=[a.getX,a.getY,a.getZ,a.getW];
    for(let i=0;i<a.count;i++)for(let c=0;c<it;c++){let v=get[c].call(a,i)/d;if(a.normalized&&d!==255&&d!==65535)v=Math.max(v,-1);arr[i*it+c]=v}n.setAttribute(k,new T.Float32BufferAttribute(arr,it))});
   if(g.index)n.setIndex(Array.from(g.index.array));(g.groups||[]).forEach(x=>n.addGroup(x.start,x.count,x.materialIndex));return n};
@@ -649,11 +657,13 @@ function autoRig(m){let skinned=false;m.traverse(o=>{if(o.isSkinnedMesh)skinned=
  const sk=new T.Skeleton(bones),parents=meshes.map(o=>o.parent);
  const sms=meshes.map((o,i)=>{const mat=(Array.isArray(o.material)?o.material:[o.material]).map(x=>{const c=x.clone();c.skinning=true;return c});
   const s=new T.SkinnedMesh(geos[i],mat.length>1?mat:mat[0]);s.castShadow=s.receiveShadow=true;s.frustumCulled=false;return s});
- try{meshes.forEach(o=>{if(o.parent)o.parent.remove(o)});sms.forEach(s=>m.add(s));m.add(bones[0]);m.updateMatrixWorld(true);sms.forEach(s=>s.bind(sk))}
+ try{meshes.forEach(o=>{if(o.parent)o.parent.remove(o)});oldRoots.forEach(b=>{if(b.parent)b.parent.remove(b)});sms.forEach(s=>m.add(s));m.add(bones[0]);m.updateMatrixWorld(true);sms.forEach(s=>s.bind(sk))}
  catch(e){sms.forEach(s=>m.remove(s));m.remove(bones[0]);meshes.forEach((o,i)=>(parents[i]||m).add(o));toast('뼈대 생성 실패: '+e.message);return''}
  return(f.k>1.01?'auto+legs':'auto')+'|'+Math.round(f.legRatio*100)}
 CHARS.forEach(ch=>L.load(BASE+ch.file,gl=>{
- try{const m=gl.scene;let rg='';try{if(!/norig/.test(location.search))rg=autoRig(m)}catch(e){toast(ch.file+' 뼈대 오류: '+e.message)}
+ try{const m=gl.scene;let rg='';try{if(!/norig/.test(location.search)){rg=autoRig(m,false);
+  if(rg==='own'){const b=bonesOf(m),ok=[b.L.u,b.R.u,b.L.f,b.R.f,b.L.t,b.R.t,b.L.s,b.R.s].filter(Boolean).length;if(ok<8)rg=autoRig(m,true);else toast(ch.file+': 기존 뼈대 사용')}}}catch(e){toast(ch.file+' 뼈대 오류: '+e.message)}
+ try{if(facing(m)<0)m.rotation.y+=Math.PI}catch(e){}
  if(rg.indexOf('auto')===0){const[kind,pc]=rg.split('|');toast(ch.file+': 뼈대 자동 생성'+(kind==='auto+legs'?' · 다리 '+pc+'%→44%':''))}
  m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.isSkinnedMesh)o.frustumCulled=false;(Array.isArray(o.material)?o.material:[o.material]).forEach(mt=>{if(mt&&mt.isMeshStandardMaterial){mt.envMapIntensity=.55;if(mt.roughness<.5)mt.roughness=.6}})}});
  let bb=new T.Box3().setFromObject(m);m.scale.multiplyScalar(ch.h/((bb.max.y-bb.min.y)||1));m.updateMatrixWorld(true);bb=new T.Box3().setFromObject(m);const c=bb.getCenter(V(0,0,0));
