@@ -663,7 +663,7 @@ function autoRig(m,force){let skinned=false;m.traverse(o=>{if(o.isSkinnedMesh)sk
 CHARS.forEach(ch=>L.load(BASE+ch.file,gl=>{
  try{const m=gl.scene;let rg='';try{if(!/norig/.test(location.search)){rg=autoRig(m,false);
   if(rg==='own'){const b=bonesOf(m),ok=[b.L.u,b.R.u,b.L.f,b.R.f,b.L.t,b.R.t,b.L.s,b.R.s].filter(Boolean).length;if(ok<8)rg=autoRig(m,true);else toast(ch.file+': 기존 뼈대 사용')}}}catch(e){toast(ch.file+' 뼈대 오류: '+e.message)}
- try{if(facing(m)<0)m.rotation.y+=Math.PI}catch(e){}
+ if(!/noflip/.test(location.search))m.rotation.y+=Math.PI;   // Meshy models face -z: turn them to face +z like the rest of the code expects
  if(rg.indexOf('auto')===0){const[kind,pc]=rg.split('|');toast(ch.file+': 뼈대 자동 생성'+(kind==='auto+legs'?' · 다리 '+pc+'%→44%':''))}
  m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.isSkinnedMesh)o.frustumCulled=false;(Array.isArray(o.material)?o.material:[o.material]).forEach(mt=>{if(mt&&mt.isMeshStandardMaterial){mt.envMapIntensity=.55;if(mt.roughness<.5)mt.roughness=.6}})}});
  let bb=new T.Box3().setFromObject(m);m.scale.multiplyScalar(ch.h/((bb.max.y-bb.min.y)||1));m.updateMatrixWorld(true);bb=new T.Box3().setFromObject(m);const c=bb.getCenter(V(0,0,0));
