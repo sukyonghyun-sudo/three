@@ -30,6 +30,7 @@ button{background:rgba(40,30,20,.85);color:#f3e3c8;border:1px solid #6b4a2a;bord
 <div id="ui"><button data-v="all">전체</button><button data-v="counter">카운터석</button><button data-v="door">입구</button><button data-v="top">위에서</button><button id="staff">직원</button></div>
 <script>
 (function(){var t0=Date.now(),iv=setInterval(function(){var e=Date.now()-t0,sp=document.getElementById('splash');if(!sp){clearInterval(iv);return}if((window.__ready&&e>2600)||e>7000){clearInterval(iv);sp.classList.add('out');setTimeout(function(){sp.remove()},850)}},100)})();
+window.addEventListener('unhandledrejection',function(e){var h=document.getElementById('hint');if(h){h.style.color='#f88';h.textContent='오류: '+((e.reason&&e.reason.message)||e.reason)}});
 window.onerror=function(m,s,l,c){var h=document.getElementById('hint');if(h){h.style.color='#f88';h.textContent='오류: '+m+' (줄 '+l+':'+c+')'}};
 setTimeout(function(){var h=document.getElementById('hint');if(h&&h.textContent==='불러오는 중…')h.textContent=window.THREE?'아직 불러오는 중… 오래 걸리면 새로고침해 주세요':'3D 라이브러리를 못 불러왔어요. 인터넷 연결을 확인해 주세요';},12000);
 </script>
@@ -598,8 +599,62 @@ function updWalker(s,t){const ch=s.ch,a=V(ch.a[0],0,ch.a[1]),b=V(ch.b[0],0,ch.b[
 function updSitter(s,t){const sit=P({lt:[1,.1,-.12],rt:[1,-.1,-.12],ls:[.08,.03,-1],rs:[.08,-.03,-1],lu:[.45,.12,-.85],ru:[.45,-.12,-.85],lf:[1,-.18,.05],rf:[1,.18,.05],sp:.06,yaw:.6*Math.sin(.4*t),pit:.1});
  const drink=P(Object.assign({},sit,{ru:[.5,-.25,-.7],rf:[.25,.3,.95],pit:-.2,yaw:0})),tc=t%10,w=tc<6.5?0:tc<7.1?sm((tc-6.5)/.6):tc<8.9?1:1-sm((tc-8.9)/.6);
  apply(s,w>0?mixP(sit,drink,w):sit);const rh=hand(s.B.R);if(rh){s.cup.position.copy(wpos(rh));s.cup.position.y-=.03;s.cup.quaternion.identity()}}
+// ---- auto-rig for un-rigged T-pose meshes: measure the body, lengthen short legs, build a skeleton + skin weights
+const NAMES=['Hips','Spine','Chest','Neck','Head','HeadTop_End','LeftArm','LeftForeArm','LeftHand','LeftHandEnd','RightArm','RightForeArm','RightHand','RightHandEnd','LeftUpLeg','LeftLeg','LeftFoot','LeftToe','RightUpLeg','RightLeg','RightFoot','RightToe'];
+const PARENT=[-1,0,1,2,3,4,2,6,7,8,2,10,11,12,0,14,15,16,0,18,19,20];
+function rigFit(P){const n=P.length/3;if(n<60)return null;
+ let mnX=1e9,mxX=-1e9,mnY=1e9,mxY=-1e9,mnZ=1e9,mxZ=-1e9;
+ for(let i=0;i<n;i++){const x=P[i*3],y=P[i*3+1],z=P[i*3+2];if(x<mnX)mnX=x;if(x>mxX)mxX=x;if(y<mnY)mnY=y;if(y>mxY)mxY=y;if(z<mnZ)mnZ=z;if(z>mxZ)mxZ=z}
+ const H=mxY-mnY,cx=(mnX+mxX)/2,cz=(mnZ+mxZ)/2,half=(mxX-mnX)/2,NB=80,bh=H/NB,mx=new Float32Array(NB),cen=new Float32Array(NB);
+ for(let i=0;i<n;i++){const b=Math.min(NB-1,Math.max(0,((P[i*3+1]-mnY)/bh)|0)),ax=Math.abs(P[i*3]-cx);if(ax>mx[b])mx[b]=ax;if(ax<half*.05)cen[b]++}
+ let s=0,ws=0,lo=NB,hi=0;for(let b=0;b<NB;b++)if(mx[b]>half*.72){s+=b;ws++;if(b<lo)lo=b;if(b>hi)hi=b}
+ if(!ws)return null;
+ const yArm=mnY+(s/ws+.5)*bh,armHalf=Math.max((hi-lo+1)*bh/2,.035*H);
+ // crotch: walking down from the belly, where the centre column empties out (gap between the legs)
+ const b1=Math.max(1,lo-Math.round(NB*.25)),b2=Math.max(b1+1,lo-Math.round(NB*.1));let dens=0;for(let b=b1;b<b2;b++)dens+=cen[b];dens/=(b2-b1)||1;
+ let cb=-1;for(let b=b1;b>=Math.floor(NB*.05);b--)if(cen[b]<dens*.15){cb=b+1;break}
+ const crotch=cb<0?mnY+.45*H:mnY+cb*bh;
+ const tb=[];for(let b=Math.max(0,lo-Math.round(NB*.12));b<lo-1;b++)tb.push(mx[b]);tb.sort((a,b)=>a-b);const torsoW=tb.length?tb[tb.length>>1]:half*.35;
+ let lx=0,lc=0;for(let i=0;i<n;i++){const y=P[i*3+1];if(y<crotch-.04*H&&y>mnY+.1*H){lx+=Math.abs(P[i*3]-cx);lc++}}const legX=lc?lx/lc:torsoW*.45;
+ const c=crotch-mnY;let k=1;if(c/H<.40)k=Math.min(1.8,.44*(H-c)/(.56*c));
+ const ny=y=>y<crotch?mnY+(y-mnY)*k:y+(k-1)*c;
+ return{mnY,H,cx,cz,half,torsoW,legX,armHalf,k,ny,legRatio:c/H,crotchS:ny(crotch),yArmS:ny(yArm),topS:ny(mxY),Hs:H+(k-1)*c}}
+function skinOf(f,x,y){const ax=Math.abs(x-f.cx),Lft=x>=f.cx,sx=f.torsoW*.85,ex=f.half,Hs=f.Hs;
+ if(ax>f.torsoW*1.02&&Math.abs(y-f.yArmS)<f.armHalf+.05*Hs){const u=(ax-sx)/(ex-sx),b=Lft?6:10;
+  if(u<.1)return[2,b,Math.max(0,u)/.1];if(u<.40)return[b,b,0];if(u<.56)return[b,b+1,(u-.40)/.16];if(u<.80)return[b+1,b+1,0];if(u<.90)return[b+1,b+2,(u-.80)/.10];return[b+2,b+2,0]}
+ if(y<f.crotchS+.02*Hs){const v=(y-f.mnY)/(f.crotchS-f.mnY),b=Lft?14:18;
+  if(v>.9)return[b,0,Math.min(.5,(v-.9)*3)];if(v>.58)return[b,b,0];if(v>.46)return[b+1,b,(v-.46)/.12];if(v>.12)return[b+1,b+1,0];if(v>.06)return[b+2,b+1,(v-.06)/.06];return[b+2,b+2,0]}
+ const a=f.yArmS;if(y>a+.09*Hs)return[4,4,0];if(y>a+.06*Hs)return[3,4,(y-a-.06*Hs)/(.03*Hs)];if(y>a+.03*Hs)return[2,3,(y-a-.03*Hs)/(.03*Hs)];
+ const t=(y-f.crotchS)/(a-f.crotchS);if(t<.25)return[0,0,0];if(t<.4)return[0,1,(t-.25)/.15];if(t<.6)return[1,1,0];if(t<.75)return[1,2,(t-.6)/.15];return[2,2,0]}
+function jointsOf(f){const{cx,cz,crotchS:cr,yArmS:a,Hs,mnY,torsoW,half,legX}=f,sx=torsoW*.85,ex=half,J=[];
+ const arm=sg=>[[cx+sg*sx,a,cz],[cx+sg*(sx+(ex-sx)*.48),a,cz],[cx+sg*(sx+(ex-sx)*.85),a,cz],[cx+sg*ex,a,cz]];
+ const leg=sg=>[[cx+sg*legX,cr+.02*Hs,cz],[cx+sg*legX,mnY+.52*(cr-mnY),cz+.01],[cx+sg*legX,mnY+.07*(cr-mnY),cz],[cx+sg*legX,mnY+.02,cz+.06*Hs]];
+ J.push([cx,cr+.05*Hs,cz],[cx,cr+.4*(a-cr),cz],[cx,cr+.75*(a-cr),cz],[cx,a+.04*Hs,cz],[cx,a+.08*Hs,cz],[cx,f.topS,cz]);
+ return J.concat(arm(1),arm(-1),leg(1),leg(-1))}
+function autoRig(m){let skinned=false;m.traverse(o=>{if(o.isSkinnedMesh)skinned=true});if(skinned)return'own';
+ m.updateMatrixWorld(true);const inv=new T.Matrix4().copy(m.matrixWorld).invert(),meshes=[];m.traverse(o=>{if(o.isMesh)meshes.push(o)});if(!meshes.length)return'';
+ const MAXV=a=>{const A=a.array||(a.data&&a.data.array);return A instanceof Int8Array?127:A instanceof Uint8Array?255:A instanceof Int16Array?32767:A instanceof Uint16Array?65535:1};
+ const toFloat=g=>{const n=new T.BufferGeometry();['position','normal','uv','color'].forEach(k=>{const a=g.attributes[k];if(!a)return;const it=a.itemSize,d=a.normalized?MAXV(a):1,arr=new Float32Array(a.count*it),get=[a.getX,a.getY,a.getZ,a.getW];
+   for(let i=0;i<a.count;i++)for(let c=0;c<it;c++){let v=get[c].call(a,i)/d;if(a.normalized&&d!==255&&d!==65535)v=Math.max(v,-1);arr[i*it+c]=v}n.setAttribute(k,new T.Float32BufferAttribute(arr,it))});
+  if(g.index)n.setIndex(Array.from(g.index.array));(g.groups||[]).forEach(x=>n.addGroup(x.start,x.count,x.materialIndex));return n};
+ const geos=meshes.map(o=>{const g=toFloat(o.geometry);g.applyMatrix4(new T.Matrix4().multiplyMatrices(inv,o.matrixWorld));return g});
+ const pts=()=>{const P=[];geos.forEach(g=>{const a=g.attributes.position;for(let i=0;i<a.count;i++)P.push(a.getX(i),a.getY(i),a.getZ(i))});return P};
+ let P=pts();{let a=1e9,b=-1e9,c=1e9,d=-1e9;for(let i=0;i<P.length;i+=3){a=Math.min(a,P[i]);b=Math.max(b,P[i]);c=Math.min(c,P[i+2]);d=Math.max(d,P[i+2])}if(d-c>(b-a)*1.15){geos.forEach(g=>g.rotateY(Math.PI/2));P=pts()}}
+ const f=rigFit(P);if(!f)return'';
+ geos.forEach(g=>{const a=g.attributes.position,cnt=a.count,si=new Uint16Array(cnt*4),sw=new Float32Array(cnt*4);
+  for(let i=0;i<cnt;i++){const y=f.ny(a.getY(i));a.setY(i,y);const w=skinOf(f,a.getX(i),y);si[i*4]=w[0];si[i*4+1]=w[1];sw[i*4]=1-w[2];sw[i*4+1]=w[2]}
+  a.needsUpdate=true;g.setAttribute('skinIndex',new T.Uint16BufferAttribute(si,4));g.setAttribute('skinWeight',new T.Float32BufferAttribute(sw,4));g.computeBoundingBox();g.computeBoundingSphere()});
+ const J=jointsOf(f),bones=NAMES.map(nm=>{const b=new T.Bone();b.name=nm;return b});
+ bones.forEach((b,i)=>{const p=PARENT[i],j=J[i];if(p<0)b.position.set(j[0],j[1],j[2]);else{b.position.set(j[0]-J[p][0],j[1]-J[p][1],j[2]-J[p][2]);bones[p].add(b)}});
+ const sk=new T.Skeleton(bones),parents=meshes.map(o=>o.parent);
+ const sms=meshes.map((o,i)=>{const mat=(Array.isArray(o.material)?o.material:[o.material]).map(x=>{const c=x.clone();c.skinning=true;return c});
+  const s=new T.SkinnedMesh(geos[i],mat.length>1?mat:mat[0]);s.castShadow=s.receiveShadow=true;s.frustumCulled=false;return s});
+ try{meshes.forEach(o=>{if(o.parent)o.parent.remove(o)});sms.forEach(s=>m.add(s));m.add(bones[0]);m.updateMatrixWorld(true);sms.forEach(s=>s.bind(sk))}
+ catch(e){sms.forEach(s=>m.remove(s));m.remove(bones[0]);meshes.forEach((o,i)=>(parents[i]||m).add(o));toast('뼈대 생성 실패: '+e.message);return''}
+ return(f.k>1.01?'auto+legs':'auto')+'|'+Math.round(f.legRatio*100)}
 CHARS.forEach(ch=>L.load(BASE+ch.file,gl=>{
- const m=gl.scene;
+ try{const m=gl.scene;let rg='';try{if(!/norig/.test(location.search))rg=autoRig(m)}catch(e){toast(ch.file+' 뼈대 오류: '+e.message)}
+ if(rg.indexOf('auto')===0){const[kind,pc]=rg.split('|');toast(ch.file+': 뼈대 자동 생성'+(kind==='auto+legs'?' · 다리 '+pc+'%→44%':''))}
  m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.isSkinnedMesh)o.frustumCulled=false;(Array.isArray(o.material)?o.material:[o.material]).forEach(mt=>{if(mt&&mt.isMeshStandardMaterial){mt.envMapIntensity=.55;if(mt.roughness<.5)mt.roughness=.6}})}});
  let bb=new T.Box3().setFromObject(m);m.scale.multiplyScalar(ch.h/((bb.max.y-bb.min.y)||1));m.updateMatrixWorld(true);bb=new T.Box3().setFromObject(m);const c=bb.getCenter(V(0,0,0));
  const hold=new T.Group();m.position.x-=c.x;m.position.y-=bb.min.y;m.position.z-=c.z;hold.add(m);scene.add(hold);
@@ -611,7 +666,7 @@ CHARS.forEach(ch=>L.load(BASE+ch.file,gl=>{
  if(gl.animations&&gl.animations.length&&!st.B.L.u){st.mixer=new T.AnimationMixer(m);st.mixer.clipAction(gl.animations[0]).play()}
  if(!st.B.L.u||!st.B.R.u)toast(ch.file+': 팔 뼈대를 못 찾았어요');
  live.push(st);try{nf=0}catch(e){}
-},undefined,()=>{if(onGH)toast(ch.file+' 불러오기 실패')}));
+}catch(e){toast(ch.file+' 오류: '+e.message)}},undefined,()=>{if(onGH)toast(ch.file+' 불러오기 실패')}));
 window.__anim=t=>{const dt=last?Math.min(.05,t-last):0;last=t;if(prev)prev(t);
  live.forEach(s=>{if(s.mixer){s.mixer.update(dt);return}const m=s.ch.mode;if(m==='bartender')updBartender(s,t);else if(m==='walker')updWalker(s,t);else updSitter(s,t)})};
 })();
