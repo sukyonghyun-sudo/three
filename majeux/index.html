@@ -528,52 +528,92 @@ grp(o=>P(o).z>=8.3,[0,0,1],[0,0,8.4]);
 const v=new T.Vector3();
 window.__fade=()=>{W.forEach(w=>{const s=v.copy(cam.position).sub(w.p).dot(w.n);const zf=Math.min(1,Math.max(0,(7-rad)/2)),tg=s>-.05?1-.85*zf:(s>-.9?1-.45*zf:1);w.o+=(tg-w.o)*.15;w.ms.forEach(o=>{o.material.opacity=w.o;o.material.depthWrite=w.o>.97})})};
 })();
-// ===== Meshy GLB characters: bartender + staff (built-in bartender stays if a file can't load) =====
+// ===== Meshy GLB characters v2: fitted to the bar + procedural animation cycles =====
 (()=>{if(!T.GLTFLoader)return;
 const BASE='https://sukyonghyun-sudo.github.io/three/majeux/';
-// file -> role, spot (x,y,z), facing (radians, 0 = model faces +z), height (m), motion
+// bartender works behind the bar; staff 1 walks the floor; staff 2 sits at the terrace table
 const CHARS=[
- {file:'majeux.glb', role:'바텐더',pos:[-1.71,0,-4.95],rot:Math.PI/2, h:1.75,act:'shake'},
- {file:'model20.glb',role:'직원 1',pos:[1.3,0,-2.0],  rot:-Math.PI/2,h:1.75,act:'idle'},
- {file:'model21.glb',role:'직원 2',pos:[-0.2,0,1.25], rot:-Math.PI/2,h:1.75,act:'idle'}];
-const SHOW_LABELS=true;   // file-name tags over each model, to confirm which is which
-const onGH=/github\.io$/.test(location.hostname);
-const L=new T.GLTFLoader();
+ {file:'majeux.glb', h:1.72,mode:'bartender',pos:[-1.71,0,-4.95],rot:Math.PI/2},
+ {file:'model20.glb',h:1.75,mode:'walker',a:[1.3,-2.0],b:[1.3,-6.2]},
+ {file:'model21.glb',h:1.75,mode:'sitter',pos:[-1,0,.85],rot:0,seat:.465}];
+const onGH=/github\.io$/.test(location.hostname),L=new T.GLTFLoader();
 if(T.DRACOLoader){const dl=new T.DRACOLoader();dl.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/draco/');L.setDRACOLoader(dl)}
-const V=(x,y,z)=>new T.Vector3(x,y,z),U=V(0,1,0),D=V(0,-1,0),live=[];let last=0;const prev=window.__anim;
+const V=(x,y,z)=>new T.Vector3(x,y,z),UP=V(0,1,0),live=[];let last=0;const prev=window.__anim;
+const sm=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
 const find=(root,re,no)=>{let r=null;root.traverse(o=>{const n=(o.name||'').toLowerCase();if(!r&&o.isBone&&re.test(n)&&!(no&&no.test(n)))r=o});return r};
-const kid=b=>b&&b.children.find(c=>c.isBone);
-function aim(bone,dir){const c=kid(bone);if(!c||!bone.parent)return;bone.updateWorldMatrix(true,true);
- const a=V(0,0,0).setFromMatrixPosition(bone.matrixWorld),cur=V(0,0,0).setFromMatrixPosition(c.matrixWorld).sub(a);if(cur.lengthSq()<1e-10)return;
- const q=new T.Quaternion().setFromUnitVectors(cur.normalize(),dir.clone().normalize()),bw=new T.Quaternion(),pw=new T.Quaternion();
+const kid=b=>b?b.children.find(c=>c.isBone):null;
+const wpos=o=>V(0,0,0).setFromMatrixPosition(o.matrixWorld);
+function aim(bone,d){const c=kid(bone);if(!c||!bone.parent)return;bone.updateWorldMatrix(true,true);const cur=wpos(c).sub(wpos(bone));if(cur.lengthSq()<1e-10)return;
+ const q=new T.Quaternion().setFromUnitVectors(cur.normalize(),d.clone().normalize()),bw=new T.Quaternion(),pw=new T.Quaternion();
  bone.getWorldQuaternion(bw);bone.parent.getWorldQuaternion(pw);bone.quaternion.copy(pw.invert().multiply(q).multiply(bw))}
-function rotW(b,axis,ang){if(!b||!b.parent)return;b.updateWorldMatrix(true,false);const q=new T.Quaternion().setFromAxisAngle(axis.clone().normalize(),ang),bw=new T.Quaternion(),pw=new T.Quaternion();
+function rotW(b,ax,a){if(!b||!b.parent||!a)return;b.updateWorldMatrix(true,false);const q=new T.Quaternion().setFromAxisAngle(ax.clone().normalize(),a),bw=new T.Quaternion(),pw=new T.Quaternion();
  b.getWorldQuaternion(bw);b.parent.getWorldQuaternion(pw);b.quaternion.copy(pw.invert().multiply(q).multiply(bw))}
-function tag(text,x,y,z){const c=document.createElement('canvas');c.width=320;c.height=64;const g2=c.getContext('2d');g2.fillStyle='rgba(20,14,8,.78)';g2.fillRect(0,0,320,64);g2.fillStyle='#f3e3c8';g2.font='bold 24px sans-serif';g2.textAlign='center';g2.fillText(text,160,41);
- const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;const s=new T.Sprite(new T.SpriteMaterial({map:t,depthTest:false,toneMapped:false}));s.scale.set(.75,.15,1);s.position.set(x,y,z);s.renderOrder=9;scene.add(s)}
-function pose(s,t){const B=s.B;s.base.forEach(([b,q])=>b.quaternion.copy(q));const F=s.fw,Lw=s.side,Rw=s.side.clone().negate();
- rotW(B.sp,Lw,.025*Math.sin(t*1.7));
- if(s.ch.act==='shake'){const up=.45+.22*Math.sin(t*14);
-  aim(B.lu,D.clone().multiplyScalar(.75).addScaledVector(F,.55).addScaledVector(Lw,.18));aim(B.ru,D.clone().multiplyScalar(.75).addScaledVector(F,.55).addScaledVector(Rw,.18));
-  aim(B.lf,F.clone().multiplyScalar(.8).addScaledVector(U,up).addScaledVector(Rw,.3));aim(B.rf,F.clone().multiplyScalar(.8).addScaledVector(U,up).addScaledVector(Lw,.3))}
- else{aim(B.lu,D.clone().addScaledVector(Lw,.15).addScaledVector(F,.06));aim(B.ru,D.clone().addScaledVector(Rw,.15).addScaledVector(F,.06));
-  aim(B.lf,D.clone().addScaledVector(F,.28).addScaledVector(Lw,.05));aim(B.rf,D.clone().addScaledVector(F,.28).addScaledVector(Rw,.05));rotW(B.hd,U,.15*Math.sin(t*.35+s.ph))}}
-CHARS.forEach((ch,ci)=>L.load(BASE+ch.file,gl=>{
+function bonesOf(m){const side=(w,c)=>({
+  u:find(m,new RegExp(w+'.*arm|upper.?arm.?'+c+'\\b|\\barm.?'+c+'\\b|\\b'+c+'.?upper.?arm'),/fore|hand|twist|lower/),
+  f:find(m,new RegExp(w+'.*fore|fore.?arm.?'+c+'\\b|lower.?arm.?'+c+'\\b|\\b'+c+'.?fore.?arm')),
+  h:find(m,new RegExp(w+'.*hand|hand.?'+c+'\\b|\\b'+c+'.?hand\\b'),/thumb|index|middle|ring|pinky|finger/),
+  t:find(m,new RegExp(w+'.*up.?leg|up.?leg.?'+c+'\\b|thigh.?'+c+'\\b|'+w+'.*thigh|\\b'+c+'.?thigh')),
+  s:find(m,new RegExp(w+'.*(leg|calf|shin)|\\b(leg|calf|shin).?'+c+'\\b'),/up|upper|thigh/)});
+ return{L:side('left','l'),R:side('right','r'),sp:find(m,/spine/),hd:find(m,/head/,/end|top/)}}
+// pose = directions in the character's own frame [forward, toward its left, up]; angles in radians
+const REL={lu:[.06,.15,-1],ru:[.06,-.15,-1],lf:[.28,.05,-1],rf:[.28,-.05,-1],lt:[0,.03,-1],rt:[0,-.03,-1],ls:[.02,.02,-1],rs:[.02,-.02,-1],sp:0,yaw:0,pit:0,by:0};
+const P=o=>Object.assign({},REL,o);
+const mixP=(a,b,w)=>{const o={};for(const k in a)o[k]=Array.isArray(a[k])?a[k].map((v,i)=>v+(b[k][i]-v)*w):a[k]+(b[k]-a[k])*w;return o};
+function apply(s,p){const B=s.B;s.base.forEach(([b,q])=>b.quaternion.copy(q));s.hold.updateMatrixWorld(true);
+ const r=s.hold.rotation.y,F=V(Math.sin(r),0,Math.cos(r)),Lt=V(Math.cos(r),0,-Math.sin(r)),D=a=>F.clone().multiplyScalar(a[0]).addScaledVector(Lt,a[1]).addScaledVector(UP,a[2]);
+ rotW(B.sp,Lt,p.sp);rotW(B.hd,UP,p.yaw);rotW(B.hd,Lt,p.pit);
+ aim(B.L.u,D(p.lu));aim(B.R.u,D(p.ru));aim(B.L.f,D(p.lf));aim(B.R.f,D(p.rf));
+ aim(B.L.t,D(p.lt));aim(B.R.t,D(p.rt));aim(B.L.s,D(p.ls));aim(B.R.s,D(p.rs));
+ s.hold.updateMatrixWorld(true);return D}
+const hand=(sd)=>sd.h||kid(sd.f);
+// ---- bartender: shake -> pour -> wipe the counter -> greet customers, looping with soft blends
+const BT=[
+ {d:4,  prop:'shake',f:t=>{const k=Math.sin(t*14);return P({lu:[.55,.18,-.75],ru:[.55,-.18,-.75],lf:[.8,-.3,.45+.22*k],rf:[.8,.3,.45+.22*k],sp:.08,pit:.35})}},
+ {d:3,  prop:'pour', f:t=>P({ru:[.6,-.15,-.7],rf:[.9,0,-.25+.05*Math.sin(3*t)],sp:.12,pit:.45,yaw:-.1})},
+ {d:4,  prop:'',     f:t=>{const w=Math.sin(t*2.4);return P({ru:[.5,-.1,-.85],rf:[.85,.35*w,-.5],sp:.2,pit:.5,yaw:.12*w})}},
+ {d:3.5,prop:'',     f:t=>P({yaw:.5*Math.sin(.6*t),pit:.05,sp:.02*Math.sin(1.7*t)})}];
+const BTT=BT.reduce((a,b)=>a+b.d,0);
+function cyc(list,total,t){let tt=t%total,i=0;while(tt>list[i].d){tt-=list[i].d;i++}const a=list[i],b=list[(i+1)%list.length],w=sm((tt-(a.d-.6))/.6);return{p:w>0?mixP(a.f(tt),b.f(0),w):a.f(tt),a}}
+// ---- props
+const lt=p=>new T.LatheGeometry(p.map(q=>new T.Vector2(q[0],q[1])),24);
+function shaker(){const g=new T.Group(),mt=M(0xc8ccd0,{metalness:1,roughness:.25});mt.color.convertSRGBToLinear();g.add(new T.Mesh(lt([[0,0],[.042,0],[.046,.17],[.044,.17],[.04,.004],[0,.004]]),mt));
+ const s2=new T.Mesh(lt([[0,0],[.031,0],[.037,.12],[.035,.12],[.029,.004],[0,.004]]),mt);s2.rotation.x=Math.PI;s2.position.y=.27;g.add(s2);g.visible=false;scene.add(g);return g}
+function cup(){const mt=M(0xe8f0f4,{transparent:true,opacity:.35,roughness:.05});const g=new T.Group();g.add(new T.Mesh(lt([[0,0],[.035,0],[.038,.1],[.034,.1],[.032,.008],[0,.008]]),mt));
+ const lq=M(0xb8661a,{transparent:true,opacity:.85});lq.color.convertSRGBToLinear();const l=new T.Mesh(new T.CylinderGeometry(.031,.03,.04,16),lq);l.position.y=.03;g.add(l);scene.add(g);return g}
+function place(obj,base,dir){obj.position.copy(base);obj.quaternion.setFromUnitVectors(UP,dir.clone().normalize());obj.visible=true}
+function updBartender(s,t){const c=cyc(BT,BTT,t),D=apply(s,c.p),B=s.B,rh=hand(B.R),lh=hand(B.L);
+ if(!rh||!lh){s.shk.visible=false;return}const R=wpos(rh),Lp=wpos(lh);
+ if(c.a.prop==='shake')place(s.shk,R,Lp.clone().sub(R));else if(c.a.prop==='pour')place(s.shk,R,D([.8,0,-.45]));else s.shk.visible=false}
+// ---- staff walking the floor: walk, stop to face the bar (and wave), walk back
+function updWalker(s,t){const ch=s.ch,a=V(ch.a[0],0,ch.a[1]),b=V(ch.b[0],0,ch.b[1]),dist=a.distanceTo(b),wt=dist/.7,it=3.5,tot=2*(wt+it);let tt=t%tot,leg,from,to,walking,lt2;
+ if(tt<wt){walking=true;from=a;to=b;lt2=tt}else if(tt<wt+it){walking=false;from=to=b;lt2=tt-wt}else if(tt<2*wt+it){walking=true;from=b;to=a;lt2=tt-wt-it}else{walking=false;from=to=a;lt2=tt-2*wt-it}
+ let p,rot;
+ if(walking){const u=lt2/wt,pos=from.clone().lerp(to,u);s.hold.position.set(pos.x,s.y0,pos.z);rot=Math.atan2(to.x-from.x,to.z-from.z);
+  const ph=(u*dist)/.7*Math.PI,si=Math.sin(ph),co=Math.cos(ph);
+  p=P({lt:[.38*si,.03,-1],rt:[-.38*si,-.03,-1],ls:[.38*si-.5*Math.max(0,co),.03,-1],rs:[-.38*si-.5*Math.max(0,-co),-.03,-1],lu:[-.25*si,.12,-1],ru:[.25*si,-.12,-1],lf:[.2-.2*si,.05,-1],rf:[.2+.2*si,-.05,-1],by:.015*Math.abs(co),yaw:.1*Math.sin(t*.7)})}
+ else{rot=-Math.PI/2;const wave=lt2>1&&lt2<2.4;p=wave?P({ru:[.1,-.55,.6],rf:[.15,-.15+.3*Math.sin(t*10),1],yaw:.15}):P({yaw:.35*Math.sin(t*.8),sp:.02*Math.sin(t*1.7)})}
+ // turn smoothly instead of snapping
+ let dr=rot-s.hold.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));s.hold.rotation.y+=dr*.12;s.hold.position.y=s.y0+p.by;apply(s,p)}
+// ---- staff sitting at the terrace table: chats, looks around, sips every ~10 s
+function updSitter(s,t){const sit=P({lt:[1,.1,-.12],rt:[1,-.1,-.12],ls:[.08,.03,-1],rs:[.08,-.03,-1],lu:[.45,.12,-.85],ru:[.45,-.12,-.85],lf:[1,-.18,.05],rf:[1,.18,.05],sp:.06,yaw:.6*Math.sin(.4*t),pit:.1});
+ const drink=P(Object.assign({},sit,{ru:[.5,-.25,-.7],rf:[.25,.3,.95],pit:-.2,yaw:0})),tc=t%10,w=tc<6.5?0:tc<7.1?sm((tc-6.5)/.6):tc<8.9?1:1-sm((tc-8.9)/.6);
+ apply(s,w>0?mixP(sit,drink,w):sit);const rh=hand(s.B.R);if(rh){s.cup.position.copy(wpos(rh));s.cup.position.y-=.03;s.cup.quaternion.identity()}}
+CHARS.forEach(ch=>L.load(BASE+ch.file,gl=>{
  const m=gl.scene;
  m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.isSkinnedMesh)o.frustumCulled=false;(Array.isArray(o.material)?o.material:[o.material]).forEach(mt=>{if(mt&&mt.isMeshStandardMaterial){mt.envMapIntensity=.55;if(mt.roughness<.5)mt.roughness=.6}})}});
- let bb=new T.Box3().setFromObject(m);const hh=(bb.max.y-bb.min.y)||1;m.scale.multiplyScalar(ch.h/hh);m.updateMatrixWorld(true);bb=new T.Box3().setFromObject(m);const c=bb.getCenter(V(0,0,0));
- const hold=new T.Group();m.position.x-=c.x;m.position.y-=bb.min.y;m.position.z-=c.z;hold.add(m);hold.position.set(ch.pos[0],ch.pos[1],ch.pos[2]);hold.rotation.y=ch.rot;scene.add(hold);hold.updateMatrixWorld(true);
- if(ch.act==='shake'){const old=scene.children.find(o=>o.isGroup&&o!==hold&&Math.abs(o.position.x+1.71)<.02&&Math.abs(o.position.z+4.95)<.02);if(old)scene.remove(old)}
- if(SHOW_LABELS)tag(ch.role+' · '+ch.file,ch.pos[0],ch.h+.28,ch.pos[2]);
- const s={ch,m,ph:ci*1.3,fw:V(Math.sin(ch.rot),0,Math.cos(ch.rot)),side:V(Math.cos(ch.rot),0,-Math.sin(ch.rot))};
- if(gl.animations&&gl.animations.length){s.mixer=new T.AnimationMixer(m);s.mixer.clipAction(gl.animations[0]).play()}
- else{s.B={lu:find(m,/left.*arm|arm.*left|upper.?arm.?l\b|\barm.?l\b|l.?upper.?arm/,/fore|hand|twist|lower/),ru:find(m,/right.*arm|arm.*right|upper.?arm.?r\b|\barm.?r\b|r.?upper.?arm/,/fore|hand|twist|lower/),
-   lf:find(m,/left.*fore|fore.?arm.?l\b|lower.?arm.?l\b|l.?fore.?arm/),rf:find(m,/right.*fore|fore.?arm.?r\b|lower.?arm.?r\b|r.?fore.?arm/),sp:find(m,/spine/),hd:find(m,/head/,/end|top/)};
-  s.base=[];m.traverse(o=>{if(o.isBone)s.base.push([o,o.quaternion.clone()])});
-  if(!s.B.lu||!s.B.ru)toast(ch.file+': 팔 뼈대를 못 찾아서 T자세 그대로예요')}
- live.push(s);try{nf=0}catch(e){}
+ let bb=new T.Box3().setFromObject(m);m.scale.multiplyScalar(ch.h/((bb.max.y-bb.min.y)||1));m.updateMatrixWorld(true);bb=new T.Box3().setFromObject(m);const c=bb.getCenter(V(0,0,0));
+ const hold=new T.Group();m.position.x-=c.x;m.position.y-=bb.min.y;m.position.z-=c.z;hold.add(m);scene.add(hold);
+ const st={ch,m,hold,B:bonesOf(m),base:[],y0:0};m.traverse(o=>{if(o.isBone)st.base.push([o,o.quaternion.clone()])});
+ if(ch.mode==='walker'){hold.position.set(ch.a[0],0,ch.a[1])}else{hold.position.set(ch.pos[0],0,ch.pos[2]);hold.rotation.y=ch.rot}
+ hold.updateMatrixWorld(true);
+ if(ch.mode==='sitter'){const ts=[st.B.L.t,st.B.R.t].filter(Boolean);if(ts.length){const hy=ts.reduce((a,b)=>a+wpos(b).y,0)/ts.length;st.y0=ch.seat+.07-hy;hold.position.y=st.y0}st.cup=cup()}
+ if(ch.mode==='bartender'){st.shk=shaker();const old=scene.children.find(o=>o.isGroup&&o!==hold&&Math.abs(o.position.x+1.71)<.02&&Math.abs(o.position.z+4.95)<.02);if(old)scene.remove(old)}
+ if(gl.animations&&gl.animations.length&&!st.B.L.u){st.mixer=new T.AnimationMixer(m);st.mixer.clipAction(gl.animations[0]).play()}
+ if(!st.B.L.u||!st.B.R.u)toast(ch.file+': 팔 뼈대를 못 찾았어요');
+ live.push(st);try{nf=0}catch(e){}
 },undefined,()=>{if(onGH)toast(ch.file+' 불러오기 실패')}));
-window.__anim=t=>{const dt=last?Math.min(.05,t-last):0;last=t;if(prev)prev(t);live.forEach(s=>{if(s.mixer)s.mixer.update(dt);else pose(s,t)})};
+window.__anim=t=>{const dt=last?Math.min(.05,t-last):0;last=t;if(prev)prev(t);
+ live.forEach(s=>{if(s.mixer){s.mixer.update(dt);return}const m=s.ch.mode;if(m==='bartender')updBartender(s,t);else if(m==='walker')updWalker(s,t);else updSitter(s,t)})};
 })();
 // controls
 let th=.5,ph=1.0,rad=9,tg=new T.Vector3(0,.8,-3.5);
