@@ -55,6 +55,15 @@ window.Social = function Social(ctx) {
   .sx-snack a{display:inline-block;font-size:12px;color:#2f6fe4;word-break:break-all;margin-top:2px}
   .sx-more{display:block;margin:12px auto 0}
   @media (max-width:820px),(max-height:520px){.sx-wrap{align-items:flex-end;padding:0}.sx-card{width:100%;max-height:92%;border-radius:16px 16px 0 0}}
+  .sx-cmts{margin-top:10px;border-top:1px solid var(--line);padding-top:9px;display:flex;flex-direction:column;gap:8px}
+  .sx-cmts:empty{display:none}
+  .sx-cmt{display:flex;gap:8px}
+  .sx-cmt .sx-av{width:24px;height:24px}
+  .sx-cmt .c{flex:1;min-width:0}
+  .sx-cmt p{margin:1px 0 0;font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+  .sx-cmtin{display:flex;gap:6px;align-items:center}
+  .sx-cmtin input{flex:1;min-width:0;font:inherit;font-size:12.5px;border:0;border-radius:999px;padding:7px 12px;background:rgba(118,118,128,.12);color:var(--ink)}
+  .sx-cmtin .btn{padding:6px 12px;font-size:12px}
   .sx-acts{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap}
   .sx-acts .btn{padding:6px 11px;font-size:12px}
   .sx-acts .btn.heart{color:#c2185b}
@@ -208,13 +217,13 @@ window.Social = function Social(ctx) {
     const me = ctx.me()?.char, acts = el("div", "sx-acts"), n = hearts.get(name) || 0;
     if (ctx.live) {
       if (me && me !== name) {
-        const sent = heartsMine.has(name), hb = btn(sent ? `❤ 오늘 보냈어요 · ${n}` : `❤ 칭찬하기 · ${n}`, "heart" + (sent ? " on" : ""), async () => {
+        const sent = heartsMine.has(name), hb = btn(sent ? `❤ 오늘 보냈어요 · ${n}` : `❤ 칭찬하기 · ${n}`, "heart" + (sent ? " on" : ""), async () => { // 한 사람에게 하루 한 번, 숫자는 오늘 받은 수
           if ((await call("office_heart", { p_to: name })) === "ok") { heartsMine.add(name); hearts.set(name, n + 1); ctx.onChange?.(); renderPerson(); }
         });
         hb.disabled = sent;
         acts.append(hb, btn("💬 1:1 대화", "", () => openThread(name)));
         if (ctx.test) acts.append(btn("🧪 이 사람으로 보기", "", () => ctx.switchTo(name))); // 테스트 판: 그 사람이 돼서 써 보기
-      } else acts.append(Object.assign(btn(`❤ 받은 칭찬 ${n}`, "heart", () => {}), { disabled: true }));
+      } else acts.append(Object.assign(btn(`❤ 오늘 받은 칭찬 ${n}`, "heart", () => {}), { disabled: true }));
       card.append(acts);
     }
     if (isBday(name)) card.append(el("div", "sx-bday", `🎂 오늘은 ${name} 님 생일이에요! 방명록에 축하 한마디 남겨 주세요`));
@@ -246,14 +255,14 @@ window.Social = function Social(ctx) {
       chips.append(b);
     }
     body.append(chips, el("div", "sx-hint", "재택·휴가로 두면 출근해 있어도 사무실 자리를 비워요"));
-    body.append(el("h4", "sx-h", "생일 (그날 머리 위에 🎂, 방명록에 축하 알림)"));
+    body.append(el("h4", "sx-h", "생일"));
     const c = el("div", "sx-compose"), row = el("div", "sx-row"), mm = el("select"), dd = el("select");
     mm.append(el("option", null, "월"), ...Array.from({ length: 12 }, (_, i) => Object.assign(el("option", null, `${i + 1}월`), { value: String(i + 1).padStart(2, "0") })));
     dd.append(el("option", null, "일"), ...Array.from({ length: 31 }, (_, i) => Object.assign(el("option", null, `${i + 1}일`), { value: String(i + 1).padStart(2, "0") })));
     if (p.birthday) { mm.value = p.birthday.slice(0, 2); dd.value = p.birthday.slice(3); }
     const save = async (v) => { if ((await call("office_set_profile", { p_birthday: v })) === "ok") { ctx.patchPerson(name, { birthday: v }); renderPerson(); } };
     row.append(mm, dd, btn("저장", "dark", () => (mm.selectedIndex && dd.selectedIndex ? save(`${mm.value}-${dd.value}`) : say("월과 일을 골라 주세요", true))), btn("지우기", "", () => save("")));
-    c.append(row);
+    c.append(row, el("div", "sx-hint", "생일엔 머리 위에 🎂 가 뜨고, 카드에 축하 알림이 나와요"));
     body.append(c, msgEl);
   }
   async function renderNotes(body, name, my) {
@@ -357,17 +366,52 @@ window.Social = function Social(ctx) {
           a.append(meta);
           if (r.photo && /^data:image\/(jpeg|png|webp);base64,/.test(r.photo)) { const im = el("img"); im.alt = `${d.title} 사진`; im.loading = "lazy"; im.src = r.photo; a.append(im); }
           if (r.body) a.append(el("p", null, r.body));
+          const cb = el("div", "sx-cmts"); // 댓글
+          boxes.set(r.id, cb); a.append(cb);
           return a;
         });
         if (reset) list.replaceChildren(...(items.length ? items : [el("div", "sx-empty", `아직 ${d.title}가 없어요`)]));
         else list.append(...items);
         diaryShown += rows.length;
+        loadCmts(rows.map((r) => r.id));
         more.hidden = rows.length < PAGE;
       } catch (e) {
         console.error(e);
         if (my === seq) list.replaceChildren(el("div", "sx-empty", missing(e) ? NOT_READY : `${d.title}를 불러오지 못했어요`));
       }
     }
+    // 댓글: 누구나 읽고, 로그인한 직원이 쓰고, 쓴 사람·일기 주인이 지운다
+    const boxes = new Map(); // 글 id → 댓글 칸
+    async function loadCmts(ids) {
+      const sb = ctx.sb();
+      if (!sb || !ids.length) return;
+      try {
+        const cs = await fetchRows(sb.from("office_diary_comments").select("id,post_id,from_char,body,created_at").in("post_id", ids).order("id", { ascending: true }));
+        if (my !== seq) return;
+        for (const id of ids) drawCmts(id, cs.filter((c) => c.post_id === id));
+      } catch (e) { if (!missing(e)) console.error(e); }
+    }
+    function drawCmts(id, cs) {
+      const box = boxes.get(id), me = ctx.me()?.char;
+      if (!box) return;
+      box.replaceChildren(...cs.map((c) => {
+        const row = el("div", "sx-cmt"), body = el("div", "c"), meta = el("div", "sx-meta"), t = el("time", null, when(c.created_at));
+        t.dateTime = c.created_at;
+        meta.append(el("b", null, c.from_char), t, el("span", "sp"));
+        if (me && (me === c.from_char || me === name)) meta.append(delBtn(async () => { if ((await call("office_diary_comment_delete", { p_id: c.id })) === "ok") loadCmts([id]); }));
+        body.append(meta, el("p", null, c.body));
+        row.append(face(c.from_char), body);
+        return row;
+      }));
+      if (!me) return;
+      const f = el("div", "sx-cmtin"), inp = el("input");
+      inp.type = "text"; inp.maxLength = 300; inp.placeholder = "댓글 달기…";
+      const go = async () => { const b = inp.value.trim(); if (b && (await call("office_diary_comment", { p_post: id, p_body: b })) === "ok") { inp.value = ""; loadCmts([id]); } };
+      inp.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) go(); };
+      f.append(inp, btn("등록", "dark", go));
+      box.append(f);
+    }
+    view.reloadCmts = () => loadCmts([...boxes.keys()]);
     view.reload = () => load(true);
     load(true);
   }
@@ -395,16 +439,17 @@ window.Social = function Social(ctx) {
 
   // ───────── 칭찬 하트: 받은 수(모두) · 오늘 내가 보낸 사람 ─────────
   const hearts = new Map();
-  let heartsMine = new Set();
+  let heartsMine = new Set(), heartsDay = "";
+  setInterval(() => { if (heartsDay && today() !== heartsDay && ctx.sb()) loadHearts().then(() => { if (view?.kind === "person") renderPerson(); }); }, 60000); // 자정이 지나면 0부터
   async function loadHearts() {
     const sb = ctx.sb();
     if (!sb) return;
     try {
-      const rows = await fetchRows(sb.from("office_hearts").select("from_char,to_char,day").limit(20000));
-      hearts.clear();
-      for (const r of rows) hearts.set(r.to_char, (hearts.get(r.to_char) || 0) + 1);
-      const me = ctx.me()?.char, d = today();
-      heartsMine = new Set(rows.filter((r) => r.from_char === me && r.day === d).map((r) => r.to_char));
+      const d = today(), rows = await fetchRows(sb.from("office_hearts").select("from_char,to_char,day").eq("day", d).limit(20000));
+      hearts.clear(); heartsDay = d;
+      for (const r of rows) hearts.set(r.to_char, (hearts.get(r.to_char) || 0) + 1); // 오늘 받은 칭찬만 (다음 날엔 0부터)
+      const me = ctx.me()?.char;
+      heartsMine = new Set(rows.filter((r) => r.from_char === me).map((r) => r.to_char));
       ctx.onChange?.();
     } catch (e) { if (!missing(e)) console.error(e); }
   }
@@ -675,6 +720,7 @@ window.Social = function Social(ctx) {
     live.on("postgres_changes", { event: "*", schema: "public", table: "office_notes" }, poke("notes"))
       .on("postgres_changes", { event: "*", schema: "public", table: "office_snacks" }, poke("snacks"))
       .on("postgres_changes", { event: "*", schema: "public", table: "office_lunch" }, poke("lunch"))
+      .on("postgres_changes", { event: "*", schema: "public", table: "office_diary_comments" }, () => { if (view?.kind === "person" && view.tab === "diary") { clearTimeout(listen.c); listen.c = setTimeout(() => view?.reloadCmts?.(), 300); } })
       .on("postgres_changes", { event: "*", schema: "public", table: "office_hearts" }, () => { clearTimeout(listen.h); listen.h = setTimeout(async () => { await loadHearts(); if (view?.kind === "person") renderPerson(); }, 300); })
       .subscribe();
     loadHearts();

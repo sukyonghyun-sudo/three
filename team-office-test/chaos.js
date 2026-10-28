@@ -112,8 +112,17 @@ window.Chaos = function (ctx) {
   // 일반 물체 (상자·공 등) — 끝나면 지운다
   const PROPS = [];
   function prop(obj) { ROOT.add(obj); PROPS.push(obj); return obj; }
+  // 이벤트 조명은 미리 만들어 둔 4개를 빌려 쓴다 — 조명 수가 바뀌면 화면 전체 재질을 다시 준비하느라 1~2초 멈춘다 (10-28 측정)
+  const LIGHT_POOL = Array.from({ length: 4 }, () => { const l = new THREE.PointLight(0xffffff, 0, 1, 2); ROOT.add(l); return l; });
   const LIGHTS = [];
-  function light(l) { ROOT.add(l); LIGHTS.push(l); return l; }
+  function light(want) { // want: 원하는 조명(색·세기·거리·감쇠만 옮긴다). 다 쓰고 있으면 화면에 안 붙는 그대로 돌려준다
+    const l = LIGHT_POOL.find((p) => !LIGHTS.includes(p));
+    if (!l) return want;
+    l.color.copy(want.color); l.intensity = want.intensity; l.distance = want.distance; l.decay = want.decay;
+    l.position.copy(want.position);
+    LIGHTS.push(l);
+    return l;
+  }
 
   // ───────── 소리 (즉석 합성 — 페이지를 한 번 누른 뒤에만 난다) ─────────
   function ac() { const a = ctx.audio(); return a && a.state === "running" ? a : null; }
@@ -155,7 +164,7 @@ window.Chaos = function (ctx) {
   .cx-toggle b{font-size:10px;margin-left:6px;padding:1px 6px;border-radius:6px;background:#b9b4ab;color:#fff;letter-spacing:.03em}
   .cx-toggle.on b{background:var(--work,#2f9e62)}
   .cx-gear{padding:6px 9px;margin-left:-6px}
-  @media (max-width:820px),(max-height:520px){.cx-menu{left:10px;width:calc(100% - 20px);top:auto;bottom:54px;max-height:calc(100% - 110px)}.cx-stop{top:auto;bottom:54px;right:10px}.cx-banner{top:auto;bottom:56px;min-width:0;width:max-content;max-width:calc(100% - 20px);padding:8px 16px 10px}.cx-banner b{font-size:17px}}`;
+  @media (max-width:820px),(max-height:520px){.cx-menu{left:10px;width:calc(100% - 20px);top:auto;bottom:54px;max-height:calc(100% - 110px)}.cx-stop{top:auto;bottom:128px;right:10px}.cx-banner{top:auto;bottom:56px;min-width:0;width:max-content;max-width:calc(100% - 20px);padding:8px 16px 10px}.cx-banner b{font-size:17px}}`;
   document.head.append(css);
   const banner = document.createElement("div"); banner.className = "cx-banner"; banner.hidden = true; stage.append(banner);
   const flashEl = document.createElement("div"); flashEl.className = "cx-flash"; stage.append(flashEl);
@@ -344,7 +353,7 @@ window.Chaos = function (ctx) {
     for (const q of PARTS.splice(0)) { ROOT.remove(q.s); q.s.material.dispose(); }
     for (const d of DECALS.splice(0)) { ROOT.remove(d.m); d.m.geometry.dispose(); d.m.material.dispose(); }
     for (const o of PROPS.splice(0)) { ROOT.remove(o); o.traverse?.((c) => { c.geometry?.dispose?.(); }); }
-    for (const l of LIGHTS.splice(0)) ROOT.remove(l);
+    for (const l of LIGHTS.splice(0)) l.intensity = 0; // 돌려놓기 (떼지 않는다)
     for (const st of P.values()) {
       const m = st.m;
       clearTint(m);
@@ -583,7 +592,7 @@ window.Chaos = function (ctx) {
             flyArc(m, inRoom(m.root.position.x + away.x, m.root.position.z + away.z), rnd(1.5, 2.5), rnd(0.9, 1.3));
             if (Math.random() < 0.6) shout(m, pick(["으아악!", "날아간다~", "쾅!?"]), "#ffe066", "#6a2a00");
           }
-          ROOT.remove(r.pl); s.rocks.splice(i, 1);
+          r.pl.intensity = 0; LIGHTS.splice(LIGHTS.indexOf(r.pl) >>> 0, 1); s.rocks.splice(i, 1); // 빌린 조명 돌려놓기
         }
       }
       if (t > 3 && !s.run) { s.run = true; present().forEach((m) => { if (!P.has(m) && Math.random() < 0.5) runPath(m, [m.seat.approach.clone(), V(m.seat.aisleX, 0, m.seat.approach.z), V(m.seat.aisleX, 0, MAIN_Z + rnd(-0.3, 0.3))], rnd(2, 2.8)); }); }
@@ -1260,7 +1269,7 @@ window.Chaos = function (ctx) {
   const menu = document.createElement("div");
   menu.className = "cx-menu"; menu.hidden = true;
   const sect = (cat) => `<h4 style="margin:10px 0 6px;font-size:12px;color:var(--muted)">${cat}</h4><div class="cx-grid">${S.map((s, i) => (s.cat === cat ? `<button data-i="${i}" title="${s.desc}"><em>${s.emoji}</em>${s.name}</button>` : "")).join("")}</div>`;
-  menu.innerHTML = `<h3>🐠 어항 모드</h3><p>켜 두면 사람들이 알아서 지내다가, 가끔 갑자기 아래 일들이 벌어져요. 골라서 바로 볼 수도 있어요. 소리는 화면을 한 번 누른 뒤부터 나요.</p>
+  menu.innerHTML = `<button class="cx-x" data-close title="닫기">×</button><h3>🐠 어항 모드</h3><p>켜 두면 사람들이 알아서 지내다가, 가끔 갑자기 아래 일들이 벌어져요. 골라서 바로 볼 수도 있어요. 소리는 화면을 한 번 누른 뒤부터 나요.</p>
     <div class="cx-row" style="flex-wrap:wrap;align-items:center;font-size:12px">
       <span>얼마나 자주</span>
       <select data-freq style="font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:3px 6px"><option>자주</option><option>보통</option><option>가끔</option></select>
@@ -1296,6 +1305,7 @@ window.Chaos = function (ctx) {
   ui.stop = stopBtn;
   btn.onclick = () => { pref.on = !pref.on; savePref(); applyOn(); };
   gear.onclick = () => { menu.hidden = !menu.hidden; syncMenu(); };
+  addEventListener("pointerdown", (e) => { if (!menu.hidden && !menu.contains(e.target) && e.target !== gear) menu.hidden = true; }, true); // 바깥을 누르면 닫기
   applyOn();
   menu.onclick = (e) => {
     const b = e.target.closest("button"); if (!b) return;

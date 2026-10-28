@@ -2,7 +2,7 @@
 // 모두 출근한 상태로 시작, 아무 이름이나 「로그인」 + 아무 숫자 4자리. 탭 두 개면 서로 다른 사람으로 1:1 대화를 주고받을 수 있다
 // 규칙(글자 수·하루 한 번·링크 모양)은 supabase_setup.sql / supabase_social.sql / supabase_more.sql 함수와 같게
 (() => {
-  const KEY = "teamOfficeTestDb", VER = 3;
+  const KEY = "teamOfficeTestDb", VER = 4;
   const NAMES = window.__TEST_NAMES || [];
   const now = () => new Date().toISOString();
   const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
@@ -37,6 +37,10 @@
         { id: id.n++, char: "홍수연", body: "오늘 처음으로 뒤집기 성공! 👏", photo: photo("#ffd1dc", "#bde0fe", "뒤집기 성공 👶"), created_at: ago(60 * 26) },
         { id: id.n++, char: "홍수연", body: "이유식 첫날. 반은 먹고 반은 얼굴에…", photo: null, created_at: ago(60 * 3) },
       ],
+      office_diary_comments: [
+        { id: 9001, post_id: 1, from_char: "송나정", body: "와 벌써 뒤집기라니 대단해요 👏", created_at: ago(60 * 20) },
+        { id: 9002, post_id: 1, from_char: "홍수연", body: "감사해요 ㅎㅎ 하루 종일 뒤집어요", created_at: ago(60 * 19) },
+      ],
       office_snacks: [
         { id: id.n++, who: "김현준", item: "허니버터칩 2봉", link: "https://www.example.com/honey", created_at: ago(200) },
         { id: id.n++, who: "한아린", item: "초코파이", link: "", created_at: ago(90) },
@@ -67,7 +71,7 @@
     if (e.key !== KEY) return;
     db = load() || db;
     for (const r of db.office_people) notify("office_people", { eventType: "UPDATE", new: { ...r } });
-    for (const t of ["office_notes", "office_snacks", "office_lunch", "office_hearts"]) notify(t);
+    for (const t of ["office_notes", "office_snacks", "office_lunch", "office_hearts", "office_diary_comments"]) notify(t);
   });
   // 테스트: 비밀번호는 아무 숫자 4자리
   const pinOk = (p) => /^\d{4}$/.test(String(p || ""));
@@ -108,10 +112,22 @@
       if (p_photo && (p_photo.length > 700000 || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p_photo))) return "bad_photo";
       db.office_diary.push({ id: nid(), char: p_char, body: b, photo: p_photo || null, created_at: now() }); save(); return "ok";
     },
+    office_diary_comment: ({ p_char, p_pin, p_post, p_body }) => {
+      const v = verify(p_char, p_pin); if (v !== "ok") return v;
+      const b = String(p_body || "").trim(); if (!b) return "empty"; if (b.length > 300) return "too_long";
+      if (!db.office_diary.some((d) => d.id === p_post)) return "not_allowed";
+      db.office_diary_comments.push({ id: nid(), post_id: p_post, from_char: p_char, body: b, created_at: now() }); save(); notify("office_diary_comments"); return "ok";
+    },
+    office_diary_comment_delete: ({ p_char, p_pin, p_id }) => {
+      const v = verify(p_char, p_pin); if (v !== "ok") return v;
+      const i = db.office_diary_comments.findIndex((c) => c.id === p_id && (c.from_char === p_char || db.office_diary.some((d) => d.id === c.post_id && d.char === p_char)));
+      if (i < 0) return "not_allowed";
+      db.office_diary_comments.splice(i, 1); save(); notify("office_diary_comments"); return "ok";
+    },
     office_diary_delete: ({ p_char, p_pin, p_id }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return v;
       const i = db.office_diary.findIndex((n) => n.id === p_id && n.char === p_char); if (i < 0) return "not_allowed";
-      db.office_diary.splice(i, 1); save(); return "ok";
+      db.office_diary.splice(i, 1); db.office_diary_comments = db.office_diary_comments.filter((c) => c.post_id !== p_id); save(); return "ok";
     },
     office_snack_add: ({ p_char, p_pin, p_item, p_link }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return v;
@@ -172,7 +188,7 @@
   function query(table) {
     const f = []; let ord = null, lim = null, rng = null;
     const q = {
-      select() { return q; }, eq(c, v) { f.push((r) => r[c] === v); return q; },
+      select() { return q; }, eq(c, v) { f.push((r) => r[c] === v); return q; }, in(c, vs) { f.push((r) => vs.includes(r[c])); return q; },
       order(c, o) { ord = [c, o?.ascending !== false]; return q; }, limit(n) { lim = n; return q; }, range(a, b) { rng = [a, b]; return q; },
       then(res, rej) {
         if (table === "office_dms" || table === "office_pins") return Promise.resolve({ data: [], error: null }).then(res, rej); // 실제처럼 직접 읽기 막힘

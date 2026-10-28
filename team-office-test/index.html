@@ -122,8 +122,9 @@ body.pip .hud button,body.pip .listbtn,body.pip .bgmenu,body.pip .pinbtn{display
   #panel{position:absolute;z-index:8;left:0;right:0;bottom:0;height:min(62%,560px);border:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;
     box-shadow:0 -8px 28px rgba(0,0,0,.16);transform:translateY(104%);visibility:hidden;transition:transform .3s ease,visibility 0s .3s}
   #app.list-open #panel{transform:none;visibility:visible;transition:transform .3s ease}
-  #panel header{position:relative;padding:12px 14px 10px}
-  .pclose{display:block;position:absolute;right:10px;top:8px;padding:5px 11px;font-size:12px}
+  #panel header{position:relative;padding:44px 14px 10px}
+  #panel header::before{content:"";position:absolute;left:50%;top:8px;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:rgba(60,60,67,.25)}
+  .pclose{display:block;position:absolute;right:12px;top:10px;padding:5px 12px;font-size:12.5px}
   .listbtn{display:inline-flex;align-items:center;flex:none;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:6px 11px;font-size:12px;cursor:pointer;color:var(--ink)}
   #app.aq-wide .listbtn{display:none}
   .hud{left:10px;right:10px;top:10px;gap:6px 8px;pointer-events:none}
@@ -143,6 +144,88 @@ body.pip .hud button,body.pip .listbtn,body.pip .bgmenu,body.pip .pinbtn{display
   #panel{left:auto;top:0;height:auto;width:min(320px,52%);border-top:0;border-left:1px solid var(--line);border-radius:16px 0 0 16px;
     box-shadow:-8px 0 28px rgba(0,0,0,.16);transform:translateX(104%)}
 }
+/* ───── 아이폰 느낌 (10-28): 떠 있는 단추는 반투명 유리 알약, 목록·창은 흰 카드 + 머리카락 선, 파란 글자 단추 ───── */
+html,body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+:root{--ink:#1c1c1e;--muted:#8e8e93;--line:rgba(60,60,67,.16);--work:#34c759;--move:#ff9f0a;--away:#aeaeb2;--blue:#007aff;--glass:rgba(255,255,255,.74)}
+html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme,html body .pinbtn{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  border:.5px solid rgba(0,0,0,.08);box-shadow:0 1px 1px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.08);border-radius:999px;color:var(--ink);font-weight:600;font-size:13px;padding:7px 13px;line-height:1.2}
+html body .chip{padding:6px 11px;font-size:12.5px}
+html body .sx-hb:active,html body .cx-btn:active,html body .listbtn:active,html body .btn:active,html body .cams button:active{transform:scale(.96)}
+html body .sx-hb:hover,html body .cx-btn:hover,html body .listbtn:hover{background:rgba(255,255,255,.9)}
+html body .cx-btn.dark{background:var(--ink);color:#fff}
+html body .cx-gear{padding:7px 10px;margin-left:-4px}
+html body .cx-toggle b{font-size:0;width:34px;height:20px;border-radius:20px;background:#e5e5ea;position:relative;display:inline-block;vertical-align:-5px;margin-left:8px;padding:0;transition:background .2s}
+html body .cx-toggle b::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.28);transition:transform .2s}
+html body .cx-toggle.on b{background:var(--work)}
+html body .cx-toggle.on b::after{transform:translateX(14px)}
+html body .cams{background:rgba(255,255,255,.62);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:.5px solid rgba(0,0,0,.08);border-radius:12px;padding:3px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+html body .cams button{border-radius:9px;padding:6px 11px;font-size:12.5px;font-weight:600;color:#3a3a3c}
+html body .cams button:hover{background:rgba(255,255,255,.55)}
+html body .cams button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+html body .bgmenu{background:rgba(249,249,251,.9);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.18)}
+html body .bgmenu button{border-radius:9px;font-weight:500}
+html body .bgmenu button.on{background:var(--blue);color:#fff}
+html body .btn{border:0;background:rgba(118,118,128,.12);color:var(--blue);border-radius:999px;font-weight:600;padding:7px 14px}
+html body .btn:hover:not(:disabled){background:rgba(118,118,128,.2)}
+html body .btn.dark{background:var(--blue);color:#fff}
+html body .btn.dark:hover:not(:disabled){background:#0a6fe0}
+html body .btn:disabled{color:#c7c7cc;background:rgba(118,118,128,.07)}
+html body #list .btn{padding:5px 11px}
+html body #list .acts{gap:6px;margin-top:8px}
+html body #list .more{gap:6px;margin-top:8px}
+html body .hud{gap:8px}
+html body #list .btn.on{background:var(--work);color:#fff}
+html body #panel{background:#f2f2f7;border-left:.5px solid rgba(60,60,67,.22)}
+html body #panel header{border-bottom:0;padding-bottom:6px}
+html body #panel h2{font-size:20px;font-weight:700;letter-spacing:-.02em}
+html body #list{background:#fff;margin:4px 12px 10px;border-radius:12px;padding:0}
+html body #list li{border-radius:0;padding:10px 12px;border-bottom:.5px solid rgba(60,60,67,.13)}
+html body #list li:last-child{border-bottom:0}
+html body #list li:hover,html body #list li.sel{background:#f7f7fa}
+html body #list .more input{border:0;background:rgba(118,118,128,.12);border-radius:999px;padding:6px 12px}
+html body .testnote{background:#fff;border-radius:12px;color:#3a3a3c;border:.5px solid rgba(60,60,67,.13)}
+html body .testnote button{color:var(--blue);text-decoration:none;font-weight:600}
+html body .hint{border-top:0;color:var(--muted)}
+html body .testme select{color:var(--ink)}
+html body .sx-wrap{background:rgba(0,0,0,.28)}
+html body .sx-card{background:#f2f2f7;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
+html body .sx-head{background:#fff;border-bottom:.5px solid rgba(60,60,67,.18)}
+html body .sx-x{width:30px;height:30px;border-radius:50%;background:rgba(118,118,128,.12);font-size:20px;line-height:30px;color:#8e8e93;padding:0;text-align:center;flex:none}
+html body .sx-tabs{background:rgba(118,118,128,.12);border-radius:9px;margin:10px 16px 0;padding:2px;border-bottom:0;gap:2px}
+html body .sx-tabs button{flex:1;border-radius:7px;padding:6px 8px;border-bottom:0;margin:0;color:var(--ink);font-weight:600;font-size:13px}
+html body .sx-tabs button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+html body .sx-acts .btn.heart{color:#ff2d55}
+html body .sx-acts .btn.heart.on{background:#ffe3ea}
+html body .sx-note .c,html body .sx-post,html body .sx-snack,html body .sx-person,html body .sx-inbox li,html body .sx-opt,html body .sx-gate,html body .sx-chip{background:#fff;border:0}
+html body .sx-post{border-radius:14px}
+html body .sx-opt.on{box-shadow:0 0 0 2px var(--work) inset}
+html body .sx-chip.on{background:var(--blue);color:#fff}
+html body .sx-compose textarea,html body .sx-compose input[type=text],html body .sx-compose select{border:0;background:#fff;border-radius:10px}
+html body .sx-chat{background:#fff}
+html body .sx-m{background:#e9e9eb;color:#000;border-radius:18px;box-shadow:none}
+html body .sx-m.me{background:var(--blue);color:#fff;border-radius:18px}
+html body .sx-foot{background:#f9f9f9;border-top:.5px solid rgba(60,60,67,.18)}
+html body .sx-foot textarea{border:.5px solid rgba(60,60,67,.25);border-radius:18px;background:#fff;padding:8px 13px}
+html body .sx-bday{background:#fff4dc}
+html body .sx-body{padding:16px 16px 20px}
+html body .sx-h{margin:22px 0 10px;font-size:12.5px;font-weight:600;color:#6c6c70}
+html body .sx-h:first-child{margin-top:2px}
+html body .sx-hint{font-size:12px;line-height:1.55;margin-top:10px;color:var(--muted)}
+html body .sx-chips{gap:8px}
+html body .sx-chip{padding:8px 14px;font-weight:600}
+html body .sx-compose{gap:10px}
+html body .sx-row{gap:8px}
+html body .sx-compose select{height:36px;padding:0 10px}
+html body .sx-compose .btn,html body .sx-row .btn{height:36px;padding:0 16px}
+html body .sx-msg{margin-top:10px;font-size:12.5px}
+html body .sx-acts{gap:8px;padding:12px 16px 2px}
+html body .sx-list{gap:12px}
+html body .sx-gate{padding:12px 14px;line-height:1.6}
+html body .sx-gate .btn{margin-top:10px}
+html body .cx-menu{background:rgba(249,249,251,.94);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+html body .cx-grid button{border:0;background:#fff;border-radius:12px}
+html body .cx-x{position:absolute;right:10px;top:10px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(118,118,128,.12);font-size:20px;line-height:30px;color:#8e8e93;cursor:pointer;padding:0}
+@media (max-width:820px),(max-height:520px){html body .sx-card{border-radius:16px 16px 0 0}html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme{padding:6px 10px;font-size:12.5px}}
 </style>
 <script>window.__AQUARIUM = true; window.__TEST = true; window.__LIVE = {"url": "test", "key": "test"}; window.__TEST_NAMES = ["석용현", "손주용", "김현준", "허지용", "박성현", "송나정", "홍수연", "곡숙진", "김선주", "류진주", "미야모토슈이치로", "박정현", "서현성", "손예현", "오누리", "오세욱", "원효인", "유환", "윤성준", "이홍주", "전혜진", "한아린", "염숭이"];</script>
 <script src="test_mock.js"></script>
@@ -285,7 +368,7 @@ const NO_PC = new Set([76, 77, 78, 104]), SNACK_DESKS = new Set([76, 77, 78]);
 const DIARY = { 홍수연: { icon: "👶", title: "육아일기" } };
 const SNACK_ADMIN = "석용현";
 // 내 상태 (본인이 사람 카드 「⚙️ 내 상태」에서 고른다): 회의·집중은 머리 위 아이콘, 재택·휴가는 출근해 있어도 사무실 자리를 비운다
-const MODES = { meeting: ["🗓️", "회의 중"], focus: ["🎧", "집중하는 중"], home: ["🏠", "재택 근무 중"], vacation: ["🌴", "휴가 중"] };
+const MODES = { meeting: ["📅", "회의 중"], focus: ["🎧", "집중하는 중"], home: ["🏠", "재택 근무 중"], vacation: ["🌴", "휴가 중"] };
 const AWAY_MODES = new Set(["home", "vacation"]);
 const ALL_SEATS = ALL_DESKS.filter((n) => !NO_PC.has(n));
 
@@ -1790,9 +1873,10 @@ if (BG) {
   bgMenu.innerHTML = BG.kinds.map((k) => `<button data-bg="${k.id}">${k.emoji} ${k.label}</button>`).join("") + `<button data-bg="random">🎲 랜덤 (5분마다 바뀜)</button>`;
   stage.append(bgMenu);
   const bb = document.createElement("button");
-  bb.textContent = "🖼 배경";
+  bb.textContent = "배경"; // 🖼 은 일부 PC 글꼴에서 한자처럼 보여서 뺌
   tourBtn.after(bb); // 휴대폰에서도 줄 끝까지 밀지 않고 보이게 앞쪽에
   bb.onclick = () => { bgMenu.hidden = !bgMenu.hidden; };
+  addEventListener("pointerdown", (e) => { if (!bgMenu.hidden && !bgMenu.contains(e.target) && e.target !== bb) bgMenu.hidden = true; }, true); // 바깥을 누르면 닫기
   bgMenu.onclick = (e) => { const b = e.target.closest("[data-bg]"); if (b) { applyBg(b.dataset.bg); bgMenu.hidden = true; } };
   applyBg(bgState.pick);
 }
@@ -2132,6 +2216,7 @@ function pointerRay(e) {
 const personHit = () => ray.intersectObjects(crew.filter((m) => m.root.visible).map((m) => m.root), true).find((h) => h.object.userData.pid != null);
 renderer.domElement.addEventListener("pointerup", (e) => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  if (appEl.classList.contains("list-open") && matchMedia("(max-width:820px),(max-height:520px)").matches) return setList(false); // 휴대폰: 목록이 열려 있으면 사무실을 눌러 접기
   pointerRay(e);
   if (editing) { const hit = personHit(); return seatClick(hit ? crew[hit.object.userData.pid] : null); }
   const bh = badgeHit(); // 아이콘 먼저 (육아일기 · 간식 신청 · 하트 …)
