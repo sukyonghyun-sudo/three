@@ -1,7 +1,7 @@
-// 사람 카드(방명록 · 육아일기 · 칭찬 하트 · 내 상태) · 1:1 대화 · 점심 투표 · 간식 신청 — 실시간 판(Supabase)에서 읽고 쓴다
+// 사람 카드(방명록 · 일상/육아일기 SNS · 칭찬 하트 · 내 상태) · 모두의 피드(새 글 알림) · 1:1 대화 · 간식 신청 — 실시간 판(Supabase)에서 읽고 쓴다
 // 표·함수: ../supabase_social.sql, ../supabase_more.sql. 읽기는 누구나(1:1 대화는 두 사람만), 쓰기는 「나예요」/「로그인」한 직원만
 // (4자리 비밀번호를 서버 함수가 확인). 남이 쓴 글은 늘 textContent 로만 넣는다
-// window.Social(ctx) → { openPerson(name, tab), openSnacks(), openInbox(), openThread(name), openLunch(), heartCount(name), sync() }
+// window.Social(ctx) → { openPerson(name, tab), openSnacks(), openInbox(), openThread(name), openFeed(), heartCount(name), sync() }
 window.Social = function Social(ctx) {
   const css = document.createElement("style");
   css.textContent = `
@@ -55,6 +55,23 @@ window.Social = function Social(ctx) {
   .sx-snack a{display:inline-block;font-size:12px;color:#2f6fe4;word-break:break-all;margin-top:2px}
   .sx-more{display:block;margin:12px auto 0}
   @media (max-width:820px),(max-height:520px){.sx-wrap{align-items:flex-end;padding:0}.sx-card{width:100%;max-height:92%;border-radius:16px 16px 0 0}}
+  .sx-who{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+  .sx-who .sx-av{width:26px;height:26px}
+  .sx-toast{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:25;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);
+    background:rgba(255,255,255,.9);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:.5px solid rgba(0,0,0,.08);
+    border-radius:999px;padding:6px 16px 6px 6px;box-shadow:0 10px 30px rgba(0,0,0,.16);font-size:13px;font-weight:600;cursor:pointer;animation:sxIn .35s ease}
+  .sx-toast[hidden]{display:none}
+  .sx-toast .sx-av{width:30px;height:30px}
+  .sx-toast span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sx-toast b{color:#007aff;flex:none}
+  @keyframes sxIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+  @media (max-width:820px),(max-height:520px){.sx-toast{top:96px}}
+  .sx-like{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .sx-likebtn{border:0;background:rgba(118,118,128,.12);border-radius:999px;padding:6px 13px;font:inherit;font-size:12.5px;font-weight:600;color:#3a3a3c;cursor:pointer}
+  .sx-likebtn:disabled{cursor:default;opacity:.8}
+  .sx-likebtn.on{background:#ffe3ea;color:#ff2d55}
+  .sx-likebtn:active{transform:scale(.95)}
+  .sx-likers{font-size:12px;color:var(--muted)}
   .sx-cmts{margin-top:10px;border-top:1px solid var(--line);padding-top:9px;display:flex;flex-direction:column;gap:8px}
   .sx-cmts:empty{display:none}
   .sx-cmt{display:flex;gap:8px}
@@ -133,7 +150,7 @@ window.Social = function Social(ctx) {
     bad_link: "링크는 http:// 나 https:// 로 시작하는 주소만 돼요", not_allowed: "지울 수 없는 글이에요",
     already: "오늘은 이미 보냈어요 (하루 한 번)", bad_input: "입력이 올바르지 않아요",
   };
-  const today = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); // 한국 날짜 (점심 투표·생일·하트는 하루 단위)
+  const today = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); // 한국 날짜 (생일·하트는 하루 단위)
   const isBday = (name) => (ctx.people(name).birthday || "") === today().slice(5);
 
   // ───────── 작은 도구 ─────────
@@ -204,13 +221,13 @@ window.Social = function Social(ctx) {
   // ───────── 사람 카드: 방명록 · 육아일기 ─────────
   function openPerson(name, tab = "notes") {
     clearInterval(dmTimer);
-    view = { kind: "person", name, tab: (tab === "diary" && !ctx.diary[name]) || (tab === "me" && ctx.me()?.char !== name) ? "notes" : tab || "notes" };
+    view = { kind: "person", name, tab: tab === "me" && ctx.me()?.char !== name ? "notes" : tab || "notes" };
     diaryPhoto = null;
     show();
     renderPerson();
   }
   function renderPerson() {
-    const my = ++seq, { name, tab } = view, d = ctx.diary[name], st = ctx.status(name);
+    const my = ++seq, { name, tab } = view, d = feedOf(name), st = ctx.status(name);
     const head = el("img");
     head.alt = ""; head.src = ctx.face(name);
     card.replaceChildren(header(head, name, st.msg ? `${st.text} · “${st.msg}”` : st.text));
@@ -227,7 +244,7 @@ window.Social = function Social(ctx) {
       card.append(acts);
     }
     if (isBday(name)) card.append(el("div", "sx-bday", `🎂 오늘은 ${name} 님 생일이에요! 방명록에 축하 한마디 남겨 주세요`));
-    const tabList = [["notes", "방명록"], d && ["diary", `${d.icon} ${d.title}`], me === name && ctx.live && ["me", "⚙️ 내 상태"]].filter(Boolean);
+    const tabList = [["notes", "방명록"], ["diary", `${d.icon} ${d.title}`], me === name && ctx.live && ["me", "⚙️ 내 상태"]].filter(Boolean);
     if (tabList.length > 1) {
       const tabs = el("div", "sx-tabs");
       for (const [k, label] of tabList) {
@@ -240,7 +257,7 @@ window.Social = function Social(ctx) {
     }
     const body = el("div", "sx-body");
     card.append(body);
-    if (tab === "diary") renderDiary(body, name, d, my); else if (tab === "me") renderMe(body, name); else renderNotes(body, name, my);
+    if (tab === "diary") renderFeed(body, name, d, my); else if (tab === "me") renderMe(body, name); else renderNotes(body, name, my);
   }
   // 내 상태: 회의 중 · 집중 · 재택 · 휴가 (재택·휴가면 사무실 자리를 비운다) + 생일
   function renderMe(body, name) {
@@ -307,13 +324,14 @@ window.Social = function Social(ctx) {
     view.reload = load;
     load();
   }
-  async function renderDiary(body, name, d, my) {
+  // 글 목록 (SNS): owner 한 사람의 글, 또는 owner 가 없으면 모두의 글(피드). 쓰기는 내 글로만
+  async function renderFeed(body, owner, d, my) {
     diaryShown = 0;
-    const mine = ctx.me()?.char === name;
-    if (!ctx.live) body.append(el("div", "sx-gate", `${d.title}는 실시간 판(GitHub 링크)에서 열려요`));
+    const name = owner, me0 = ctx.me()?.char, mine = owner ? me0 === owner : !!me0;
+    if (!ctx.live) body.append(el("div", "sx-gate", "글은 실시간 판(GitHub 링크)에서 열려요"));
     else if (mine) {
       const c = el("div", "sx-compose"), ta = el("textarea");
-      ta.maxLength = 1000; ta.rows = 3; ta.placeholder = "오늘의 육아일기 (1000자)";
+      ta.maxLength = 1000; ta.rows = 3; ta.placeholder = ctx.diary[me0] ? `오늘의 ${ctx.diary[me0].title} (1000자)` : "지금 무슨 일이 있나요? 사진도 올릴 수 있어요 (1000자)";
       const file = el("input");
       file.type = "file"; file.accept = "image/*"; file.hidden = true;
       const pv = el("div", "sx-row");
@@ -341,12 +359,14 @@ window.Social = function Social(ctx) {
         const text = ta.value.trim();
         if (!text && !diaryPhoto) return say("글이나 사진을 넣어 주세요", true);
         say("올리는 중…");
-        if ((await call("office_diary_post", { p_body: text, p_photo: diaryPhoto })) === "ok") { ta.value = ""; diaryPhoto = null; drawPv(); say("올렸어요"); load(true); }
+        if ((await call("office_diary_post", { p_body: text, p_photo: diaryPhoto })) === "ok") { ta.value = ""; diaryPhoto = null; drawPv(); say("올렸어요"); load(true); pollFeed(); }
       }));
       c.append(ta, pv, row, file, el("div", "sx-hint", "올린 글과 사진은 링크를 아는 누구나 볼 수 있어요. 사진은 올릴 때 알맞은 크기로 줄여요."));
       body.append(c);
       drawPv();
-    } else { msgEl = el("div", "sx-msg"); body.append(msgEl); }
+    } else if (!owner) gate(body, "글"); // 피드: 로그인 전엔 안내
+    else { msgEl = el("div", "sx-msg"); body.append(msgEl); }
+    if (!msgEl || !body.contains(msgEl)) { msgEl = el("div", "sx-msg"); body.append(msgEl); }
     const list = el("div", "sx-list"), more = btn("더 보기", "sx-more", () => load(false));
     more.hidden = true;
     body.append(list, more);
@@ -356,40 +376,65 @@ window.Social = function Social(ctx) {
       if (!sb) { list.replaceChildren(el("div", "sx-empty", "불러오는 중…")); return; }
       if (reset) diaryShown = 0;
       try {
-        const rows = await fetchRows(sb.from("office_diary").select("id,char,body,photo,created_at").eq("char", name).order("created_at", { ascending: false }).range(diaryShown, diaryShown + PAGE - 1));
+        let q = sb.from("office_diary").select("id,char,body,photo,created_at");
+        if (owner) q = q.eq("char", owner);
+        const rows = await fetchRows(q.order("created_at", { ascending: false }).range(diaryShown, diaryShown + PAGE - 1));
         if (my !== seq) return;
+        markSeen(owner, rows);
         const items = rows.map((r) => {
           const a = el("article", "sx-post"), meta = el("div", "sx-meta"), t = el("time", null, when(r.created_at));
           t.dateTime = r.created_at;
+          if (!owner) { // 피드: 누가 올렸는지 (누르면 그 사람 글로)
+            const who = el("button", "sx-who");
+            who.type = "button"; who.append(face(r.char), el("b", null, r.char));
+            who.onclick = () => openPerson(r.char, "diary");
+            meta.append(who);
+          }
           meta.append(t, el("span", "sp"));
           if (ctx.me()?.char === r.char) meta.append(delBtn(async () => { if ((await call("office_diary_delete", { p_id: r.id })) === "ok") load(true); }));
           a.append(meta);
-          if (r.photo && /^data:image\/(jpeg|png|webp);base64,/.test(r.photo)) { const im = el("img"); im.alt = `${d.title} 사진`; im.loading = "lazy"; im.src = r.photo; a.append(im); }
+          if (r.photo && /^data:image\/(jpeg|png|webp);base64,/.test(r.photo)) { const im = el("img"); im.alt = `${r.char} 님이 올린 사진`; im.loading = "lazy"; im.src = r.photo; a.append(im); }
           if (r.body) a.append(el("p", null, r.body));
-          const cb = el("div", "sx-cmts"); // 댓글
-          boxes.set(r.id, cb); a.append(cb);
+          const lk = el("div", "sx-like"), cb = el("div", "sx-cmts"); // 좋아요 · 댓글
+          likeBoxes.set(r.id, lk); boxes.set(r.id, cb); owners.set(r.id, r.char); a.append(lk, cb);
           return a;
         });
-        if (reset) list.replaceChildren(...(items.length ? items : [el("div", "sx-empty", `아직 ${d.title}가 없어요`)]));
+        if (reset) list.replaceChildren(...(items.length ? items : [el("div", "sx-empty", owner ? "아직 올린 글이 없어요" : "아직 아무도 글을 안 올렸어요 — 첫 글을 올려 보세요")]));
         else list.append(...items);
         diaryShown += rows.length;
         loadCmts(rows.map((r) => r.id));
         more.hidden = rows.length < PAGE;
       } catch (e) {
         console.error(e);
-        if (my === seq) list.replaceChildren(el("div", "sx-empty", missing(e) ? NOT_READY : `${d.title}를 불러오지 못했어요`));
+        if (my === seq) list.replaceChildren(el("div", "sx-empty", missing(e) ? NOT_READY : "글을 불러오지 못했어요"));
       }
     }
     // 댓글: 누구나 읽고, 로그인한 직원이 쓰고, 쓴 사람·일기 주인이 지운다
-    const boxes = new Map(); // 글 id → 댓글 칸
-    async function loadCmts(ids) {
+    const boxes = new Map(), owners = new Map(), likeBoxes = new Map(); // 글 id → 댓글 칸 · 글쓴이 · 좋아요 칸
+    async function loadCmts(ids) { // 댓글과 좋아요를 같이
       const sb = ctx.sb();
       if (!sb || !ids.length) return;
-      try {
-        const cs = await fetchRows(sb.from("office_diary_comments").select("id,post_id,from_char,body,created_at").in("post_id", ids).order("id", { ascending: true }));
-        if (my !== seq) return;
-        for (const id of ids) drawCmts(id, cs.filter((c) => c.post_id === id));
-      } catch (e) { if (!missing(e)) console.error(e); }
+      const [cs, ls] = await Promise.all([
+        fetchRows(sb.from("office_diary_comments").select("id,post_id,from_char,body,created_at").in("post_id", ids).order("id", { ascending: true })).catch((e) => (missing(e) || console.error(e), null)),
+        fetchRows(sb.from("office_diary_likes").select("post_id,char").in("post_id", ids)).catch((e) => (missing(e) || console.error(e), null)),
+      ]);
+      if (my !== seq) return;
+      for (const id of ids) {
+        if (cs) drawCmts(id, cs.filter((c) => c.post_id === id));
+        if (ls) drawLikes(id, ls.filter((l) => l.post_id === id).map((l) => l.char));
+      }
+    }
+    function drawLikes(id, who) { // ♡ 좋아요 N — 누르면 좋아요, 다시 누르면 취소
+      const box = likeBoxes.get(id), me = ctx.me()?.char;
+      if (!box) return;
+      const on = !!me && who.includes(me), b = el("button", "sx-likebtn" + (on ? " on" : ""), `${on ? "❤" : "♡"} 좋아요${who.length ? " " + who.length : ""}`);
+      b.type = "button";
+      b.disabled = !me;
+      b.title = me ? (on ? "좋아요 취소" : "좋아요") : "로그인하면 누를 수 있어요";
+      b.onclick = async () => { if ((await call("office_diary_like", { p_post: id })) === "ok") loadCmts([id]); };
+      const names = who.length ? el("span", "sx-likers", who.length <= 3 ? `${who.join(", ")} 님이 좋아해요` : `${who.slice(0, 2).join(", ")} 님 외 ${who.length - 2}명이 좋아해요`) : null;
+      if (names) names.title = who.join(", ");
+      box.replaceChildren(...[b, names].filter(Boolean));
     }
     function drawCmts(id, cs) {
       const box = boxes.get(id), me = ctx.me()?.char;
@@ -398,7 +443,7 @@ window.Social = function Social(ctx) {
         const row = el("div", "sx-cmt"), body = el("div", "c"), meta = el("div", "sx-meta"), t = el("time", null, when(c.created_at));
         t.dateTime = c.created_at;
         meta.append(el("b", null, c.from_char), t, el("span", "sp"));
-        if (me && (me === c.from_char || me === name)) meta.append(delBtn(async () => { if ((await call("office_diary_comment_delete", { p_id: c.id })) === "ok") loadCmts([id]); }));
+        if (me && (me === c.from_char || me === owners.get(id))) meta.append(delBtn(async () => { if ((await call("office_diary_comment_delete", { p_id: c.id })) === "ok") loadCmts([id]); }));
         body.append(meta, el("p", null, c.body));
         row.append(face(c.from_char), body);
         return row;
@@ -435,6 +480,65 @@ window.Social = function Social(ctx) {
       max *= 0.82; q = Math.max(0.55, q - 0.06);
     }
     return out && out.length < 650000 ? out : null;
+  }
+
+  // ───────── 모두의 피드 · 새 글 알림 ─────────
+  // 새 글은 사진 빼고 번호만 몇 초마다 확인 (사진까지 실시간으로 받으면 무겁다). 처음 연 사람은 지금까지를 다 본 것으로
+  const FEED_DEFAULT = { icon: "📷", title: "일상" };
+  const feedOf = (n) => ctx.diary[n] || FEED_DEFAULT;
+  const SEEN_KEY = "teamOfficeFeedSeen";
+  let seen = { all: 0, by: {} }, feedRows = [], feedMax = 0, feedInit = false;
+  const seenKey = () => `${SEEN_KEY}:${ctx.me()?.char || ""}`; // 본 글은 사람마다 (테스트 판에서 사람을 바꿔도 따로)
+  const saveSeen = () => { try { localStorage.setItem(seenKey(), JSON.stringify(seen)); } catch {} };
+  function loadSeen() {
+    seen = { all: 0, by: {} };
+    try { seen = { ...seen, ...JSON.parse(localStorage.getItem(seenKey())) }; } catch {}
+    if (!seen.all && feedInit) { seen.all = feedMax; saveSeen(); } // 처음 보는 사람은 지금까지를 다 본 것으로
+  }
+  loadSeen();
+  function markSeen(owner, rows) {
+    const top = Math.max(0, ...rows.map((r) => +r.id));
+    if (!top) return;
+    if (owner) seen.by[owner] = Math.max(seen.by[owner] || 0, top); else seen.all = Math.max(seen.all, top);
+    saveSeen(); setFeedBadge(); ctx.onChange?.();
+  }
+  const unseen = () => { const me = ctx.me()?.char; return feedRows.filter((r) => r.char !== me && r.id > Math.max(seen.all, seen.by[r.char] || 0)); };
+  function feedNew(name) { // 머리 위 「새 글」: 하루 안에 올라온 안 본 글이 있으면
+    const day = Date.now() - 864e5;
+    return unseen().some((r) => r.char === name && Date.parse(r.created_at) > day);
+  }
+  async function pollFeed() {
+    const sb = ctx.sb();
+    if (!sb) return;
+    try {
+      const q = sb.from("office_diary").select("id,char,created_at");
+      const rows = feedInit ? await fetchRows(q.gt("id", feedMax).order("id", { ascending: true }).limit(50))
+        : await fetchRows(q.order("id", { ascending: false }).limit(200));
+      const me = ctx.me()?.char;
+      if (!feedInit) { feedInit = true; if (!seen.all) { seen.all = Math.max(0, ...rows.map((r) => +r.id)); saveSeen(); } }
+      else for (const r of rows) if (r.char !== me) toast(r);
+      feedRows = [...feedRows, ...rows].sort((a, b) => a.id - b.id).slice(-200);
+      feedMax = Math.max(feedMax, ...rows.map((r) => +r.id));
+      setFeedBadge(); ctx.onChange?.();
+    } catch (e) { if (!missing(e)) console.error(e); }
+  }
+  function setFeedBadge() { if (!hud.feedBadge) return; const n = unseen().length; hud.feedBadge.hidden = !n; hud.feedBadge.textContent = n > 99 ? "99+" : String(n); }
+  const toastEl = el("div", "sx-toast");
+  toastEl.hidden = true;
+  document.body.append(toastEl);
+  function toast(r) { // 「○○ 님이 새 글을 올렸어요」 — 누르면 그 사람 글로
+    toastEl.replaceChildren(face(r.char), el("span", null, `${r.char} 님이 새 ${feedOf(r.char).title === "일상" ? "글" : feedOf(r.char).title}을 올렸어요`), el("b", null, "보기"));
+    toastEl.onclick = () => { toastEl.hidden = true; openPerson(r.char, "diary"); };
+    toastEl.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => { toastEl.hidden = true; }, 7000);
+  }
+  function openFeed() { clearInterval(dmTimer); view = { kind: "feed" }; show(); renderFeedView(); }
+  function renderFeedView() {
+    const my = ++seq;
+    card.replaceChildren(header(el("div", "em", "📷"), "모두의 피드", "직원들이 올린 글·사진 — 댓글도 남겨 보세요"));
+    const body = el("div", "sx-body");
+    card.append(body);
+    renderFeed(body, null, FEED_DEFAULT, my);
   }
 
   // ───────── 칭찬 하트: 받은 수(모두) · 오늘 내가 보낸 사람 ─────────
@@ -561,69 +665,26 @@ window.Social = function Social(ctx) {
     } catch {}
   }
 
-  // ───────── 점심 투표 (하루 한 표, 다시 누르면 바뀜) ─────────
-  const MENUS = ["한식", "국밥", "중식", "일식", "양식", "분식", "샐러드", "햄버거", "도시락·편의점"];
-  function openLunch() { clearInterval(dmTimer); view = { kind: "lunch" }; show(); renderLunch(); }
-  function renderLunch() {
-    const my = ++seq, d = today(), dt = new Date(d + "T12:00:00+09:00");
-    card.replaceChildren(header(el("div", "em", "🍚"), "오늘 점심 뭐 먹지?", `${dt.getMonth() + 1}월 ${dt.getDate()}일 (${DAYS[dt.getDay()]}) · 하루 한 표, 다시 누르면 바뀌어요`));
-    const body = el("div", "sx-body");
-    card.append(body);
-    const can = gate(body, "점심 투표");
-    msgEl = el("div", "sx-msg");
-    const opts = el("div", "sx-opts"), c = el("div", "sx-compose"), row = el("div", "sx-row"), other = el("input");
-    other.type = "text"; other.maxLength = 20; other.placeholder = "다른 메뉴 직접 쓰기";
-    const vote = async (m) => { if ((await call("office_lunch_vote", { p_menu: m })) === "ok") { say(m ? `「${m}」에 한 표!` : "투표를 취소했어요"); load(); } };
-    other.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing && other.value.trim()) vote(other.value.trim()); };
-    row.append(other, btn("투표", "dark", () => other.value.trim() && vote(other.value.trim())));
-    c.append(row);
-    body.append(opts);
-    if (can) body.append(c);
-    body.append(msgEl);
-    async function load() {
-      if (!ctx.live) return;
-      const sb = ctx.sb();
-      if (!sb) return;
-      try {
-        const rows = await fetchRows(sb.from("office_lunch").select("char,menu").eq("day", d));
-        if (my !== seq) return;
-        const by = new Map(MENUS.map((m) => [m, []]));
-        for (const r of rows) (by.get(r.menu) || by.set(r.menu, []).get(r.menu)).push(r.char);
-        const me = ctx.me()?.char, mine = rows.find((r) => r.char === me)?.menu, max = Math.max(1, ...[...by.values()].map((v) => v.length));
-        const list = [...by.entries()].sort((a, b) => b[1].length - a[1].length || MENUS.indexOf(a[0]) - MENUS.indexOf(b[0]));
-        opts.replaceChildren(...list.map(([m, who]) => {
-          const b = el("button", "sx-opt" + (m === mine ? " on" : "")), bar = el("span", "bar"), r = el("span", "row"), fs = el("span", "fs");
-          b.type = "button"; b.disabled = !can;
-          bar.style.width = `${(who.length / max) * 100}%`;
-          for (const n of who.slice(0, 6)) fs.append(face(n));
-          r.append(el("b", null, (m === mine ? "✓ " : "") + m), fs, el("span", "sx-hint", `${who.length}표`));
-          b.append(bar, r);
-          b.title = who.join(", ");
-          b.onclick = () => vote(m === mine ? "" : m);
-          return b;
-        }));
-        if (!rows.length) say("아직 아무도 안 골랐어요 — 첫 표를 던져 보세요");
-      } catch (e) { console.error(e); if (my === seq) say(missing(e) ? NOT_READY : "투표를 불러오지 못했어요", true); }
-    }
-    view.reload = load;
-    load();
-  }
-
-  // ───────── 위쪽 단추: 🍚 점심 · 💬 대화 (실시간 판에서만) ─────────
+  // ───────── 위쪽 단추: 📷 피드 · 💬 대화 (실시간 판에서만) ─────────
   const hud = {};
   if (ctx.live && ctx.hud) {
-    hud.lunch = el("button", "sx-hb");
+    hud.feed = el("button", "sx-hb");
+    hud.feed.innerHTML = '<span class="ico">📷</span><span class="lbl"> 피드</span>';
+    hud.feed.title = "모두의 피드";
+    hud.feedBadge = el("span", "sx-badge");
+    hud.feedBadge.hidden = true;
+    hud.feed.append(hud.feedBadge);
+    hud.feed.type = "button";
+    hud.feed.onclick = () => { listen(); openFeed(); };
     hud.dm = el("button", "sx-hb");
-    hud.lunch.innerHTML = '<span class="ico">🍚</span><span class="lbl"> 점심 투표</span>'; // 휴대폰은 아이콘만
-    hud.dm.innerHTML = '<span class="ico">💬</span><span class="lbl"> 대화</span>';
-    hud.lunch.title = "점심 투표"; hud.dm.title = "1:1 대화";
+    hud.dm.innerHTML = '<span class="ico">💬</span><span class="lbl"> 대화</span>'; // 휴대폰은 아이콘만
+    hud.dm.title = "1:1 대화";
     hud.badge = el("span", "sx-badge");
     hud.badge.hidden = true;
     hud.dm.append(hud.badge);
-    hud.lunch.type = hud.dm.type = "button";
-    hud.lunch.onclick = () => { listen(); openLunch(); };
+    hud.dm.type = "button";
     hud.dm.onclick = () => { listen(); openInbox(); };
-    ctx.hud.append(hud.lunch, hud.dm);
+    ctx.hud.append(hud.feed, hud.dm);
   } else hud.badge = el("span");
 
   // ───────── 간식 신청 ─────────
@@ -716,14 +777,16 @@ window.Social = function Social(ctx) {
     const sb = ctx.sb();
     if (live || !sb) return;
     live = sb.channel("office-social");
-    const poke = (kind) => () => { if (view && view.reload && (kind === "snacks" ? view.kind === "snacks" : kind === "lunch" ? view.kind === "lunch" : view.kind === "person" && view.tab === "notes")) clearTimeout(listen.t), (listen.t = setTimeout(() => view?.reload?.(), 300)); };
+    const poke = (kind) => () => { if (view && view.reload && (kind === "snacks" ? view.kind === "snacks" : view.kind === "person" && view.tab === "notes")) clearTimeout(listen.t), (listen.t = setTimeout(() => view?.reload?.(), 300)); };
     live.on("postgres_changes", { event: "*", schema: "public", table: "office_notes" }, poke("notes"))
       .on("postgres_changes", { event: "*", schema: "public", table: "office_snacks" }, poke("snacks"))
-      .on("postgres_changes", { event: "*", schema: "public", table: "office_lunch" }, poke("lunch"))
-      .on("postgres_changes", { event: "*", schema: "public", table: "office_diary_comments" }, () => { if (view?.kind === "person" && view.tab === "diary") { clearTimeout(listen.c); listen.c = setTimeout(() => view?.reloadCmts?.(), 300); } })
+      .on("postgres_changes", { event: "*", schema: "public", table: "office_diary_likes" }, () => { if (view?.kind === "feed" || (view?.kind === "person" && view.tab === "diary")) { clearTimeout(listen.c); listen.c = setTimeout(() => view?.reloadCmts?.(), 300); } })
+      .on("postgres_changes", { event: "*", schema: "public", table: "office_diary_comments" }, () => { if (view?.kind === "feed" || (view?.kind === "person" && view.tab === "diary")) { clearTimeout(listen.c); listen.c = setTimeout(() => view?.reloadCmts?.(), 300); } })
       .on("postgres_changes", { event: "*", schema: "public", table: "office_hearts" }, () => { clearTimeout(listen.h); listen.h = setTimeout(async () => { await loadHearts(); if (view?.kind === "person") renderPerson(); }, 300); })
       .subscribe();
     loadHearts();
+    pollFeed();
+    setInterval(() => { if (!document.hidden) pollFeed(); }, ctx.test ? 8000 : 30000);
   }
 
   return {
@@ -731,7 +794,8 @@ window.Social = function Social(ctx) {
     openSnacks() { listen(); openSnacks(); },
     openInbox() { listen(); openInbox(); },
     openThread(name) { listen(); openThread(name); },
-    openLunch() { listen(); openLunch(); },
+    openFeed() { listen(); openFeed(); },
+    feedNew,
     heartCount: (name) => hearts.get(name) || 0,
     isBday,
     get open() { return !wrap.hidden; },
@@ -741,6 +805,7 @@ window.Social = function Social(ctx) {
       if (key === sync.key) return;
       const prev = sync.me;
       sync.key = key; sync.me = me;
+      if (prev !== me) { loadSeen(); setFeedBadge(); ctx.onChange?.(); } // 사람이 바뀌면 그 사람이 본 글 기준으로
       clearInterval(unreadTimer);
       if (me) { unreadTimer = setInterval(() => { if (!document.hidden) pollUnread(); }, 20000); pollUnread(); } else setUnread(0);
       loadHearts();
@@ -748,7 +813,7 @@ window.Social = function Social(ctx) {
       if (prev === me) return view.reload?.(); // 저장소만 막 준비됨
       // 대화방에서 상대로 바뀌면(테스트 판) 방금까지의 나와 이어서
       const dm = () => (view.name === me ? (prev ? openThread(prev) : openInbox()) : openThread(view.name));
-      ({ snacks: renderSnacks, inbox: renderInbox, dm, lunch: renderLunch }[view.kind] || renderPerson)();
+      ({ snacks: renderSnacks, inbox: renderInbox, dm, feed: renderFeedView }[view.kind] || renderPerson)();
     },
   };
   function sync() {}

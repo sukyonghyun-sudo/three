@@ -2,7 +2,7 @@
 // 모두 출근한 상태로 시작, 아무 이름이나 「로그인」 + 아무 숫자 4자리. 탭 두 개면 서로 다른 사람으로 1:1 대화를 주고받을 수 있다
 // 규칙(글자 수·하루 한 번·링크 모양)은 supabase_setup.sql / supabase_social.sql / supabase_more.sql 함수와 같게
 (() => {
-  const KEY = "teamOfficeTestDb", VER = 4;
+  const KEY = "teamOfficeTestDb", VER = 6;
   const NAMES = window.__TEST_NAMES || [];
   const now = () => new Date().toISOString();
   const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
@@ -36,6 +36,9 @@
       office_diary: [
         { id: id.n++, char: "홍수연", body: "오늘 처음으로 뒤집기 성공! 👏", photo: photo("#ffd1dc", "#bde0fe", "뒤집기 성공 👶"), created_at: ago(60 * 26) },
         { id: id.n++, char: "홍수연", body: "이유식 첫날. 반은 먹고 반은 얼굴에…", photo: null, created_at: ago(60 * 3) },
+        { id: id.n++, char: "김현준", body: "오늘 점심 국밥 성공 🍲 역시 1층 국밥집", photo: photo("#f6d365", "#fda085", "국밥 🍲"), created_at: ago(60 * 2) },
+        { id: id.n++, char: "오누리", body: "어제 축구 보신 분? 마지막 골 미쳤다 ⚽", photo: null, created_at: ago(70) },
+        { id: id.n++, char: "원효인", body: "책상 피규어 친구가 생겼어요", photo: photo("#a1c4fd", "#c2e9fb", "피규어 ✨"), created_at: ago(35) },
       ],
       office_diary_comments: [
         { id: 9001, post_id: 1, from_char: "송나정", body: "와 벌써 뒤집기라니 대단해요 👏", created_at: ago(60 * 20) },
@@ -47,8 +50,8 @@
       ],
       office_hearts: [["홍수연", "석용현"], ["김현준", "석용현"], ["원효인", "송나정"], ["한아린", "송나정"], ["석용현", "홍수연"], ["오누리", "김현준"]]
         .map(([f, t]) => ({ id: id.n++, from_char: f, to_char: t, day: kst(), created_at: ago(30) })),
-      office_lunch: [["김현준", "국밥"], ["오누리", "국밥"], ["한아린", "샐러드"], ["원효인", "일식"], ["손주용", "국밥"]]
-        .map(([c, m]) => ({ day: kst(), char: c, menu: m, created_at: ago(15) })),
+      office_diary_likes: [[1, "송나정"], [1, "김현준"], [1, "원효인"], [1, "석용현"], [3, "오누리"], [3, "손주용"], [5, "한아린"]]
+        .map(([post_id, c]) => ({ post_id, char: c, created_at: ago(20) })),
       office_dms: [
         dm("김현준", "석용현", "용현님 오늘 점심 국밥 어때요?", 40), dm("석용현", "김현준", "좋아요 12시에 1층에서 봐요", 38),
         dm("김현준", "석용현", "넵 👍", 37, false), dm("홍수연", "석용현", "육아일기 기능 고마워요 😊", 10, false),
@@ -71,7 +74,7 @@
     if (e.key !== KEY) return;
     db = load() || db;
     for (const r of db.office_people) notify("office_people", { eventType: "UPDATE", new: { ...r } });
-    for (const t of ["office_notes", "office_snacks", "office_lunch", "office_hearts", "office_diary_comments"]) notify(t);
+    for (const t of ["office_notes", "office_snacks", "office_hearts", "office_diary_comments", "office_diary_likes"]) notify(t);
   });
   // 테스트: 비밀번호는 아무 숫자 4자리
   const pinOk = (p) => /^\d{4}$/.test(String(p || ""));
@@ -127,7 +130,7 @@
     office_diary_delete: ({ p_char, p_pin, p_id }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return v;
       const i = db.office_diary.findIndex((n) => n.id === p_id && n.char === p_char); if (i < 0) return "not_allowed";
-      db.office_diary.splice(i, 1); db.office_diary_comments = db.office_diary_comments.filter((c) => c.post_id !== p_id); save(); return "ok";
+      db.office_diary.splice(i, 1); db.office_diary_comments = db.office_diary_comments.filter((c) => c.post_id !== p_id); db.office_diary_likes = db.office_diary_likes.filter((l) => l.post_id !== p_id); save(); return "ok";
     },
     office_snack_add: ({ p_char, p_pin, p_item, p_link }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return v;
@@ -151,12 +154,12 @@
       if (db.office_hearts.some((h) => h.from_char === p_char && h.to_char === p_to && h.day === kst())) return "already";
       db.office_hearts.push({ id: nid(), from_char: p_char, to_char: p_to, day: kst(), created_at: now() }); save(); notify("office_hearts"); return "ok";
     },
-    office_lunch_vote: ({ p_char, p_pin, p_menu }) => {
+    office_diary_like: ({ p_char, p_pin, p_post }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return v;
-      const m = String(p_menu || "").trim(); if (m.length > 20) return "too_long";
-      db.office_lunch = db.office_lunch.filter((r) => !(r.day === kst() && r.char === p_char));
-      if (m) db.office_lunch.push({ day: kst(), char: p_char, menu: m, created_at: now() });
-      save(); notify("office_lunch"); return "ok";
+      if (!db.office_diary.some((d) => d.id === p_post)) return "not_allowed";
+      const i = db.office_diary_likes.findIndex((l) => l.post_id === p_post && l.char === p_char);
+      if (i >= 0) db.office_diary_likes.splice(i, 1); else db.office_diary_likes.push({ post_id: p_post, char: p_char, created_at: now() });
+      save(); notify("office_diary_likes"); return "ok";
     },
     office_dm_send: ({ p_char, p_pin, p_to, p_body }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return v;
@@ -188,7 +191,7 @@
   function query(table) {
     const f = []; let ord = null, lim = null, rng = null;
     const q = {
-      select() { return q; }, eq(c, v) { f.push((r) => r[c] === v); return q; }, in(c, vs) { f.push((r) => vs.includes(r[c])); return q; },
+      select() { return q; }, eq(c, v) { f.push((r) => r[c] === v); return q; }, in(c, vs) { f.push((r) => vs.includes(r[c])); return q; }, gt(c, v) { f.push((r) => r[c] > v); return q; },
       order(c, o) { ord = [c, o?.ascending !== false]; return q; }, limit(n) { lim = n; return q; }, range(a, b) { rng = [a, b]; return q; },
       then(res, rej) {
         if (table === "office_dms" || table === "office_pins") return Promise.resolve({ data: [], error: null }).then(res, rej); // 실제처럼 직접 읽기 막힘

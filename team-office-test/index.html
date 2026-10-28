@@ -365,7 +365,7 @@ const ALL_DESKS = COLS.flatMap((c) => [...c.upper, ...c.lower]).filter((n) => n 
 // 컴퓨터를 치운 책상 (10-27 사용자 지정): 76·77·78 = 간식 책상, 104 = 빈 책상 — 사람 자리로는 쓰지 않는다
 const NO_PC = new Set([76, 77, 78, 104]), SNACK_DESKS = new Set([76, 77, 78]);
 // 육아일기를 쓰는 사람 (머리 위 아이콘 · 사람 카드의 탭) · 간식 목록을 비울 수 있는 사람 (10-28)
-const DIARY = { 홍수연: { icon: "👶", title: "육아일기" } };
+const DIARY = {}; // 따로 이름 붙인 글 탭 (예: { 이름: { icon: "👶", title: "육아일기" } }) — 10-28 사용자: 육아일기 없이 모두 같은 SNS(📷 일상)로
 const SNACK_ADMIN = "석용현";
 // 내 상태 (본인이 사람 카드 「⚙️ 내 상태」에서 고른다): 회의·집중은 머리 위 아이콘, 재택·휴가는 출근해 있어도 사무실 자리를 비운다
 const MODES = { meeting: ["📅", "회의 중"], focus: ["🎧", "집중하는 중"], home: ["🏠", "재택 근무 중"], vacation: ["🌴", "휴가 중"] };
@@ -2153,7 +2153,9 @@ function iconList(m) {
   const p = PERSONAL.get(m.name) || {}, out = [];
   if (window.__social?.isBday(m.name)) out.push(["🎂", "#fff0d2", "notes"]);
   if (MODES[p.mode] && !AWAY_MODES.has(p.mode)) out.push([`${MODES[p.mode][0]} ${MODES[p.mode][1].replace("하는 중", "")}`, "#e6eeff", "notes", true, "#2f4f9e"]); // 「🗓️ 회의 중」처럼 글자도 (아이콘만으론 알기 어려워서)
-  if (DIARY[m.name]) out.push([DIARY[m.name].icon, "#ffe1ea", "diary"]);
+  const fresh = window.__social?.feedNew(m.name); // 안 본 새 글
+  if (DIARY[m.name]) out.push(fresh ? [`${DIARY[m.name].icon} 새 글`, "#ffe1ea", "diary", true, "#d6336c"] : [DIARY[m.name].icon, "#ffe1ea", "diary"]);
+  else if (fresh) out.push(["📷 새 글", "#e3eeff", "diary", true, "#1f5fbf"]);
   const h = window.__social?.heartCount(m.name) || 0;
   if (h) out.push([`❤${h > 99 ? "99+" : h}`, "#ffffff", "notes", true]);
   return out;
