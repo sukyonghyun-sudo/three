@@ -198,22 +198,27 @@ window.Social = function Social(ctx) {
   async function fetchRows(q) { const { data, error } = await q; if (error) throw error; return data || []; }
 
   // ───────── 창 ─────────
-  function show() { wrap.hidden = false; }
-  function close() { wrap.hidden = true; view = null; seq++; clearInterval(dmTimer); }
+  let pushed = false; // 창을 열면 기록을 하나 넣어서, 뒤로가기는 페이지를 떠나지 않고 창만 닫는다
+  function show() { wrap.hidden = false; if (!pushed) { history.pushState({ sxCard: 1 }, ""); pushed = true; } }
+  function close(fromBack = false) {
+    wrap.hidden = true; view = null; seq++; clearInterval(dmTimer);
+    if (pushed) { pushed = false; if (!fromBack) history.back(); }
+  }
+  addEventListener("popstate", (e) => { if (pushed && !e.state?.sxCard && !wrap.hidden) close(true); });
   function header(img, title, sub) {
     const h = el("div", "sx-head"), t = el("div", "t");
     t.append(el("b", null, title), el("span", null, sub));
     const x = el("button", "sx-x", "×");
-    x.type = "button"; x.title = "닫기"; x.onclick = close;
+    x.type = "button"; x.title = "닫기"; x.onclick = () => close();
     h.append(img, t, x);
     return h;
   }
   // 쓰는 칸 위: 실시간 판이 아니거나 로그인 전이면 안내
-  function gate(body, what) {
-    if (!ctx.live) { body.append(el("div", "sx-gate", `${what}은(는) 실시간 판(GitHub 링크)에서 열려요`)); return false; }
+  function gate(body, what, readable = true) {
+    if (!ctx.live) { body.append(el("div", "sx-gate", `${what} — 실시간 판(GitHub 링크)에서 열려요`)); return false; }
     if (ctx.me()) return true;
-    const g = el("div", "sx-gate", `${what}을(를) 쓰려면 사원 목록의 내 이름 줄에서 「나예요」(처음 한 번) 또는 「로그인」을 눌러 주세요. 읽기는 누구나 할 수 있어요.`);
-    g.append(el("br"), btn("사원 목록 열기", "", () => { close(); ctx.openList(); }));
+    const g = el("div", "sx-gate", `${what} — 사원 목록의 내 이름 줄에서 「나예요」(처음 한 번) 또는 「로그인」을 누르면 할 수 있어요.${readable ? " 읽기는 누구나 돼요." : ""}`);
+    g.append(el("br"), btn("사원 목록 열기", "", () => { close(); setTimeout(() => ctx.openList(), 80); })); // 뒤로가기 기록이 정리된 뒤에
     body.append(g);
     return false;
   }
@@ -240,7 +245,7 @@ window.Social = function Social(ctx) {
         hb.disabled = sent;
         acts.append(hb, btn("💬 1:1 대화", "", () => openThread(name)));
         if (ctx.test) acts.append(btn("🧪 이 사람으로 보기", "", () => ctx.switchTo(name))); // 테스트 판: 그 사람이 돼서 써 보기
-      } else acts.append(Object.assign(btn(`❤ 오늘 받은 칭찬 ${n}`, "heart", () => {}), { disabled: true }));
+      } else if (n || me === name) acts.append(Object.assign(btn(`❤ 오늘 받은 칭찬 ${n}`, "heart", () => {}), { disabled: true }));
       card.append(acts);
     }
     if (isBday(name)) card.append(el("div", "sx-bday", `🎂 오늘은 ${name} 님 생일이에요! 방명록에 축하 한마디 남겨 주세요`));
@@ -283,7 +288,7 @@ window.Social = function Social(ctx) {
     body.append(c, msgEl);
   }
   async function renderNotes(body, name, my) {
-    if (gate(body, "방명록")) {
+    if (gate(body, "방명록 쓰기")) {
       const c = el("div", "sx-compose"), ta = el("textarea");
       ta.maxLength = 200; ta.rows = 2; ta.placeholder = `${name} 님에게 한마디 (200자)`;
       const row = el("div", "sx-row");
@@ -364,7 +369,7 @@ window.Social = function Social(ctx) {
       c.append(ta, pv, row, file, el("div", "sx-hint", "올린 글과 사진은 링크를 아는 누구나 볼 수 있어요. 사진은 올릴 때 알맞은 크기로 줄여요."));
       body.append(c);
       drawPv();
-    } else if (!owner) gate(body, "글"); // 피드: 로그인 전엔 안내
+    } else if (!owner) gate(body, "글 올리기"); // 피드: 로그인 전엔 안내
     else { msgEl = el("div", "sx-msg"); body.append(msgEl); }
     if (!msgEl || !body.contains(msgEl)) { msgEl = el("div", "sx-msg"); body.append(msgEl); }
     const list = el("div", "sx-list"), more = btn("더 보기", "sx-more", () => load(false));
@@ -406,6 +411,7 @@ window.Social = function Social(ctx) {
         more.hidden = rows.length < PAGE;
       } catch (e) {
         console.error(e);
+        more.hidden = true;
         if (my === seq) list.replaceChildren(el("div", "sx-empty", missing(e) ? NOT_READY : "글을 불러오지 못했어요"));
       }
     }
@@ -694,7 +700,7 @@ window.Social = function Social(ctx) {
     card.replaceChildren(header(ic, "간식 신청", "먹고 싶은 간식이나 구매 링크를 남겨 주세요. 모아서 한 번에 사요"));
     const body = el("div", "sx-body");
     card.append(body);
-    if (gate(body, "간식 신청")) {
+    if (gate(body, "간식 신청하기")) {
       const c = el("div", "sx-compose"), item = el("input"), link = el("input");
       item.type = "text"; item.maxLength = 60; item.placeholder = "간식 이름 (예: 허니버터칩 2봉)";
       link.type = "text"; link.maxLength = 500; link.placeholder = "구매 링크 (있으면) https://…"; link.inputMode = "url";
@@ -754,6 +760,7 @@ window.Social = function Social(ctx) {
         }) : [el("li", "sx-empty", "아직 신청한 간식이 없어요")]));
       } catch (e) {
         console.error(e);
+        bar.hidden = true;
         if (my === seq) list.replaceChildren(el("li", "sx-empty", missing(e) ? NOT_READY : "목록을 불러오지 못했어요"));
       }
     }

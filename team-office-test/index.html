@@ -117,6 +117,9 @@ body.loading #app{opacity:0}
 .testnote{background:#fff4d6;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.55;margin-bottom:10px;color:#6b4f10}
 .testme{display:inline-flex;align-items:center;gap:2px;background:#fff4d6;border:1px solid #efd28a;border-radius:10px;padding:3px 4px 3px 9px;font-size:12px;color:#6b4f10}
 .testme select{font:inherit;font-size:12px;font-weight:700;border:0;background:none;color:inherit;cursor:pointer}
+.testnote details{margin-top:4px}
+.testnote summary{cursor:pointer;color:var(--blue,#007aff);font-weight:600;list-style:none}
+.testnote summary::-webkit-details-marker{display:none}
 .testnote button{border:0;background:none;color:#2f6fe4;font:inherit;font-size:12px;padding:0;cursor:pointer;text-decoration:underline}
 .pipph{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:14px;line-height:1.6}
 body.pip{margin:0;height:100vh;overflow:hidden;background:var(--bg)}
@@ -301,7 +304,7 @@ html body .cx-x{position:absolute;right:10px;top:10px;width:30px;height:30px;bor
       </div>
     </header>
     <ul id="list"></ul>
-    <div class="hint">드래그로 돌려 보기 · 휠로 확대 · 이름을 누르면 그 사람을 따라갑니다<br>원효인 님 책상 피규어: 「Chibi Friren :3」 CubeModeller · CC BY 4.0</div>
+    <div class="hint"><span id="howto">드래그로 돌려 보기 · 휠로 확대 · 사람을 누르면 그 사람 카드</span><br>원효인 님 책상 피규어: 「Chibi Friren :3」 CubeModeller · CC BY 4.0</div>
   </aside>
 </div>
 <script type="module">
@@ -1945,13 +1948,21 @@ window.__tour = TOUR; // 점검용
 
 // ───────────── 휴대폰: 사원 목록 접고 펴기 ─────────────
 const appEl = document.getElementById("app");
+if (matchMedia("(pointer: coarse)").matches) document.getElementById("howto").textContent = "한 손가락으로 돌려 보기 · 두 손가락으로 확대 · 사람을 누르면 그 사람 카드";
 // 아이폰: 키보드가 올라와도 화면 크기가 안 바뀌어서, 보이는 높이와의 차이(--kb)만큼 아래 시트·카드를 올린다 (안드로이드는 resizes-content 로 저절로)
 if (window.visualViewport) {
   const vv = window.visualViewport, fitKb = () => { const kb = Math.max(0, innerHeight - vv.height - vv.offsetTop); document.documentElement.style.setProperty("--kb", kb > 80 ? `${Math.round(kb)}px` : "0px"); };
   vv.addEventListener("resize", fitKb);
   vv.addEventListener("scroll", fitKb);
 }
-const setList = (open) => { appEl.classList.toggle("list-open", open); document.getElementById("listBtn").textContent = open ? "👥 목록 접기" : "👥 사원 목록"; };
+let listPushed = false; // 휴대폰: 목록을 열면 기록을 하나 넣어 뒤로가기로 접는다
+const setList = (open, fromBack = false) => {
+  appEl.classList.toggle("list-open", open);
+  document.getElementById("listBtn").textContent = open ? "👥 목록 접기" : "👥 사원 목록";
+  if (open && !listPushed && matchMedia("(max-width:820px),(max-height:520px)").matches) { history.pushState({ listSheet: 1 }, ""); listPushed = true; }
+  if (!open && listPushed) { listPushed = false; if (!fromBack) history.back(); }
+};
+addEventListener("popstate", (e) => { if (listPushed && !e.state?.listSheet && appEl.classList.contains("list-open")) setList(false, true); });
 document.getElementById("listBtn").onclick = () => setList(!appEl.classList.contains("list-open"));
 document.getElementById("listClose").onclick = () => setList(false);
 
@@ -2002,8 +2013,8 @@ window.__social = window.Social ? window.Social({
 if (window.__TEST) { // 테스트 판 안내 (목록 맨 위)
   const n = document.createElement("div");
   n.className = "testnote";
-  n.innerHTML = "🧪 <b>테스트 판</b> — 모두 로그인된 상태예요. 위쪽 「🧪 나」나 줄마다 「이 사람으로」를 누르면 그 사람이 돼서 글·하트·대화를 해 볼 수 있어요. 대화방의 「상대로 답장」으로 양쪽을 번갈아 써 보세요. 모두 이 브라우저에만 저장돼요. <button type=button>처음 상태로</button>";
-  n.querySelector("button").onclick = () => { try { localStorage.removeItem("teamOfficeTestDb"); sessionStorage.clear(); } catch {} location.reload(); };
+  n.innerHTML = "🧪 <b>테스트 판</b> · 이 브라우저에만 저장 <button type=button data-reset>처음 상태로</button><details><summary>사용법</summary>모두 로그인된 상태예요. 위쪽 「🧪 나」나 줄마다 「이 사람으로」를 누르면 그 사람이 돼서 글·하트·대화를 해 볼 수 있어요. 대화방의 「상대로 답장」으로 양쪽을 번갈아 써 보세요.</details>";
+  n.querySelector("[data-reset]").onclick = () => { try { localStorage.removeItem("teamOfficeTestDb"); sessionStorage.clear(); } catch {} location.reload(); };
   document.querySelector("#panel header").prepend(n);
   const lab = document.createElement("label"), sel = document.createElement("select");
   lab.className = "testme"; lab.title = "테스트: 누구로 쓸지";
