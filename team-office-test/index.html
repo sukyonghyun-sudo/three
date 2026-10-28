@@ -1955,14 +1955,19 @@ if (window.visualViewport) {
   vv.addEventListener("resize", fitKb);
   vv.addEventListener("scroll", fitKb);
 }
-let listPushed = false; // 휴대폰: 목록을 열면 기록을 하나 넣어 뒤로가기로 접는다
+let listPushed = false, listBack = false, listPushLater = false; // 휴대폰: 목록을 열면 기록을 하나 넣어 뒤로가기로 접는다 (social.js 의 카드와 같은 방식)
 const setList = (open, fromBack = false) => {
   appEl.classList.toggle("list-open", open);
   document.getElementById("listBtn").textContent = open ? "👥 목록 접기" : "👥 사원 목록";
-  if (open && !listPushed && matchMedia("(max-width:820px),(max-height:520px)").matches) { history.pushState({ listSheet: 1 }, ""); listPushed = true; }
-  if (!open && listPushed) { listPushed = false; if (!fromBack) history.back(); }
+  if (open && !listPushed && matchMedia("(max-width:820px),(max-height:520px)").matches) {
+    if (listBack) listPushLater = true; else { history.pushState({ listSheet: 1 }, ""); listPushed = true; }
+  }
+  if (!open) { listPushLater = false; if (listPushed) { listPushed = false; if (!fromBack) { listBack = true; history.back(); } } }
 };
-addEventListener("popstate", (e) => { if (listPushed && !e.state?.listSheet && appEl.classList.contains("list-open")) setList(false, true); });
+addEventListener("popstate", (e) => {
+  if (listBack) { listBack = false; if (listPushLater && appEl.classList.contains("list-open")) { listPushLater = false; history.pushState({ listSheet: 1 }, ""); listPushed = true; } return; }
+  if (listPushed && !e.state?.listSheet && appEl.classList.contains("list-open")) setList(false, true);
+});
 document.getElementById("listBtn").onclick = () => setList(!appEl.classList.contains("list-open"));
 document.getElementById("listClose").onclick = () => setList(false);
 

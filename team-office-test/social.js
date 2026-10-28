@@ -198,13 +198,27 @@ window.Social = function Social(ctx) {
   async function fetchRows(q) { const { data, error } = await q; if (error) throw error; return data || []; }
 
   // ───────── 창 ─────────
-  let pushed = false; // 창을 열면 기록을 하나 넣어서, 뒤로가기는 페이지를 떠나지 않고 창만 닫는다
-  function show() { wrap.hidden = false; if (!pushed) { history.pushState({ sxCard: 1 }, ""); pushed = true; } }
-  function close(fromBack = false) {
-    wrap.hidden = true; view = null; seq++; clearInterval(dmTimer);
-    if (pushed) { pushed = false; if (!fromBack) history.back(); }
+  // 창을 열면 기록을 하나 넣어서, 뒤로가기는 페이지를 떠나지 않고 창만 닫는다.
+  // ×로 닫으면 그 기록을 되돌리는데(비동기), 그사이 새 창을 열면 기록 넣기는 되돌리기가 끝난 뒤로 미룬다
+  let pushed = false, backPending = false, pushAfterBack = false;
+  function show() {
+    wrap.hidden = false;
+    if (pushed) return;
+    if (backPending) pushAfterBack = true;
+    else { history.pushState({ sxCard: 1 }, ""); pushed = true; }
   }
-  addEventListener("popstate", (e) => { if (pushed && !e.state?.sxCard && !wrap.hidden) close(true); });
+  function close(fromBack = false) {
+    wrap.hidden = true; view = null; seq++; clearInterval(dmTimer); pushAfterBack = false;
+    if (pushed) { pushed = false; if (!fromBack) { backPending = true; history.back(); } }
+  }
+  addEventListener("popstate", (e) => {
+    if (backPending) { // 내가 부른 되돌리기
+      backPending = false;
+      if (pushAfterBack && !wrap.hidden) { pushAfterBack = false; history.pushState({ sxCard: 1 }, ""); pushed = true; }
+      return;
+    }
+    if (pushed && !e.state?.sxCard && !wrap.hidden) close(true);
+  });
   function header(img, title, sub) {
     const h = el("div", "sx-head"), t = el("div", "t");
     t.append(el("b", null, title), el("span", null, sub));
