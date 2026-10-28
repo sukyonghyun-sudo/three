@@ -1215,7 +1215,7 @@ window.Chaos = function (ctx) {
   // 사람들은 알아서 지내고(구경용과 같음), 가끔 갑자기 이벤트가 벌어진다. 실제 시각에 따라 낮·저녁·밤, 손대지 않으면 카메라가 천천히 둘러본다
   const CATS = ["힐링", "따뜻한 이야기", "즐거움", "재난"];
   const PREF_KEY = "teamOfficeAquarium";
-  const pref = { cats: { 힐링: true, "따뜻한 이야기": true, 즐거움: true, 재난: true }, freq: "보통", autoEvt: true, tour: true, wide: true };
+  const pref = { cats: { 힐링: true, "따뜻한 이야기": true, 즐거움: true, 재난: true }, freq: "보통", autoEvt: true, tour: true, wide: !ctx.live }; // 실시간 모드면 목록(출퇴근 버튼)을 보이게
   try { Object.assign(pref, JSON.parse(localStorage.getItem(PREF_KEY)) || {}); } catch {}
   const savePref = () => { try { localStorage.setItem(PREF_KEY, JSON.stringify(pref)); } catch {} };
   const FREQ = { 자주: [40, 90], 보통: [110, 220], 가끔: [240, 420] };

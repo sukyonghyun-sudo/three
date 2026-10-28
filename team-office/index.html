@@ -101,7 +101,7 @@ button{font:inherit}
 body.loading #app{opacity:0}
 @media (max-width:820px){#app{grid-template-columns:1fr;grid-template-rows:1fr 260px}#panel{border-left:0;border-top:1px solid var(--line)}}
 </style>
-<script>window.__AQUARIUM = true;</script>
+<script>window.__AQUARIUM = true; window.__LIVE = {"url": "https://jpornxccjdnflhiwpqse.supabase.co", "key": "sb_publishable_U-GSIll6EsRzltq_pF_RDg_uhrkwoRK"};</script>
 <script src="models3d/charlib.js"></script>
 <!-- 저장한 고정석 (자리 지정 → 저장. 서버로 열었을 때 이 파일에 써진다) -->
 <script src="seats.js"></script>
@@ -1197,16 +1197,18 @@ const IN_CLAUDE = !!window.claude?.use;
 // 구경용 버전(window.__DEMO = true 로 연 페이지, build_artifact.py --demo): 버튼 없이 사람들이 알아서 출퇴근한다
 // 어항 모드(주소 끝 ?aquarium 또는 window.__AQUARIUM): 구경용처럼 알아서 지내다가 가끔 갑자기 이벤트 (chaos.js)
 const AQUARIUM = !!window.__AQUARIUM || new URLSearchParams(location.search).has("aquarium");
-const DEMO = !!window.__DEMO || AQUARIUM;
+// 실시간 모드(window.__LIVE = { url, key } — live_config.js / build_artifact.py): 진짜 출퇴근 — 알아서 출퇴근 흉내는 끈다
+const LIVE = window.__LIVE?.url && window.__LIVE?.key ? window.__LIVE : null;
+const DEMO = (!!window.__DEMO || AQUARIUM) && !LIVE;
 const DEMO_IN = new Map(); // 이름 → 지금 출근해 있을지 (처음엔 셋 빼고 모두)
 const PERSONAL = new Map(); // 캐릭터 이름 → { on(출근), bubble, leaf }
-const ME = { shared: false, pending: IN_CLAUDE, db: null, uid: null, owner: false, name: null, owners: new Map(), busy: false };
+const ME = { shared: false, pending: IN_CLAUDE || !!LIVE, db: null, uid: null, owner: false, name: null, owners: new Map(), busy: false };
 let LOCAL = { people: {} };
 try { LOCAL = { ...LOCAL, ...JSON.parse(localStorage.getItem(MINE_KEY)) }; } catch {}
 const saveLocal = () => { try { localStorage.setItem(MINE_KEY, JSON.stringify(LOCAL)); } catch {} };
 // 출근해 있어야 하나: 누른 대로. 아무도 안 누른 캐릭터는 — 파일로 열면(시험) 출근, claude.ai 에선 출근 전
-const wantIn = (m) => DEMO ? DEMO_IN.get(m.name) ?? true : PERSONAL.get(m.name)?.on ?? !(ME.shared || ME.pending);
-const canCtl = (m) => !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
+const wantIn = (m) => DEMO ? DEMO_IN.get(m.name) ?? true : LIVE ? !!PERSONAL.get(m.name)?.on : PERSONAL.get(m.name)?.on ?? !(ME.shared || ME.pending);
+const canCtl = (m) => LIVE ? !ME.pending && MY.char === m.name : !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
 if (DEMO) for (const n of [...NAMES].sort(() => Math.random() - 0.5).slice(0, 3)) DEMO_IN.set(n, false);
 
 // 말풍선: 이름표 바로 위, 이름표처럼 화면에서 늘 같은 크기 (이름표 크기 설정을 따른다)
@@ -1354,6 +1356,7 @@ function meSay(text, warn = false) { meMsg.textContent = text; meMsg.className =
 // 목록 줄마다 버튼: 내가 바꿀 수 있는 캐릭터면 출근·퇴근·말풍선·잎사귀, 아직 내 캐릭터가 없으면 빈 캐릭터에 「나예요」
 let bubbleOpen = null;
 function renderRowActs() {
+  if (LIVE) return renderLiveRows();
   const nobody = ME.shared && ![...PERSONAL.values()].some((p) => p.on);
   meNote.textContent = DEMO ? "" : ME.pending ? "확인하는 중…" : !ME.shared ? "이 PC 시험 모드 — 누구 것이든 눌러 볼 수 있어요 (이 브라우저에만 남아요)"
     : !ME.name ? "처음 한 번, 목록에서 내 이름 줄의 「나예요」를 눌러 주세요 — 누르면 바로 출근해요"
@@ -1413,6 +1416,7 @@ function armed(key, el, label) {
   return false;
 }
 function onRowAct(m, act, r, el) {
+  if (LIVE) return onLiveAct(m, act, r);
   const p = PERSONAL.get(m.name) || {};
   if (act === "in") updateFor(m, { on: true, onAt: Date.now() }, `${m.name} 출근`);
   else if (act === "out") updateFor(m, { on: false, onAt: Date.now() }, `${m.name} 퇴근`);
@@ -1430,8 +1434,103 @@ function onRowAct(m, act, r, el) {
     if (o && armed("free:" + m.name, el, "한 번 더 누르면 풀기")) meWrite(() => ME.db.doc(`people/${o.uid}`).delete(), `${m.name} 연결을 풀었어요`);
   }
 }
+// ───────────── 실시간 모드 (Supabase: window.__LIVE = { url, key }) ─────────────
+// 누구나 링크로 들어와서 처음 한 번 내 이름 줄의 「나예요」 + 4자리 비밀번호. 그 뒤로 출근·퇴근·상태 메시지는 그 사람만 (비밀번호는 서버 함수가 확인).
+// 다른 PC 에서는 「로그인」으로 비밀번호만. 표: office_people (supabase_setup.sql)
+const LIVE_KEY = "teamOfficeLive";
+let MY = { char: null, pin: null };
+try { MY = { ...MY, ...JSON.parse(localStorage.getItem(LIVE_KEY)) }; } catch {}
+const saveMy = () => { try { localStorage.setItem(LIVE_KEY, JSON.stringify(MY)); } catch {} };
+let SB = null, pinOpen = null; // pinOpen: { m, mode: "claim" | "login" }
+window.__personal = PERSONAL; // 점검용
+function liveApply(rowsIn) { // 서버의 표 → 캐릭터마다 출근·상태 메시지
+  for (const r of rowsIn) PERSONAL.set(r.char, { on: !!r.on_duty, bubble: String(r.msg || "").slice(0, 40) });
+}
+async function liveInit() {
+  renderMine();
+  try {
+    await new Promise((ok, no) => { // 라이브러리는 실시간 모드일 때만 읽는다
+      if (window.supabase) return ok();
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js";
+      s.onload = ok; s.onerror = () => no(new Error("라이브러리를 못 읽었어요"));
+      document.head.append(s);
+    });
+    SB = window.supabase.createClient(LIVE.url, LIVE.key, { auth: { persistSession: false } });
+    const { data, error } = await SB.from("office_people").select("*");
+    if (error) throw error;
+    PERSONAL.clear(); liveApply(data);
+    if (MY.char && !PERSONAL.has(MY.char)) { MY = { char: null, pin: null }; saveMy(); } // 주인이 지웠으면 다시 고르기
+    ME.pending = false;
+    placeAttendance(); renderMine();
+    SB.channel("office").on("postgres_changes", { event: "*", schema: "public", table: "office_people" }, (p) => {
+      if (p.eventType === "DELETE") PERSONAL.delete(p.old.char); else liveApply([p.new]);
+      renderMine();
+    }).subscribe();
+  } catch (e) {
+    console.error(e);
+    ME.pending = false; renderMine();
+    meSay(`출퇴근 정보를 못 불러왔어요 (${e.message || e}) — 새로고침해 보세요`, true);
+  }
+}
+async function liveCall(fn, args, okText) {
+  if (ME.busy || !SB) return null;
+  ME.busy = true;
+  try {
+    const { data, error } = await SB.rpc(fn, args);
+    if (error) throw error;
+    const msg = { bad_pin: "비밀번호가 달라요", locked: "여러 번 틀려서 10분 동안 잠겼어요", taken: "이미 다른 분이 고른 캐릭터예요", no_char: "아직 연결 안 된 캐릭터예요", bad_input: "비밀번호는 숫자 4자리예요" }[data];
+    if (data === "ok") { if (okText) meSay(okText); } else meSay(msg || String(data), true);
+    return data;
+  } catch (e) {
+    console.error(e); meSay(`저장하지 못했어요 (${e.message || e})`, true); return null;
+  } finally { ME.busy = false; }
+}
+function renderLiveRows() {
+  const nobody = !ME.pending && ![...PERSONAL.values()].some((p) => p.on);
+  meNote.textContent = ME.pending ? "출퇴근 정보를 불러오는 중…"
+    : !MY.char ? "처음 한 번, 내 이름 줄의 「나예요」를 누르고 숫자 4자리 비밀번호를 정해 주세요. 다른 PC 에선 「로그인」"
+    : nobody ? "아직 출근한 사람이 없어요" : "";
+  meNote.hidden = !meNote.textContent;
+  for (const r of rows) {
+    const m = r.m, p = PERSONAL.get(m.name) || {};
+    let html = "";
+    if (canCtl(m)) html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
+      `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button><button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`;
+    else if (!ME.pending && !MY.char) html = PERSONAL.has(m.name) ? `<button class="btn" data-act="login">로그인</button>` : `<button class="btn" data-act="claim">나예요</button>`;
+    if (r.acts.innerHTML !== html) r.acts.innerHTML = html;
+    r.acts.hidden = !html;
+    const open = bubbleOpen === m && canCtl(m);
+    if (open && r.more.hidden && document.activeElement !== r.input) r.input.value = p.bubble || "";
+    r.more.hidden = !open;
+    const po = pinOpen?.m === m && !MY.char;
+    if (po && r.pin.hidden) { r.pinIn.value = ""; r.pinOk.textContent = pinOpen.mode === "claim" ? "정하고 출근" : "로그인"; }
+    r.pin.hidden = !po;
+  }
+  changed();
+}
+async function onLiveAct(m, act, r) {
+  if (act === "claim" || act === "login") { pinOpen = pinOpen?.m === m ? null : { m, mode: act }; renderLiveRows(); if (pinOpen) r.pinIn.focus(); return; }
+  if (act === "pinok") {
+    const pin = r.pinIn.value.trim();
+    if (!/^\d{4}$/.test(pin)) { meSay("비밀번호는 숫자 4자리예요", true); return; }
+    const claim = pinOpen?.mode === "claim";
+    const res = await liveCall(claim ? "office_claim" : "office_login", { p_char: m.name, p_pin: pin }, claim ? `${m.name} — 이제 내 캐릭터예요. 출근했어요` : `${m.name} 님으로 들어왔어요`);
+    if (res === "ok") { MY = { char: m.name, pin }; saveMy(); pinOpen = null; renderMine(); }
+    return;
+  }
+  if (!canCtl(m)) return;
+  const set = async (args, ok) => { const res = await liveCall("office_set", { p_char: MY.char, p_pin: MY.pin, ...args }, ok); if (res === "bad_pin" || res === "no_char") { MY = { char: null, pin: null }; saveMy(); renderMine(); } };
+  if (act === "in") set({ p_on: true }, "출근했어요");
+  else if (act === "out") set({ p_on: false }, "퇴근했어요");
+  else if (act === "bubble") { bubbleOpen = bubbleOpen === m ? null : m; renderLiveRows(); if (bubbleOpen) r.input.focus(); }
+  else if (act === "say") set({ p_msg: r.input.value.trim().slice(0, 40) }, "상태 메시지를 띄웠어요");
+  else if (act === "clear") { r.input.value = ""; set({ p_msg: "" }, "상태 메시지를 지웠어요"); }
+  else if (act === "logout") { MY = { char: null, pin: null }; saveMy(); bubbleOpen = null; meSay("이 PC 에서 로그아웃했어요"); renderMine(); }
+}
 // claude.ai 에서 열렸으면 함께 쓰는 저장소로 (파일로 열면 window.claude 가 없다)
 (async () => {
+  if (LIVE) return;
   const [db, user] = IN_CLAUDE ? await Promise.all([window.claude.use("db"), window.claude.use("user")]) : [null, null];
   const uid = user ? await user.id() : null;
   if (!db || !uid) { // 함께 쓰기를 못 하면 이 PC 시험 모드
@@ -1470,17 +1569,20 @@ let editing = false, editSel = null; // 자리 지정 중인지, 자리 바꿀 �
 const rows = crew.map((m) => {
   const li = document.createElement("li");
   li.innerHTML = `<img alt=""><div class="who"><b></b><span><i class="dot"></i><em></em></span></div><select title="자리"></select>` +
-    `<div class="acts" hidden></div><div class="more" hidden><input maxlength="40" placeholder="말풍선에 쓸 말 (40자)"><button class="btn dark" data-act="say">띄우기</button><button class="btn" data-act="clear">지우기</button></div>`;
+    `<div class="acts" hidden></div><div class="more" hidden><input maxlength="40" placeholder="말풍선에 쓸 말 (40자)"><button class="btn dark" data-act="say">띄우기</button><button class="btn" data-act="clear">지우기</button></div>` +
+    `<div class="more pin" hidden><input type="password" inputmode="numeric" maxlength="4" placeholder="비밀번호 숫자 4자리"><button class="btn dark" data-act="pinok">확인</button></div>`;
   li.querySelector("img").src = `faces/${FILE_ID[m.name]}.jpg`;
   li.querySelector("b").textContent = m.name;
   const row = { m, li, dot: li.querySelector(".dot"), text: li.querySelector("em"), sel: li.querySelector("select"),
-    acts: li.querySelector(".acts"), more: li.querySelector(".more"), input: li.querySelector("input") };
+    acts: li.querySelector(".acts"), more: li.querySelector(".more"), input: li.querySelector("input"),
+    pin: li.querySelector(".pin"), pinIn: li.querySelector(".pin input"), pinOk: li.querySelector('.pin [data-act="pinok"]') };
   li.onclick = (e) => {
     const a = e.target.closest("[data-act]");
     if (a) return onRowAct(m, a.dataset.act, row, a);
     if (!e.target.closest(".acts,.more,select")) (editing ? pickForSeat(m) : select(m));
   };
   row.input.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) onRowAct(m, "say", row); };
+  row.pinIn.onkeydown = (e) => { if (e.key === "Enter") onRowAct(m, "pinok", row); };
   row.sel.onchange = () => { editSel = null; moveTo(m, +row.sel.value); };
   list.append(li);
   return row;
@@ -1509,7 +1611,8 @@ function changed() {
     (isLunch() ? `<span class="chip">🍚 점심시간 12:00~13:00</span>` : "");
 }
 changed();
-if (IN_CLAUDE) queueMicrotask(renderMine); // claude.ai: 함께 쓰는 저장소를 기다리는 동안
+if (LIVE) queueMicrotask(liveInit); // 실시간 모드: Supabase 에서 출퇴근·상태 메시지
+else if (IN_CLAUDE) queueMicrotask(renderMine); // claude.ai: 함께 쓰는 저장소를 기다리는 동안
 else queueMicrotask(() => applyLocal(true)); // 파일로 열면: 이 브라우저에 저장된 대로 (화면 설정 VIEW 까지 만든 뒤에)
 // 시점 버튼: 누르면 그쪽으로 날아간다 (사람 따라가기는 풀린다)
 const CAMS = [
@@ -2027,7 +2130,7 @@ const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
   THREE, scene, camera, controls, renderer, office, crew, H, DH, PH, WALL_H, ROOM, DOOR_IN, DOOR_OUT, MAIN_Z, RCX,
   lights: { hemi, sun, fill }, stage, hud: document.querySelector(".hud"), flyTo,
   seats: () => Object.values(SEAT_BY_NO), snackSeats: () => [...SNACK_DESKS].map((n) => SEAT_BY_NO[n]).filter(Boolean),
-  chairs: () => CHAIR_LIST, audio: () => audioCtx, setPaused: () => {}, restorePeople: () => placeAttendance(),
+  chairs: () => CHAIR_LIST, audio: () => audioCtx, setPaused: () => {}, restorePeople: () => placeAttendance(), live: !!LIVE,
 }) : null;
 window.__chaos = CHAOS; // 점검용
 const clock = new THREE.Clock();
