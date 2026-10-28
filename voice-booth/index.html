@@ -3,18 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b0d11">
-<title>Voice Booth</title>
+<meta name="theme-color" content="#0f0d1f">
+<title>MSW 목소리 녹음실</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&display=swap">
 <style>
-/* Voice Booth — phone recording page for TTS training data.
+/* MSW 목소리 녹음실 (Voice Booth) — phone recording page for TTS training data.
    language: a studio instrument — graphite, hairlines, a printed-script serif for the line to read,
    tally red only while recording, VU colours only on meters. */
 :root {
-  --paper: #ffffff; --wash: #f4f5f7; --ink: #111317; --mute: #6b7280; --faint: #9aa1ad; --hair: #e6e8ec;
-  --g0: #0b0d11; --g1: #12151b; --g2: #1a1e26; --g3: #242a34; --gl: rgba(255,255,255,.09); --gt: #eceef2; --gm: #8b93a1; --gf: #5a6170;
-  --tally: #ff3b30; --vu-g: #3dd68c; --vu-a: #f5b841;
+  --paper: #ffffff; --wash: #f5f3f9; --ink: #23203f; --mute: #6e6a85; --faint: #a19cb5; --hair: #e8e5ef;
+  --g0: #0f0d1f; --g1: #18152c; --g2: #211d39; --g3: #2d2849; --gl: rgba(210,187,220,.13); --gt: #f4f1f9; --gm: #a39eba; --gf: #6c6788;
+  --tally: #f0441f; --vu-g: #c6d650; --vu-a: #ffdd00;
+  --sky: #3fc0f0; --lav: #d2bbdc; --tally-a: rgba(240,68,31,.5); --tally-b: rgba(240,68,31,.22);
+  --worlds: linear-gradient(90deg, #ee7aae 0 16.6%, #ffdd00 0 33.3%, #c6d650 0 50%, #3fc0f0 0 66.6%, #d2bbdc 0 83.3%, #f09060 0);
   --ui: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --script: "Noto Serif KR", "AppleMyungjo", "Batang", serif;
   --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
@@ -31,8 +33,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--vu-g); outl
   padding-top: var(--safe-t); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px) }
 .light { background: var(--paper); color: var(--ink) } .dark { background: var(--g0); color: var(--gt) }
 .body { flex: 1; display: flex; flex-direction: column; gap: 22px; padding: 22px 24px calc(26px + var(--safe-b)) }
-.brand { display: flex; align-items: center; gap: 10px; font: 600 12.5px var(--ui); letter-spacing: .14em; text-transform: uppercase }
-.brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--tally) }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 14px var(--ui); letter-spacing: -0.1px }
+.brand .dot { width: 22px; height: 8px; border-radius: 99px; background: var(--worlds) }
+.brand small { font: 600 11px var(--ui); letter-spacing: .14em; color: var(--faint); margin-left: 2px }
 .dark .brand { color: var(--gm) }
 h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balance; word-break: keep-all }
 .lead { color: var(--mute); font-size: 14.5px; word-break: keep-all }
@@ -67,26 +70,26 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
 .resume { display: grid; gap: 4px; padding: 20px; border-radius: 20px; background: var(--g1); border: 1px solid var(--gl) }
 .resume .lbl { color: var(--gm) }
 .resume .n { font: 600 44px/1.1 var(--ui); letter-spacing: -1.5px } .resume .n span { font-size: 17px; color: var(--gm); letter-spacing: 0; margin-left: 6px }
-.resume .line { font: 400 17px/1.5 var(--script); color: #cfd4dc; margin-top: 8px; word-break: keep-all }
+.resume .line { font: 400 17px/1.5 var(--script); color: #d6cfe5; margin-top: 8px; word-break: keep-all }
 .ladder { display: grid; grid-template-columns: 100fr 150fr 290fr; gap: 6px; margin-top: 14px }
 .ladder .s { display: grid; gap: 6px; min-width: 0 } .ladder .s i { height: 4px; border-radius: 2px; background: var(--g3); overflow: hidden; display: block }
-.ladder .s i b { display: block; height: 100%; background: var(--gt) }
-.ladder .s small { font-size: 11.5px; color: var(--gm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.ladder .s i b { display: block; height: 100%; background: var(--worlds) }
+.ladder .s small { font-size: 11.5px; line-height: 1.35; color: var(--gm); word-break: keep-all; white-space: pre-line }
 .rows { display: grid }
 .rows button { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 2px; border-bottom: 1px solid var(--gl); font-size: 15px; text-align: left; width: 100% }
 .rows small { display: block; color: var(--gm); font-size: 13px } .rows .chev { color: var(--gf) }
-.count { font: 600 11.5px var(--ui); color: var(--vu-a); border: 1px solid rgba(245,184,65,.35); border-radius: 99px; padding: 1px 8px; margin-left: 8px }
+.count { font: 600 11.5px var(--ui); color: var(--vu-a); border: 1px solid rgba(255,221,0,.35); border-radius: 99px; padding: 1px 8px; margin-left: 8px }
 
 /* record */
 .rec-top { padding: 14px 24px 0; display: grid; gap: 10px }
 .rec-top .row { display: flex; justify-content: space-between; align-items: center; gap: 12px }
 .stage-l { display: grid; line-height: 1.3 } .stage-l b { font: 600 16px var(--ui) } .stage-l span { font-size: 12.5px; color: var(--gm) }
 .pill-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--gl); border-radius: 99px; padding: 7px 12px; font: 600 12.5px var(--ui); color: var(--gt); white-space: nowrap }
-.prog { height: 2px; background: var(--g3); border-radius: 1px; overflow: hidden } .prog b { display: block; height: 100%; width: 0; background: var(--gt); transition: width .3s }
-.sheet { flex: 1; margin: 16px 14px 0; border-radius: 26px; background: linear-gradient(180deg, var(--g1), var(--g0)); border: 1px solid var(--gl); padding: 22px 22px 16px; display: flex; flex-direction: column; gap: 14px; min-height: 300px }
-.sheet .no { display: flex; align-items: center; justify-content: space-between; font: 600 12px var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--gm) }
+.prog { height: 3px; background: var(--g3); border-radius: 1px; overflow: hidden } .prog b { display: block; height: 100%; width: 0; background: var(--worlds); background-size: calc(min(100vw, 480px) - 48px) 100%; transition: width .3s }
+.sheet { flex: 1; margin: 16px 14px 0; border-radius: 26px; background: radial-gradient(120% 70% at 50% 0%, #241f42 0%, var(--g1) 55%, var(--g0) 100%); border: 1px solid var(--gl); padding: 22px 22px 16px; display: flex; flex-direction: column; gap: 14px; min-height: 240px }
+.sheet .no { display: flex; align-items: center; justify-content: space-between; font: 600 13px var(--ui); color: var(--gm) }
 .tone { font: 600 12px var(--ui); letter-spacing: .02em; color: var(--gt); border: 1px solid var(--gl); padding: 3px 10px; border-radius: 99px; text-transform: none }
-.sheet .text { font: 500 30px/1.45 var(--script); letter-spacing: -0.4px; color: #fbfbfc; flex: 1; display: flex; align-items: center; word-break: keep-all; text-wrap: balance }
+.sheet .text { font: 500 30px/1.45 var(--script); letter-spacing: -0.4px; color: #fbf9fe; flex: 1; display: flex; align-items: center; word-break: keep-all; text-wrap: balance }
 .sheet .text.en { font-family: "Noto Serif", var(--script) }
 .scope { display: flex; align-items: center; gap: 2px; height: 48px; position: relative }
 .scope i { flex: 1; background: var(--gt); border-radius: 1px; height: 2px; opacity: .9 }
@@ -94,43 +97,52 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
 .scope.playing i { opacity: .28 } .scope.playing i.pl { opacity: 1; background: var(--vu-g) }
 .listen { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 34px; margin-top: -4px }
 .listen .play { display: inline-flex; align-items: center; gap: 7px; font: 600 13px var(--ui); background: var(--g2); border: 1px solid var(--gl); border-radius: 99px; padding: 7px 14px; color: var(--gt); transition: background .15s, color .15s }
-.listen .play.playing { background: var(--vu-g); border-color: var(--vu-g); color: #06210f }
+.listen .play.playing { background: var(--vu-g); border-color: var(--vu-g); color: #1f2408 }
 .listen .ptime { font: 500 12.5px var(--ui); color: var(--gm) }
 .sheet .nx { font-size: 13px; color: var(--gm); border-top: 1px solid var(--gl); padding-top: 12px; display: flex; gap: 10px }
-.sheet .nx b { color: #c3c9d3; font-weight: 500; font-family: var(--script); word-break: keep-all }
-.qc { display: flex; gap: 14px; padding: 12px 28px 0; font-size: 12.5px; color: var(--gm); flex-wrap: wrap; min-height: 30px }
+.sheet .nx span { flex: none; white-space: nowrap }
+.sheet .nx b { color: #cbc4dd; font-weight: 500; font-family: var(--script); word-break: keep-all }
+.guide { display: flex; gap: 10px; align-items: flex-start; padding: 14px 26px 0; font: 600 15.5px/1.45 var(--ui); color: var(--gt); min-height: 38px; word-break: keep-all }
+.guide i { width: 8px; height: 8px; border-radius: 50%; background: var(--gf); flex: none; margin-top: 8px }
+.guide.rec i { background: var(--tally); animation: blink 1s steps(2) infinite } .guide.ok i { background: var(--vu-g) } .guide.warn i { background: var(--vu-a) } .guide.bad i { background: var(--tally) }
+.qc { display: flex; gap: 12px; padding: 4px 26px 0 44px; font-size: 12.5px; color: var(--gm); flex-wrap: wrap; min-height: 22px }
 .qc span { display: inline-flex; align-items: center; gap: 6px } .qc i { width: 6px; height: 6px; border-radius: 50%; background: var(--vu-g) }
 .qc i.a { background: var(--vu-a) } .qc i.r { background: var(--tally) }
-.auto-row { display: flex; gap: 10px; align-items: center; padding: 10px 28px 0; font-size: 12.5px; color: var(--gm) }
+.auto-row { display: flex; gap: 10px; align-items: center; padding: 10px 26px 0; font-size: 12.5px; color: var(--gm) }
 .auto-row b { color: var(--gt); font-weight: 600 }
 .switch { width: 40px; height: 24px; border-radius: 99px; background: var(--g3); position: relative; flex: none; transition: background .15s }
 .switch .knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--gm); transition: left .15s, background .15s }
-.switch[aria-pressed="true"] { background: var(--vu-g) } .switch[aria-pressed="true"] .knob { left: 19px; background: #fff }
-.deck { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 14px 24px calc(22px + var(--safe-b)) }
+.switch[aria-pressed="true"] { background: var(--sky) } .switch[aria-pressed="true"] .knob { left: 19px; background: #fff }
+.deck { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 12px 24px 8px }
+.send-bar { padding: 4px 16px calc(14px + var(--safe-b)) }
+.send-big { width: 100%; height: 56px; border-radius: 16px; background: var(--gt); color: var(--ink); position: relative; overflow: hidden; font: 700 17px var(--ui); letter-spacing: -0.2px; display: flex; align-items: center; justify-content: center; gap: 10px }
+.send-big .ico { width: 20px; height: 20px; stroke-width: 2 } .send-big small { font: 600 14px var(--ui); color: var(--mute) }
+.send-big::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--worlds) }
+.send-big:disabled { opacity: .35; cursor: default }
 .side { display: grid; justify-items: center; gap: 6px; font-size: 12px; color: var(--gm) }
 .side .c { width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--gl); display: grid; place-items: center; color: var(--gt) }
 .side:disabled { opacity: .35 }
 .rec-wrap { display: grid; justify-items: center; gap: 8px }
 .rec-btn { position: relative; width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center }
 .rec-btn svg.ring { position: absolute; inset: 0 }
-.rec-btn svg.ring circle:first-child { transition: stroke .15s } .rec-btn.on svg.ring circle:first-child { stroke: rgba(255,59,48,.5) }
+.rec-btn svg.ring circle:first-child { transition: stroke .15s } .rec-btn.on svg.ring circle:first-child { stroke: var(--tally-a) }
 .rec-btn .core { width: 66px; height: 66px; border-radius: 50%; background: var(--g2); border: 1px solid var(--gl); display: grid; place-items: center; transition: transform .15s }
 .rec-btn .core i { width: 26px; height: 26px; border-radius: 50%; background: var(--tally); display: block; transition: border-radius .15s, width .15s, height .15s }
 .rec-btn.on .core i { border-radius: 5px; width: 24px; height: 24px }
 .rec-btn:active .core { transform: scale(.96) }
-.tally { display: inline-flex; align-items: center; gap: 7px; font: 600 12px var(--ui); letter-spacing: .12em; color: var(--gm); min-height: 18px }
+.tally { display: inline-flex; align-items: center; gap: 7px; font: 600 13px var(--ui); color: var(--gm); min-height: 18px }
 .tally i { width: 8px; height: 8px; border-radius: 50%; background: var(--gf) }
-.tally.on { color: var(--tally) } .tally.on i { background: var(--tally); box-shadow: 0 0 0 4px rgba(255,59,48,.2); animation: blink 1s steps(2) infinite }
+.tally.on { color: var(--tally) } .tally.on i { background: var(--tally); box-shadow: 0 0 0 4px var(--tally-b); animation: blink 1s steps(2) infinite }
 @keyframes blink { 50% { opacity: .35 } }
 .tally .time { color: var(--gm); letter-spacing: 0; font-weight: 500 }
-.toast { position: absolute; left: 16px; right: 16px; bottom: calc(150px + var(--safe-b)); background: var(--gt); color: var(--g0); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.35) }
+.toast { position: absolute; left: 16px; right: 16px; bottom: calc(220px + var(--safe-b)); background: var(--gt); color: var(--g0); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.35) }
 .toast b { font-size: 16px } .toast .act { display: flex; gap: 8px } .toast .act button { flex: 1; border-radius: 12px; padding: 10px; font-weight: 600; background: var(--g0); color: var(--gt) }
-.toast .act button.alt { background: transparent; border: 1.5px solid #c8cdd5; color: var(--g0) }
+.toast .act button.alt { background: transparent; border: 1.5px solid #cbc4dd; color: var(--g0) }
 
 /* send */
 .sum { display: grid; gap: 2px } .sum .n { font: 600 52px/1.05 var(--ui); letter-spacing: -2px } .sum .n span { font-size: 20px; letter-spacing: 0; color: var(--mute); margin-left: 6px }
 .sum small { color: var(--mute) }
-.track3 { display: grid; grid-template-columns: 100fr 150fr 290fr; gap: 3px; height: 6px } .track3 i { border-radius: 2px; background: var(--hair); display: block; overflow: hidden } .track3 i b { display: block; height: 100%; background: var(--ink) }
+.track3 { display: grid; grid-template-columns: 100fr 150fr 290fr; gap: 3px; height: 6px } .track3 i { border-radius: 2px; background: var(--hair); display: block; overflow: hidden } .track3 i b { display: block; height: 100%; background: var(--worlds) }
 .track3l { display: grid; grid-template-columns: 100fr 150fr 290fr; gap: 3px; font-size: 11.5px; color: var(--mute) }
 .batches { border-top: 1px solid var(--hair) }
 .batches .r { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--hair); font-size: 14.5px; gap: 10px }
@@ -155,10 +167,10 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
 .pitem .st { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--gf); margin-top: 7px }
 .pitem .st.ok { background: var(--vu-g); border-color: var(--vu-g) } .pitem .st.warn { background: var(--vu-a); border-color: var(--vu-a) }
 .pitem .id { font: 600 12px var(--ui); color: var(--gm); padding-top: 3px; font-variant-numeric: tabular-nums }
-.pitem .t { font: 400 15px/1.5 var(--script); color: #d9dde4; word-break: keep-all }
+.pitem .t { font: 400 15px/1.5 var(--script); color: #ddd7ea; word-break: keep-all }
 .pitem .t small { display: block; font: 12px var(--ui); color: var(--gf) }
 .stage-h { padding: 16px 8px 6px; font: 600 12px var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--gm) }
-.banner { margin: 10px 14px 0; border: 1px solid rgba(245,184,65,.4); color: var(--vu-a); border-radius: 12px; padding: 10px 12px; font-size: 13px; word-break: keep-all }
+.banner { margin: 10px 14px 0; border: 1px solid rgba(255,221,0,.4); color: var(--vu-a); border-radius: 12px; padding: 10px 12px; font-size: 13px; word-break: keep-all }
 @media (prefers-reduced-motion: reduce) { .tally.on i { animation: none } .prog b { transition: none } }
 @media (min-height: 860px) { .sheet .text { font-size: 33px } }
 </style>
@@ -191,7 +203,7 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
   <!-- 01 first visit -->
   <section class="screen light" id="sWelcome" hidden>
     <div class="body">
-      <div class="brand"><span class="dot"></span>Voice Booth</div>
+      <div class="brand"><span class="dot"></span>MSW 목소리 녹음실<small>VOICE BOOTH</small></div>
       <div style="display:grid;gap:10px"><h1 class="big">당신의 목소리로<br>게임을 소개해 주세요</h1>
         <p class="lead">화면의 문장을 읽어 녹음해 주세요. 원하는 단계까지만 해도 되고, 언제든 멈추고 보낼 수 있어요.</p></div>
       <div class="field"><label for="name">이름</label><input id="name" maxlength="20" autocomplete="name" placeholder="이름을 적어 주세요"></div>
@@ -201,9 +213,9 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
         <button class="mic-btn" id="micBtn" type="button"><svg class="ico"><use href="#i-mic"/></svg>마이크 켜기</button>
       </div>
       <div class="plan" id="plan">
-        <button type="button" data-t="1" aria-pressed="true"><span class="k">1</span><b>100문장</b><span class="t">약 6분</span><small>모든 소리를 한 번씩 · 흉내 목소리</small></button>
-        <button type="button" data-t="2" aria-pressed="false"><span class="k">2</span><b>250문장</b><span class="t">약 15분</span><small>짧은 학습이 가능해요</small></button>
-        <button type="button" data-t="3" aria-pressed="false"><span class="k">3</span><b>540문장</b><span class="t">약 31분</span><small>권장 · 가장 자연스러워요</small></button>
+        <button type="button" data-t="1" aria-pressed="true"><span class="k">1</span><b>100문장</b><span class="t">약 6분</span><small>우리말 소리를 한 번씩 다 녹음해요</small></button>
+        <button type="button" data-t="2" aria-pressed="false"><span class="k">2</span><b>250문장</b><span class="t">약 15분</span><small>목소리 학습을 시작할 수 있어요</small></button>
+        <button type="button" data-t="3" aria-pressed="false"><span class="k">3</span><b>540문장</b><span class="t">약 31분</span><small>권장 · 가장 자연스러운 목소리가 돼요</small></button>
       </div>
       <div class="tips">
         <div><svg class="ico"><use href="#i-phone"/></svg><span>입에서 한 뼘(15~20cm) 떨어뜨려 세워 주세요</span></div>
@@ -220,7 +232,7 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
   <!-- 02 return visit -->
   <section class="screen dark" id="sResume" hidden>
     <div class="body">
-      <div class="brand"><span class="dot"></span>Voice Booth</div>
+      <div class="brand"><span class="dot"></span>MSW 목소리 녹음실<small>VOICE BOOTH</small></div>
       <h1 class="big" id="resumeHello">다시 오셨네요</h1>
       <div class="resume">
         <span class="lbl">지난번 여기까지</span>
@@ -229,8 +241,8 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
         <div class="ladder" id="resumeLadder"></div>
       </div>
       <div class="rows">
-        <button type="button" id="goPicker"><span>다른 곳부터 하기<small>단계나 문장 번호 고르기</small></span><svg class="ico chev"><use href="#i-chev"/></svg></button>
-        <button type="button" id="goRedo"><span>다시 녹음할 문장<span class="count" id="redoCount">0</span><small>소리가 작거나 앞 여유가 짧았던 문장</small></span><svg class="ico chev"><use href="#i-chev"/></svg></button>
+        <button type="button" id="goPicker"><span>다른 곳부터 하기<small>단계나 문장을 골라서 시작해요</small></span><svg class="ico chev"><use href="#i-chev"/></svg></button>
+        <button type="button" id="goRedo"><span>다시 녹음할 문장<span class="count" id="redoCount">0</span><small>소리가 작거나 너무 빨리 시작한 문장</small></span><svg class="ico chev"><use href="#i-chev"/></svg></button>
         <button type="button" id="goSend"><span>아직 안 보낸 녹음<small id="unsentInfo">없음</small></span><svg class="ico chev"><use href="#i-chev"/></svg></button>
       </div>
       <button class="primary" id="continueBtn" type="button">이어서 녹음 <svg class="ico"><use href="#i-next"/></svg></button>
@@ -241,9 +253,8 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
   <!-- 03 recording -->
   <section class="screen dark" id="sRecord" hidden>
     <div class="rec-top">
-      <div class="row"><span class="stage-l"><b id="stageLabel">1단계 · 0 / 100</b><span id="totalLabel">전체 0 / 540</span></span>
-        <span style="display:flex;gap:6px"><button class="pill-btn" id="listBtn" type="button" aria-label="문장 목록"><svg class="ico" style="width:14px;height:14px"><use href="#i-list"/></svg></button>
-        <button class="pill-btn" id="pauseBtn" type="button"><svg class="ico" style="width:14px;height:14px"><use href="#i-pause"/></svg>쉬고 보내기</button></span></div>
+      <div class="row"><span class="stage-l"><b id="stageLabel">1단계 · 0 / 100문장</b><span id="totalLabel">전체 540문장 중 0문장 녹음</span></span>
+        <button class="pill-btn" id="listBtn" type="button"><svg class="ico" style="width:14px;height:14px"><use href="#i-list"/></svg>문장 목록</button></div>
       <div class="prog"><b id="progBar"></b></div>
     </div>
     <p class="banner" id="storageBanner" hidden>이 브라우저는 녹음을 저장할 수 없어요(시크릿 모드 등). 창을 닫기 전에 꼭 보내 주세요.</p>
@@ -254,20 +265,22 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
       <div class="listen" id="listenRow" hidden><button class="play" id="playBtn" type="button" aria-pressed="false"><svg class="ico" style="width:14px;height:14px"><use href="#i-play" id="playIco"/></svg><span id="playLabel">들어보기</span></button><span class="ptime" id="ptime"></span></div>
       <div class="nx"><span>다음</span><b id="nextText"></b></div>
     </div>
-    <div class="qc" id="qc"><span style="color:var(--gf)">문장 앞뒤로 0.5초쯤 쉬어 주세요</span></div>
+    <div class="guide" id="guide"><i></i><span>빨간 버튼을 누르고 위 문장을 읽어 주세요</span></div>
+    <div class="qc" id="qc"></div>
     <div class="auto-row"><button class="switch" id="autoBtn" type="button" aria-pressed="true" aria-label="자동 넘김"><span class="knob"></span></button>
-      <span><b>자동 넘김</b> <span id="autoHint">녹음을 한 번 누르면, 다 읽고 1초 쉴 때마다 저장하고 다음 문장으로 넘어가요</span></span></div>
+      <span><b>자동으로 다음 문장</b> <span id="autoHint">버튼 한 번이면 끝까지 이어서 녹음돼요</span></span></div>
     <div class="deck">
-      <button class="side" id="redoBtn" type="button"><span class="c"><svg class="ico"><use href="#i-redo"/></svg></span>다시</button>
+      <button class="side" id="redoBtn" type="button"><span class="c"><svg class="ico"><use href="#i-redo"/></svg></span>다시 읽기</button>
       <div class="rec-wrap">
         <button class="rec-btn" id="recBtn" type="button" aria-label="녹음">
-          <svg class="ring" viewBox="0 0 96 96"><circle cx="48" cy="48" r="45" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2"/><circle id="ring" cx="48" cy="48" r="45" fill="none" stroke="#ff3b30" stroke-width="2.5" stroke-dasharray="283" stroke-dashoffset="283" transform="rotate(-90 48 48)" stroke-linecap="round"/></svg>
+          <svg class="ring" viewBox="0 0 96 96"><circle cx="48" cy="48" r="45" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2"/><circle id="ring" cx="48" cy="48" r="45" fill="none" stroke="#f0441f" stroke-width="2.5" stroke-dasharray="283" stroke-dashoffset="283" transform="rotate(-90 48 48)" stroke-linecap="round"/></svg>
           <span class="core"><i></i></span>
         </button>
-        <span class="tally" id="tally"><i></i><span id="tallyText">눌러서 녹음</span></span>
+        <span class="tally" id="tally"><i></i><span id="tallyText">누르면 녹음</span></span>
       </div>
-      <button class="side" id="nextBtn" type="button"><span class="c"><svg class="ico"><use href="#i-next"/></svg></span>다음</button>
+      <button class="side" id="nextBtn" type="button"><span class="c"><svg class="ico"><use href="#i-next"/></svg></span>다음 문장</button>
     </div>
+    <div class="send-bar"><button class="send-big" id="pauseBtn" type="button"><svg class="ico"><use href="#i-share"/></svg>녹음 끝내고 보내기<small id="sendCount">0문장</small></button></div>
     <div class="toast" id="stageToast" hidden><b id="toastTitle">1단계 끝!</b><span id="toastText" style="font-size:14px"></span>
       <div class="act"><button type="button" id="toastSend" class="alt">보내기</button><button type="button" id="toastGo">계속 녹음</button></div></div>
   </section>
@@ -353,7 +366,7 @@ async function saveState(patch) { S.state = { ...S.state, ...patch }; await Stor
 
 function show(id) {
   ["sWelcome", "sResume", "sRecord", "sSend", "sPicker"].forEach((s) => ($(s).hidden = s !== id));
-  document.querySelector('meta[name="theme-color"]').content = ["sWelcome", "sSend"].includes(id) ? "#ffffff" : "#0b0d11";
+  document.querySelector('meta[name="theme-color"]').content = ["sWelcome", "sSend"].includes(id) ? "#ffffff" : "#0f0d1f";
   if (id === "sRecord") wake(true); else wake(false);
 }
 
@@ -431,14 +444,14 @@ function qcOf(x, sr, line) {
   const lead = first < 0 ? 0 : first * 0.02, tail = first < 0 ? 0 : dur - (last + 1) * 0.02;
   const exp = expectSec(line), out = [];
   if (first < 0 || level < -42) out.push(["r", "소리가 거의 없어요"]);
-  else if (level < -34) out.push(["a", "소리가 작아요"]); else out.push(["g", "크기 적당"]);
-  out.push(clips > 3 || peak > 0.999 ? ["r", "소리가 깨졌어요"] : ["g", "깨짐 없음"]);
+  else if (level < -34) out.push(["a", "소리가 조금 작아요"]); else out.push(["g", "크기 좋아요"]);
+  out.push(clips > 3 || peak > 0.999 ? ["r", "소리가 너무 커서 깨졌어요"] : ["g", "깨짐 없음"]);
   const odd = speech && (speech < exp * 0.45 || speech > exp * 2.6);
-  out.push([odd ? "a" : "g", `${speech.toFixed(1)}초${odd ? " · 길이 확인" : ""}`]);
-  if (first >= 0 && lead < 0.12) out.push(["a", "앞 여유 짧음"]);
+  out.push([odd ? "a" : "g", odd ? "읽은 길이가 이상해요" : `${speech.toFixed(1)}초`]);
+  if (first >= 0 && lead < 0.12) out.push(["a", "너무 빨리 시작했어요"]);
   if (first >= 0 && tail < 0.12) out.push(["a", "끝이 잘렸을 수 있어요"]);
   const bad = out.some(([k]) => k === "r") || odd || (first >= 0 && lead < 0.05);
-  return { items: out, warn: bad || out.some(([k]) => k === "a"), level: +level.toFixed(1), peak: +(20 * Math.log10(peak + 1e-9)).toFixed(1), speech: +speech.toFixed(2), lead: +lead.toFixed(2), tail: +tail.toFixed(2), floor: +floor.toFixed(1) };
+  return { items: out, odd: !!odd, warn: bad || out.some(([k]) => k === "a"), level: +level.toFixed(1), peak: +(20 * Math.log10(peak + 1e-9)).toFixed(1), speech: +speech.toFixed(2), lead: +lead.toFixed(2), tail: +tail.toFixed(2), floor: +floor.toFixed(1) };
 }
 
 // ---------------------------------------------------------------- meters
@@ -525,7 +538,8 @@ function ladder(el, dark) {
     const from = s ? STAGE_END[s - 1] : 0, size = STAGE_END[s] - from, done = recordedCount(STAGE_END[s]) - recordedCount(from);
     const d = document.createElement("div"); d.className = "s";
     d.innerHTML = `<i><b style="width:${Math.round(done / size * 100)}%"></b></i><small></small>`;
-    d.querySelector("small").textContent = done >= size ? `${s + 1}단계 완료` : done ? `${s + 1}단계 ${done}/${size}` : `${s + 1}단계`;
+    d.querySelector("small").textContent = done >= size ? `${s + 1}단계 완료` : done ? `${s + 1}단계
+${done}/${size}` : `${s + 1}단계`;
     el.append(d);
   });
 }
@@ -542,23 +556,23 @@ const Rec = {
     try { await Mic.open(); runMeters(); } catch { toastMsg("마이크를 켜지 못했어요", "브라우저 설정에서 이 사이트의 마이크를 허용해 주세요."); return; }
     Auto.reset(); hintDefault(); this.on = true; this.t0 = performance.now(); Mic.start();
     $("recBtn").classList.add("on"); $("tally").classList.add("on"); $("scope").classList.remove("idle"); Player.stop(); $("listenRow").hidden = true;
-    $("qc").innerHTML = '<span style="color:var(--gm)">읽고 나서 0.5초 뒤에 멈춰 주세요</span>';
+    $("qc").innerHTML = ""; guide("rec", G.listen());
     scopeHist.fill(-60);
     this.timer = setTimeout(() => this.stop(), MAX_SEC * 1000);
   },
   async stop(silent, byAuto) {
     if (!this.on) return;
-    if (!byAuto && Auto.on) Auto.pause("일시정지 · 녹음 버튼을 누르면 이 문장부터 다시 이어가요");
+    if (!byAuto && Auto.on) Auto.pause();
     this.on = false; clearTimeout(this.timer);
     const raw = Mic.stop();
     $("recBtn").classList.remove("on"); $("tally").classList.remove("on"); $("ring").style.strokeDashoffset = "283";
-    if (silent || raw.length < Mic.sr * 0.3) { $("tallyText").textContent = "눌러서 녹음"; $("qc").innerHTML = '<span style="color:var(--gm)">녹음이 너무 짧아서 저장하지 않았어요</span>'; return; }
+    if (silent || raw.length < Mic.sr * 0.3) { $("tallyText").textContent = "누르면 녹음"; $("qc").innerHTML = ""; guide("", silent ? G.idle : "너무 짧아서 저장하지 않았어요 · 빨간 버튼을 눌러 다시 읽어 주세요"); return; }
     const x = await resample(raw, Mic.sr, OUT_SR);
     const line = LINES[S.idx], qc = qcOf(x, OUT_SR, line);
     const take = { id: line.id, blob: wav(x, OUT_SR), sec: +(x.length / OUT_SR).toFixed(2), qc, at: Date.now(), sentAt: null };
     S.takes.set(line.id, take); await Store.putTake(take); await saveState({ idx: S.idx });
-    drawScope(scopeFromTake(x)); showListen(take);
-    renderQc(qc); $("tallyText").textContent = "저장됨 · 다시 누르면 새로 녹음";
+    drawScope(scopeFromTake(x)); showListen(take); $("redoBtn").disabled = false;
+    renderQc(qc); $("tallyText").textContent = "저장됨"; guideForTake(qc, true);
     renderTop();
     const stageDone = stageCheck();
     if (byAuto) Auto.after(qc, stageDone);
@@ -566,7 +580,24 @@ const Rec = {
 };
 function updateRecClock() {
   const t = (performance.now() - Rec.t0) / 1000;
-  $("tallyText").innerHTML = `REC <span class="time">${t.toFixed(1).padStart(4, "0")}초</span>`;
+  $("tallyText").innerHTML = `녹음 중 <span class="time">${t.toFixed(1)}초</span>`;
+}
+const G = {
+  idle: "빨간 버튼을 누르고 위 문장을 읽어 주세요",
+  listen: () => (Auto.on ? "듣고 있어요 · 다 읽고 1초 쉬면 저장돼요" : "듣고 있어요 · 다 읽으면 버튼을 눌러 멈춰 주세요"),
+  saving: "저장하는 중…",
+};
+function guide(kind, text) { $("guide").className = "guide " + kind; $("guide").lastElementChild.textContent = text; }
+function problem(qc) {   // the first thing worth fixing: red, then an odd length, then amber
+  return qc.items.find(([k]) => k === "r") || (qc.odd && ["a", "읽은 길이가 이상해요"]) || qc.items.find(([k]) => k === "a");
+}
+function isBad(qc) { return qc.items.some(([k]) => k === "r") || !!qc.odd; }
+function guideForTake(qc, fresh) {
+  const p = problem(qc);
+  if (isBad(qc)) return guide("bad", `${p[1]} · 빨간 버튼을 눌러 다시 읽어 주세요`);
+  const note = p ? ` · ${p[1]}` : "";
+  if (!fresh) return guide(p ? "warn" : "ok", `녹음했어요${note} · 다시 읽으려면 빨간 버튼을 눌러요`);
+  guide(p ? "warn" : "ok", `저장했어요${note} · ` + (Auto.on && !Auto.paused ? "다음 문장으로 넘어가요" : "넘어가려면 「다음 문장」, 다시 읽으려면 빨간 버튼"));
 }
 function renderQc(qc) {
   $("qc").innerHTML = "";
@@ -575,29 +606,38 @@ function renderQc(qc) {
 function renderTop() {
   const st = stageOfIdx(S.idx), from = st > 1 ? STAGE_END[st - 2] : 0, size = STAGE_END[st - 1] - from;
   const done = recordedCount(STAGE_END[st - 1]) - recordedCount(from);
-  $("stageLabel").textContent = `${st}단계 · ${done} / ${size}`;
-  $("totalLabel").textContent = `전체 ${S.takes.size} / ${LINES.length}`;
+  $("stageLabel").textContent = `${st}단계 · ${done} / ${size}문장`;
+  $("totalLabel").textContent = `전체 ${LINES.length}문장 중 ${S.takes.size}문장 녹음`;
+  $("sendCount").textContent = `${S.takes.size}문장`; $("pauseBtn").disabled = !S.takes.size;
   $("progBar").style.width = Math.round(done / size * 100) + "%";
 }
 function renderLine() {
   const l = LINES[S.idx], n = LINES[S.idx + 1];
-  $("lineNo").textContent = `No. ${S.idx + 1}`; $("lineTone").textContent = TONE_LABEL(l);
+  $("lineNo").textContent = `${S.idx + 1}번째 문장`; $("lineTone").textContent = (l.lang === "English" ? "영어 · " : "말투 · ") + l.style;
   $("lineText").textContent = l.text; $("lineText").classList.toggle("en", l.lang === "English");
   $("nextText").textContent = n ? n.text : "마지막 문장이에요";
   const t = S.takes.get(l.id);
   Player.stop();
-  if (t) { renderQc(t.qc); showListen(t); $("scope").classList.remove("idle"); $("tallyText").textContent = "녹음됨 · 다시 누르면 새로 녹음"; t.blob.arrayBuffer().then((b) => drawScope(scopeFromTake(new Float32Array(pcm16(b))))); }
-  else { $("qc").innerHTML = '<span style="color:var(--gf)">문장 앞뒤로 0.5초쯤 쉬어 주세요</span>'; $("listenRow").hidden = true; $("scope").classList.add("idle"); drawScope(new Array(SCOPE_N).fill(-60)); $("tallyText").textContent = "눌러서 녹음"; }
+  if (t) { renderQc(t.qc); guideForTake(t.qc, false); showListen(t); $("scope").classList.remove("idle"); $("tallyText").textContent = "녹음됨"; t.blob.arrayBuffer().then((b) => drawScope(scopeFromTake(new Float32Array(pcm16(b))))); }
+  else { $("qc").innerHTML = ""; guide("", G.idle); $("listenRow").hidden = true; $("scope").classList.add("idle"); drawScope(new Array(SCOPE_N).fill(-60)); $("tallyText").textContent = "누르면 녹음"; }
   $("redoBtn").disabled = !t;
   renderTop();
 }
 function pcm16(buf) { const v = new DataView(buf), n = (buf.byteLength - 44) / 2, out = new Float32Array(n); for (let i = 0; i < n; i++) out[i] = v.getInt16(44 + i * 2, true) / 0x7fff; return out; }
 function openRecord() {
-  show("sRecord"); $("storageBanner").hidden = Store.ok;
+  Auto.next = null; show("sRecord"); $("storageBanner").hidden = Store.ok;
   Auto.on = S.state?.auto ?? true; Auto.paused = false; $("autoBtn").setAttribute("aria-pressed", String(Auto.on)); hintDefault();
   renderLine();
 }
-$("recBtn").onclick = () => { if (Auto.cancel()) return; if (Rec.on) return Rec.stop(); Auto.paused = false; Rec.start(); };
+$("recBtn").onclick = async () => {
+  if (Auto.cd) {   // tapped while it was about to move on: stop on the next line, ready to record it
+    const nx = Auto.next; Auto.cancel(); S.idx = nx; await saveState({ idx: S.idx }); renderLine();
+    return guide("", "멈췄어요 · 빨간 버튼을 누르면 이 문장부터 이어서 녹음해요");
+  }
+  if (Rec.on) return Rec.stop();
+  if (Auto.next != null) { S.idx = Auto.next; await saveState({ idx: S.idx }); renderLine(); }   // a stage just ended: carry on
+  Auto.next = null; Auto.paused = false; Rec.start();
+};
 $("redoBtn").onclick = () => { Auto.cancel(); if (!Rec.on) { Auto.paused = false; Rec.start(); } };
 $("nextBtn").onclick = async () => { Auto.cancel(); if (Rec.on) await Rec.stop(); if (S.idx < LINES.length - 1) { S.idx++; await saveState({ idx: S.idx }); renderLine(); } };
 
@@ -605,25 +645,24 @@ $("nextBtn").onclick = async () => { Auto.cancel(); if (Rec.on) await Rec.stop()
 const Auto = {
   on: true, paused: false, simRms: null, cd: 0,
   SILENCE_MS: 1000, MIN_SPEECH_MS: 350,
-  reset() { this.speaking = false; this.speechMs = 0; this.quietMs = 0; this.last = 0; this.floorS = []; this.floor = null; },
-  pause(msg) { this.paused = true; this.cancel(); $("autoHint").textContent = msg; },
-  cancel() { if (!this.cd) return false; clearTimeout(this.cd); this.cd = 0; $("tallyText").textContent = "저장됨 · 다시 누르면 새로 녹음"; this.paused = true; hintDefault(); return true; },
+  reset() { this.savingShown = false; this.speaking = false; this.speechMs = 0; this.quietMs = 0; this.last = 0; this.floorS = []; this.floor = null; },
+  pause(msg, kind = "") { this.paused = true; this.cancel(); if (msg) guide(kind, msg); },
+  cancel() { this.next = null; if (!this.cd) return false; clearTimeout(this.cd); this.cd = 0; $("tallyText").textContent = "저장됨"; this.paused = true; return true; },
   after(qc, stageDone) {
-    const bad = qc.items.some(([k]) => k === "r") || qc.items.some(([, t]) => t.includes("길이 확인"));
     if (!this.on || this.paused) return;
-    if (bad) { this.pause("이 문장은 다시 녹음해 주세요 · 녹음 버튼을 누르면 이어가요"); return; }
-    if (stageDone) { this.pause("단계가 끝났어요 · 녹음 버튼을 누르면 이어가요"); return; }
+    if (isBad(qc)) { this.pause(); return; }   // guideForTake already asked for a retake
     const next = firstOpenIdx(S.idx + 1);
-    if (S.takes.has(LINES[next].id)) { this.pause("모든 문장을 녹음했어요"); return; }
-    $("tallyText").textContent = "다음 문장으로 넘어가요…";
+    if (stageDone) { this.pause("단계가 끝났어요 · 빨간 버튼을 누르면 다음 문장부터 이어서 녹음해요", "ok"); this.next = next; return; }
+    if (S.takes.has(LINES[next].id)) { this.pause("모든 문장을 녹음했어요 · 아래 「녹음 끝내고 보내기」를 눌러 주세요", "ok"); return; }
+    $("tallyText").textContent = "다음 문장으로…"; this.next = next;
     this.cd = setTimeout(async () => {
-      this.cd = 0; S.idx = next; await saveState({ idx: S.idx }); renderLine();
+      this.cd = 0; this.next = null; S.idx = next; await saveState({ idx: S.idx }); renderLine();
       if (this.on && !this.paused) Rec.start();
     }, 900);
   },
 };
 Auto.reset();
-function hintDefault() { $("autoHint").textContent = Auto.on ? "녹음을 한 번 누르면, 다 읽고 1초 쉴 때마다 저장하고 다음 문장으로 넘어가요" : "꺼짐 · 문장마다 녹음 버튼을 눌러 시작하고 멈춰요"; }
+function hintDefault() { $("autoHint").textContent = Auto.on ? "버튼 한 번이면 끝까지 이어서 녹음돼요" : "꺼짐 · 문장마다 버튼을 눌러 시작하고 멈춰요"; }
 function autoTick(rms) {
   const now = performance.now(), dt = Auto.last ? Math.min(100, now - Auto.last) : 16; Auto.last = now;
   if (Auto.floor === null) {           // first 0.4 s: the room before the speaker starts
@@ -638,10 +677,11 @@ function autoTick(rms) {
   const armed = Auto.speaking && Auto.speechMs >= Auto.MIN_SPEECH_MS;
   const fill = armed ? Math.min(1, Math.max(0, (Auto.quietMs - 300) / (Auto.SILENCE_MS - 300))) : 0;
   $("ring").style.strokeDashoffset = String(283 - 283 * fill);
+  if ((fill > 0) !== !!Auto.savingShown) { Auto.savingShown = fill > 0; guide("rec", Auto.savingShown ? G.saving : G.listen()); }
   if (armed && Auto.quietMs >= Auto.SILENCE_MS) Rec.stop(false, true);
 }
 $("autoBtn").onclick = async () => {
-  Auto.on = !Auto.on; Auto.cancel(); Auto.paused = false;
+  Auto.on = !Auto.on; Auto.cancel(); Auto.paused = false; if (Rec.on) guide("rec", G.listen());
   $("autoBtn").setAttribute("aria-pressed", String(Auto.on)); hintDefault();
   await saveState({ auto: Auto.on });
 };
@@ -688,7 +728,7 @@ function stageCheck() {   // true when this take finished a stage (the toast tak
   if (done !== size || (S.state.shown || []).includes(st)) return false;
   {
     saveState({ shown: [...(S.state.shown || []), st] });
-    const msg = { 1: "흉내 목소리를 만들 수 있어요. 학습까지 하려면 2단계 이상을 권해요.", 2: "짧은 학습이 가능해요. 3단계까지 하면 가장 자연스러워져요.", 3: "모든 문장을 녹음했어요. 고생 많으셨어요!" }[st];
+    const msg = { 1: "지금 보내도 비슷한 목소리를 바로 만들 수 있어요. 학습까지 하려면 2단계까지 해 주세요.", 2: "이제 목소리 학습을 할 수 있어요. 3단계까지 하면 가장 자연스러워져요.", 3: "모든 문장을 녹음했어요. 고생 많으셨어요!" }[st];
     toastMsg(`${st}단계 끝!`, msg, true);
   }
   return true;
@@ -784,7 +824,7 @@ async function doSend() {
   $("sendBtn").disabled = true; $("sendLabel").textContent = "묶는 중…"; $("sendErr").hidden = true;
   try {
     const files = await buildZips(unsent);
-    const title = "Voice Booth 녹음", text = `${S.state?.name || ""} 녹음 ${unsent.length}문장`;
+    const title = "MSW 목소리 녹음실", text = `${S.state?.name || ""} 녹음 ${unsent.length}문장`;
     // Some phones refuse to share .zip (Android Chrome only shares media/text types): fall back to the
     // wav files themselves plus the manifest as text, which the studio also accepts.
     const loose = () => [...unsent.map((t) => new File([t.blob], `${t.id}.wav`, { type: "audio/wav" })),
@@ -835,12 +875,12 @@ async function selftest() {
     const before = S.takes.size; await Rec.start();
     for (const [lvl, ms] of [[-70, 500], [-20, 900], [-70, 1300], [-70, 1200], [-20, 900], [-70, 1300]]) { Auto.simRms = lvl; await wait(ms); }
     Auto.simRms = null; await wait(300);
-    log(`auto: saved ${S.takes.size - before} takes, now at ${LINES[S.idx].id}, recording=${Rec.on}, page ${document.visibilityState}, hint "${$("autoHint").textContent}", qc "${$("qc").textContent}"`);
+    log(`auto: saved ${S.takes.size - before} takes, now at ${LINES[S.idx].id}, recording=${Rec.on}, page ${document.visibilityState}, guide "${$("guide").textContent}", qc "${$("qc").textContent}"`);
     if (Rec.on) await Rec.stop(); Auto.cancel();
     // the fake microphone is a full-scale beep (QC says clipped); let QC pass to check that it moves on and re-arms
-    const realQc = qcOf; qcOf = (...a) => ({ ...realQc(...a), items: [["g", "크기 적당"]] });
-    Auto.pause("일시정지 · 시험"); S.idx = 20; renderLine(); Auto.paused = false; const before2 = S.takes.size, from2 = LINES[S.idx].id; await Rec.start();
-    const ring = () => $("ring").style.strokeDashoffset, hintOk = !$("autoHint").textContent.startsWith("일시정지");
+    const realQc = qcOf; qcOf = (...a) => ({ ...realQc(...a), items: [["g", "크기 좋아요"]] });
+    Auto.pause("멈췄어요 · 시험"); S.idx = 20; renderLine(); Auto.paused = false; const before2 = S.takes.size, from2 = LINES[S.idx].id; await Rec.start();
+    const ring = () => $("ring").style.strokeDashoffset, hintOk = $("guide").textContent.startsWith("듣고 있어요");
     Auto.simRms = -70; await wait(500); Auto.simRms = -20; await wait(900); const rRead = ring();
     Auto.simRms = -70; await wait(750); const rQuiet = ring(); await wait(550);
     log(`ring reading ${rRead} · silence ${rQuiet} (283 = empty) · hint reset ${hintOk}`);
