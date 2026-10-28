@@ -44,14 +44,21 @@ window.Chaos = function (ctx) {
     banana: () => canvasTex("banana", 64, 48, (g) => { g.fillStyle = "#f6cf2a"; g.strokeStyle = "#9a7010"; g.lineWidth = 2; g.beginPath(); g.moveTo(6, 14); g.bezierCurveTo(16, 44, 46, 44, 58, 10); g.bezierCurveTo(46, 30, 20, 30, 6, 14); g.fill(); g.stroke(); g.fillStyle = "#4a3410"; g.fillRect(56, 6, 5, 5); }),
   };
   const WORD_TEX = {};
+  // 글씨 그림: 폭은 글 길이에 맞춘다 (긴 문장이 잘리지 않게) — tex.userData.aspect = 폭/높이
+  const WORD_FONT = "900 72px Pretendard, 'Malgun Gothic', sans-serif", measureCtx = document.createElement("canvas").getContext("2d");
   function wordTex(text, color = "#ffffff", stroke = "#23252a") {
     const key = text + color + stroke;
     if (WORD_TEX[key]) return WORD_TEX[key];
-    return (WORD_TEX[key] = canvasTex("w:" + key, 512, 128, (g) => {
-      g.font = "900 72px Pretendard, 'Malgun Gothic', sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineJoin = "round";
-      g.lineWidth = 16; g.strokeStyle = stroke; g.strokeText(text, 256, 66); g.fillStyle = color; g.fillText(text, 256, 66);
-    }));
+    measureCtx.font = WORD_FONT;
+    const w = Math.ceil(measureCtx.measureText(text).width + 40);
+    const t = canvasTex("w:" + key, w, 128, (g) => {
+      g.font = WORD_FONT; g.textAlign = "center"; g.textBaseline = "middle"; g.lineJoin = "round";
+      g.lineWidth = 16; g.strokeStyle = stroke; g.strokeText(text, w / 2, 66); g.fillStyle = color; g.fillText(text, w / 2, 66);
+    });
+    t.userData.aspect = w / 128;
+    return (WORD_TEX[key] = t);
   }
+  const TXT = 0.62; // 화면 글씨 크기 배율 (전체적으로 크다는 의견 — 이름표보다 조금 큰 정도)
 
   // ───────── 입자 ─────────
   const ROOT = new THREE.Group();
@@ -155,11 +162,13 @@ window.Chaos = function (ctx) {
   // 외침 (틀 없는 굵은 글씨, 머리 위로 툭 튀어나와 떠오른다)
   function shout(m, text, color = "#ffffff", stroke = "#23252a", life = 1.6) {
     const at = headPos(m).add(V(0, 0.18 * K, 0));
-    const q = emit({ tex: wordTex(text, color, stroke), at, vel: V(0, 0.35 * K, 0), life, size: 0.05, aspect: 4, screen: true, fadeIn: 0.05, order: 12, depthTest: false, rot: 0 });
+    const tex = wordTex(text, color, stroke);
+    const q = emit({ tex, at, vel: V(0, 0.35 * K, 0), life, size: 0.05 * TXT, aspect: tex.userData.aspect, screen: true, fadeIn: 0.05, order: 12, depthTest: false, rot: 0 });
     return q;
   }
   function word(text, at, size = 0.07, color = "#ffd84a", stroke = "#5a2a00", life = 1.4) {
-    return emit({ tex: wordTex(text, color, stroke), at, vel: V(0, 0.4, 0), life, size, aspect: 4, screen: true, fadeIn: 0.04, order: 12, depthTest: false, rot: 0 });
+    const tex = wordTex(text, color, stroke);
+    return emit({ tex, at, vel: V(0, 0.4, 0), life, size: size * TXT, aspect: tex.userData.aspect, screen: true, fadeIn: 0.04, order: 12, depthTest: false, rot: 0 });
   }
 
   // ───────── 사람 조종 ─────────
@@ -1020,7 +1029,7 @@ window.Chaos = function (ctx) {
       s.beams.forEach((b, i) => (b.material.opacity = 0.09 + 0.04 * Math.sin(t * 0.6 + i)));
       if (Math.random() < dt * 4) emit({ tex: TEX.soft(), at: V(rnd(ROOM.x0, ROOM.x1), rnd(0.5, 2.5), rnd(ROOM.z0, ROOM.z1)), vel: V(rnd(-0.05, 0.05), rnd(-0.02, 0.05), rnd(-0.05, 0.05)), life: 5, size: 0.025, color: 0xfff2c0, add: true });
       if ((s.next -= dt) <= 0 && t < 26) { s.next = rnd(0.6, 1.5); const m = pick(seatedNow().filter((x) => !x.frozen)); if (m) { m.frozen = true; s.sleepers.push(m); } }
-      for (const m of s.sleepers) if (Math.random() < dt * 0.8) emit({ tex: TEX2.zzz(), at: headPos(m).add(V(0.1, 0.15, 0)), vel: V(0.1, 0.25, 0), life: 2.2, size: 0.035, aspect: 4, screen: true, order: 12, depthTest: false, rot: 0 });
+      for (const m of s.sleepers) if (Math.random() < dt * 0.8) emit({ tex: TEX2.zzz(), at: headPos(m).add(V(0.1, 0.15, 0)), vel: V(0.1, 0.25, 0), life: 2.2, size: 0.035 * TXT, aspect: TEX2.zzz().userData.aspect, screen: true, order: 12, depthTest: false, rot: 0 });
     },
     end(s) { for (const m of s.sleepers) m.frozen = false; } });
 
@@ -1055,8 +1064,8 @@ window.Chaos = function (ctx) {
   S.push({ id: "praise", cat: "따뜻한 이야기", emoji: "💌", name: "칭찬 릴레이", desc: "하트가 사람에서 사람으로 건너가며 한마디씩 고마움을 전한다", dur: 38,
     start(s) {
       s.line = present().sort(() => Math.random() - 0.5).slice(0, 9);
-      s.i = 0; s.t = 0; s.size = 0.07;
-      s.heart = emit({ tex: TEX2.heart(), at: headPos(s.line[0] ?? crew[0]).add(V(0, 0.4, 0)), life: 9999, size: 0.07, fadeIn: 0.3, screen: true, depthTest: false, order: 11, rot: 0 }); // 화면에서 늘 보이는 크기
+      s.i = 0; s.t = 0; s.size = 0.042;
+      s.heart = emit({ tex: TEX2.heart(), at: headPos(s.line[0] ?? crew[0]).add(V(0, 0.4, 0)), life: 9999, size: 0.042, fadeIn: 0.3, screen: true, depthTest: false, order: 11, rot: 0 }); // 화면에서 늘 보이는 크기
       s.from = s.heart.s.position.clone();
       s.words = ["오늘 도와줘서 고마워요", "덕분에 살았어요!", "항상 웃어줘서 좋아요", "코드 리뷰 최고였어요", "커피 고마웠어요 ☕", "같이 일해서 든든해요", "아이디어 멋졌어요!", "오늘도 수고 많았어요", "늘 고마워요 💛"];
     },
@@ -1069,8 +1078,8 @@ window.Chaos = function (ctx) {
       if (k >= 1 && s.t > 3.2) {
         const got = s.line[s.i];
         shout(got, s.words[s.i % s.words.length], "#fff", "#c2557a", 3.4); hearts(to, 3); SND.pop(0.06, 900);
-        emit({ tex: TEX2.heart(), at: to, life: 9999, size: 0.028, fadeIn: 0.3, screen: true, depthTest: false, order: 11, rot: 0, follow: () => headPos(got).add(V(0, 0.32 * K, 0)) }); // 받은 사람 머리 위에 작은 하트가 남는다
-        s.from = to.clone(); s.t = 0; s.i++; s.size += 0.006;
+        emit({ tex: TEX2.heart(), at: to, life: 9999, size: 0.018, fadeIn: 0.3, screen: true, depthTest: false, order: 11, rot: 0, follow: () => headPos(got).add(V(0, 0.32 * K, 0)) }); // 받은 사람 머리 위에 작은 하트가 남는다
+        s.from = to.clone(); s.t = 0; s.i++; s.size += 0.003;
         if (s.i >= s.line.length) { s.i = s.line.length - 1; s.heart.life = s.heart.age + 0.5; for (const m of present()) hearts(headPos(m), 2); word("💛 오늘도 고마워요", V(RCX, 2.5, MAIN_Z), 0.1, "#fff", "#c2557a", 4); s.line = []; }
       }
     } });
@@ -1095,7 +1104,7 @@ window.Chaos = function (ctx) {
           c.userData.tail.rotation.z = Math.sin(t * 4) * 0.5;
           if (d < 0.05) s.pi++;
         } else { s.sleep = true; const d = desks().reduce((a, b) => (a.desk.distanceTo(c.position) < b.desk.distanceTo(c.position) ? a : b)); c.position.copy(d.desk).setY(DH); c.scale.y = 0.7 * 1.8 * K; }
-      } else if (Math.random() < dt * 0.8) emit({ tex: TEX2.zzz(), at: c.position.clone().add(V(0, 0.3, 0)), vel: V(0.05, 0.2, 0), life: 2, size: 0.03, aspect: 4, screen: true, order: 12, depthTest: false, rot: 0 });
+      } else if (Math.random() < dt * 0.8) emit({ tex: TEX2.zzz(), at: c.position.clone().add(V(0, 0.3, 0)), vel: V(0.05, 0.2, 0), life: 2, size: 0.03 * TXT, aspect: TEX2.zzz().userData.aspect, screen: true, order: 12, depthTest: false, rot: 0 });
       for (const m of nearPeople(c.position, 1.3)) { if (s.seen.has(m)) continue; s.seen.add(m); shout(m, pick(["고양이다!", "귀여워ㅠㅠ", "야옹~", "츄르 있는 사람?"]), "#fff", "#7a4a2a", 2.2); hearts(headPos(m), 3); }
       if (Math.random() < dt * 0.3) word(pick(["야옹", "냐앙~", "골골"]), c.position.clone().add(V(0, 0.4, 0)), 0.04, "#ffffff", "#7a4a2a", 1.4);
     } });
