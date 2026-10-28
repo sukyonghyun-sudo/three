@@ -57,7 +57,8 @@ button{font:inherit}
 #list li{flex-wrap:wrap}
 #list .acts,#list .more{display:flex;gap:4px;flex-basis:100%;padding-left:46px}
 #list .acts[hidden],#list .more[hidden]{display:none}
-#list .acts .btn,#list .more .btn{padding:4px 9px;min-width:0}
+#list .acts .btn,#list .more .btn{padding:4px 9px;min-width:0;white-space:nowrap}
+#list .acts{flex-wrap:wrap} /* 단추가 많으면 글자를 쪼개지 말고 다음 줄로 */
 #list .btn.on{background:var(--work);border-color:var(--work);color:#fff}
 #list .more input{flex:1;width:0;min-width:0;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--panel);color:var(--ink)}
 #panel.edit #list .acts,#panel.edit #list .more{display:none}
