@@ -153,7 +153,7 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
 .pitem { display: grid; grid-template-columns: 14px 44px minmax(0, 1fr); gap: 10px; align-items: start; padding: 11px 8px; border-bottom: 1px solid var(--gl); text-align: left; width: 100% }
 .pitem .st { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--gf); margin-top: 7px }
 .pitem .st.ok { background: var(--vu-g); border-color: var(--vu-g) } .pitem .st.warn { background: var(--vu-a); border-color: var(--vu-a) }
-.pitem .id { font: 600 12px var(--ui); color: var(--gm); padding-top: 3px }
+.pitem .id { font: 600 12px var(--ui); color: var(--gm); padding-top: 3px; font-variant-numeric: tabular-nums }
 .pitem .t { font: 400 15px/1.5 var(--script); color: #d9dde4; word-break: keep-all }
 .pitem .t small { display: block; font: 12px var(--ui); color: var(--gf) }
 .stage-h { padding: 16px 8px 6px; font: 600 12px var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--gm) }
@@ -247,7 +247,7 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
     </div>
     <p class="banner" id="storageBanner" hidden>이 브라우저는 녹음을 저장할 수 없어요(시크릿 모드 등). 창을 닫기 전에 꼭 보내 주세요.</p>
     <div class="sheet">
-      <div class="no"><span id="lineNo">No. 0000</span><span class="tone" id="lineTone">보통</span></div>
+      <div class="no"><span id="lineNo">No. 1</span><span class="tone" id="lineTone">보통</span></div>
       <div class="text" id="lineText"></div>
       <div class="scope idle" id="scope"></div>
       <div class="listen" id="listenRow" hidden><button class="play" id="playBtn" type="button" aria-pressed="false"><svg class="ico" style="width:14px;height:14px"><use href="#i-play" id="playIco"/></svg><span id="playLabel">들어보기</span></button><span class="ptime" id="ptime"></span></div>
@@ -515,7 +515,7 @@ function renderResume() {
   const unsent = [...S.takes.values()].filter((t) => !t.sentAt);
   $("unsentInfo").textContent = unsent.length ? `${unsent.length}문장 · ${fmtMin(totalSec(unsent))}` : "모두 보냈어요";
   const next = firstOpenIdx(lastIdx);
-  $("continueBtn").innerHTML = ""; $("continueBtn").append(`${LINES[next].id}번부터 이어서 녹음 `); $("continueBtn").insertAdjacentHTML("beforeend", '<svg class="ico"><use href="#i-next"/></svg>');
+  $("continueBtn").innerHTML = ""; $("continueBtn").append(`${next + 1}번째 문장부터 이어서 녹음 `); $("continueBtn").insertAdjacentHTML("beforeend", '<svg class="ico"><use href="#i-next"/></svg>');
   $("continueBtn").onclick = async () => { S.idx = next; await ensureMic(); openRecord(); };
 }
 function ladder(el, dark) {
@@ -581,7 +581,7 @@ function renderTop() {
 }
 function renderLine() {
   const l = LINES[S.idx], n = LINES[S.idx + 1];
-  $("lineNo").textContent = `No. ${l.id}`; $("lineTone").textContent = TONE_LABEL(l);
+  $("lineNo").textContent = `No. ${S.idx + 1}`; $("lineTone").textContent = TONE_LABEL(l);
   $("lineText").textContent = l.text; $("lineText").classList.toggle("en", l.lang === "English");
   $("nextText").textContent = n ? n.text : "마지막 문장이에요";
   const t = S.takes.get(l.id);
@@ -713,7 +713,7 @@ function renderPicker() {
     if (S.filter === "warn" && !(t && t.qc?.warn)) return;
     if (l.stage !== lastStage) { lastStage = l.stage; const h = document.createElement("div"); h.className = "stage-h"; h.textContent = `${l.stage}단계`; box.append(h); }
     const b = document.createElement("button"); b.type = "button"; b.className = "pitem";
-    b.innerHTML = `<span class="st ${t ? (t.qc?.warn ? "warn" : "ok") : ""}"></span><span class="id">${l.id}</span><span class="t"></span>`;
+    b.innerHTML = `<span class="st ${t ? (t.qc?.warn ? "warn" : "ok") : ""}"></span><span class="id">${i + 1}</span><span class="t"></span>`;
     const tt = b.querySelector(".t"); tt.append(l.text);
     if (l.style !== "보통" || l.lang === "English") { const sm = document.createElement("small"); sm.textContent = TONE_LABEL(l); tt.append(sm); }
     b.onclick = async () => { S.idx = i; await saveState({ idx: i }); await ensureMic(); openRecord(); };
