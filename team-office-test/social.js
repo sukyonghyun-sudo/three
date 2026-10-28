@@ -213,6 +213,7 @@ window.Social = function Social(ctx) {
         });
         hb.disabled = sent;
         acts.append(hb, btn("💬 1:1 대화", "", () => openThread(name)));
+        if (ctx.test) acts.append(btn("🧪 이 사람으로 보기", "", () => ctx.switchTo(name))); // 테스트 판: 그 사람이 돼서 써 보기
       } else acts.append(Object.assign(btn(`❤ 받은 칭찬 ${n}`, "heart", () => {}), { disabled: true }));
       card.append(acts);
     }
@@ -457,6 +458,11 @@ window.Social = function Social(ctx) {
     const head = header(face48(name), name, "1:1 대화 · 두 사람만 볼 수 있어요"), back = el("button", "sx-back", "‹");
     back.type = "button"; back.title = "대화 목록"; back.onclick = openInbox;
     head.prepend(back);
+    if (ctx.test && ctx.me()) { // 테스트 판: 상대가 돼서 답장해 보기
+      const sw = btn("🧪 상대로 답장", "", () => ctx.switchTo(name));
+      sw.style.cssText = "padding:5px 9px;font-size:12px;flex:none";
+      head.querySelector(".sx-x").before(sw);
+    }
     card.replaceChildren(head);
     const body = el("div", "sx-body sx-chat");
     card.append(body);
@@ -680,16 +686,20 @@ window.Social = function Social(ctx) {
     heartCount: (name) => hearts.get(name) || 0,
     isBday,
     get open() { return !wrap.hidden; },
-    sync() { // 로그인·로그아웃하면 열린 창을 다시 그리고, 하트·안 읽은 대화를 다시 센다
+    sync() { // 로그인·사람 바꾸기·저장소 준비가 되면 열린 창을 다시 그리고, 하트·안 읽은 대화를 다시 센다
       listen();
-      const me = ctx.me()?.char || null;
-      if (me === sync.me) return;
-      sync.me = me;
+      const me = ctx.me()?.char || null, key = `${me}|${!!ctx.sb()}`;
+      if (key === sync.key) return;
+      const prev = sync.me;
+      sync.key = key; sync.me = me;
       clearInterval(unreadTimer);
       if (me) { unreadTimer = setInterval(() => { if (!document.hidden) pollUnread(); }, 20000); pollUnread(); } else setUnread(0);
       loadHearts();
       if (!view || busy) return;
-      ({ snacks: renderSnacks, inbox: renderInbox, dm: () => openThread(view.name), lunch: renderLunch }[view.kind] || renderPerson)();
+      if (prev === me) return view.reload?.(); // 저장소만 막 준비됨
+      // 대화방에서 상대로 바뀌면(테스트 판) 방금까지의 나와 이어서
+      const dm = () => (view.name === me ? (prev ? openThread(prev) : openInbox()) : openThread(view.name));
+      ({ snacks: renderSnacks, inbox: renderInbox, dm, lunch: renderLunch }[view.kind] || renderPerson)();
     },
   };
   function sync() {}

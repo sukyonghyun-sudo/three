@@ -106,6 +106,8 @@ body.loading #app{opacity:0}
 .bgmenu button:hover{background:#f3eee6}
 .bgmenu button.on{background:var(--ink);color:#fff}
 .testnote{background:#fff4d6;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.55;margin-bottom:10px;color:#6b4f10}
+.testme{display:inline-flex;align-items:center;gap:2px;background:#fff4d6;border:1px solid #efd28a;border-radius:10px;padding:3px 4px 3px 9px;font-size:12px;color:#6b4f10}
+.testme select{font:inherit;font-size:12px;font-weight:700;border:0;background:none;color:inherit;cursor:pointer}
 .testnote button{border:0;background:none;color:#2f6fe4;font:inherit;font-size:12px;padding:0;cursor:pointer;text-decoration:underline}
 .pipph{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:14px;line-height:1.6}
 body.pip{margin:0;height:100vh;overflow:hidden;background:var(--bg)}
@@ -1259,7 +1261,7 @@ try { LOCAL = { ...LOCAL, ...JSON.parse(localStorage.getItem(MINE_KEY)) }; } cat
 const saveLocal = () => { try { localStorage.setItem(MINE_KEY, JSON.stringify(LOCAL)); } catch {} };
 // 출근해 있어야 하나: 누른 대로. 아무도 안 누른 캐릭터는 — 파일로 열면(시험) 출근, claude.ai 에선 출근 전
 const wantIn = (m) => DEMO ? DEMO_IN.get(m.name) ?? true : LIVE ? !!PERSONAL.get(m.name)?.on && !AWAY_MODES.has(PERSONAL.get(m.name)?.mode) : PERSONAL.get(m.name)?.on ?? !(ME.shared || ME.pending);
-const canCtl = (m) => LIVE ? !ME.pending && MY.char === m.name : !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
+const canCtl = (m) => LIVE ? !ME.pending && (!!window.__TEST || MY.char === m.name) : !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
 if (DEMO) for (const n of [...NAMES].sort(() => Math.random() - 0.5).slice(0, 3)) DEMO_IN.set(n, false);
 
 // 말풍선: 이름표 바로 위, 이름표처럼 화면에서 늘 같은 크기 (이름표 크기 설정을 따른다)
@@ -1494,6 +1496,12 @@ let MY = { char: null, pin: null };
 const MY_STORE = window.__TEST ? sessionStorage : localStorage; // 테스트 판: 탭마다 다른 사람으로 로그인 (두 탭으로 서로 대화해 보기)
 try { MY = { ...MY, ...JSON.parse(MY_STORE.getItem(LIVE_KEY)) }; } catch {}
 const saveMy = () => { try { MY_STORE.setItem(LIVE_KEY, JSON.stringify(MY)); } catch {} };
+if (window.__TEST && !MY.char) { MY = { char: "석용현", pin: "0000" }; saveMy(); } // 테스트 판: 처음부터 로그인된 채로
+function testAs(name) { // 테스트 판: 누구로든 바로 바꿔 쓰고 대화해 보기
+  MY = { char: name, pin: "0000" }; saveMy(); bubbleOpen = null;
+  if (window.__testSel) window.__testSel.value = name;
+  meSay(`🧪 지금 나: ${name}`); renderMine();
+}
 let SB = null, pinOpen = null; // pinOpen: { m, mode: "claim" | "login" }
 window.__personal = PERSONAL; // 점검용
 function liveApply(rowsIn) { // 서버의 표 → 캐릭터마다 출근·상태 메시지
@@ -1549,7 +1557,9 @@ function renderLiveRows() {
     const m = r.m, p = PERSONAL.get(m.name) || {};
     let html = "";
     if (canCtl(m)) html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
-      `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button><button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`;
+      `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button>` +
+      (window.__TEST ? `<button class="btn${MY.char === m.name ? " on" : ""}" data-act="as" title="테스트: 이 사람으로 쓰고 대화해 보기">${MY.char === m.name ? "지금 나" : "이 사람으로"}</button>`
+        : `<button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`);
     else if (!ME.pending && !MY.char) html = PERSONAL.has(m.name) ? `<button class="btn" data-act="login">로그인</button>` : `<button class="btn" data-act="claim">나예요</button>`;
     if (r.acts.innerHTML !== html) r.acts.innerHTML = html;
     r.acts.hidden = !html;
@@ -1573,12 +1583,14 @@ async function onLiveAct(m, act, r) {
     return;
   }
   if (!canCtl(m)) return;
-  const set = async (args, ok) => { const res = await liveCall("office_set", { p_char: MY.char, p_pin: MY.pin, ...args }, ok); if (res === "bad_pin" || res === "no_char") { MY = { char: null, pin: null }; saveMy(); renderMine(); } };
+  const who = window.__TEST ? { p_char: m.name, p_pin: "0000" } : { p_char: MY.char, p_pin: MY.pin }; // 테스트 판: 누른 줄의 사람으로
+  const set = async (args, ok) => { const res = await liveCall("office_set", { ...who, ...args }, ok); if (res === "bad_pin" || res === "no_char") { MY = { char: null, pin: null }; saveMy(); renderMine(); } };
   if (act === "in") set({ p_on: true }, "출근했어요");
   else if (act === "out") set({ p_on: false }, "퇴근했어요");
   else if (act === "bubble") { bubbleOpen = bubbleOpen === m ? null : m; renderLiveRows(); if (bubbleOpen) r.input.focus(); }
   else if (act === "say") set({ p_msg: r.input.value.trim().slice(0, 40) }, "상태 메시지를 띄웠어요");
   else if (act === "clear") { r.input.value = ""; set({ p_msg: "" }, "상태 메시지를 지웠어요"); }
+  else if (act === "as") testAs(m.name);
   else if (act === "logout") { MY = { char: null, pin: null }; saveMy(); bubbleOpen = null; meSay("이 PC 에서 로그아웃했어요"); renderMine(); }
 }
 // claude.ai 에서 열렸으면 함께 쓰는 저장소로 (파일로 열면 window.claude 가 없다)
@@ -1851,14 +1863,22 @@ window.__social = window.Social ? window.Social({
   diary: DIARY, snackAdmin: SNACK_ADMIN, modes: MODES, names: crew.map((m) => m.name), hud: document.querySelector(".hud"),
   people: (n) => PERSONAL.get(n) || {},
   patchPerson: (n, patch) => { PERSONAL.set(n, { ...(PERSONAL.get(n) || {}), ...patch }); renderMine(); },
+  test: !!window.__TEST, switchTo: (n) => testAs(n),
   openList: () => { setList(true); meSay("내 이름 줄에서 「나예요」(처음 한 번) 또는 「로그인」을 눌러 주세요"); },
 }) : null;
 if (window.__TEST) { // 테스트 판 안내 (목록 맨 위)
   const n = document.createElement("div");
   n.className = "testnote";
-  n.innerHTML = "🧪 <b>테스트 판</b> — 글·대화는 이 브라우저에만 저장돼요. 아무 이름이나 「로그인」 + 아무 숫자 4자리. 탭을 두 개 열어 서로 다른 사람으로 로그인하면 1:1 대화를 주고받아 볼 수 있어요. <button type=button>처음 상태로</button>";
+  n.innerHTML = "🧪 <b>테스트 판</b> — 모두 로그인된 상태예요. 위쪽 「🧪 나」나 줄마다 「이 사람으로」를 누르면 그 사람이 돼서 글·하트·대화를 해 볼 수 있어요. 대화방의 「상대로 답장」으로 양쪽을 번갈아 써 보세요. 모두 이 브라우저에만 저장돼요. <button type=button>처음 상태로</button>";
   n.querySelector("button").onclick = () => { try { localStorage.removeItem("teamOfficeTestDb"); sessionStorage.clear(); } catch {} location.reload(); };
   document.querySelector("#panel header").prepend(n);
+  const lab = document.createElement("label"), sel = document.createElement("select");
+  lab.className = "testme"; lab.title = "테스트: 누구로 쓸지";
+  sel.innerHTML = crew.map((m) => `<option>${m.name}</option>`).join("");
+  sel.value = MY.char; sel.onchange = () => testAs(sel.value);
+  lab.append("🧪 나 ", sel);
+  document.querySelector(".hud").append(lab);
+  window.__testSel = sel;
 }
 controls.addEventListener("start", () => { for (const b of camBar.children) b.classList.remove("on"); }); // 직접 돌리면 표시 끔
 
@@ -2028,17 +2048,20 @@ window.__fart = fart; // 점검용
 // ───────────── 아이콘: 육아일기 쓰는 사람 머리 위 · 간식 책상 위 (누르면 육아일기 · 간식 신청) ─────────────
 // 아이콘 그림: 동그라미(이모지) 또는 알약(❤3 같은 글자) — 같은 그림은 한 번만 그린다
 const ICON_TEX = new Map();
-function iconTex(text, bg, pill = false) {
-  const key = `${text}|${bg}|${pill}`;
+function iconTex(text, bg, pill = false, color = "#d6336c") {
+  const key = `${text}|${bg}|${pill}|${color}`;
   if (ICON_TEX.has(key)) return ICON_TEX.get(key);
-  const W = pill ? 200 : 128, c = document.createElement("canvas");
+  const font = pill ? "bold 50px Pretendard, 'Malgun Gothic', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif" : "62px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif";
+  const c = document.createElement("canvas"), m0 = c.getContext("2d");
+  m0.font = font;
+  const W = pill ? Math.max(128, Math.ceil(m0.measureText(text).width) + 66) : 128; // 알약은 글 길이만큼
   c.width = W; c.height = 128;
   const g = c.getContext("2d");
   g.fillStyle = "rgba(0,0,0,.16)"; g.beginPath(); g.roundRect(10, 15, W - 20, 108, 54); g.fill(); // 살짝 그림자
   g.fillStyle = bg; g.beginPath(); g.roundRect(10, 9, W - 20, 108, 54); g.fill();
   g.strokeStyle = "#fff"; g.lineWidth = 7; g.stroke();
-  g.font = pill ? "bold 52px Pretendard, 'Malgun Gothic', sans-serif" : "62px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif";
-  g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#d6336c";
+  g.font = font;
+  g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = color;
   g.fillText(text, W / 2, 66);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -2056,7 +2079,7 @@ function badgeSprite(emoji, bg) {
 function iconList(m) {
   const p = PERSONAL.get(m.name) || {}, out = [];
   if (window.__social?.isBday(m.name)) out.push(["🎂", "#fff0d2", "notes"]);
-  if (MODES[p.mode] && !AWAY_MODES.has(p.mode)) out.push([MODES[p.mode][0], "#e6eeff", "notes"]);
+  if (MODES[p.mode] && !AWAY_MODES.has(p.mode)) out.push([`${MODES[p.mode][0]} ${MODES[p.mode][1].replace("하는 중", "")}`, "#e6eeff", "notes", true, "#2f4f9e"]); // 「🗓️ 회의 중」처럼 글자도 (아이콘만으론 알기 어려워서)
   if (DIARY[m.name]) out.push([DIARY[m.name].icon, "#ffe1ea", "diary"]);
   const h = window.__social?.heartCount(m.name) || 0;
   if (h) out.push([`❤${h > 99 ? "99+" : h}`, "#ffffff", "notes", true]);
@@ -2078,11 +2101,11 @@ function badgeTick() { // 이름표(말풍선이 있으면 그 위) 바로 위�
     while (m.icons.length < list.length) m.icons.push(badgeSprite("👶", "#fff"));
     m.icons.forEach((s, i) => { s.visible = i < list.length; });
     if (!list.length) continue;
-    const sz = Math.min(0.036 * f, ICON_WORLD / camera.position.distanceTo(m.label.spr.position)), gap = sz * 0.12, ws = list.map((it) => sz * iconTex(it[0], it[1], !!it[3]).aspect);
+    const sz = Math.min(0.036 * f, ICON_WORLD / camera.position.distanceTo(m.label.spr.position)), gap = sz * 0.12, ws = list.map((it) => sz * iconTex(it[0], it[1], !!it[3], it[4]).aspect);
     let x = -(ws.reduce((a, b) => a + b, 0) + gap * (list.length - 1)) / 2;
     const dy = (m.bubble?.spr.visible ? 0.059 : 0.016) * f + sz / 2 + bob * f;
-    list.forEach(([text, bg, tab, pill], i) => {
-      const s = m.icons[i], t = iconTex(text, bg, !!pill), w = ws[i];
+    list.forEach(([text, bg, tab, pill, color], i) => {
+      const s = m.icons[i], t = iconTex(text, bg, !!pill, color), w = ws[i];
       if (s.material.map !== t.tex) { s.material.map = t.tex; s.material.needsUpdate = true; }
       s.scale.set(w, sz, 1);
       s.position.copy(m.label.spr.position);
