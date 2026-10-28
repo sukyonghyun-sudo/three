@@ -73,7 +73,7 @@ window.Chaos = function (ctx) {
     s.renderOrder = p.order ?? 5;
     mat.rotation = p.rot ?? Math.random() * Math.PI * 2;
     ROOT.add(s);
-    const q = { s, vel: p.vel ? p.vel.clone() : V(0, 0, 0), age: -(p.delay || 0), life: p.life ?? 1, size: p.size ?? 0.2, grow: p.grow ?? 0, alpha: p.alpha ?? 1,
+    const q = { s, vel: p.vel ? p.vel.clone() : V(0, 0, 0), age: -(p.delay || 0), life: p.life ?? 1, size: (p.size ?? 0.2) * (p.screen ? ctx.scr?.() ?? 1 : 1), grow: p.grow ?? 0, alpha: p.alpha ?? 1,
       gravity: p.gravity ?? 0, drag: p.drag ?? 0, spin: p.spin ?? 0, fadeIn: p.fadeIn ?? 0.1, aspect: p.aspect ?? 1, floor: p.floor, onEnd: p.onEnd, follow: p.follow };
     PARTS.push(q);
     return q;
@@ -141,7 +141,7 @@ window.Chaos = function (ctx) {
   @keyframes cxIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
   .cx-flash{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .08s}
   .cx-vignette{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity 1.2s}
-  .cx-menu{position:absolute;left:16px;top:52px;z-index:7;background:rgba(255,253,249,.97);border:1px solid var(--line);border-radius:14px;padding:12px;width:min(420px,calc(100% - 32px));box-shadow:0 10px 30px rgba(0,0,0,.18)}
+  .cx-menu{position:absolute;left:16px;top:52px;z-index:9;background:rgba(255,253,249,.97);border:1px solid var(--line);border-radius:14px;padding:12px;width:min(420px,calc(100% - 32px));max-height:calc(100% - 64px);overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,.18)}
   .cx-menu h3{margin:0 0 4px;font-size:14px}
   .cx-menu p{margin:0 0 10px;font-size:11px;color:var(--muted)}
   .cx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:6px}
@@ -151,7 +151,8 @@ window.Chaos = function (ctx) {
   .cx-row{display:flex;gap:6px;margin-top:10px}
   .cx-btn{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:6px 11px;font:inherit;font-size:12px;cursor:pointer;color:var(--ink)}
   .cx-btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .cx-stop{position:absolute;right:12px;top:14px;z-index:7}`;
+  .cx-stop{position:absolute;right:12px;top:14px;z-index:7}
+  @media (max-width:820px),(max-height:520px){.cx-menu{left:10px;width:calc(100% - 20px);top:auto;bottom:54px;max-height:calc(100% - 110px)}.cx-stop{top:auto;bottom:54px;right:10px}.cx-banner{top:auto;bottom:56px;min-width:0;width:max-content;max-width:calc(100% - 20px);padding:8px 16px 10px}.cx-banner b{font-size:17px}}`;
   document.head.append(css);
   const banner = document.createElement("div"); banner.className = "cx-banner"; banner.hidden = true; stage.append(banner);
   const flashEl = document.createElement("div"); flashEl.className = "cx-flash"; stage.append(flashEl);
@@ -1236,19 +1237,9 @@ window.Chaos = function (ctx) {
     return { hemiC: "#9fb0d8", sunC: "#8fa0d0", hemi: L0.hemi * 0.45, sun: L0.sun * 0.25, fill: L0.fill * 0.5, bg: "#141a2a" }; // 밤
   }
   let dayTimer = 0;
-  // 천천히 둘러보기: 30초 동안 손대지 않으면 사무실을 크게 돈다
-  let idle = 0, tourA = 0;
-  ctx.controls.addEventListener("start", () => { idle = 0; });
-  ctx.stage.addEventListener("wheel", () => { idle = 0; }, { passive: true });
-  ctx.stage.addEventListener("pointerdown", () => { idle = 0; });
-  function tickTour(dt) {
-    idle += dt;
-    if (!pref.tour || idle < 30) { tourA = Math.atan2(camera.position.x - RCX, camera.position.z - MAIN_Z); return; }
-    tourA += dt * 0.035;
-    const R = 15.5, goal = V(RCX + Math.sin(tourA) * R, 11 + Math.sin(tourA * 0.7) * 2.5, MAIN_Z + Math.cos(tourA) * R);
-    camera.position.lerp(goal, 1 - Math.exp(-0.6 * dt));
-    ctx.controls.target.lerp(V(RCX, 0.3, MAIN_Z), 1 - Math.exp(-0.6 * dt));
-  }
+  // 손대지 않으면 천천히 둘러보기: 카메라는 사무실 쪽(index.html 의 TOUR)이 움직이고, 여기선 켜고 끄기만
+  const applyTour = () => { if (ctx.tour) ctx.tour.on = !!pref.tour; };
+  applyTour();
 
   // ───────── 메뉴 ─────────
   const btn = document.createElement("button");
@@ -1282,7 +1273,7 @@ window.Chaos = function (ctx) {
   syncMenu();
   menu.onchange = (e) => {
     const el = e.target;
-    if (el.dataset.pref) { pref[el.dataset.pref] = el.checked; applyWide(); }
+    if (el.dataset.pref) { pref[el.dataset.pref] = el.checked; applyWide(); applyTour(); }
     else if (el.dataset.cat) pref.cats[el.dataset.cat] = el.checked;
     else if (el.dataset.freq != null) { pref.freq = el.value; nextEvt = rnd(...FREQ[pref.freq]); }
     savePref();
@@ -1308,7 +1299,6 @@ window.Chaos = function (ctx) {
       if (cur) tickDebris(dt);
       if (!cur && (dayTimer -= dt) <= 0) { dayTimer = 5; const b = dayBase(); lightGoal = b ? { ...b, speed: 0.3 } : { speed: 0.3 }; }
       if (!cur) tickLight(dt);
-      tickTour(dt);
     },
     list: S.map((s) => s.id),
     info: S.map((s) => ({ id: s.id, cat: s.cat, name: s.name })),

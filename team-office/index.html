@@ -9,7 +9,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
   font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;overflow:hidden}
-#app{display:grid;grid-template-columns:minmax(0,1fr) 300px;height:100%}
+#app{display:grid;grid-template-columns:minmax(0,1fr) 300px;height:100%;height:100dvh}
 #stage{position:relative;min-width:0;overflow:hidden}
 #stage canvas{display:block;cursor:grab}
 #stage canvas:active{cursor:grabbing}
@@ -99,7 +99,31 @@ button{font:inherit}
 @keyframes ttlIn{from{opacity:0;transform:translateY(-1vh)}to{opacity:1;transform:translateY(-4vh)}}
 #app{transition:opacity .9s ease}
 body.loading #app{opacity:0}
-@media (max-width:820px){#app{grid-template-columns:1fr;grid-template-rows:1fr 260px}#panel{border-left:0;border-top:1px solid var(--line)}}
+.listbtn,.pclose{display:none}
+/* 휴대폰·좁은 창: 사무실을 화면 가득, 사람 목록은 버튼으로 접고 편다 (세로: 아래에서 올라옴 · 가로: 오른쪽에서 나옴) */
+@media (max-width:820px),(max-height:520px){
+  #app{grid-template-columns:minmax(0,1fr);position:relative}
+  #panel{position:absolute;z-index:8;left:0;right:0;bottom:0;height:min(62%,560px);border:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+    box-shadow:0 -8px 28px rgba(0,0,0,.16);transform:translateY(104%);visibility:hidden;transition:transform .3s ease,visibility 0s .3s}
+  #app.list-open #panel{transform:none;visibility:visible;transition:transform .3s ease}
+  #panel header{position:relative;padding:12px 14px 10px}
+  .pclose{display:block;position:absolute;right:10px;top:8px;padding:5px 11px;font-size:12px}
+  .listbtn{display:inline-flex;align-items:center;flex:none;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:6px 11px;font-size:12px;cursor:pointer;color:var(--ink)}
+  #app.aq-wide .listbtn{display:none}
+  .hud{left:10px;right:10px;top:10px;gap:6px 8px;pointer-events:none}
+  .hud>*{pointer-events:auto}
+  .hud h1{font-size:15px}
+  .chip{padding:3px 8px;font-size:11px}
+  .view{left:10px;right:10px;bottom:10px;pointer-events:none}
+  .view>*{pointer-events:auto}
+  .cams{min-width:0;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+  .cams::-webkit-scrollbar{display:none}
+  .cams button{flex:none;padding:5px 9px}
+}
+@media (max-width:820px) and (orientation:landscape),(max-height:520px) and (orientation:landscape){
+  #panel{left:auto;top:0;height:auto;width:min(320px,52%);border-top:0;border-left:1px solid var(--line);border-radius:16px 0 0 16px;
+    box-shadow:-8px 0 28px rgba(0,0,0,.16);transform:translateX(104%)}
+}
 </style>
 <script>window.__AQUARIUM = true; window.__LIVE = {"url": "https://jpornxccjdnflhiwpqse.supabase.co", "key": "sb_publishable_U-GSIll6EsRzltq_pF_RDg_uhrkwoRK"};</script>
 <script src="models3d/charlib.js"></script>
@@ -108,6 +132,8 @@ body.loading #app{opacity:0}
 <script src="screens.js"></script>
 <!-- 어항 모드(?aquarium): 가끔 갑자기 벌어지는 이벤트 26가지 -->
 <script src="chaos.js"></script>
+<!-- 사람 카드(방명록 · 육아일기) · 간식 신청: 실시간 판에서 읽고 쓴다 -->
+<script src="social.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -123,11 +149,12 @@ body.loading #app{opacity:0}
   <div id="stage">
     <div class="hud"><h1>팀 사무실</h1>
       <div class="counts" id="counts"></div></div>
-    <div class="view"><span id="perf" hidden></span><div class="cams" id="cams"></div></div><!-- perf: 점검용 (숨김) -->
+    <div class="view"><button class="listbtn" id="listBtn">👥 사원 목록</button><span id="perf" hidden></span><div class="cams" id="cams"></div></div><!-- perf: 점검용 (숨김) -->
     <div class="note" id="note" hidden></div>
   </div>
   <aside id="panel">
     <header>
+      <button class="btn pclose" id="listClose">접기</button>
       <h2>사무실 사람들 <span id="total" style="font-weight:400;color:var(--muted);font-size:12px"></span></h2>
       <p class="mode" id="meNote" hidden></p>
       <div class="msg" id="meMsg"></div>
@@ -232,6 +259,9 @@ const COLS = [
 const ALL_DESKS = COLS.flatMap((c) => [...c.upper, ...c.lower]).filter((n) => n != null).sort((a, b) => a - b);
 // 컴퓨터를 치운 책상 (10-27 사용자 지정): 76·77·78 = 간식 책상, 104 = 빈 책상 — 사람 자리로는 쓰지 않는다
 const NO_PC = new Set([76, 77, 78, 104]), SNACK_DESKS = new Set([76, 77, 78]);
+// 육아일기를 쓰는 사람 (머리 위 아이콘 · 사람 카드의 탭) · 간식 목록을 비울 수 있는 사람 (10-28)
+const DIARY = { 홍수연: { icon: "👶", title: "육아일기" } };
+const SNACK_ADMIN = "석용현";
 const ALL_SEATS = ALL_DESKS.filter((n) => !NO_PC.has(n));
 
 // ── 고정석: 「자리 지정」에서 바꾸고 저장한 자리 → 없으면 기본 배치(SEAT_OF, 나머지는 FREE 차례로)
@@ -297,6 +327,8 @@ scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnviron
 scene.environmentIntensity = STY.light.env;
 const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
 const HOME = { pos: new THREE.Vector3(2.4, 15.5, 15.2), target: new THREE.Vector3(-0.2, 0, 0.9) };
+let SCR = 1; // 화면 모양에 따른 글씨 배율 (resize 가 정한다: 휴대폰 세로·가로)
+const labelF = () => (VIEW.label / 100) * SCR;
 camera.position.copy(HOME.pos);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.copy(HOME.target);
@@ -732,7 +764,7 @@ function fitChair(g, seatH) {
   const s = seatH / CHAIR_SEAT;
   g.scale.set(Math.max(0.55, s * 0.9 + 0.1), s, Math.max(0.55, s * 0.9 + 0.1)); // 의자 폭은 덜 줄인다
 }
-// 칸막이 명패 (E-84 …): 한 장에 모아 그린다
+// 칸막이 명패: 한 장에 모아 그린다. 자리 번호는 민감해서 글씨 없이 빈 명패만 (10-28)
 const CARD_W = 160, CARD_H = 56, CARD_COLS = 8;
 const cardCanvas = document.createElement("canvas");
 cardCanvas.width = CARD_W * CARD_COLS;
@@ -743,7 +775,7 @@ function addCard(text, x, y, z, ry) {
   g.fillStyle = "#ffffff"; g.fillRect(cx, cy, CARD_W, CARD_H);
   g.strokeStyle = "#c9ccd0"; g.lineWidth = 4; g.strokeRect(cx + 2, cy + 2, CARD_W - 4, CARD_H - 4);
   g.fillStyle = "#3a3d42"; g.font = "600 30px Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-  g.fillText(text, cx + CARD_W / 2, cy + 30);
+  if (text) g.fillText(text, cx + CARD_W / 2, cy + 30);
   const geo = new THREE.PlaneGeometry(0.24, 0.085), uv = geo.attributes.uv;
   for (let k = 0; k < uv.count; k++) uv.setXY(k, (cx + uv.getX(k) * CARD_W) / cardCanvas.width, 1 - (cy + (1 - uv.getY(k)) * CARD_H) / cardCanvas.height);
   CARD_PARTS.push(geo.applyMatrix4(_m4.makeRotationY(ry).setPosition(x, y, z)));
@@ -842,7 +874,7 @@ for (const col of COLS) {
       chair.rotation.y = rot;
       SEAT_BY_NO[no] = seat;
       binParts.push(part(cyl(0.14, 0.12, 0.32), [deskX - f * 0.52, 0.16, z - side * 0.6]));
-      addCard(`E-${no}`, barX - f * 0.032, PH - 0.11, z - 0.45, f > 0 ? -Math.PI / 2 : Math.PI / 2);
+      addCard("", barX - f * 0.032, PH - 0.11, z - 0.45, f > 0 ? -Math.PI / 2 : Math.PI / 2);
     });
   }
 }
@@ -1226,7 +1258,7 @@ function makeBubble() {
   scene.add(spr);
   const b = { spr, text: "" };
   b.fit = () => { // 캔버스 1px = 이름표와 같은 화면 크기
-    const f = VIEW.label / 100, k = (0.1 / 256) * f;
+    const f = labelF(), k = (0.1 / 256) * f;
     spr.scale.set(CW * k, CH * k, 1);
     spr.center.set(0.5, -(0.0281 * f * 0.42) / (CH * k)); // 아래 끝(꼬리)이 이름표 위에 닿게
   };
@@ -1299,6 +1331,7 @@ function renderMine() { // 캐릭터마다 말풍선·잎사귀를 장면에, �
   }
   refreshLeaves();
   renderRowActs();
+  window.__social?.sync(); // 로그인하면 열린 사람 카드·간식 창도 쓰기 칸이 열린다
 }
 
 // 출퇴근: 누른 대로 걸어 들어오고 나간다. 퇴근한 사람은 다시 출근을 누를 때까지 안 들어온다
@@ -1579,7 +1612,7 @@ const rows = crew.map((m) => {
   li.onclick = (e) => {
     const a = e.target.closest("[data-act]");
     if (a) return onRowAct(m, a.dataset.act, row, a);
-    if (!e.target.closest(".acts,.more,select")) (editing ? pickForSeat(m) : select(m));
+    if (!e.target.closest(".acts,.more,select")) { if (editing) pickForSeat(m); else { select(m); window.__social?.openPerson(m.name); } }
   };
   row.input.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) onRowAct(m, "say", row); };
   row.pinIn.onkeydown = (e) => { if (e.key === "Enter") onRowAct(m, "pinok", row); };
@@ -1595,7 +1628,7 @@ function changed() {
     const st = r.m.status;
     n[st]++;
     r.dot.className = "dot " + st;
-    r.text.textContent = `${r.m.statusText} · E-${r.m.seat.no}`;
+    r.text.textContent = r.m.statusText; // 자리 번호는 안 보여 준다
     const w = wantIn(r.m), bi = r.acts.querySelector('[data-act="in"]'), bo = r.acts.querySelector('[data-act="out"]');
     if (bi) { bi.disabled = w; bo.disabled = !w; } // 이미 출근(퇴근)이면 그 버튼은 눌러 둔 상태
     r.li.classList.toggle("sel", (editing ? editSel : selected) === r.m);
@@ -1624,14 +1657,113 @@ const CAMS = [
   ["간식 책상", new THREE.Vector3(-1.95, DH, 2.36), new THREE.Vector3(1.3, 3.6, 5.2)],
 ];
 const camBar = document.getElementById("cams");
-camBar.innerHTML = CAMS.map(([t], i) => `<button data-i="${i}">${t}</button>`).join("");
+camBar.innerHTML = `<button data-tour>둘러보기</button>` + CAMS.map(([t], i) => `<button data-i="${i}">${t}</button>`).join("");
+const tourBtn = camBar.querySelector("[data-tour]");
 camBar.onclick = (e) => {
+  if (e.target.closest("[data-tour]")) { if (TOUR.active) stopTour(); else startTour(); return; }
   const c = CAMS[e.target.dataset.i];
   if (!c) return;
   selected = null; changed();
   flyTo(c[1], c[2]);
   for (const b of camBar.children) b.classList.toggle("on", b === e.target);
 };
+
+// ───────────── 둘러보기: 띄워 두면 카메라가 알아서 사무실을 비춘다 ─────────────
+// 손대지 않고 15초(처음 열면 8초)가 지나면 시작: 크게 돌기 · 누군가 가까이 · 위에서 · 통로 따라 · 구석에서 를 번갈아 천천히.
+// 화면·목록을 만지거나 시점 버튼을 누르면 바로 멈춘다. 「둘러보기」 버튼으로 바로 시작/멈춤. 어항 이벤트 중엔 이벤트 화면 그대로
+const TOUR = { on: true, idle: 7, active: false, shot: null, t: 0, n: 0, evt: false };
+const TOUR_WAIT = 15;
+const SHOTS = ["orbit", "person", "overhead", "person", "aisle", "corner", "person"];
+const SHOT_LEN = { orbit: 24, person: 13, overhead: 16, aisle: 18, corner: 14 };
+const tourPos = new THREE.Vector3(), tourAt = new THREE.Vector3();
+function startTour() {
+  TOUR.active = true; fly = null; selected = null; changed();
+  for (const b of camBar.children) b.classList.toggle("on", b === tourBtn);
+  nextShot();
+}
+function stopTour() {
+  TOUR.active = false; TOUR.idle = 0;
+  tourBtn.classList.remove("on");
+}
+function pickStar() { // 가까이 볼 사람: 이야기하거나 말풍선을 띄웠거나 돌아다니는 사람 먼저
+  const seen = crew.filter((m) => m.root.visible && m.state !== "away");
+  if (!seen.length) return null;
+  const busy = seen.filter((m) => m.bubble?.text || m.status === "move");
+  const pool = busy.length && Math.random() < 0.7 ? busy : seen;
+  return pool[(Math.random() * pool.length) | 0];
+}
+function nextShot() {
+  let kind = SHOTS[TOUR.n++ % SHOTS.length];
+  const star = kind === "person" ? pickStar() : null;
+  if (kind === "person" && !star) kind = "orbit";
+  const dir = Math.random() < 0.5 ? 1 : -1;
+  TOUR.shot = {
+    kind, star, dir, len: SHOT_LEN[kind],
+    a0: kind === "person" ? star.root.rotation.y + dir * (0.6 + Math.random() * 0.6) : Math.atan2(camera.position.x - RCX, camera.position.z - MAIN_Z),
+    cam: CAMS[[2, 3, 4, 5][(Math.random() * 4) | 0]],
+  };
+  TOUR.t = 0;
+}
+function shotGoal(sh, t) { // 이 장면에서 t 초 때 카메라 자리(tourPos)와 보는 곳(tourAt)
+  const u = Math.min(1, t / sh.len), e = u * u * (3 - 2 * u), K = H / 1.25;
+  if (sh.kind === "orbit") {
+    const a = sh.a0 + t * 0.045 * sh.dir;
+    tourPos.set(RCX + Math.sin(a) * 15.5, 11 + Math.sin(t * 0.25) * 1.5, MAIN_Z + Math.cos(a) * 15.5);
+    tourAt.set(RCX, 0.3, MAIN_Z);
+  } else if (sh.kind === "person") {
+    const p = sh.star.root.position, a = sh.a0 + t * 0.07 * sh.dir;
+    tourAt.set(p.x, H * 0.6, p.z);
+    tourPos.set(p.x + Math.sin(a) * 3.4 * K, 2.4 * K, p.z + Math.cos(a) * 3.4 * K);
+    tourPos.x = Math.min(ROOM.x1 - 0.4, Math.max(ROOM.x0 + 0.4, tourPos.x)); // 벽 밖으로 나가지 않게
+    tourPos.z = Math.min(ROOM.z1 - 0.4, Math.max(ROOM.z0 + 0.4, tourPos.z));
+  } else if (sh.kind === "overhead") {
+    const x = RCX + sh.dir * (e * 6 - 3);
+    tourPos.set(x, 18, MAIN_Z + 3);
+    tourAt.set(x, 0, MAIN_Z - 0.6);
+  } else if (sh.kind === "aisle") { // 큰 통로를 따라 천천히 (머리 위 높이)
+    const x0 = ROOM.x0 + 0.8, x1 = ROOM.x1 - 2.4, x = sh.dir > 0 ? x0 + (x1 - x0) * e : x1 - (x1 - x0) * e;
+    tourPos.set(x, 2.3 * K, MAIN_Z + 0.15);
+    tourAt.set(x + sh.dir * 4, 0.7 * K, MAIN_Z);
+  } else { // 구석에서: 시점 버튼 자리에서 아주 조금씩 다가간다
+    const [, at, pos] = sh.cam;
+    tourAt.copy(at);
+    tourPos.copy(pos).lerp(at, 0.16 * e);
+  }
+}
+function tourTick(dt) {
+  if (!TOUR.active) {
+    if (window.__social?.open) TOUR.idle = 0; // 사람 카드를 읽는 동안은 가만히
+    else if (TOUR.on && !editing && (TOUR.idle += dt) >= TOUR_WAIT) startTour();
+    return;
+  }
+  if (CHAOS?.active || editing) { TOUR.evt = true; return; } // 이벤트 중엔 이벤트 화면 그대로
+  if (TOUR.evt) { TOUR.evt = false; nextShot(); }
+  const sh = TOUR.shot;
+  if ((TOUR.t += dt) > sh.len || (sh.star && (!sh.star.root.visible || sh.star.state === "away"))) return nextShot();
+  shotGoal(sh, TOUR.t);
+  const k = 1 - Math.exp(-dt * (0.7 + Math.min(TOUR.t, 6) * 0.25)); // 장면이 바뀌면 천천히 넘어가고, 자리 잡으면 따라붙는다
+  camera.position.lerp(tourPos, k);
+  controls.target.lerp(tourAt, k);
+}
+// 사람이 만지면 멈춘다 (둘러보기 버튼 빼고)
+const tourHands = (e) => { if (e.target?.closest?.("[data-tour]")) return; TOUR.idle = 0; if (TOUR.active) stopTour(); };
+for (const ev of ["pointerdown", "wheel", "keydown", "touchstart"]) addEventListener(ev, tourHands, { capture: true, passive: true });
+window.__tour = TOUR; // 점검용
+
+// ───────────── 휴대폰: 사원 목록 접고 펴기 ─────────────
+const appEl = document.getElementById("app");
+const setList = (open) => { appEl.classList.toggle("list-open", open); document.getElementById("listBtn").textContent = open ? "👥 목록 접기" : "👥 사원 목록"; };
+document.getElementById("listBtn").onclick = () => setList(!appEl.classList.contains("list-open"));
+document.getElementById("listClose").onclick = () => setList(false);
+
+// ───────────── 사람 카드(방명록 · 육아일기) · 간식 신청 (social.js) ─────────────
+window.__social = window.Social ? window.Social({
+  live: !!LIVE, sb: () => (LIVE ? SB : null), me: () => (LIVE && MY.char && MY.pin ? { char: MY.char, pin: MY.pin } : null),
+  face: (n) => rows.find((r) => r.m.name === n)?.li.querySelector("img").src || "",
+  status: (n) => { const m = crew.find((c) => c.name === n); return { text: m ? m.statusText : "", msg: PERSONAL.get(n)?.bubble || "" }; },
+  diary: DIARY, snackAdmin: SNACK_ADMIN,
+  openList: () => { setList(true); meSay("내 이름 줄에서 「나예요」(처음 한 번) 또는 「로그인」을 눌러 주세요"); },
+}) : null;
 controls.addEventListener("start", () => { for (const b of camBar.children) b.classList.remove("on"); }); // 직접 돌리면 표시 끔
 
 
@@ -1764,7 +1896,7 @@ function fart() {
   word.renderOrder = 12;
   word.position.copy(at).addScaledVector(back, 0.25 * k).add(new THREE.Vector3(0, 0.25 * k, 0));
   scene.add(word);
-  FART.puffs.push({ spr: word, vel: new THREE.Vector3(0, 0.22 * k, 0), age: 0, life: 2.0, s0: 0.11, word: true }); // 화면 폭의 약 1/9
+  FART.puffs.push({ spr: word, vel: new THREE.Vector3(0, 0.22 * k, 0), age: 0, life: 2.0, s0: 0.11 * SCR, word: true }); // 화면 폭의 약 1/9
   if (frustum.containsPoint(at)) fartSound();
   if (DEMO) { // 구경용: 근처 사람이 한마디
     const near = crew.filter((o) => o !== m && o.state === "work" && o.root.position.distanceTo(m.root.position) < 3.2);
@@ -1797,6 +1929,51 @@ function fartTick(dt) {
 }
 window.__fart = fart; // 점검용
 
+// ───────────── 아이콘: 육아일기 쓰는 사람 머리 위 · 간식 책상 위 (누르면 육아일기 · 간식 신청) ─────────────
+function badgeSprite(emoji, bg) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const g = c.getContext("2d");
+  g.fillStyle = "rgba(0,0,0,.16)"; g.beginPath(); g.arc(64, 69, 54, 0, 7); g.fill(); // 살짝 그림자
+  g.fillStyle = bg; g.beginPath(); g.arc(64, 63, 54, 0, 7); g.fill();
+  g.strokeStyle = "#fff"; g.lineWidth = 7; g.stroke();
+  g.font = "62px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText(emoji, 64, 67);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true, sizeAttenuation: false }));
+  spr.renderOrder = 12;
+  scene.add(spr);
+  return spr;
+}
+const BADGES = [];
+for (const m of crew) if (DIARY[m.name]) {
+  m.badge = badgeSprite(DIARY[m.name].icon, "#ffe1ea");
+  m.badge.userData.open = () => window.__social?.openPerson(m.name, "diary");
+  BADGES.push(m.badge);
+}
+const snackSeats = [...SNACK_DESKS].map((n) => SEAT_BY_NO[n]).filter(Boolean);
+const snackBadge = snackSeats.length ? badgeSprite("🍪", "#fff0d2") : null;
+if (snackBadge) {
+  snackBadge.position.copy(snackSeats.reduce((a, st) => a.add(st.desk), new THREE.Vector3()).multiplyScalar(1 / snackSeats.length)).setY(DH + 0.7 * H);
+  snackBadge.userData.open = () => window.__social?.openSnacks();
+  BADGES.push(snackBadge);
+}
+function badgeTick() { // 이름표(말풍선이 있으면 그 위) 바로 위에서 살짝 둥실
+  const f = labelF(), bob = Math.sin(simTime * 2.4) * 0.003;
+  for (const m of crew) {
+    if (!m.badge) continue;
+    m.badge.visible = m.root.visible;
+    if (!m.badge.visible) continue;
+    const sz = 0.042 * f;
+    m.badge.scale.set(sz, sz, 1);
+    m.badge.position.copy(m.label.spr.position);
+    m.badge.center.set(0.5, -((m.bubble?.spr.visible ? 0.059 : 0.016) * f + bob * f) / sz);
+  }
+  if (snackBadge) { const sz = 0.05 * SCR; snackBadge.scale.set(sz, sz, 1); snackBadge.center.set(0.5, 0.5 - (bob * SCR) / sz); }
+}
+const badgeHit = () => ray.intersectObjects(BADGES.filter((b) => b.visible))[0];
+
 // ───────────── 선택 · 카메라 ─────────────
 const ring = new THREE.Mesh(new THREE.RingGeometry(0.3 * H / 1.25, 0.37 * H / 1.25, 40), new THREE.MeshBasicMaterial({ color: "#2f9e62", transparent: true, opacity: 0.85 }));
 ring.rotation.x = -Math.PI / 2;
@@ -1823,13 +2000,15 @@ const personHit = () => ray.intersectObjects(crew.filter((m) => m.root.visible).
 renderer.domElement.addEventListener("pointerup", (e) => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
   pointerRay(e);
+  if (editing) { const hit = personHit(); return seatClick(hit ? crew[hit.object.userData.pid] : null); }
+  const bh = badgeHit(); // 아이콘 먼저 (육아일기 · 간식 신청)
+  if (bh) return bh.object.userData.open();
   const hit = personHit();
-  if (editing) return seatClick(hit ? crew[hit.object.userData.pid] : null);
-  if (hit) select(crew[hit.object.userData.pid]);
+  if (hit) { const m = crew[hit.object.userData.pid]; select(m); window.__social?.openPerson(m.name); } // 사람을 누르면 그 사람 카드(방명록)
 });
 renderer.domElement.addEventListener("pointermove", (e) => {
-  if (!editing) return;
   pointerRay(e);
+  if (!editing) { renderer.domElement.style.cursor = badgeHit() ? "pointer" : ""; return; }
   const no = seatUnderRay();
   if (no !== hoverSeat) { hoverSeat = no; updateMarks(); }
 });
@@ -1990,7 +2169,8 @@ function setEditing(on) {
   if (!on) placeAttendance();
 }
 seatBtn.onclick = () => setEditing(!editing);
-document.getElementById("adminTools").hidden = !new URLSearchParams(location.search).has("admin");
+// 관리 도구(자리 지정은 자리 번호가 보인다)는 내 PC 에서 파일로 열 때만 — 구경용·실시간·claude.ai 판에선 ?admin 을 붙여도 안 나온다
+document.getElementById("adminTools").hidden = !new URLSearchParams(location.search).has("admin") || DEMO || !!LIVE || IN_CLAUDE;
 
 // ───────────── 화면 설정 (바닥 색 · 이름표) — 이 브라우저에 기억 ─────────────
 const VIEW_KEY = "teamOfficeView";
@@ -2001,14 +2181,17 @@ try { Object.assign(VIEW, JSON.parse(localStorage.getItem(VIEW_KEY)) || {}); } c
 const viewBar = document.getElementById("viewbar"), floorSw = document.getElementById("floorSw"), floorPick = document.getElementById("floorPick");
 const labelSize = document.getElementById("labelSize"), labelSizeV = document.getElementById("labelSizeV"), labelOn = document.getElementById("labelOn");
 const hex = (c) => "#" + new THREE.Color(c).getHexString();
+function fitLabels() {
+  const f = labelF();
+  for (const m of crew) { m.label.spr.scale.set(0.1 * f, 0.0281 * f, 1); m.bubble?.fit(); }
+}
 floorSw.innerHTML = FLOORS.map((c, i) => `<button style="background:${c}" data-c="${c}" title="${i ? "회색" : "기본"}"></button>`).join("");
 function applyView() {
   const old = floor.material.map;
   floor.material.map = floorTexture(VIEW.floor);
   floor.material.needsUpdate = true;
   old.dispose();
-  const f = VIEW.label / 100;
-  for (const m of crew) { m.label.spr.scale.set(0.1 * f, 0.0281 * f, 1); m.bubble?.fit(); }
+  fitLabels();
   labelSize.value = VIEW.label;
   labelSizeV.textContent = `${VIEW.label}%`;
   labelOn.checked = VIEW.labelOn;
@@ -2031,9 +2214,16 @@ document.getElementById("seatCancel").onclick = () => { applyMap(before); seatMs
 document.getElementById("seatReset").onclick = () => applyMap({});
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h) return;
   renderer.setSize(w, h);
-  camera.aspect = w / h;
+  const a = w / h;
+  camera.aspect = a;
+  // 좁은 화면(휴대폰 세로 등): 옆이 잘리지 않게 시야를 넓힌다 (가로 시야는 PC 와 비슷하게)
+  camera.fov = a < 1.4 ? Math.min(80, (2 * Math.atan(Math.tan(Math.PI / 12) * 1.4 / a) * 180) / Math.PI) : 30;
   camera.updateProjectionMatrix();
+  // 화면에 붙은 글씨(이름표·말풍선)는 시야를 넓힌 만큼 되돌리고, 폭이 좁으면 조금 작게 · 키가 낮으면(휴대폰 가로) 조금 크게
+  const scr = (Math.tan((camera.fov * Math.PI) / 360) / Math.tan(Math.PI / 12)) * (a < 1 ? Math.min(1, Math.max(0.8, w / 1100)) : 1) * (h < 600 ? (600 / h) ** 0.9 : 1);
+  if (Math.abs(scr - SCR) > 1e-3) { SCR = scr; fitLabels(); }
 }
 new ResizeObserver(resize).observe(stage);
 resize();
@@ -2083,7 +2273,7 @@ function step(dt) {
     if (m.dots) {
       if (!m.root.visible) m.dots.visible = false;
       if (m.dots.visible) {
-        const f = VIEW.label / 100;
+        const f = labelF();
         m.dots.scale.set(0.04 * f, 0.03 * f, 1);
         m.dots.center.set(-1.15, -0.05);
         m.dots.position.copy(m.label.spr.position);
@@ -2105,6 +2295,7 @@ function step(dt) {
       paintTile(i, simTime);
     }
   }
+  badgeTick();
   videoTick(dt);
   syncChairs();
   if (frame % 2 === 0) renderer.shadowMap.needsUpdate = true;
@@ -2116,6 +2307,7 @@ function step(dt) {
     ring.visible = true;
     ring.position.set(selected.root.position.x, 0.012, selected.root.position.z);
   } else ring.visible = false;
+  tourTick(dt);
   if (fly) {
     fly.t = Math.min(1, fly.t + dt / 0.9);
     const k = ease(fly.t);
@@ -2131,6 +2323,7 @@ const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
   lights: { hemi, sun, fill }, stage, hud: document.querySelector(".hud"), flyTo,
   seats: () => Object.values(SEAT_BY_NO), snackSeats: () => [...SNACK_DESKS].map((n) => SEAT_BY_NO[n]).filter(Boolean),
   chairs: () => CHAIR_LIST, audio: () => audioCtx, setPaused: () => {}, restorePeople: () => placeAttendance(), live: !!LIVE,
+  tour: TOUR, scr: () => SCR,
 }) : null;
 window.__chaos = CHAOS; // 점검용
 const clock = new THREE.Clock();
