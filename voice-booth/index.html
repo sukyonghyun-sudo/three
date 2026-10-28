@@ -91,7 +91,11 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
 .scope { display: flex; align-items: center; gap: 2px; height: 48px; position: relative }
 .scope i { flex: 1; background: var(--gt); border-radius: 1px; height: 2px; opacity: .9 }
 .scope.idle i { opacity: .25 }
-.scope .play { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; font: 600 12.5px var(--ui); background: var(--g2); border: 1px solid var(--gl); border-radius: 99px; padding: 6px 12px; color: var(--gt) }
+.scope.playing i { opacity: .28 } .scope.playing i.pl { opacity: 1; background: var(--vu-g) }
+.listen { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 34px; margin-top: -4px }
+.listen .play { display: inline-flex; align-items: center; gap: 7px; font: 600 13px var(--ui); background: var(--g2); border: 1px solid var(--gl); border-radius: 99px; padding: 7px 14px; color: var(--gt); transition: background .15s, color .15s }
+.listen .play.playing { background: var(--vu-g); border-color: var(--vu-g); color: #06210f }
+.listen .ptime { font: 500 12.5px var(--ui); color: var(--gm) }
 .sheet .nx { font-size: 13px; color: var(--gm); border-top: 1px solid var(--gl); padding-top: 12px; display: flex; gap: 10px }
 .sheet .nx b { color: #c3c9d3; font-weight: 500; font-family: var(--script); word-break: keep-all }
 .qc { display: flex; gap: 14px; padding: 12px 28px 0; font-size: 12.5px; color: var(--gm); flex-wrap: wrap; min-height: 30px }
@@ -165,6 +169,7 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
   <symbol id="i-next" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
   <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></symbol>
@@ -238,7 +243,8 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
     <div class="sheet">
       <div class="no"><span id="lineNo">No. 0000</span><span class="tone" id="lineTone">보통</span></div>
       <div class="text" id="lineText"></div>
-      <div class="scope idle" id="scope"><button class="play" id="playBtn" type="button" hidden><svg class="ico" style="width:14px;height:14px"><use href="#i-play"/></svg>들어보기</button></div>
+      <div class="scope idle" id="scope"></div>
+      <div class="listen" id="listenRow" hidden><button class="play" id="playBtn" type="button" aria-pressed="false"><svg class="ico" style="width:14px;height:14px"><use href="#i-play" id="playIco"/></svg><span id="playLabel">들어보기</span></button><span class="ptime" id="ptime"></span></div>
       <div class="nx"><span>다음</span><b id="nextText"></b></div>
     </div>
     <div class="qc" id="qc"><span style="color:var(--gf)">문장 앞뒤로 0.5초쯤 쉬어 주세요</span></div>
@@ -433,7 +439,7 @@ function paintVu(el, db) {
 function makeVu(el) { for (let i = 0; i < 24; i++) el.append(document.createElement("i")); }
 makeVu($("vuWelcome"));
 const SCOPE_N = 64;
-for (let i = 0; i < SCOPE_N; i++) $("scope").insertBefore(document.createElement("i"), $("playBtn"));
+for (let i = 0; i < SCOPE_N; i++) $("scope").append(document.createElement("i"));
 const scopeBars = [...$("scope").querySelectorAll("i")];
 const scopeHist = new Array(SCOPE_N).fill(-60);
 function drawScope(vals) { vals.forEach((db, i) => { scopeBars[i].style.height = Math.max(2, Math.round((Math.max(-60, db) + 60) / 60 * 46)) + "px"; }); }
@@ -525,7 +531,7 @@ const Rec = {
   async start() {
     try { await Mic.open(); runMeters(); } catch { toastMsg("마이크를 켜지 못했어요", "브라우저 설정에서 이 사이트의 마이크를 허용해 주세요."); return; }
     this.on = true; this.t0 = performance.now(); Mic.start();
-    $("recBtn").classList.add("on"); $("tally").classList.add("on"); $("scope").classList.remove("idle"); $("playBtn").hidden = true;
+    $("recBtn").classList.add("on"); $("tally").classList.add("on"); $("scope").classList.remove("idle"); Player.stop(); $("listenRow").hidden = true;
     $("qc").innerHTML = '<span style="color:var(--gm)">읽고 나서 0.5초 뒤에 멈춰 주세요</span>';
     scopeHist.fill(-60);
     this.timer = setTimeout(() => this.stop(), MAX_SEC * 1000);
@@ -540,7 +546,7 @@ const Rec = {
     const line = LINES[S.idx], qc = qcOf(x, OUT_SR, line);
     const take = { id: line.id, blob: wav(x, OUT_SR), sec: +(x.length / OUT_SR).toFixed(2), qc, at: Date.now(), sentAt: null };
     S.takes.set(line.id, take); await Store.putTake(take); await saveState({ idx: S.idx });
-    drawScope(scopeFromTake(x)); $("playBtn").hidden = false;
+    drawScope(scopeFromTake(x)); showListen(take);
     renderQc(qc); $("tallyText").textContent = "저장됨 · 다시 누르면 새로 녹음";
     renderTop(); stageCheck();
   },
@@ -567,8 +573,9 @@ function renderLine() {
   $("lineText").textContent = l.text; $("lineText").classList.toggle("en", l.lang === "English");
   $("nextText").textContent = n ? n.text : "마지막 문장이에요";
   const t = S.takes.get(l.id);
-  if (t) { renderQc(t.qc); $("playBtn").hidden = false; $("scope").classList.remove("idle"); $("tallyText").textContent = "녹음됨 · 다시 누르면 새로 녹음"; t.blob.arrayBuffer().then((b) => drawScope(scopeFromTake(new Float32Array(pcm16(b))))); }
-  else { $("qc").innerHTML = '<span style="color:var(--gf)">문장 앞뒤로 0.5초쯤 쉬어 주세요</span>'; $("playBtn").hidden = true; $("scope").classList.add("idle"); drawScope(new Array(SCOPE_N).fill(-60)); $("tallyText").textContent = "눌러서 녹음"; }
+  Player.stop();
+  if (t) { renderQc(t.qc); showListen(t); $("scope").classList.remove("idle"); $("tallyText").textContent = "녹음됨 · 다시 누르면 새로 녹음"; t.blob.arrayBuffer().then((b) => drawScope(scopeFromTake(new Float32Array(pcm16(b))))); }
+  else { $("qc").innerHTML = '<span style="color:var(--gf)">문장 앞뒤로 0.5초쯤 쉬어 주세요</span>'; $("listenRow").hidden = true; $("scope").classList.add("idle"); drawScope(new Array(SCOPE_N).fill(-60)); $("tallyText").textContent = "눌러서 녹음"; }
   $("redoBtn").disabled = !t;
   renderTop();
 }
@@ -577,7 +584,34 @@ function openRecord() { show("sRecord"); $("storageBanner").hidden = Store.ok; r
 $("recBtn").onclick = () => (Rec.on ? Rec.stop() : Rec.start());
 $("redoBtn").onclick = () => { if (!Rec.on) Rec.start(); };
 $("nextBtn").onclick = async () => { if (Rec.on) await Rec.stop(); if (S.idx < LINES.length - 1) { S.idx++; await saveState({ idx: S.idx }); renderLine(); } };
-$("playBtn").onclick = () => { const t = takeOf(S.idx); if (!t) return; if (S.lastBlobUrl) URL.revokeObjectURL(S.lastBlobUrl); S.lastBlobUrl = URL.createObjectURL(t.blob); new Audio(S.lastBlobUrl).play().catch(() => {}); };
+// playback of the current take: the button shows the state, the waveform fills as it plays
+const Player = {
+  a: new Audio(), url: null,
+  play(t) {
+    this.stop();
+    this.url = URL.createObjectURL(t.blob); this.a.src = this.url;
+    this.a.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+  },
+  stop() { this.a.pause(); this.a.removeAttribute("src"); if (this.url) URL.revokeObjectURL(this.url); this.url = null; setPlaying(false); },
+  get on() { return !this.a.paused && !!this.url },
+};
+Player.a.ontimeupdate = () => paintPlayhead();
+Player.a.onended = () => Player.stop();
+function setPlaying(on) {
+  $("playBtn").classList.toggle("playing", on); $("playBtn").setAttribute("aria-pressed", String(on));
+  $("playLabel").textContent = on ? "멈추기" : "들어보기";
+  $("playIco").setAttribute("href", on ? "#i-stop" : "#i-play");
+  $("scope").classList.toggle("playing", on);
+  if (!on) { scopeBars.forEach((b) => b.classList.remove("pl")); const t = takeOf(S.idx); $("ptime").textContent = t ? `${t.sec.toFixed(1)}초` : ""; }
+}
+function paintPlayhead() {
+  const t = takeOf(S.idx); if (!t || !Player.url) return;
+  const cur = Player.a.currentTime, frac = Math.min(1, cur / t.sec);
+  scopeBars.forEach((b, i) => b.classList.toggle("pl", i < frac * SCOPE_N));
+  $("ptime").textContent = `${cur.toFixed(1)} / ${t.sec.toFixed(1)}초`;
+}
+function showListen(t) { $("listenRow").hidden = false; $("ptime").textContent = `${t.sec.toFixed(1)}초`; }
+$("playBtn").onclick = () => { const t = takeOf(S.idx); if (!t) return; Player.on ? Player.stop() : Player.play(t); };
 $("pauseBtn").onclick = async () => { if (Rec.on) await Rec.stop(); openSend(); };
 $("listBtn").onclick = async () => { if (Rec.on) await Rec.stop(); openPicker("all"); };
 document.addEventListener("keydown", (e) => {
@@ -732,6 +766,7 @@ async function selftest() {
     await saveState({ name: "테스트", target: 1, idx: 0, history: [], version: VERSION }); S.idx = 0; openRecord();
     for (let k = 0; k < 3; k++) { await Rec.start(); await wait(1600); await Rec.stop(); log(`take ${LINES[S.idx].id} ${takeOf(S.idx)?.sec}s warn=${takeOf(S.idx)?.qc.warn}`); $("nextBtn").click(); await wait(150); }
     const takes = await Store.takes(); log("stored " + takes.length + " ok=" + Store.ok);
+    S.idx = 2; renderLine(); $("playBtn").click(); await wait(500); log("playing " + $("playBtn").classList.contains("playing") + " label " + $("playLabel").textContent);
     const zips = await buildZips([...S.takes.values()]);
     const z = await JSZip.loadAsync(zips[0]); log("zip " + zips[0].name + " " + Object.keys(z.files).length + " files " + zips[0].size + "B");
     const m = JSON.parse(await z.file("manifest.json").async("string")); log("manifest takes " + m.takes.length + " sr " + m.sample_rate);
