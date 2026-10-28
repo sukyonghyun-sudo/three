@@ -1,4 +1,4 @@
-// 사무실 바깥 배경 — 기본 · 하늘 위 · 우주 · 바다 위 · 숲속. 그림 파일 없이 캔버스·셰이더로만 그린다
+// 사무실 바깥 배경 — 기본 · 하늘 위 · 바다 위 · 숲속 (우주는 사용자 요청으로 뺌, 10-28). 그림 파일 없이 캔버스·셰이더로만 그린다
 // 일반 <script> 로 읽는다. window.OfficeBg(ctx) → { kinds, set(id), id, tick(dt) }
 //   ctx = { THREE, scene, renderer, camera, center(사무실 바닥 가운데), size:{w,d}, baseBg(「기본」 배경색) }
 // 그림자 없음 · 배경 하나에 그리기 5번 이하 · scene.fog 는 안 쓴다 (고르면 null, 「기본」이면 처음 값) — 배경 재질이 멀수록 스스로 흐려진다
@@ -16,7 +16,6 @@ window.OfficeBg = function OfficeBg(ctx) {
   const kinds = [
     { id: "none", label: "기본", emoji: "🏢" },
     { id: "sky", label: "하늘 위", emoji: "☁️" },
-    { id: "space", label: "우주", emoji: "🌌" },
     { id: "sea", label: "바다 위", emoji: "🌊" },
     { id: "forest", label: "숲속", emoji: "🌲" },
   ];
@@ -226,134 +225,6 @@ void main(){
 }`, { ...L, uSunD: { value: SUN }, uBlue: col("#8dbbea") });
     const puffs = cloudPuffs(L);
     return { objs: [d, sea, puffs.mesh], bg: "#e2eaf8", tick: puffs.tick };
-  }
-
-  // ───────────── 우주 ─────────────
-  function buildSpace() {
-    const bandN = new THREE.Vector3(0.35, 0.8, 0.45).normalize();
-    const d = dome(`uniform vec3 uA, uB, uNeb1, uNeb2, uBand, uBandN;
-void main(){
-  vec3 d = normalize(vDir);
-  vec3 c = mix(uB, uA, smoothstep(-0.9, 0.9, d.y));
-  float n = fbm3(d * 2.4), n2 = fbm3(d * 3.6 + 11.0);
-  c += uNeb1 * smoothstep(0.48, 0.8, n) * 0.8;
-  c += uNeb2 * smoothstep(0.5, 0.85, n2) * 0.6;
-  float b = 1.0 - smoothstep(0.0, 0.3, abs(dot(d, uBandN)) + (n2 - 0.5) * 0.3);
-  c += uBand * b * (0.4 + 0.6 * n);
-  gl_FragColor = vec4(c, 1.0);
-  #include <colorspace_fragment>
-}`, { uA: col("#221a4e"), uB: col("#090d29"), uNeb1: col("#4a2a6e"), uNeb2: col("#1d4a6a"), uBand: col("#3a3a72"), uBandN: { value: bandN } });
-
-    // 별 — 하늘 공처럼 카메라를 따라다니고, 깊이는 맨 뒤
-    const r = rng(3), N = 4200, pos = new Float32Array(N * 3), sz = new Float32Array(N), cl = new Float32Array(N * 3), ph = new Float32Array(N);
-    const tints = ["#ffffff", "#ffffff", "#dde7ff", "#fff0d6", "#ffe0ea"].map((h) => new THREE.Color(h));
-    const t1 = new THREE.Vector3(1, 0, 0).cross(bandN).normalize(), t2 = bandN.clone().cross(t1), v = new THREE.Vector3();
-    for (let i = 0; i < N; i++) {
-      if (i < N * 0.3) { // 은하수 띠에 몰리게
-        const a = r() * Math.PI * 2, off = (r() + r() + r() - 1.5) * 0.16;
-        v.copy(t1).multiplyScalar(Math.cos(a)).addScaledVector(t2, Math.sin(a)).addScaledVector(bandN, off).normalize();
-      } else {
-        const z = r() * 2 - 1, a = r() * Math.PI * 2, s = Math.sqrt(1 - z * z);
-        v.set(s * Math.cos(a), z, s * Math.sin(a));
-      }
-      v.multiplyScalar(160).toArray(pos, i * 3);
-      const k = r();
-      sz[i] = k < 0.8 ? 1.3 + r() * 0.9 : k < 0.97 ? 2.3 + r() * 1.3 : 3.8 + r() * 2.4;
-      tints[Math.floor(r() * tints.length)].clone().multiplyScalar(0.45 + 0.55 * r()).toArray(cl, i * 3);
-      ph[i] = r();
-    }
-    const sg = new THREE.BufferGeometry();
-    sg.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    sg.setAttribute("aSize", new THREE.BufferAttribute(sz, 1));
-    sg.setAttribute("aCol", new THREE.BufferAttribute(cl, 3));
-    sg.setAttribute("aPh", new THREE.BufferAttribute(ph, 1));
-    const uDpr = { value: 1 };
-    const stars = follow(quiet(new THREE.Points(keep(sg), shader({
-      uniforms: { uDpr }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      vertexShader: `uniform float uTime, uDpr; attribute float aSize, aPh; attribute vec3 aCol; varying vec3 vCol;
-void main(){
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  gl_Position.z = gl_Position.w * 0.99998;
-  float tw = 0.6 + 0.4 * sin(uTime * (0.8 + aPh * 2.2) + aPh * 60.0);
-  vCol = aCol * mix(1.0, tw, step(0.45, fract(aPh * 7.0)));
-  gl_PointSize = aSize * uDpr;
-}`,
-      fragmentShader: `varying vec3 vCol;
-void main(){
-  float d = length(gl_PointCoord - 0.5) * 2.0;
-  float a = pow(max(1.0 - d, 0.0), 1.6);
-  gl_FragColor = vec4(vCol * a, 1.0);
-  #include <colorspace_fragment>
-}`,
-    }))), true);
-    stars.renderOrder = -3;
-
-    // 고리 행성 + 작은 달 — 해는 카메라 쪽 오른쪽 위에서
-    const LIGHT = new THREE.Vector3(0.55, 0.45, 0.7).normalize();
-    const PG = new THREE.Group();
-    PG.position.set(C.x - 50, -52, C.z - 80);
-    PG.rotation.set(0.32, 0, 0.42);
-    PG.updateMatrixWorld();
-    const PR = 12;
-    const planet = quiet(new THREE.Mesh(keep(new THREE.SphereGeometry(PR, 56, 36)), shader({
-      uniforms: { uLight: { value: LIGHT }, uR: { value: PR }, uC1: col("#f6cfa8"), uC2: col("#e9a3b6"), uC3: col("#fff0d9"), uDark: col("#2a2350"), uRim: col("#9db4ff") },
-      vertexShader: `varying vec3 vL, vN, vW;
-void main(){ vL = position; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-      fragmentShader: HEAD + `uniform vec3 uLight, uC1, uC2, uC3, uDark, uRim; uniform float uR; varying vec3 vL, vN, vW;
-void main(){
-  vec3 n = normalize(vN), v = normalize(cameraPosition - vW), lp = vL / uR;
-  float t = lp.y + (fbm3(lp * 2.6) - 0.5) * 0.22;
-  vec3 c = mix(uC1, uC2, smoothstep(0.35, 0.65, sin(t * 9.0) * 0.5 + 0.5));
-  c = mix(c, uC3, smoothstep(0.7, 0.95, sin(t * 23.0 + 1.3) * 0.5 + 0.5) * 0.7);
-  float l = dot(n, uLight);
-  c = mix(uDark, c, smoothstep(-0.28, 0.55, l));
-  c += uRim * pow(1.0 - max(dot(n, v), 0.0), 3.0) * (0.25 + 0.6 * smoothstep(-0.3, 0.6, l));
-  gl_FragColor = vec4(c, 1.0);
-  #include <colorspace_fragment>
-}`,
-    })));
-    PG.add(planet);
-    const ring = quiet(new THREE.Mesh(keep(new THREE.RingGeometry(PR * 1.4, PR * 2.45, 128, 1).rotateX(-Math.PI / 2)), shader({
-      uniforms: { uLight: { value: LIGHT }, uR0: { value: PR * 1.4 }, uR1: { value: PR * 2.45 }, uP: { value: PG.position }, uPR: { value: PR }, uC1: col("#d9cdfa"), uC2: col("#ffe6c8") },
-      transparent: true, premultipliedAlpha: true, depthWrite: false, side: THREE.DoubleSide,
-      vertexShader: `varying float vR; varying vec3 vW;
-void main(){ vR = length(position.xz); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-      fragmentShader: `uniform vec3 uLight, uP, uC1, uC2; uniform float uR0, uR1, uPR; varying float vR; varying vec3 vW;
-void main(){
-  float t = (vR - uR0) / (uR1 - uR0);
-  float bands = 0.6 + 0.4 * sin(t * 38.0) * sin(t * 11.0 + 1.0);
-  float a = smoothstep(0.0, 0.06, t) * (1.0 - smoothstep(0.86, 1.0, t)) * (0.4 + 0.45 * bands);
-  a *= 1.0 - 0.85 * smoothstep(0.5, 0.53, t) * (1.0 - smoothstep(0.58, 0.61, t));
-  vec3 c = mix(uC1, uC2, t);
-  vec3 toP = uP - vW; float tc = dot(toP, uLight); float d2 = dot(toP, toP) - tc * tc;
-  c *= tc > 0.0 ? mix(0.3, 1.0, smoothstep(uPR * uPR * 0.8, uPR * uPR * 1.05, d2)) : 1.0;
-  gl_FragColor = vec4(c, a);
-  #include <colorspace_fragment>
-  gl_FragColor.rgb *= gl_FragColor.a;
-}`,
-    })));
-    ring.renderOrder = -1;
-    PG.add(ring);
-    const moon = quiet(new THREE.Mesh(keep(new THREE.IcosahedronGeometry(3.6, 1)), shader({
-      uniforms: { uLight: { value: LIGHT }, uC: col("#d2cde6"), uDark: col("#2c2852") },
-      vertexShader: `varying vec3 vL, vW;
-void main(){ vL = position; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-      fragmentShader: HEAD + `uniform vec3 uLight, uC, uDark; varying vec3 vL, vW;
-void main(){
-  vec3 n = normalize(cross(dFdx(vW), dFdy(vW)));
-  vec3 c = uC * (0.82 + 0.25 * smoothstep(0.45, 0.7, fbm3(vL * 0.9)));
-  c = mix(uDark, c, smoothstep(-0.2, 0.6, dot(n, uLight)));
-  gl_FragColor = vec4(c, 1.0);
-  #include <colorspace_fragment>
-}`,
-    })));
-    moon.position.set(C.x + 23.6, -37, C.z - 50.6);
-    const g = new THREE.Group();
-    g.add(PG, moon);
-    return {
-      objs: [d, stars, g], bg: "#0d1233",
-      tick(dt) { uDpr.value = renderer?.getPixelRatio?.() ?? 1; planet.rotation.y += dt * 0.03; moon.rotation.y += dt * 0.06; moon.rotation.x += dt * 0.02; },
-    };
   }
 
   // ───────────── 바다 위 ─────────────
@@ -570,7 +441,7 @@ void main(){
   }
 
   // ───────────── 바꾸기 ─────────────
-  const BUILD = { sky: buildSky, space: buildSpace, sea: buildSea, forest: buildForest };
+  const BUILD = { sky: buildSky, sea: buildSea, forest: buildForest };
   function clear() {
     if (world) {
       world.group.removeFromParent();
