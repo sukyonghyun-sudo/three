@@ -113,7 +113,9 @@ body.loading #app{opacity:0}
 .pipph{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:14px;line-height:1.6}
 body.pip{margin:0;height:100vh;overflow:hidden;background:var(--bg)}
 body.pip #stage{width:100vw;height:100vh}
-body.pip .hud button,body.pip .listbtn,body.pip .bgmenu{display:none}
+body.pip .hud button,body.pip .listbtn,body.pip .bgmenu,body.pip .pinbtn{display:none}
+.pinbtn{position:absolute;right:12px;top:12px;z-index:6}
+.hud{max-width:calc(100% - 170px)}
 /* 휴대폰·좁은 창: 사무실을 화면 가득, 사람 목록은 버튼으로 접고 편다 (세로: 아래에서 올라옴 · 가로: 오른쪽에서 나옴) */
 @media (max-width:820px),(max-height:520px){
   #app{grid-template-columns:minmax(0,1fr);position:relative}
@@ -126,7 +128,10 @@ body.pip .hud button,body.pip .listbtn,body.pip .bgmenu{display:none}
   #app.aq-wide .listbtn{display:none}
   .hud{left:10px;right:10px;top:10px;gap:6px 8px;pointer-events:none}
   .hud>*{pointer-events:auto}
-  .hud h1{font-size:15px}
+  .hud h1{display:none}
+  .hud .lbl{display:none} /* 휴대폰: 위쪽 단추·칩은 아이콘·숫자만 */
+  .hud{max-width:none}
+  .testme select{max-width:84px}
   .chip{padding:3px 8px;font-size:11px}
   .view{left:10px;right:10px;bottom:10px;pointer-events:none}
   .view>*{pointer-events:auto}
@@ -1653,10 +1658,10 @@ function changed() {
     }
   }
   document.getElementById("counts").innerHTML =
-    `<span class="chip"><i class="dot work"></i>근무 중 ${n.work}</span>` +
-    (n.move ? `<span class="chip"><i class="dot move"></i>이동 중 ${n.move}</span>` : "") +
-    `<span class="chip"><i class="dot"></i>자리에 없음 ${n.away}</span>` +
-    (isLunch() ? `<span class="chip">🍚 점심시간 12:00~13:00</span>` : "");
+    `<span class="chip" title="근무 중"><i class="dot work"></i><span class="lbl">근무 중 </span>${n.work}</span>` +
+    (n.move ? `<span class="chip" title="이동 중"><i class="dot move"></i><span class="lbl">이동 중 </span>${n.move}</span>` : "") +
+    `<span class="chip" title="자리에 없음"><i class="dot"></i><span class="lbl">자리에 없음 </span>${n.away}</span>` +
+    (isLunch() ? `<span class="chip">🍚<span class="lbl"> 점심시간 12:00~13:00</span></span>` : "");
 }
 changed();
 if (LIVE) queueMicrotask(liveInit); // 실시간 모드: Supabase 에서 출퇴근·상태 메시지
@@ -1786,7 +1791,7 @@ if (BG) {
   stage.append(bgMenu);
   const bb = document.createElement("button");
   bb.textContent = "🖼 배경";
-  camBar.append(bb);
+  tourBtn.after(bb); // 휴대폰에서도 줄 끝까지 밀지 않고 보이게 앞쪽에
   bb.onclick = () => { bgMenu.hidden = !bgMenu.hidden; };
   bgMenu.onclick = (e) => { const b = e.target.closest("[data-bg]"); if (b) { applyBg(b.dataset.bg); bgMenu.hidden = true; } };
   applyBg(bgState.pick);
@@ -1796,9 +1801,10 @@ if (BG) {
 let pipWin = null;
 if ("documentPictureInPicture" in window && !matchMedia("(pointer: coarse)").matches) {
   const pb = document.createElement("button");
+  pb.className = "sx-hb pinbtn";
   pb.textContent = "📌 위에 띄우기";
   pb.title = "다른 창 위에 늘 떠 있는 작은 창으로 (모서리를 끌어 크기 조절)";
-  camBar.append(pb);
+  stage.append(pb); // 오른쪽 위 구석
   pb.onclick = async () => {
     if (pipWin) return pipWin.close();
     try { pipWin = await window.documentPictureInPicture.requestWindow({ width: 560, height: 360 }); } catch (e) { console.error(e); return; }

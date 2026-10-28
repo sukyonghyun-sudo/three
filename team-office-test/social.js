@@ -567,8 +567,11 @@ window.Social = function Social(ctx) {
   // ───────── 위쪽 단추: 🍚 점심 · 💬 대화 (실시간 판에서만) ─────────
   const hud = {};
   if (ctx.live && ctx.hud) {
-    hud.lunch = el("button", "sx-hb", "🍚 점심 투표");
-    hud.dm = el("button", "sx-hb", "💬 대화");
+    hud.lunch = el("button", "sx-hb");
+    hud.dm = el("button", "sx-hb");
+    hud.lunch.innerHTML = '<span class="ico">🍚</span><span class="lbl"> 점심 투표</span>'; // 휴대폰은 아이콘만
+    hud.dm.innerHTML = '<span class="ico">💬</span><span class="lbl"> 대화</span>';
+    hud.lunch.title = "점심 투표"; hud.dm.title = "1:1 대화";
     hud.badge = el("span", "sx-badge");
     hud.badge.hidden = true;
     hud.dm.append(hud.badge);
