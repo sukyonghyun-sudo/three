@@ -164,7 +164,7 @@ window.Chaos = function (ctx) {
   .cx-toggle b{font-size:10px;margin-left:6px;padding:1px 6px;border-radius:6px;background:#b9b4ab;color:#fff;letter-spacing:.03em}
   .cx-toggle.on b{background:var(--work,#2f9e62)}
   .cx-gear{padding:6px 9px;margin-left:-6px}
-  @media (max-width:820px),(max-height:520px){.cx-menu{left:10px;width:calc(100% - 20px);top:auto;bottom:54px;max-height:calc(100% - 110px)}.cx-stop{top:auto;bottom:128px;right:10px}.cx-banner{top:auto;bottom:56px;min-width:0;width:max-content;max-width:calc(100% - 20px);padding:8px 16px 10px}.cx-banner b{font-size:17px}}`;
+  @media (max-width:820px),(max-height:520px){.cx-menu{left:calc(10px + env(safe-area-inset-left));width:calc(100% - 20px - env(safe-area-inset-left) - env(safe-area-inset-right));top:auto;bottom:calc(54px + env(safe-area-inset-bottom));max-height:calc(100% - 110px - env(safe-area-inset-bottom) - env(safe-area-inset-top))}.cx-stop{top:auto;bottom:calc(128px + env(safe-area-inset-bottom));right:calc(10px + env(safe-area-inset-right))}.cx-banner{top:auto;bottom:calc(56px + env(safe-area-inset-bottom));min-width:0;width:max-content;max-width:calc(100% - 20px);padding:8px 16px 10px}.cx-banner b{font-size:17px}}`;
   document.head.append(css);
   const banner = document.createElement("div"); banner.className = "cx-banner"; banner.hidden = true; stage.append(banner);
   const flashEl = document.createElement("div"); flashEl.className = "cx-flash"; stage.append(flashEl);

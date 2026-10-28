@@ -54,7 +54,7 @@ window.Social = function Social(ctx) {
   .sx-snack .it{font-size:14px;font-weight:700;word-break:break-word}
   .sx-snack a{display:inline-block;font-size:12px;color:#2f6fe4;word-break:break-all;margin-top:2px}
   .sx-more{display:block;margin:12px auto 0}
-  @media (max-width:820px),(max-height:520px){.sx-wrap{align-items:flex-end;padding:0}.sx-card{width:100%;max-height:92%;border-radius:16px 16px 0 0}}
+  @media (max-width:820px),(max-height:520px){.sx-wrap{align-items:flex-end;padding:0 0 var(--kb,0px)}.sx-card{width:100%;max-height:92%;border-radius:16px 16px 0 0}}
   .sx-who{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
   .sx-who .sx-av{width:26px;height:26px}
   .sx-toast{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:25;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);
@@ -65,7 +65,7 @@ window.Social = function Social(ctx) {
   .sx-toast span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sx-toast b{color:#007aff;flex:none}
   @keyframes sxIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
-  @media (max-width:820px),(max-height:520px){.sx-toast{top:96px}}
+  @media (max-width:820px),(max-height:520px){.sx-toast{top:calc(96px + env(safe-area-inset-top))}}
   .sx-like{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
   .sx-likebtn{border:0;background:rgba(118,118,128,.12);border-radius:999px;padding:6px 13px;font:inherit;font-size:12.5px;font-weight:600;color:#3a3a3c;cursor:pointer}
   .sx-likebtn:disabled{cursor:default;opacity:.8}
