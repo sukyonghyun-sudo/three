@@ -511,30 +511,12 @@ mesh(box(0.05, DOOR.h, DOOR.w + 0.01, 0.008), DOORM, doorPivot, [0, DOOR.h / 2 +
 mesh(box(0.04, 0.03, 0.18), M("#b8bcc0", { metalness: 0.7, roughness: 0.3 }), doorPivot, [0.05, DOOR.h * 0.47, DOOR.w - 0.16]);
 
 // 위쪽 유리벽
-function frostTexture() {
-  const c = document.createElement("canvas");
-  c.width = 2048;
-  c.height = 160;
-  const g = c.getContext("2d");
-  g.fillStyle = "rgba(255,255,255,.38)";
-  g.fillRect(0, 0, 2048, 160);
-  g.fillStyle = "rgba(255,255,255,.85)";
-  for (let i = 0; i < 9; i++) {
-    const x = 120 + i * 225 + ((i * 53) % 40), s = 0.8 + ((i * 37) % 5) * 0.08;
-    g.beginPath(); g.ellipse(x, 150 - 62 * s, 42 * s, 36 * s, 0, 0, Math.PI * 2); g.fill();
-    g.beginPath(); g.ellipse(x, 160, 52 * s, 40 * s, 0, Math.PI, 0); g.fill();
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
 {
   const z = mz(20), frame = M("#2a2c30");
   mesh(new THREE.BoxGeometry(RW, 0.05, 0.08), frame, office, [RCX, WALL_H - 0.02, z]);
   mesh(new THREE.BoxGeometry(RW, 0.06, 0.08), frame, office, [RCX, 0.03, z]);
   for (let x = ROOM.x0; x <= ROOM.x1 + 0.01; x += RW / 8) mesh(new THREE.BoxGeometry(0.05, WALL_H, 0.08), frame, office, [x, WALL_H / 2, z]);
   mesh(new THREE.PlaneGeometry(RW, WALL_H - 0.08), new THREE.MeshStandardMaterial({ color: "#dff0fa", transparent: true, opacity: 0.2, roughness: 0.05, depthWrite: false }), office, [RCX, WALL_H / 2, z], false);
-  mesh(new THREE.PlaneGeometry(RW, 0.85 * WALL_H / 2.8), new THREE.MeshStandardMaterial({ map: frostTexture(), transparent: true, depthWrite: false, roughness: 0.6 }), office, [RCX, WALL_H * 0.41, z + 0.012], false);
 }
 
 // E1·E2 기둥
