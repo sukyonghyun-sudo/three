@@ -443,13 +443,16 @@ void main(){
   // ───────────── 바꾸기 ─────────────
   const BUILD = { sky: buildSky, sea: buildSea, forest: buildForest };
   function clear() {
-    if (world) {
-      world.group.removeFromParent();
-      world.group.traverse((o) => o.isInstancedMesh && o.dispose()); // 그루별 행렬·색 버퍼
-      world = null;
-    }
-    bin.forEach((x) => x.dispose());
-    bin = [];
+    const w = world;
+    world = null;
+    if (!w) return;
+    w.group.removeFromParent();
+    const dispose = () => {
+      w.group.traverse((o) => o.isInstancedMesh && o.dispose()); // 그루별 행렬·색 버퍼
+      w.bin.forEach((x) => x.dispose());
+    };
+    // 셰이더 준비(compileAsync) 중에 재질을 지우면 three 안에서 오류가 난다 → 준비가 끝난 뒤에 지운다
+    if (w.ready) w.ready.then(dispose); else dispose();
   }
   function set(id) {
     if (!BUILD[id]) id = "none";
@@ -467,11 +470,20 @@ void main(){
     group.name = "officeBg";
     w.objs.forEach((o) => group.add(o));
     group.traverse((o) => { o.raycast = () => {}; }); // 클릭(사람 고르기)에 안 걸리게
-    scene.add(group);
-    world = { group, tick: w.tick };
-    scene.background = new THREE.Color(w.bg);
-    scene.fog = null;
-    if (camera.far < 190) { camera.far = 200; camera.updateProjectionMatrix(); } // 바닥 원판 끝(165)까지 보이게 — 「기본」이면 되돌린다
+    // 셰이더는 화면 멈춤 없이 미리 준비(compileAsync)한 뒤에 장면에 넣는다 — 처음 바꿀 때 0.1~0.2초 멈칫하던 것
+    // (숨긴 채로 장면에 넣으면 준비가 안 돼 three 안에서 오류가 난다 → 장면 밖에서 준비하고, 조명은 장면 것을 쓴다)
+    const me = (world = { group, tick: w.tick, bin, ready: null });
+    bin = [];
+    const show = () => {
+      me.ready = null;
+      if (world !== me) return; // 그사이 다른 배경으로 바뀌었으면 그만 (지우기는 clear 가)
+      scene.add(group);
+      scene.background = new THREE.Color(w.bg);
+      scene.fog = null;
+      if (camera.far < 190) { camera.far = 200; camera.updateProjectionMatrix(); } // 바닥 원판 끝(165)까지 보이게 — 「기본」이면 되돌린다
+    };
+    if (renderer?.compileAsync) me.ready = renderer.compileAsync(group, camera, scene).then(show, show);
+    else show();
   }
   return {
     kinds,

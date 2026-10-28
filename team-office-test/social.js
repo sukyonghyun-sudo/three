@@ -1,4 +1,4 @@
-// 사람 카드(방명록 · 일상/육아일기 SNS · 칭찬 하트 · 내 상태) · 모두의 피드(새 글 알림) · 1:1 대화 · 간식 신청 — 실시간 판(Supabase)에서 읽고 쓴다
+// 사람 카드(방명록 · 일상 SNS · 칭찬 하트 · 내 상태) · 모두의 피드(새 글 알림) · 1:1 대화 · 간식 신청 — 실시간 판(Supabase)에서 읽고 쓴다
 // 표·함수: ../supabase_social.sql, ../supabase_more.sql. 읽기는 누구나(1:1 대화는 두 사람만), 쓰기는 「나예요」/「로그인」한 직원만
 // (4자리 비밀번호를 서버 함수가 확인). 남이 쓴 글은 늘 textContent 로만 넣는다
 // window.Social(ctx) → { openPerson(name, tab), openSnacks(), openInbox(), openThread(name), openFeed(), heartCount(name), sync() }
@@ -8,6 +8,7 @@ window.Social = function Social(ctx) {
   .sx-wrap{position:fixed;inset:0;z-index:30;background:rgba(20,22,28,.32);display:flex;align-items:center;justify-content:center;padding:16px}
   .sx-wrap[hidden]{display:none}
   .sx-card{background:var(--panel);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.25);width:min(460px,100%);max-height:min(86vh,760px);display:flex;flex-direction:column;overflow:hidden}
+  .sx-card.wide{width:min(560px,100%)}
   .sx-head{display:flex;gap:12px;align-items:center;padding:14px 10px 12px 16px;border-bottom:1px solid var(--line)}
   .sx-head img,.sx-head .em{width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:50% 40%;background:#efe1d6;flex:none}
   .sx-head .em{display:flex;align-items:center;justify-content:center;font-size:26px;background:#fbe9cf}
@@ -57,15 +58,15 @@ window.Social = function Social(ctx) {
   @media (max-width:820px),(max-height:520px){.sx-wrap{align-items:flex-end;padding:0 0 var(--kb,0px)}.sx-card{width:100%;max-height:92%;border-radius:16px 16px 0 0}}
   .sx-who{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
   .sx-who .sx-av{width:26px;height:26px}
-  .sx-toast{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:25;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);
+  .sx-toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:25;display:flex;align-items:center;gap:8px;max-width:calc(100% - 24px);
     background:rgba(255,255,255,.9);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:.5px solid rgba(0,0,0,.08);
     border-radius:999px;padding:6px 16px 6px 6px;box-shadow:0 10px 30px rgba(0,0,0,.16);font-size:13px;font-weight:600;cursor:pointer;animation:sxIn .35s ease}
   .sx-toast[hidden]{display:none}
   .sx-toast .sx-av{width:30px;height:30px}
   .sx-toast span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sx-toast b{color:#007aff;flex:none}
-  @keyframes sxIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
-  @media (max-width:820px),(max-height:520px){.sx-toast{top:calc(96px + env(safe-area-inset-top))}}
+  @keyframes sxIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+  @media (max-width:820px),(max-height:520px){.sx-toast{bottom:auto;top:calc(96px + env(safe-area-inset-top))}}
   .sx-like{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
   .sx-likebtn{border:0;background:rgba(118,118,128,.12);border-radius:999px;padding:6px 13px;font:inherit;font-size:12.5px;font-weight:600;color:#3a3a3c;cursor:pointer}
   .sx-likebtn:disabled{cursor:default;opacity:.8}
@@ -135,6 +136,7 @@ window.Social = function Social(ctx) {
   const card = document.createElement("div");
   card.className = "sx-card";
   card.setAttribute("role", "dialog");
+  card.setAttribute("aria-modal", "true");
   wrap.append(card);
   document.body.append(wrap);
   wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
@@ -165,6 +167,10 @@ window.Social = function Social(ctx) {
   function when(iso) { // 10월 28일 (화) 오후 4:12
     const d = new Date(iso), h = d.getHours(), y = d.getFullYear() !== new Date().getFullYear() ? `${d.getFullYear()}년 ` : "";
     return `${y}${d.getMonth() + 1}월 ${d.getDate()}일 (${DAYS[d.getDay()]}) ${h < 12 ? "오전" : "오후"} ${h % 12 || 12}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+  function shortWhen(iso) { // 대화 목록: 오늘이면 시각만, 아니면 날짜만
+    const d = new Date(iso), n = new Date(), h = d.getHours();
+    return d.toDateString() === n.toDateString() ? `${h < 12 ? "오전" : "오후"} ${h % 12 || 12}:${String(d.getMinutes()).padStart(2, "0")}` : `${d.getMonth() + 1}월 ${d.getDate()}일`;
   }
   function face(name) { const i = el("img", "sx-av"); i.alt = ""; i.src = ctx.face(name); return i; }
   function say(text, warn = false) { if (msgEl) { msgEl.textContent = text; msgEl.className = warn ? "sx-msg warn" : "sx-msg"; } }
@@ -203,10 +209,13 @@ window.Social = function Social(ctx) {
   let pushed = false, backPending = false, pushAfterBack = false;
   function show() {
     wrap.hidden = false;
+    fitCard();
     if (pushed) return;
     if (backPending) pushAfterBack = true;
     else { history.pushState({ sxCard: 1 }, ""); pushed = true; }
   }
+  // 글·사진·대화는 PC 에서 넓게 (560px)
+  const fitCard = () => card.classList.toggle("wide", !!view && (view.kind === "feed" || view.kind === "dm" || (view.kind === "person" && view.tab === "diary")));
   function close(fromBack = false) {
     wrap.hidden = true; view = null; seq++; clearInterval(dmTimer); pushAfterBack = false;
     if (pushed) { pushed = false; if (!fromBack) { backPending = true; history.back(); } }
@@ -223,7 +232,7 @@ window.Social = function Social(ctx) {
     const h = el("div", "sx-head"), t = el("div", "t");
     t.append(el("b", null, title), el("span", null, sub));
     const x = el("button", "sx-x", "×");
-    x.type = "button"; x.title = "닫기"; x.onclick = () => close();
+    x.type = "button"; x.title = "닫기"; x.setAttribute("aria-label", "닫기"); x.onclick = () => close();
     h.append(img, t, x);
     return h;
   }
@@ -237,7 +246,7 @@ window.Social = function Social(ctx) {
     return false;
   }
 
-  // ───────── 사람 카드: 방명록 · 육아일기 ─────────
+  // ───────── 사람 카드: 방명록 · 일상(SNS) · 내 상태 ─────────
   function openPerson(name, tab = "notes") {
     clearInterval(dmTimer);
     view = { kind: "person", name, tab: tab === "me" && ctx.me()?.char !== name ? "notes" : tab || "notes" };
@@ -269,7 +278,7 @@ window.Social = function Social(ctx) {
       for (const [k, label] of tabList) {
         const b = el("button", k === tab ? "on" : "", label);
         b.type = "button";
-        b.onclick = () => { if (view.tab !== k) { view.tab = k; renderPerson(); } };
+        b.onclick = () => { if (view.tab !== k) { view.tab = k; fitCard(); renderPerson(); } };
         tabs.append(b);
       }
       card.append(tabs);
@@ -613,7 +622,7 @@ window.Social = function Social(ctx) {
     if (!rows) { list.replaceChildren(); return; }
     setUnread(rows.reduce((a, r) => a + (+r.unread || 0), 0));
     list.replaceChildren(...(rows.length ? rows.map((r) => {
-      const li = el("li"), c = el("div", "c"), t = el("time", null, when(r.last_at).replace(/^\S+ \S+ /, ""));
+      const li = el("li"), c = el("div", "c"), t = el("time", null, shortWhen(r.last_at));
       c.append(el("b", null, r.with), el("span", null, (r.last_from === me ? "나: " : "") + r.last));
       li.append(face(r.with), c, t);
       if (+r.unread) li.append(el("span", "sx-badge", String(r.unread)));
@@ -690,7 +699,7 @@ window.Social = function Social(ctx) {
   if (ctx.live && ctx.hud) {
     hud.feed = el("button", "sx-hb");
     hud.feed.innerHTML = '<span class="ico">📷</span><span class="lbl"> 피드</span>';
-    hud.feed.title = "모두의 피드";
+    hud.feed.title = "모두의 피드"; hud.feed.setAttribute("aria-label", "모두의 피드");
     hud.feedBadge = el("span", "sx-badge");
     hud.feedBadge.hidden = true;
     hud.feed.append(hud.feedBadge);
@@ -698,7 +707,7 @@ window.Social = function Social(ctx) {
     hud.feed.onclick = () => { listen(); openFeed(); };
     hud.dm = el("button", "sx-hb");
     hud.dm.innerHTML = '<span class="ico">💬</span><span class="lbl"> 대화</span>'; // 휴대폰은 아이콘만
-    hud.dm.title = "1:1 대화";
+    hud.dm.title = "1:1 대화"; hud.dm.setAttribute("aria-label", "1:1 대화");
     hud.badge = el("span", "sx-badge");
     hud.badge.hidden = true;
     hud.dm.append(hud.badge);
@@ -792,7 +801,7 @@ window.Social = function Social(ctx) {
   }
   function safeUrl(s) { try { const u = new URL(s); return /^https?:$/.test(u.protocol) ? u : null; } catch { return null; } }
 
-  // 다른 사람이 쓰면 열려 있는 창을 새로 (방명록·간식만 — 육아일기는 사진이 커서 열 때 읽는다)
+  // 다른 사람이 쓰면 열려 있는 창을 새로 (방명록·간식·하트·댓글·좋아요 — 글은 사진이 커서 몇 초마다 번호만 확인)
   let live = null;
   function listen() {
     const sb = ctx.sb();

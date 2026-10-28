@@ -332,6 +332,7 @@ window.Chaos = function (ctx) {
     cur = sc; curT = 0;
     ctx.setPaused(true);
     banner.hidden = false;
+    banner.style.top = matchMedia("(max-width:820px),(max-height:520px)").matches ? "" : `${Math.max(58, ctx.hud.offsetTop + ctx.hud.offsetHeight + 12)}px`; // PC: 위쪽 단추 줄 바로 아래 (두 줄이 돼도 안 겹치게)
     banner.innerHTML = `<b>${sc.emoji} ${sc.name}</b><span>${sc.desc}</span><i></i>`;
     banner.style.animation = "none"; void banner.offsetWidth; banner.style.animation = "";
     if (sc.cam) ctx.flyTo(sc.cam[0], sc.cam[1]);
