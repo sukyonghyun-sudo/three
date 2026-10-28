@@ -1258,12 +1258,13 @@ window.Chaos = function (ctx) {
   // 🐠 어항 ON/OFF (누르면 바로 켜고 끄기) + ⚙ (설정·골라 보기). OFF 면 갑자기 일어나는 일·시각별 조명이 멈춘다
   const btn = document.createElement("button"), gear = document.createElement("button");
   btn.className = "cx-btn cx-toggle"; btn.type = gear.type = "button";
-  gear.className = "cx-btn cx-gear"; gear.textContent = "⚙"; gear.title = "어항 모드 설정 · 골라서 보기";
+  gear.className = "cx-btn cx-gear"; gear.textContent = "⚙"; gear.title = "어항 모드 설정 · 골라서 보기"; gear.setAttribute("aria-label", "어항 모드 설정");
   ctx.hud.append(btn, gear);
   function applyOn() {
     btn.innerHTML = `<span class="ico">🐠</span><span class="lbl"> 어항 모드</span><b>${pref.on ? "ON" : "OFF"}</b>`;
     btn.classList.toggle("on", !!pref.on);
     btn.title = pref.on ? "어항 모드 끄기 (갑자기 일어나는 일 멈춤)" : "어항 모드 켜기";
+    btn.setAttribute("aria-pressed", String(!!pref.on)); btn.setAttribute("aria-label", "어항 모드");
     if (!pref.on && cur) { endScenario(true); ui.stop.hidden = true; }
     nextEvt = rnd(20, 40); dayTimer = 0;
   }

@@ -96,13 +96,14 @@ button{font:inherit}
 /* 내 캐릭터 */
 
 #intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:radial-gradient(120% 90% at 50% 38%,#fffaf2 0%,var(--bg) 70%);transition:opacity .9s ease,visibility .9s}
+  background:radial-gradient(120% 90% at 50% 38%,#ffffff 0%,#eef1f4 72%);transition:opacity .9s ease,visibility .9s}
 #intro.done{opacity:0;visibility:hidden}
 #intro .ttl{text-align:center;transform:translateY(-4vh);animation:ttlIn .9s ease both}
+#intro .ilogo{display:block;width:84px;height:84px;margin:0 auto 18px;border-radius:20px;box-shadow:0 10px 30px rgba(240,98,40,.28)}
 #intro h1{margin:0;font-size:clamp(34px,6vw,68px);font-weight:800;letter-spacing:-.02em;color:var(--ink)}
 #intro p{margin:10px 0 0;font-size:clamp(14px,1.6vw,18px);color:var(--muted);letter-spacing:.3em}
 #intro .lwrap{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%);width:min(520px,72vw);text-align:center}
-#intro .lbar{height:6px;border-radius:6px;background:#e2dacd;overflow:hidden}
+#intro .lbar{height:6px;border-radius:6px;background:#e5e5ea;overflow:hidden}
 #intro .lbar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#f6a43a,#ec7a1c);transition:width .35s ease}
 #intro #lmsg{display:block;margin-top:10px;font-size:12px;color:var(--muted)}
 @keyframes ttlIn{from{opacity:0;transform:translateY(-1vh)}to{opacity:1;transform:translateY(-4vh)}}
@@ -172,7 +173,7 @@ body.pip .hud button,body.pip .listbtn,body.pip .bgmenu,body.pip .pinbtn{display
 button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid #007aff;outline-offset:2px}
 /* ───── 아이폰 느낌 (10-28): 떠 있는 단추는 반투명 유리 알약, 목록·창은 흰 카드 + 머리카락 선, 파란 글자 단추 ───── */
 html,body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-:root{--ink:#1c1c1e;--muted:#8e8e93;--line:rgba(60,60,67,.16);--work:#34c759;--move:#ff9f0a;--away:#aeaeb2;--blue:#007aff;--glass:rgba(255,255,255,.74)}
+:root{--bg:#eef1f4;--ink:#1c1c1e;--muted:#8e8e93;--line:rgba(60,60,67,.16);--work:#34c759;--move:#ff9f0a;--away:#aeaeb2;--blue:#007aff;--glass:rgba(255,255,255,.74)}
 html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme,html body .pinbtn{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
   border:.5px solid rgba(0,0,0,.08);box-shadow:0 1px 1px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.08);border-radius:999px;color:var(--ink);font-weight:600;font-size:13px;padding:7px 13px;line-height:1.2}
 html body .chip{padding:6px 11px;font-size:12.5px}
@@ -251,6 +252,11 @@ html body .sx-gate .btn{margin-top:10px}
 html body .cx-menu{background:rgba(249,249,251,.94);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
 html body .cx-grid button{border:0;background:#fff;border-radius:12px}
 html body .cx-x{position:absolute;right:10px;top:10px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(118,118,128,.12);font-size:20px;line-height:30px;color:#8e8e93;cursor:pointer;padding:0}
+[hidden]{display:none!important} /* 숨긴 것은 어떤 단추 모양 규칙보다 우선 */
+/* 손가락 기기: 누르는 곳을 넉넉히 (아이폰 권장 44pt 에 가깝게) */
+@media (pointer:coarse){html body .sx-hb,html body .cx-btn,html body .listbtn,html body .chip,html body .testme{min-height:36px;display:inline-flex;align-items:center}
+  html body .cams button{min-height:34px}html body #list .btn{min-height:32px}html body .sx-x{width:34px;height:34px;line-height:34px}
+  html body .sx-likebtn,html body .sx-del{min-height:32px}html body .sx-tabs button{min-height:34px}}
 @media (max-width:820px),(max-height:520px){html body .sx-card{border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom)}html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme{padding:6px 10px;font-size:12.5px}}
 </style>
 <script>window.__AQUARIUM = true; window.__PWA = true; window.__TEST = true; window.__LIVE = {"url": "test", "key": "test"}; window.__TEST_NAMES = ["석용현", "손주용", "김현준", "허지용", "박성현", "송나정", "홍수연", "곡숙진", "김선주", "류진주", "미야모토슈이치로", "박정현", "서현성", "손예현", "오누리", "오세욱", "원효인", "유환", "윤성준", "이홍주", "전혜진", "한아린", "염숭이"];</script>
@@ -273,7 +279,7 @@ html body .cx-x{position:absolute;right:10px;top:10px;width:30px;height:30px;bor
 <body class="loading">
 <!-- 시작 화면: 다 읽을 때까지 타이틀 + 로딩바, 끝나면 서서히 사라지며 사무실이 나온다 -->
 <div id="intro">
-  <div class="ttl"><h1>메이플W 사업유닛</h1><p>팀 사무실</p></div>
+  <div class="ttl"><img class="ilogo" src="app/icon-192.png" alt="" onerror="this.remove()"><h1>메이플W 사업유닛</h1><p>팀 사무실</p></div>
   <div class="lwrap"><div class="lbar"><i id="lfill"></i></div><span id="lmsg">불러오는 중</span></div>
 </div>
 <div id="app">
@@ -1983,6 +1989,7 @@ if (window.__PWA && "serviceWorker" in navigator && location.protocol === "https
   ib.type = "button";
   ib.innerHTML = '<span class="ico">📲</span><span class="lbl"> 앱 설치</span>';
   ib.title = "홈 화면에 앱으로 설치 (스토어 없이)";
+  ib.setAttribute("aria-label", "앱으로 설치");
   ib.hidden = true;
   let evt = null;
   if (window.__PWA && !standalone) {
