@@ -2,7 +2,7 @@
 // - 모델·얼굴·three.js 같은 큰 파일: 기기에 있으면 바로 (ASSETS 가 바뀔 때만 새로 받는다)
 // - 페이지·스크립트: 늘 새로 받고, 안 되면(오프라인) 기기에 둔 것
 // - 실시간 저장소(supabase): 손대지 않는다
-const VERSION = "20261028202112", PAGE = "team-office-page-" + VERSION, ASSETS = "team-office-assets-47d92a5f9674";
+const VERSION = "20261028202857", PAGE = "team-office-page-" + VERSION, ASSETS = "team-office-assets-47d92a5f9674";
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil((async () => {
   for (const k of await caches.keys()) if (k.startsWith("team-office-") && k !== PAGE && k !== ASSETS) await caches.delete(k);

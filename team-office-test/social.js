@@ -73,6 +73,11 @@ window.Social = function Social(ctx) {
   .sx-likebtn.on{background:#ffe3ea;color:#ff2d55}
   .sx-likebtn:active{transform:scale(.95)}
   .sx-likers{font-size:12px;color:var(--muted)}
+  .sx-zoomable{cursor:zoom-in}
+  .sx-lightbox{position:fixed;inset:0;z-index:45;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);cursor:zoom-out}
+  .sx-lightbox[hidden]{display:none}
+  .sx-lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
+  .sx-lbx{position:absolute;right:calc(14px + env(safe-area-inset-right));top:calc(14px + env(safe-area-inset-top));width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:24px;line-height:38px;cursor:pointer}
   .sx-cmts{margin-top:10px;border-top:1px solid var(--line);padding-top:9px;display:flex;flex-direction:column;gap:8px}
   .sx-cmts:empty{display:none}
   .sx-cmt{display:flex;gap:8px}
@@ -164,6 +169,14 @@ window.Social = function Social(ctx) {
   }
   function btn(text, cls, onclick) { const b = el("button", "btn" + (cls ? " " + cls : ""), text); b.type = "button"; b.onclick = onclick; return b; }
   const DAYS = "일월화수목금토";
+  function ago(iso) { // 피드: 1시간 안이면 「3분 전」, 하루 안이면 「2시간 전」, 그보다 오래면 날짜·시각
+    const m = (Date.now() - Date.parse(iso)) / 60000;
+    if (m < 1) return "방금";
+    if (m < 60) return `${Math.floor(m)}분 전`;
+    if (m < 24 * 60) return `${Math.floor(m / 60)}시간 전`;
+    return when(iso);
+  }
+  const buzz = () => { try { navigator.vibrate?.(12); } catch {} }; // 안드로이드: 누를 때 아주 살짝 (아이폰은 무시)
   function when(iso) { // 10월 28일 (화) 오후 4:12
     const d = new Date(iso), h = d.getHours(), y = d.getFullYear() !== new Date().getFullYear() ? `${d.getFullYear()}년 ` : "";
     return `${y}${d.getMonth() + 1}월 ${d.getDate()}일 (${DAYS[d.getDay()]}) ${h < 12 ? "오전" : "오후"} ${h % 12 || 12}:${String(d.getMinutes()).padStart(2, "0")}`;
@@ -226,7 +239,7 @@ window.Social = function Social(ctx) {
       if (pushAfterBack && !wrap.hidden) { pushAfterBack = false; history.pushState({ sxCard: 1 }, ""); pushed = true; }
       return;
     }
-    if (pushed && !e.state?.sxCard && !wrap.hidden) close(true);
+    if (pushed && !e.state?.sxCard && !wrap.hidden) { lb.hidden = true; close(true); } // 크게 보던 사진도 같이 닫기
   });
   function header(img, title, sub) {
     const h = el("div", "sx-head"), t = el("div", "t");
@@ -263,6 +276,7 @@ window.Social = function Social(ctx) {
     if (ctx.live) {
       if (me && me !== name) {
         const sent = heartsMine.has(name), hb = btn(sent ? `❤ 오늘 보냈어요 · ${n}` : `❤ 칭찬하기 · ${n}`, "heart" + (sent ? " on" : ""), async () => { // 한 사람에게 하루 한 번, 숫자는 오늘 받은 수
+          buzz();
           if ((await call("office_heart", { p_to: name })) === "ok") { heartsMine.add(name); hearts.set(name, n + 1); ctx.onChange?.(); renderPerson(); }
         });
         hb.disabled = sent;
@@ -410,8 +424,8 @@ window.Social = function Social(ctx) {
         if (my !== seq) return;
         markSeen(owner, rows);
         const items = rows.map((r) => {
-          const a = el("article", "sx-post"), meta = el("div", "sx-meta"), t = el("time", null, when(r.created_at));
-          t.dateTime = r.created_at;
+          const a = el("article", "sx-post"), meta = el("div", "sx-meta"), t = el("time", null, ago(r.created_at));
+          t.dateTime = r.created_at; t.title = when(r.created_at);
           if (!owner) { // 피드: 누가 올렸는지 (누르면 그 사람 글로)
             const who = el("button", "sx-who");
             who.type = "button"; who.append(face(r.char), el("b", null, r.char));
@@ -421,7 +435,7 @@ window.Social = function Social(ctx) {
           meta.append(t, el("span", "sp"));
           if (ctx.me()?.char === r.char) meta.append(delBtn(async () => { if ((await call("office_diary_delete", { p_id: r.id })) === "ok") load(true); }));
           a.append(meta);
-          if (r.photo && /^data:image\/(jpeg|png|webp);base64,/.test(r.photo)) { const im = el("img"); im.alt = `${r.char} 님이 올린 사진`; im.loading = "lazy"; im.src = r.photo; a.append(im); }
+          if (r.photo && /^data:image\/(jpeg|png|webp);base64,/.test(r.photo)) { const im = el("img"); im.alt = `${r.char} 님이 올린 사진`; im.loading = "lazy"; im.src = r.photo; im.className = "sx-zoomable"; im.onclick = () => viewPhoto(r.photo, im.alt); a.append(im); }
           if (r.body) a.append(el("p", null, r.body));
           const lk = el("div", "sx-like"), cb = el("div", "sx-cmts"); // 좋아요 · 댓글
           likeBoxes.set(r.id, lk); boxes.set(r.id, cb); owners.set(r.id, r.char); a.append(lk, cb);
@@ -460,7 +474,7 @@ window.Social = function Social(ctx) {
       b.type = "button";
       b.disabled = !me;
       b.title = me ? (on ? "좋아요 취소" : "좋아요") : "로그인하면 누를 수 있어요";
-      b.onclick = async () => { if ((await call("office_diary_like", { p_post: id })) === "ok") loadCmts([id]); };
+      b.onclick = async () => { buzz(); if ((await call("office_diary_like", { p_post: id })) === "ok") loadCmts([id]); };
       const names = who.length ? el("span", "sx-likers", who.length <= 3 ? `${who.join(", ")} 님이 좋아해요` : `${who.slice(0, 2).join(", ")} 님 외 ${who.length - 2}명이 좋아해요`) : null;
       if (names) names.title = who.join(", ");
       box.replaceChildren(...[b, names].filter(Boolean));
@@ -469,8 +483,8 @@ window.Social = function Social(ctx) {
       const box = boxes.get(id), me = ctx.me()?.char;
       if (!box) return;
       box.replaceChildren(...cs.map((c) => {
-        const row = el("div", "sx-cmt"), body = el("div", "c"), meta = el("div", "sx-meta"), t = el("time", null, when(c.created_at));
-        t.dateTime = c.created_at;
+        const row = el("div", "sx-cmt"), body = el("div", "c"), meta = el("div", "sx-meta"), t = el("time", null, ago(c.created_at));
+        t.dateTime = c.created_at; t.title = when(c.created_at);
         meta.append(el("b", null, c.from_char), t, el("span", "sp"));
         if (me && (me === c.from_char || me === owners.get(id))) meta.append(delBtn(async () => { if ((await call("office_diary_comment_delete", { p_id: c.id })) === "ok") loadCmts([id]); }));
         body.append(meta, el("p", null, c.body));
@@ -489,6 +503,16 @@ window.Social = function Social(ctx) {
     view.reload = () => load(true);
     load(true);
   }
+  // 사진 크게 보기: 누르면 화면 가득, 아무 데나 누르거나 Esc 로 닫기
+  const lb = el("div", "sx-lightbox");
+  lb.hidden = true;
+  const lbImg = el("img");
+  lb.append(lbImg, Object.assign(el("button", "sx-lbx", "×"), { type: "button", title: "닫기" }));
+  document.body.append(lb);
+  lb.onclick = () => { lb.hidden = true; };
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !lb.hidden) { e.stopImmediatePropagation(); lb.hidden = true; } }, true);
+  function viewPhoto(src, alt) { lbImg.src = src; lbImg.alt = alt; lb.hidden = false; }
+
   // 사진은 올리기 전에 긴 변 1280px · JPEG 로 줄인다 (약 0.45MB 이하가 될 때까지 조금씩 더)
   async function shrink(file) {
     let img = null;
