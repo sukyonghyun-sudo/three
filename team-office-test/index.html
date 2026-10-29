@@ -1512,6 +1512,7 @@ const IN_CLAUDE = !!window.claude?.use;
 const AQUARIUM = !!window.__AQUARIUM || new URLSearchParams(location.search).has("aquarium");
 // 실시간 모드(window.__LIVE = { url, key } — live_config.js / build_artifact.py): 진짜 출퇴근 — 알아서 출퇴근 흉내는 끈다
 const LIVE = window.__LIVE?.url && window.__LIVE?.key ? window.__LIVE : null;
+const TEST_FIRST = !!window.__TEST && new URLSearchParams(location.search).has("first"); // 첫 이용자 체험 판(?first): 로그인 전 · 내 캐릭터 미등록 · 테스트 도우미 없음
 const DEMO = (!!window.__DEMO || AQUARIUM) && !LIVE;
 const DEMO_IN = new Map(); // 이름 → 지금 출근해 있을지 (처음엔 셋 빼고 모두)
 const PERSONAL = new Map(); // 캐릭터 이름 → { on(출근), bubble, leaf }
@@ -1522,7 +1523,7 @@ try { LOCAL = { ...LOCAL, ...JSON.parse(localStorage.getItem(MINE_KEY)) }; } cat
 const saveLocal = () => { try { localStorage.setItem(MINE_KEY, JSON.stringify(LOCAL)); } catch {} };
 // 출근해 있어야 하나: 누른 대로. 아무도 안 누른 캐릭터는 — 파일로 열면(시험) 출근, claude.ai 에선 출근 전
 const wantIn = (m) => DEMO ? DEMO_IN.get(m.name) ?? true : LIVE ? !!PERSONAL.get(m.name)?.on && !AWAY_MODES.has(PERSONAL.get(m.name)?.mode) : PERSONAL.get(m.name)?.on ?? !(ME.shared || ME.pending);
-const canCtl = (m) => LIVE ? !ME.pending && (!!window.__TEST || MY.char === m.name) : !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
+const canCtl = (m) => LIVE ? !ME.pending && ((!!window.__TEST && !TEST_FIRST) || MY.char === m.name) : !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
 if (DEMO) for (const n of [...NAMES].sort(() => Math.random() - 0.5).slice(0, 3)) DEMO_IN.set(n, false);
 
 // 말풍선: 이름표 바로 위, 이름표처럼 화면에서 늘 같은 크기 (이름표 크기 설정을 따른다)
@@ -1775,11 +1776,12 @@ function onRowAct(m, act, r, el) {
 // 다른 PC 에서는 「로그인」으로 비밀번호만. 표: office_people (supabase_setup.sql)
 const LIVE_KEY = "teamOfficeLive";
 let MY = { char: null, pin: null };
-const MY_STORE = window.__TEST ? sessionStorage : localStorage; // 테스트 판: 탭마다 다른 사람으로 로그인 (두 탭으로 서로 대화해 보기)
-try { MY = { ...MY, ...JSON.parse(MY_STORE.getItem(LIVE_KEY)) }; } catch {}
-const saveMy = () => { try { MY_STORE.setItem(LIVE_KEY, JSON.stringify(MY)); } catch {} };
-if (window.__TEST && !MY.char) { MY = { char: "석용현", pin: "0000" }; saveMy(); } // 테스트 판: 처음부터 로그인된 채로
-const PW_CHANGED = !window.__TEST && !!MY.pin && !/^[0-9a-f]{64}$/.test(MY.pin); // 예전 숫자 4자리로 로그인돼 있던 기기
+const MY_STORE = window.__TEST && !TEST_FIRST ? sessionStorage : localStorage; // 테스트 판: 탭마다 다른 사람으로 로그인 (두 탭으로 서로 대화해 보기)
+const MY_KEY = LIVE_KEY + (TEST_FIRST ? "First" : "");
+try { MY = { ...MY, ...JSON.parse(MY_STORE.getItem(MY_KEY)) }; } catch {}
+const saveMy = () => { try { MY_STORE.setItem(MY_KEY, JSON.stringify(MY)); } catch {} };
+if (window.__TEST && !TEST_FIRST && !MY.char) { MY = { char: "석용현", pin: "0000" }; saveMy(); } // 테스트 판: 처음부터 로그인된 채로
+const PW_CHANGED = (!window.__TEST || TEST_FIRST) && !!MY.pin && !/^[0-9a-f]{64}$/.test(MY.pin); // 예전 숫자 4자리로 로그인돼 있던 기기
 if (PW_CHANGED) { MY = { char: null, pin: null }; saveMy(); }
 // 대화 열쇠: 서버에 잠가 둔 것을 비밀번호로 풀어 이 기기에 두고, 없으면 새로 만들어 잠가서 올린다
 async function setupDmKey(char, auth, wrap) {
@@ -1806,7 +1808,7 @@ const DM_KEYS = { // social.js 가 쓰는 것: 이 기기의 내 대화 열쇠 /
     let s = await DMCrypt.saved(MY.char);
     const pub = await myPub(MY.char);
     if (s && pub && s.pub !== pub) s = null; // 다른 기기에서 열쇠를 새로 만들었으면 이 기기 것은 낡음
-    if (!s && window.__TEST) { const { wrap } = await DMCrypt.fromPassword(MY.char, window.__TEST_PW); await setupDmKey(MY.char, MY.pin, wrap); s = await DMCrypt.saved(MY.char); }
+    if (!s && window.__TEST && !TEST_FIRST) { const { wrap } = await DMCrypt.fromPassword(MY.char, window.__TEST_PW); await setupDmKey(MY.char, MY.pin, wrap); s = await DMCrypt.saved(MY.char); }
     return s || null;
   },
   async unlock(pw) {
@@ -1879,7 +1881,7 @@ function renderLiveRows() {
     if (canCtl(m)) {
       html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
         `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button>`;
-      side = window.__TEST ? `<button class="btn${MY.char === m.name ? " on" : ""}" data-act="as" title="테스트: 이 사람으로 쓰고 대화해 보기">${MY.char === m.name ? "지금 나" : "이 사람으로"}</button>`
+      side = window.__TEST && !TEST_FIRST ? `<button class="btn${MY.char === m.name ? " on" : ""}" data-act="as" title="테스트: 이 사람으로 쓰고 대화해 보기">${MY.char === m.name ? "지금 나" : "이 사람으로"}</button>`
         : `<button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`;
     } else if (!ME.pending && !MY.char) html = PERSONAL.has(m.name) ? `<button class="btn" data-act="login">로그인</button>` : `<button class="btn" data-act="claim">나예요</button>`;
     if (r.acts.innerHTML !== html) r.acts.innerHTML = html;
@@ -1922,7 +1924,7 @@ async function onLiveAct(m, act, r) {
     return;
   }
   if (!canCtl(m)) return;
-  const who = window.__TEST ? { p_char: m.name, p_pin: "0000" } : { p_char: MY.char, p_pin: MY.pin }; // 테스트 판: 누른 줄의 사람으로
+  const who = window.__TEST && !TEST_FIRST ? { p_char: m.name, p_pin: "0000" } : { p_char: MY.char, p_pin: MY.pin }; // 테스트 판: 누른 줄의 사람으로
   const set = async (args, ok) => { const res = await liveCall("office_set", { ...who, ...args }, ok); if (res === "bad_pin" || res === "no_char") { MY = { char: null, pin: null }; saveMy(); renderMine(); } };
   if (act === "in") set({ p_on: true }, "출근했어요");
   else if (act === "out") set({ p_on: false }, "퇴근했어요");
@@ -2276,10 +2278,16 @@ window.__social = window.Social ? window.Social({
   diary: DIARY, snackAdmin: SNACK_ADMIN, modes: MODES, names: crew.map((m) => m.name), hud: document.querySelector(".hud"),
   people: (n) => PERSONAL.get(n) || {},
   patchPerson: (n, patch) => { PERSONAL.set(n, { ...(PERSONAL.get(n) || {}), ...patch }); renderMine(); },
-  test: !!window.__TEST, switchTo: (n) => testAs(n), dmKeys: DM_KEYS,
+  test: !!window.__TEST && !TEST_FIRST, switchTo: (n) => testAs(n), dmKeys: DM_KEYS,
   openList: () => { setList(true); meSay("내 이름 줄에서 「나예요」(처음 한 번) 또는 「로그인」을 눌러 주세요"); },
 }) : null;
-if (window.__TEST) { // 테스트 판 안내 (목록 맨 위)
+if (TEST_FIRST) { // 첫 이용자 체험 판 안내 (목록 맨 위)
+  const n = document.createElement("div");
+  n.className = "testnote";
+  n.innerHTML = "🧪 <b>첫 이용자 체험 판</b> · 이 브라우저에만 저장 <button type=button data-reset>처음 상태로</button><details><summary>사용법</summary>처음 온 사람처럼 시작해요. 사원 목록의 「석용현」 줄에서 「나예요」를 누르고 비밀번호(8자 이상)를 정해 보세요. 다른 사람들은 이미 등록된 상태예요. <a href='./'>모두 로그인된 테스트 판으로</a></details>";
+  n.querySelector("[data-reset]").onclick = () => { try { localStorage.removeItem("teamOfficeTestDbFirst"); localStorage.removeItem("teamOfficeLiveFirst"); localStorage.removeItem(GUIDE_KEY); sessionStorage.clear(); indexedDB.deleteDatabase("teamOfficeKeysTest"); } catch {} setTimeout(() => location.reload(), 150); };
+  document.querySelector("#panel header").prepend(n);
+} else if (window.__TEST) { // 테스트 판 안내 (목록 맨 위)
   const n = document.createElement("div");
   n.className = "testnote";
   n.innerHTML = "🧪 <b>테스트 판</b> · 이 브라우저에만 저장 <button type=button data-reset>처음 상태로</button><details><summary>사용법</summary>모두 로그인된 상태예요. 위쪽 「🧪 나」나 줄마다 「이 사람으로」를 누르면 그 사람이 돼서 글·하트·대화를 해 볼 수 있어요. 대화방의 「상대로 답장」으로 양쪽을 번갈아 써 보세요.</details>";
@@ -2953,10 +2961,20 @@ window.__chaos = CHAOS; // 점검용
 const clock = new THREE.Clock();
 if (WHO) select(WHO);
 renderer.shadowMap.needsUpdate = true;
+// 화면 바깥 여백(아이폰 주소창 아래·홈 막대 둘레)과 상태 막대 색을 장면 맨 아래·맨 위 색으로 — 1초에 한 번 1점씩만 읽는다
+const EDGE = { t: 0, px: new Uint8Array(4), bottom: "", top: "" }, themeMeta = document.querySelector('meta[name="theme-color"]');
+function edgeColors() {
+  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
+  const at = (y) => { gl.readPixels(w >> 1, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, EDGE.px); return `rgb(${EDGE.px[0]},${EDGE.px[1]},${EDGE.px[2]})`; };
+  const b = at(0), t = at(h - 1);
+  if (b !== EDGE.bottom) { EDGE.bottom = b; document.documentElement.style.backgroundColor = b; document.body.style.backgroundColor = b; }
+  if (t !== EDGE.top) { EDGE.top = t; themeMeta?.setAttribute("content", t); }
+}
 function frameLoop() { // 위젯 창으로 옮기면 그 창의 그리기 주기가 부른다
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
   step(dt);
   renderer.render(scene, camera);
+  if ((EDGE.t += raw) > 1 && !pipWin) { EDGE.t = 0; edgeColors(); } // 그린 바로 뒤라 화면 그림이 남아 있다
   atlasLive = true;
   pf++; pacc += raw;
   if (pacc > 1) {

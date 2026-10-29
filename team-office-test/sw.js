@@ -2,7 +2,7 @@
 // - 모델·얼굴·three.js 같은 큰 파일: 기기에 있으면 바로 (ASSETS 가 바뀔 때만 새로 받는다)
 // - 페이지·스크립트: 늘 새로 받고, 안 되면(오프라인) 기기에 둔 것
 // - 실시간 저장소(supabase): 손대지 않는다
-const VERSION = "20261029125543", PAGE = "team-office-page-" + VERSION, ASSETS = "team-office-assets-47d92a5f9674";
+const VERSION = "20261029130915", PAGE = "team-office-page-" + VERSION, ASSETS = "team-office-assets-47d92a5f9674";
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil((async () => {
   for (const k of await caches.keys()) if (k.startsWith("team-office-") && k !== PAGE && k !== ASSETS) await caches.delete(k);
@@ -22,7 +22,7 @@ self.addEventListener("fetch", (e) => {
     }));
     return;
   }
-  e.respondWith(fetch(req).then((r) => {
+  e.respondWith(fetch(req, { cache: "no-cache" }).then((r) => { // 늘 새 판인지 확인 (GitHub 가 10분 저장해 두는 예전 판 말고)
     if (r.ok) { const copy = r.clone(); caches.open(PAGE).then((c) => c.put(req, copy)); }
     return r;
   }).catch(async () => (await caches.match(req)) || (req.mode === "navigate" ? caches.match("./") : Response.error())));

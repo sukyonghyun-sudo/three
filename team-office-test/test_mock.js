@@ -2,7 +2,9 @@
 // 모두 출근한 상태로 시작, 아무 이름이나 「로그인」 + 아무 숫자 4자리. 탭 두 개면 서로 다른 사람으로 1:1 대화를 주고받을 수 있다
 // 규칙(글자 수·하루 한 번·링크 모양)은 supabase_setup.sql / supabase_social.sql / supabase_more.sql 함수와 같게
 (() => {
-  const KEY = "teamOfficeTestDb", VER = 7;
+  const FIRST = new URLSearchParams(location.search).has("first"); // 첫 이용자 체험 판: 나(석용현)는 아직 등록 전
+  const ME_NEW = "석용현";
+  const KEY = FIRST ? "teamOfficeTestDbFirst" : "teamOfficeTestDb", VER = 7;
   const NAMES = window.__TEST_NAMES || [];
   window.__TEST_PW = "우리팀테스트비번"; // 테스트 판: 모두 이 비밀번호로 대화 열쇠를 만들어 둔다 (dmcrypt.js)
   const now = () => new Date().toISOString();
@@ -68,7 +70,21 @@
   const load = () => { try { const d = JSON.parse(localStorage.getItem(KEY)); return d && d.ver === VER ? d : null; } catch { return null; } };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { console.warn("테스트 저장 실패 (사진이 너무 많으면 저장 공간이 찰 수 있어요)", e); } };
   db = load();
-  if (!db) { db = seed(); save(); }
+  if (!db) {
+    db = seed();
+    if (FIRST) { // 처음 온 사람: 내 캐릭터는 표에 없고, 나와 주고받은 대화·내 글도 없다 (남들이 남긴 방명록은 그대로)
+      db.office_people = db.office_people.filter((r) => r.char !== ME_NEW);
+      db.office_dms = db.office_dms.filter((d) => d.from_char !== ME_NEW && d.to_char !== ME_NEW);
+      const mine = new Set(db.office_diary.filter((d) => d.char === ME_NEW).map((d) => d.id));
+      db.office_diary = db.office_diary.filter((d) => !mine.has(d.id));
+      db.office_diary_comments = db.office_diary_comments.filter((c) => !mine.has(c.post_id) && c.from_char !== ME_NEW);
+      db.office_diary_likes = db.office_diary_likes.filter((l) => !mine.has(l.post_id) && l.char !== ME_NEW);
+      db.office_hearts = db.office_hearts.filter((h) => h.from_char !== ME_NEW && h.to_char !== ME_NEW);
+      db.pins = {};
+    }
+    save();
+  }
+  db.pins ||= {}; // 체험 판에서 직접 정한 비밀번호(확인값) — 이 사람은 이 값으로만 로그인
   db.office_pubkeys ||= []; db.office_privs ||= {}; // 대화 열쇠: 공개(모두 보기) · 잠근 비밀 열쇠(본인만)
   // 방문 기록 (이름 없이): 테스트 판은 지난 3주 가짜 방문을 넣어 둔다 — 평일 14~21명, 주말 2~5명
   const kstDay = (ms = Date.now()) => new Date(ms + 9 * 3600e3).toISOString().slice(0, 10);
@@ -98,7 +114,7 @@
       if (!C) return;
       const unlocked = new Map();
       for (const c of NAMES) {
-        if (db.office_pubkeys.some((k) => k.char === c)) continue;
+        if (db.office_pubkeys.some((k) => k.char === c) || (FIRST && c === ME_NEW)) continue;
         const { wrap } = await C.fromPassword(c, window.__TEST_PW), k = await C.newPair(wrap);
         db.office_pubkeys.push({ char: c, pub: k.pub, updated_at: now() }); db.office_privs[c] = k.priv; unlocked.set(c, k.key);
       }
@@ -113,7 +129,7 @@
     })().catch((e) => console.error("테스트 열쇠", e))); // 실패해도 다시 돌지 않게 (무한 반복 막기)
   }
   // 이름이 늘었으면 출근한 사람으로 채운다
-  for (const c of NAMES) if (!db.office_people.some((p) => p.char === c)) db.office_people.push({ char: c, on_duty: true, msg: "", mode: "", birthday: "", updated_at: now() });
+  for (const c of NAMES) if (!(FIRST && c === ME_NEW && !db.pins[c]) && !db.office_people.some((p) => p.char === c)) db.office_people.push({ char: c, on_duty: true, msg: "", mode: "", birthday: "", updated_at: now() });
 
   const subs = [];
   function notify(table, payload) { for (const s of subs) if (s.table === table) try { s.cb(payload || { eventType: "UPDATE", new: {}, old: {} }); } catch (e) { console.error(e); } }
@@ -126,11 +142,23 @@
   });
   // 테스트: 비밀번호는 아무 숫자 4자리
   const pinOk = (p) => /^(\d{4}|[0-9a-f]{64})$/.test(String(p || "")); // 테스트 판: 아무 숫자 4자리 또는 브라우저가 만든 확인값
-  const verify = (c, p) => (!db.office_people.some((r) => r.char === c) ? "no_char" : pinOk(p) ? "ok" : "bad_pin");
+  const verify = (c, p) => (!db.office_people.some((r) => r.char === c) ? "no_char" : db.pins[c] ? (p === db.pins[c] ? "ok" : "bad_pin") : pinOk(p) ? "ok" : "bad_pin");
   const nid = () => db.nextId++;
   const R = {
-    office_claim: ({ p_char, p_pin }) => (/^[0-9a-f]{64}$/.test(String(p_pin || "")) ? "ok" : "bad_input"),
-    office_change_pin: ({ p_char, p_pin, p_new }) => { const v = verify(p_char, p_pin); if (v !== "ok") return v; return /^[0-9a-f]{64}$/.test(String(p_new || "")) ? "ok" : "bad_input"; },
+    office_claim: ({ p_char, p_pin }) => {
+      if (!/^[0-9a-f]{64}$/.test(String(p_pin || ""))) return "bad_input";
+      if (!FIRST) return "ok";
+      if (db.office_people.some((r) => r.char === p_char)) return "taken";
+      db.pins[p_char] = p_pin;
+      db.office_people.push({ char: p_char, on_duty: true, msg: "", mode: "", birthday: "", on_at: now(), updated_at: now() });
+      db.office_pubkeys = db.office_pubkeys.filter((k) => k.char !== p_char); delete db.office_privs[p_char]; // 대화 열쇠는 새 비밀번호로 새로
+      save(); touchPerson(p_char); return "ok";
+    },
+    office_change_pin: ({ p_char, p_pin, p_new }) => {
+      const v = verify(p_char, p_pin); if (v !== "ok") return v;
+      if (!/^[0-9a-f]{64}$/.test(String(p_new || ""))) return "bad_input";
+      db.pins[p_char] = p_new; db.office_pubkeys = db.office_pubkeys.filter((k) => k.char !== p_char); delete db.office_privs[p_char]; save(); return "ok";
+    },
     office_visit: ({ p_vid, p_device, p_login, p_open, p_uses, p_char, p_pin }) => {
       if (!/^[0-9a-z]{8,40}$/.test(String(p_vid || ""))) return "bad_input";
       const day = kstDay(), h = kstHour();
