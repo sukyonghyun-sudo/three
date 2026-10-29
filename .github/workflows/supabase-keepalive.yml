@@ -1,0 +1,20 @@
+# 팀 사무실(우리팀) Supabase 깨워 두기 — 무료 프로젝트는 일주일 동안 아무 요청이 없으면 멈추므로
+# 매일 한 번 출퇴근 표에서 한 줄만 읽는다 (공개용 키만 씀 · 페이지에 이미 공개된 값)
+name: Supabase 깨워 두기
+on:
+  schedule:
+    - cron: "17 0 * * *" # 매일 09:17 (한국 시각)
+  workflow_dispatch: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: 출퇴근 표 한 줄 읽기
+        env:
+          URL: https://jpornxccjdnflhiwpqse.supabase.co
+          KEY: sb_publishable_U-GSIll6EsRzltq_pF_RDg_uhrkwoRK
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$URL/rest/v1/office_people?select=char&limit=1" -H "apikey: $KEY")
+          echo "응답 $code"
+          test "$code" = 200

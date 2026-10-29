@@ -1,0 +1,3038 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="app/icon-192.png">
+<link rel="apple-touch-icon" href="app/apple-touch-icon.png">
+<meta name="theme-color" content="#f2f2f7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="우리팀">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>우리팀</title>
+<style>
+:root{--bg:#ece5da;--panel:#fffdf9;--ink:#23252a;--muted:#70737a;--line:#e5ded3;--work:#2f9e62;--move:#d08a1e;--away:#a3a7ad}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;overflow:hidden}
+#app{display:grid;grid-template-columns:minmax(0,1fr) 300px;position:fixed;inset:0} /* 높이를 계산하지 않고 화면 네 끝에 붙인다 — 아이폰 설치 앱·주소창·홈 막대 때문에 100vh/100dvh 가 모자라 아래가 하얗게 비던 것 */
+html,body{overscroll-behavior:none}
+#stage{position:relative;min-width:0;overflow:hidden}
+#stage canvas{display:block;cursor:grab}
+#stage canvas:active{cursor:grabbing}
+#stage canvas.uilayer{position:absolute;left:0;top:0;pointer-events:none;cursor:default}
+.hud{position:absolute;left:16px;top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.hud h1{margin:0;font-size:18px;font-weight:700}
+.counts{display:flex;gap:6px;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,253,249,.92);border:1px solid var(--line);
+  border-radius:999px;padding:4px 10px;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--away);flex:none}
+.dot.work{background:var(--work)}.dot.move{background:var(--move)}
+.styles{display:flex;gap:4px;background:rgba(255,253,249,.92);border:1px solid var(--line);border-radius:10px;padding:3px}
+.styles a{font-size:12px;padding:4px 10px;border-radius:7px;color:var(--ink);text-decoration:none}
+.styles a.on{background:var(--ink);color:#fff}
+.rep{font-size:12px;color:var(--muted);text-decoration:none;background:rgba(255,253,249,.92);border:1px solid var(--line);border-radius:10px;padding:5px 10px}
+.rep:hover{color:var(--ink)}
+.view{position:absolute;right:12px;bottom:12px;display:flex;gap:6px;align-items:center}
+#perf{font-size:11px;color:var(--muted);background:rgba(255,253,249,.85);border-radius:7px;padding:4px 8px}
+.cams{display:flex;gap:4px;background:rgba(255,253,249,.92);border:1px solid var(--line);border-radius:10px;padding:3px}
+.cams button{border:0;background:none;border-radius:7px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--ink)}
+.cams button:hover{background:#f3eee6}
+.cams button.on{background:var(--ink);color:#fff}
+.note{position:absolute;left:16px;bottom:14px;font-size:12px;color:var(--muted);background:rgba(255,253,249,.9);border:1px solid var(--line);border-radius:9px;padding:6px 10px;max-width:520px;line-height:1.5}
+button{font:inherit}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:7px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+.btn:hover:not(:disabled){border-color:#c9c0b2}
+.btn:disabled{color:#b3b5b9;cursor:default}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+#panel{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+#panel header{padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+#panel h2{margin:0 0 10px;font-size:15px}
+.all{display:flex;gap:6px}
+.switch{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:12px;cursor:pointer;user-select:none}
+.switch input{appearance:none;width:32px;height:18px;border-radius:18px;background:#d6d1c8;position:relative;cursor:pointer;margin:0;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch input:checked{background:var(--work)}
+.switch input:checked::after{transform:translateX(14px)}
+#list{list-style:none;margin:0;padding:6px 8px;overflow:auto;overflow-x:hidden;flex:1}
+#list li{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:10px;cursor:pointer}
+#list li:hover,#list li.sel{background:#f3eee6}
+#list img{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:50% 40%;background:#efe1d6;flex:none}
+.who{flex:1;min-width:0}
+.who b{display:block;font-size:13px}
+.who span{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-top:2px;min-width:0}
+.who em{flex:none}
+.who small{display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#1f8f43;font-weight:600} /* 직접 쓴 상태 메시지: 상태 아래 한 줄 */
+.who small:empty{display:none}
+#list .btn{padding:5px 10px;font-size:12px;min-width:52px}
+#list li{flex-wrap:wrap}
+#list .acts,#list .more{display:flex;gap:4px;flex-basis:100%;padding-left:46px}
+#list .acts[hidden],#list .more[hidden]{display:none}
+#list .acts .btn,#list .more .btn{padding:4px 9px;min-width:0;white-space:nowrap}
+#list .acts{flex-wrap:nowrap} /* 출근·퇴근·상태 메시지는 한 줄로 */
+#list .side{flex:none;display:flex;gap:4px}
+#list .side .btn{padding:4px 10px;min-width:0;white-space:nowrap}
+#list .btn.on{background:var(--work);border-color:var(--work);color:#fff}
+#list .more input{flex:1;width:0;min-width:0;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--panel);color:var(--ink)}
+#panel.edit #list .acts,#panel.edit #list .more{display:none}
+.mode{margin:8px 0 0;font-size:12px;color:var(--muted);line-height:1.5}
+#panel header>.msg{font-size:12px;color:var(--work);margin-top:4px;min-height:0}
+#panel header>.msg.warn{color:var(--move)}
+.hint{padding:10px 16px 14px;font-size:11px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line)}
+/* 자리 지정 */
+.seatrow{display:flex;gap:6px;margin-top:10px}
+.seatbar{margin-top:12px;padding:10px 12px;border-radius:10px;background:#f3eee6;font-size:12px;line-height:1.5;color:var(--muted)}
+.seatbar p{margin:0 0 8px}
+.seatbar .msg{margin-top:8px;color:var(--work);min-height:1.5em}
+.seatbar .msg.warn{color:var(--move)}
+#list select{display:none;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:var(--panel);color:var(--ink);max-width:118px}
+#panel.edit #list select{display:block}
+#panel.edit #list .btn{display:none}
+#panel.edit #list li.sel{background:#fbe9cf}
+/* 화면 설정 */
+.setrow{display:flex;align-items:center;gap:8px;margin:6px 0;color:var(--ink)}
+.setrow>span{width:64px;flex:none;font-size:12px;color:var(--muted)}
+.setrow input[type=range]{flex:1;accent-color:var(--work)}
+.setrow em{font-style:normal;font-size:11px;width:34px;text-align:right;color:var(--muted)}
+.swatches{display:flex;gap:5px}
+.swatches button{width:22px;height:22px;border-radius:6px;border:1px solid #cfc7ba;cursor:pointer;padding:0}
+.swatches button.on{outline:2px solid var(--ink);outline-offset:1px}
+#floorPick{width:26px;height:24px;border:0;padding:0;background:none;cursor:pointer}
+/* 내 캐릭터 */
+
+#intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(120% 90% at 50% 38%,#ffffff 0%,#eef1f4 72%);transition:opacity .9s ease,visibility .9s}
+#intro.done{opacity:0;visibility:hidden}
+#intro .ttl{text-align:center;transform:translateY(-4vh);animation:ttlIn .9s ease both}
+#intro .ilogo{display:block;width:96px;height:96px;margin:0 auto 18px;border-radius:22px;box-shadow:0 10px 30px rgba(40,150,120,.22)}
+#intro h1{margin:0;font-size:clamp(34px,6vw,68px);font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+#intro p{margin:10px 0 0;font-size:clamp(14px,1.6vw,18px);color:var(--muted);letter-spacing:.3em}
+#intro .lwrap{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%);width:min(520px,72vw);text-align:center}
+#intro .lbar{height:6px;border-radius:6px;background:#e5e5ea;overflow:hidden}
+#intro .lbar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#6fdcb4,#2fb38a);transition:width .35s ease}
+#intro #lmsg{display:block;margin-top:10px;font-size:12px;color:var(--muted)}
+@keyframes ttlIn{from{opacity:0;transform:translateY(-1vh)}to{opacity:1;transform:translateY(-4vh)}}
+#app{transition:opacity .9s ease}
+body.loading #app{opacity:0}
+.listbtn,.pclose{display:none}
+.bgmenu{position:absolute;right:12px;bottom:54px;z-index:9;background:rgba(255,253,249,.97);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.bgmenu[hidden]{display:none}
+.bgmenu button{border:0;background:none;border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;text-align:left;cursor:pointer;color:var(--ink);white-space:nowrap}
+.bgmenu button:hover{background:#f3eee6}
+.bgmenu button.on{background:var(--ink);color:#fff}
+/* 배경: 시점 막대와 성질이 달라 따로 단추 (메뉴는 단추 바로 위로 열림) */
+.bgwrap{position:relative;flex:none;display:flex;margin-right:4px}
+.camwrap{position:relative;display:flex;min-width:0}
+.camsbtn,.morebtn{display:none}
+.camsbtn{align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:0 12px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink);white-space:nowrap}
+.camsbtn::after{content:"";width:6px;height:6px;border:solid currentColor;border-width:0 1.6px 1.6px 0;transform:translateY(-2px) rotate(45deg);opacity:.55;margin-left:2px}
+.camwrap.open .camsbtn::after{transform:translateY(2px) rotate(-135deg)}
+/* 세로 휴대폰 위쪽 「⋯」 메뉴 */
+.hudmore{position:absolute;z-index:9;right:calc(10px + env(safe-area-inset-right));top:calc(54px + env(safe-area-inset-top));min-width:200px;background:rgba(249,249,251,.94);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:2px}
+.hudmore[hidden]{display:none}
+.hudmore button{display:flex;align-items:center;gap:10px;border:0;background:none;border-radius:9px;padding:10px 12px;font:inherit;font-size:14px;font-weight:500;color:var(--ink);text-align:left;cursor:pointer;min-height:42px}
+.hudmore button:active{background:rgba(118,118,128,.14)}
+.hudmore .sw{margin-left:auto;width:34px;height:20px;border-radius:20px;background:#e5e5ea;position:relative;flex:none;transition:background .2s}
+.hudmore .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.28);transition:transform .2s}
+.hudmore .sw.on{background:var(--work,#34c759)}
+.hudmore .sw.on::after{transform:translateX(14px)}
+@media (max-width:600px){ /* 세로 휴대폰: 위쪽은 한 줄 — 자주 쓰는 것만, 나머지는 「⋯」 */
+  .hud .morebtn{order:99}
+  .hud{flex-wrap:nowrap}
+  .hud .cx-toggle,.hud .cx-gear,.hud .installbtn,.hud .statsbtn{display:none!important}
+  .hud .counts .chip:nth-child(n+2){display:none}
+  .hud .morebtn{display:inline-flex;justify-content:center;margin-left:auto}
+  .hud .testme>span{display:none}
+  .hud .testme select{max-width:76px}
+}
+.bgwrap .bgmenu{right:auto;left:0;bottom:calc(100% + 8px)}
+.bgbtn{display:inline-flex;align-items:center;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:0 11px;font-size:12px;cursor:pointer;color:var(--ink);white-space:nowrap}
+.testnote{background:#fff4d6;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.55;margin-bottom:10px;color:#6b4f10}
+.testme{display:inline-flex;align-items:center;gap:2px;background:#fff4d6;border:1px solid #efd28a;border-radius:10px;padding:3px 4px 3px 9px;font-size:12px;color:#6b4f10}
+.testme select{font:inherit;font-size:12px;font-weight:700;border:0;background:none;color:inherit;cursor:pointer}
+.testnote details{margin-top:4px}
+.testnote summary{cursor:pointer;color:var(--blue,#007aff);font-weight:600;list-style:none}
+.testnote summary::-webkit-details-marker{display:none}
+.testnote button{border:0;background:none;color:#2f6fe4;font:inherit;font-size:12px;padding:0;cursor:pointer;text-decoration:underline}
+.pipph{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:14px;line-height:1.6}
+body.pip{margin:0;height:100vh;overflow:hidden;background:var(--bg)}
+body.pip #stage{width:100vw;height:100vh}
+body.pip .hud button,body.pip .listbtn,body.pip .bgwrap,body.pip .pinbtn{display:none}
+/* 위에 띄운 작은 창: 사무실과 근무 수만 (단추 모양 규칙보다 우선) · 글씨는 3D 화면에 같이 그린다 */
+html body.pip .hud>:not(.counts),html body.pip .view,html body.pip .pinbtn,html body.pip canvas.uilayer,html body.pip .sx-toast,html body.pip .cx-banner{display:none!important}
+.pinbtn{position:absolute;right:12px;top:12px;z-index:6}
+.hud{max-width:calc(100% - 170px)}
+/* 휴대폰·좁은 창: 사무실을 화면 가득, 사람 목록은 버튼으로 접고 편다 (세로: 아래에서 올라옴 · 가로: 오른쪽에서 나옴) */
+@media (max-width:820px),(max-height:520px){
+  #app{grid-template-columns:minmax(0,1fr)}
+  #panel{position:absolute;z-index:8;left:0;right:0;bottom:0;height:min(62%,560px);border:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+    box-shadow:0 -8px 28px rgba(0,0,0,.16);transform:translateY(104%);visibility:hidden;transition:transform .3s ease,visibility 0s .3s}
+  #app.list-open #panel{transform:none;visibility:visible;transition:transform .3s ease}
+  #panel header{position:relative;padding:44px 14px 10px}
+  #panel header::before{content:"";position:absolute;left:50%;top:8px;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:rgba(60,60,67,.25)}
+  .pclose{display:block;position:absolute;right:12px;top:10px;padding:5px 12px;font-size:12.5px}
+  .listbtn{display:inline-flex;align-items:center;flex:none;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:6px 11px;font-size:12px;cursor:pointer;color:var(--ink)}
+  #app.aq-wide .listbtn{display:none}
+  .hud{left:calc(10px + env(safe-area-inset-left));right:calc(10px + env(safe-area-inset-right));top:calc(10px + env(safe-area-inset-top));gap:6px 8px;pointer-events:none}
+  .hud>*{pointer-events:auto}
+  .hud h1{display:none}
+  .hud .lbl{display:none} /* 휴대폰: 위쪽 단추·칩은 아이콘·숫자만 */
+  .hud{max-width:none}
+  .testme select{max-width:84px}
+  .chip{padding:3px 8px;font-size:11px}
+  .view{left:calc(10px + env(safe-area-inset-left));right:calc(10px + env(safe-area-inset-right));bottom:calc(10px + env(safe-area-inset-bottom));pointer-events:none}
+  /* 시점 막대: 「🎥 지금 시점」 하나로 접고, 누르면 위로 세로 목록 */
+  .camwrap{margin-left:auto}
+  .camsbtn{display:inline-flex}
+  .camwrap .cams{display:none}
+  .camwrap.open .cams{display:flex;position:absolute;right:0;bottom:calc(100% + 8px);flex-direction:column;gap:2px;padding:6px;min-width:150px;overflow:visible;z-index:9}
+  .camwrap.open .cams button{text-align:left;padding:9px 12px;font-size:13.5px}
+  #panel{padding-bottom:env(safe-area-inset-bottom);bottom:var(--kb,0px)} /* --kb: 아이폰 키보드 높이 (입력칸이 가리지 않게) */
+  .view>*{pointer-events:auto}
+  .cams{min-width:0;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+  .cams::-webkit-scrollbar{display:none}
+  .cams button{flex:none;padding:5px 9px}
+}
+@media (max-width:820px) and (orientation:landscape),(max-height:520px) and (orientation:landscape){
+  #panel{left:auto;top:0;height:auto;width:calc(min(320px,52%) + env(safe-area-inset-right));padding-right:env(safe-area-inset-right);padding-bottom:0;border-top:0;border-left:1px solid var(--line);border-radius:16px 0 0 16px;
+    box-shadow:-8px 0 28px rgba(0,0,0,.16);transform:translateX(104%)}
+}
+.iohelp{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.3);display:flex;align-items:flex-end;justify-content:center;padding:0 10px calc(10px + env(safe-area-inset-bottom))}
+.iohelp[hidden]{display:none}
+.iocard{background:#fff;border-radius:16px;padding:18px 18px 14px;width:min(420px,100%);box-shadow:0 20px 50px rgba(0,0,0,.25);font-size:14px;line-height:1.55}
+.iocard>b{font-size:16px}
+.iocard ol{margin:10px 0 14px;padding-left:20px}
+.iocard li{margin:6px 0}
+.ioshare{display:inline-flex;align-items:center;gap:4px;color:#007aff;font-weight:600}
+.ioshare i{display:inline-block;width:12px;height:14px;border:2px solid #007aff;border-top:0;border-radius:0 0 3px 3px;position:relative;margin-top:4px}
+.ioshare i::before{content:"";position:absolute;left:3px;top:-8px;width:2px;height:11px;background:#007aff}
+.ioshare i::after{content:"";position:absolute;left:1px;top:-9px;width:6px;height:6px;border-left:2px solid #007aff;border-top:2px solid #007aff;transform:rotate(45deg)}
+.iocard .btn{width:100%;height:42px}
+/* 키보드로 움직일 때만 파란 테두리 (마우스·손가락엔 안 보임) */
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid #007aff;outline-offset:2px}
+/* ───── 아이폰 느낌 (10-28): 떠 있는 단추는 반투명 유리 알약, 목록·창은 흰 카드 + 머리카락 선, 파란 글자 단추 ───── */
+html,body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+:root{--bg:#eef1f4;--ink:#1c1c1e;--muted:#8e8e93;--line:rgba(60,60,67,.16);--work:#34c759;--move:#ff9f0a;--away:#aeaeb2;--blue:#007aff;--glass:rgba(255,255,255,.74)}
+html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme,html body .pinbtn{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  border:.5px solid rgba(0,0,0,.08);box-shadow:0 1px 1px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.08);border-radius:999px;color:var(--ink);font-weight:600;font-size:13px;padding:7px 13px;line-height:1.2}
+html body .chip{padding:6px 11px;font-size:12.5px}
+html body .sx-hb:active,html body .cx-btn:active,html body .listbtn:active,html body .btn:active,html body .cams button:active{transform:scale(.96)}
+html body .sx-hb:hover,html body .cx-btn:hover,html body .listbtn:hover{background:rgba(255,255,255,.9)}
+html body .cx-btn.dark{background:var(--ink);color:#fff}
+html body .cx-gear{padding:7px 10px;margin-left:-4px}
+html body .cx-toggle b{font-size:0;width:34px;height:20px;border-radius:20px;background:#e5e5ea;position:relative;display:inline-block;vertical-align:-5px;margin-left:8px;padding:0;transition:background .2s}
+html body .cx-toggle b::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.28);transition:transform .2s}
+html body .cx-toggle.on b{background:var(--work)}
+html body .cx-toggle.on b::after{transform:translateX(14px)}
+html body .cams{background:rgba(255,255,255,.62);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:.5px solid rgba(0,0,0,.08);border-radius:12px;padding:3px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+html body .cams button{border-radius:9px;padding:6px 11px;font-size:12.5px;font-weight:600;color:#3a3a3c}
+html body .cams button:hover{background:rgba(255,255,255,.55)}
+html body .cams button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+html body .bgmenu{background:rgba(249,249,251,.9);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.18)}
+html body .bgmenu button{border-radius:9px;font-weight:500}
+html body .bgmenu button.on{background:var(--blue);color:#fff}
+html body .btn{border:0;background:rgba(118,118,128,.12);color:var(--blue);border-radius:999px;font-weight:600;padding:7px 14px}
+html body .btn:hover:not(:disabled){background:rgba(118,118,128,.2)}
+html body .btn.dark{background:var(--blue);color:#fff}
+html body .btn.dark:hover:not(:disabled){background:#0a6fe0}
+html body .btn:disabled{color:#c7c7cc;background:rgba(118,118,128,.07)}
+html body #list .btn{padding:5px 11px}
+html body #list .acts{gap:6px;margin-top:8px}
+html body #list .more{gap:6px;margin-top:8px}
+html body .hud{gap:8px}
+html body #list .btn.on{background:var(--work);color:#fff}
+html body #panel{background:#f2f2f7;border-left:.5px solid rgba(60,60,67,.22)}
+html body #panel header{border-bottom:0;padding-bottom:6px}
+html body #panel h2{font-size:20px;font-weight:700;letter-spacing:-.02em}
+html body #list{background:#fff;margin:4px 12px 10px;border-radius:12px;padding:0}
+html body #list li{border-radius:0;padding:10px 12px;border-bottom:.5px solid rgba(60,60,67,.13)}
+html body #list li:last-child{border-bottom:0}
+html body #list li:hover,html body #list li.sel{background:#f7f7fa}
+html body #list .more input{border:0;background:rgba(118,118,128,.12);border-radius:999px;padding:6px 12px}
+html body .testnote{background:#fff;border-radius:12px;color:#3a3a3c;border:.5px solid rgba(60,60,67,.13)}
+html body .testnote button{color:var(--blue);text-decoration:none;font-weight:600}
+html body .hint{border-top:0;color:var(--muted)}
+html body .testme{gap:7px;padding-left:12px;padding-right:8px}
+html body .testme>span{color:var(--muted)}
+html body .testme select{color:var(--ink)}
+html body .sx-wrap{background:rgba(0,0,0,.28)}
+html body .sx-card{background:#f2f2f7;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
+html body .sx-head{background:#fff;border-bottom:.5px solid rgba(60,60,67,.18)}
+html body .sx-x{width:30px;height:30px;border-radius:50%;background:rgba(118,118,128,.12);font-size:20px;line-height:30px;color:#8e8e93;padding:0;text-align:center;flex:none}
+html body .sx-tabs{background:rgba(118,118,128,.12);border-radius:9px;margin:10px 16px 0;padding:2px;border-bottom:0;gap:2px}
+html body .sx-tabs button{flex:1;border-radius:7px;padding:6px 8px;border-bottom:0;margin:0;color:var(--ink);font-weight:600;font-size:13px}
+html body .sx-tabs button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+html body .sx-acts .btn.heart{color:#ff2d55}
+html body .sx-acts .btn.heart.on{background:#ffe3ea}
+html body .sx-note .c,html body .sx-post,html body .sx-snack,html body .sx-person,html body .sx-inbox li,html body .sx-opt,html body .sx-gate,html body .sx-chip{background:#fff;border:0}
+html body .sx-post{border-radius:14px}
+html body .sx-opt.on{box-shadow:0 0 0 2px var(--work) inset}
+html body .sx-chip.on{background:var(--blue);color:#fff}
+html body .sx-compose textarea,html body .sx-compose input[type=text],html body .sx-compose select{border:0;background:#fff;border-radius:10px}
+html body .sx-chat{background:#fff}
+html body .sx-m{background:#e9e9eb;color:#000;border-radius:18px;box-shadow:none}
+html body .sx-m.me{background:var(--blue);color:#fff;border-radius:18px}
+html body .sx-foot{background:#f9f9f9;border-top:.5px solid rgba(60,60,67,.18)}
+html body .sx-foot textarea{border:.5px solid rgba(60,60,67,.25);border-radius:18px;background:#fff;padding:8px 13px}
+html body .sx-bday{background:#fff4dc}
+html body .sx-body{padding:16px 16px 20px}
+html body .sx-h{margin:22px 0 10px;font-size:12.5px;font-weight:600;color:#6c6c70}
+html body .sx-h:first-child{margin-top:2px}
+html body .sx-hint{font-size:12px;line-height:1.55;margin-top:10px;color:var(--muted)}
+html body .sx-chips{gap:8px}
+html body .sx-chip{padding:8px 14px;font-weight:600}
+html body .sx-compose{gap:10px}
+html body .sx-row{gap:8px}
+html body .sx-compose select{height:36px;padding:0 10px}
+html body .sx-compose .btn,html body .sx-row .btn{height:36px;padding:0 16px}
+html body .sx-msg{margin-top:10px;font-size:12.5px}
+html body .sx-acts{gap:8px;padding:12px 16px 2px}
+html body .sx-list{gap:12px}
+html body .sx-gate{padding:12px 14px;line-height:1.6}
+html body .sx-gate .btn{margin-top:10px}
+html body .cx-menu{background:rgba(249,249,251,.94);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+html body .cx-grid button{border:0;background:#fff;border-radius:12px}
+html body .cx-x{position:absolute;right:10px;top:10px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(118,118,128,.12);font-size:20px;line-height:30px;color:#8e8e93;cursor:pointer;padding:0}
+/* 위쪽 줄: 칩·단추를 모두 같은 높이로 (10-29 — 어항 모드 단추만 스위치 때문에 두꺼웠음) */
+html body .hud .chip,html body .hud .sx-hb,html body .hud .cx-btn,html body .hud .testme,html body .pinbtn{box-sizing:border-box;height:32px;min-height:0;display:inline-flex;align-items:center;padding-top:0;padding-bottom:0}
+html body .hud .cx-gear{width:32px;padding:0;justify-content:center}
+html body .pinbtn{position:absolute;right:12px;top:12px;z-index:6} /* social.js 의 .sx-hb{position:relative} 가 덮어써 화면 밖으로 밀려나던 것 */
+html body .cx-toggle b{width:30px;height:18px;margin-left:8px;vertical-align:middle}
+html body .cx-toggle b::after{width:14px;height:14px}
+html body .cx-toggle.on b::after{transform:translateX(12px)}
+/* 아래 줄: 사원 목록 · 배경 단추는 시점 막대와 같은 높이 */
+html body .view{align-items:stretch}
+html body .bgbtn,html body .camsbtn{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:.5px solid rgba(0,0,0,.08);box-shadow:0 6px 18px rgba(0,0,0,.08);border-radius:12px;font-weight:600;font-size:12.5px;padding:0 13px;color:var(--ink)}
+html body .bgbtn:hover,html body .camsbtn:hover{background:rgba(255,255,255,.9)}
+html body .bgbtn.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14),0 6px 18px rgba(0,0,0,.08)}
+html body .view .listbtn{border-radius:12px;padding-top:0;padding-bottom:0}
+html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 */
+@media (max-width:600px){html body .hud .morebtn{display:inline-flex;justify-content:center;width:36px;padding:0;font-size:18px;font-weight:700;letter-spacing:.05em}}
+/* 사용 안내 (처음 온 사람에게 한 번 · ❔ 로 다시) */
+.guide{position:fixed;inset:0;z-index:46;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;padding:20px;animation:gdIn .3s ease}
+@keyframes gdIn{from{opacity:0}to{opacity:1}}
+.guide .gcard{width:min(760px,100%);max-height:100%;overflow:auto;border-radius:22px;padding:28px 28px 22px;word-break:keep-all;
+  background:radial-gradient(120% 70% at 0% 0%,#e3f4ee 0%,rgba(227,244,238,0) 60%),radial-gradient(90% 60% at 100% 100%,#e6eef9 0%,rgba(230,238,249,0) 60%),#f5f7f9;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.guide header{display:flex;align-items:center;gap:16px}
+.guide header img{width:64px;height:64px;border-radius:15px;box-shadow:0 8px 20px rgba(31,157,85,.22)}
+.guide h2{margin:0;font-size:28px;font-weight:800;letter-spacing:-.03em}
+.guide header p{margin:3px 0 0;font-size:14px;color:#5f6368}
+.guide .rule{margin-top:18px;background:#fff;border-radius:18px;padding:16px 18px;border:2px solid #3fbf73;display:flex;gap:14px;align-items:center}
+.guide .rule .em{font-size:36px;line-height:1}
+.guide .rule b{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.guide .rule span{display:block;font-size:14.5px;color:#5f6368;margin-top:4px;line-height:1.5}
+.guide .rule strong{color:#d1372f}
+.guide .steps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.guide .st{background:#fff;border-radius:16px;padding:14px 14px;display:flex;gap:12px;align-items:flex-start}
+.guide .st .ic{flex:none;position:relative;width:42px;height:42px;border-radius:12px;background:#f1f3f6;display:flex;align-items:center;justify-content:center;font-size:22px}
+.guide .st .ic i{position:absolute;left:-6px;top:-6px;width:20px;height:20px;border-radius:50%;background:#1c1c1e;color:#fff;font-style:normal;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.guide .st b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.01em}
+.guide .st span{display:block;font-size:13.5px;color:#5f6368;margin-top:3px;line-height:1.5}
+.guide .st em{font-style:normal;font-weight:700;color:#1c1c1e;background:#f1f3f6;border-radius:6px;padding:0 5px}
+.guide .app{margin-top:12px;background:#1c1c1e;color:#fff;border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.guide .app .ic{font-size:24px}
+.guide .app b{display:block;font-size:15px;font-weight:800}
+.guide .app span{display:block;font-size:13px;color:rgba(255,255,255,.75);margin-top:2px;line-height:1.45}
+.guide .foot{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:12px;font-size:12px;color:#8e8e93}
+.guide .go{display:block;width:100%;height:48px;margin-top:16px;border:0;border-radius:14px;background:#34c759;color:#fff;font:inherit;font-size:17px;font-weight:800;cursor:pointer}
+.guide .go:active{transform:scale(.98)}
+@media (max-width:600px){.guide{padding:0;align-items:flex-end}.guide .gcard{border-radius:20px 20px 0 0;padding:22px 16px calc(16px + env(safe-area-inset-bottom));max-height:94%}.guide .steps{grid-template-columns:1fr}.guide h2{font-size:24px}}
+@media (max-height:520px){.guide .gcard{max-height:100%}.guide .steps{grid-template-columns:1fr 1fr 1fr}}
+.hint .guidebtn{border:0;background:none;padding:0;font:inherit;font-size:inherit;color:var(--blue,#007aff);font-weight:600;cursor:pointer}
+/* 휴대폰: 입력칸 글자를 16px 로 — 아이폰은 16px 보다 작은 칸을 누르면 화면을 저절로 확대해서 창이 화면 밖으로 밀려났음 */
+@media (pointer:coarse){input,textarea,select{font-size:16px!important}}
+[hidden]{display:none!important} /* 숨긴 것은 어떤 단추 모양 규칙보다 우선 */
+/* 손가락 기기: 누르는 곳을 넉넉히 (아이폰 권장 44pt 에 가깝게) */
+@media (pointer:coarse){html body .sx-hb,html body .cx-btn,html body .listbtn,html body .chip,html body .testme{min-height:36px;display:inline-flex;align-items:center}
+  html body .hud .chip,html body .hud .sx-hb,html body .hud .cx-btn,html body .hud .testme,html body .pinbtn{height:36px}html body .hud .cx-gear{width:36px}html body .bgbtn,html body .camsbtn{min-height:36px}
+  html body .cams button{min-height:34px}html body #list .btn{min-height:32px}html body .sx-x{width:34px;height:34px;line-height:34px}
+  html body .sx-likebtn,html body .sx-del{min-height:32px}html body .sx-tabs button{min-height:34px}}
+@media (max-width:820px),(max-height:520px){html body .sx-card{border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom)}html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme{padding:6px 10px;font-size:12.5px}}
+</style>
+<script>window.__AQUARIUM = true; window.__PWA = true; window.__LIVE = {"url": "https://jpornxccjdnflhiwpqse.supabase.co", "key": "sb_publishable_U-GSIll6EsRzltq_pF_RDg_uhrkwoRK"};</script>
+<script src="models3d/charlib.js"></script>
+<!-- 저장한 고정석 (자리 지정 → 저장. 서버로 열었을 때 이 파일에 써진다) -->
+<script src="seats.js"></script>
+<script src="screens.js"></script>
+<!-- 어항 모드(?aquarium): 가끔 갑자기 벌어지는 이벤트 26가지 -->
+<script src="chaos.js"></script>
+<!-- 사람 카드(방명록 · SNS 피드 · 하트 · 내 상태) · 1:1 대화 · 간식 신청: 실시간 판에서 읽고 쓴다 -->
+<!-- 1:1 대화 잠금: 비밀번호에서 열쇠를 만들어 브라우저 안에서만 잠그고 연다 (저장소 주인도 못 읽게) -->
+<script src="dmcrypt.js"></script>
+<script src="social.js"></script>
+<!-- 사무실 밖 배경 (기본 · 하늘 · 바다 · 숲): 각자 고르거나 랜덤 -->
+<script src="bg.js"></script>
+<!-- 한아린 책상 둘레에서 노는 고양이 두 마리 -->
+<script src="cats.js"></script>
+<!-- 실시간 날씨 (판교 사옥): 비·눈은 바깥에만, 흐림·안개 분위기, 천둥번개, 빗소리 -->
+<script src="weather.js"></script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+ "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
+</script>
+</head>
+<body class="loading">
+<!-- 시작 화면: 다 읽을 때까지 타이틀 + 로딩바, 끝나면 서서히 사라지며 사무실이 나온다 -->
+<div id="intro">
+  <div class="ttl"><img class="ilogo" src="app/icon-192.png" alt="" onerror="this.remove()"><h1>우리팀</h1><p>팀 사무실</p></div>
+  <div class="lwrap"><div class="lbar"><i id="lfill"></i></div><span id="lmsg">불러오는 중</span></div>
+</div>
+<div id="app">
+  <div id="stage">
+    <div class="hud"><h1>팀 사무실</h1>
+      <div class="counts" id="counts"></div></div>
+    <div class="view"><button class="listbtn" id="listBtn">👥 사원 목록</button><span id="perf" hidden></span><div class="cams" id="cams"></div></div><!-- perf: 점검용 (숨김) -->
+    <div class="note" id="note" hidden></div>
+  </div>
+  <aside id="panel">
+    <header>
+      <button class="btn pclose" id="listClose">접기</button>
+      <h2>사무실 사람들 <span id="total" style="font-weight:400;color:var(--muted);font-size:12px"></span></h2>
+      <p class="mode" id="meNote" hidden></p>
+      <div class="msg" id="meMsg"></div>
+      <!-- 관리 도구: 주소 끝에 ?admin 을 붙여 열 때만 보인다 -->
+      <div id="adminTools" hidden>
+        <div class="seatrow"><button class="btn" id="seatEdit">자리 지정</button><button class="btn" id="viewEdit">화면 설정</button></div>
+      <div class="seatbar" id="viewbar" hidden>
+        <div class="setrow"><span>바닥 색</span><div class="swatches" id="floorSw"></div><input type="color" id="floorPick" title="직접 고르기"></div>
+        <div class="setrow"><span>이름표 크기</span><input type="range" id="labelSize" min="40" max="140" step="5"><em id="labelSizeV"></em></div>
+        <label class="switch"><input type="checkbox" id="labelOn">이름표 보이기</label>
+        <div class="all" style="margin-top:8px"><button class="btn" id="viewReset">기본값</button></div>
+      </div>
+      <div class="seatbar" id="seatbar" hidden>
+        <p>사람을 고른 뒤 사무실 책상을 누르거나, 목록에서 자리 번호를 고르세요. 누가 앉은 자리를 고르면 두 사람 자리가 바뀝니다. 「저장」하면 다음에 열어도 그 자리입니다.</p>
+        <div class="all"><button class="btn dark" id="seatSave">저장</button><button class="btn" id="seatCancel">취소</button><button class="btn" id="seatReset">처음 배치로</button></div>
+        <div class="msg" id="seatMsg"></div>
+      </div>
+      </div>
+    </header>
+    <ul id="list"></ul>
+    <div class="hint"><button type="button" class="guidebtn" id="guideBtn">❔ 사용 안내</button> · <span id="howto">드래그로 돌려 보기 · 휠로 확대 · 사람을 누르면 그 사람 카드</span><br>원효인 님 책상 피규어: 「Chibi Friren :3」 CubeModeller · CC BY 4.0</div>
+  </aside>
+</div>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+const { loadClips, loadCharacter, cutImage, loadGLB } = window.CharLib(THREE, GLTFLoader);
+
+// ───────────── 그림체별 설정 ─────────────
+// 사무실은 한 벌의 코드로 짓고, 그림체마다 바뀌는 것만 여기 모은다.
+// 책상·의자·칸막이 높이는 적지 않는다 — 캐릭터를 불러온 뒤 앉은 자세를 재서 정한다 (머리·몸 비율이 다르면 사무실 비율도 달라진다)
+// 아티팩트: 파일 이름은 번호 (주소에 한글이 들어가지 않게)
+const FILE_ID = {"석용현": "00", "손주용": "01", "김현준": "02", "허지용": "03", "박성현": "04", "송나정": "05", "홍수연": "06", "곡숙진": "07", "김선주": "08", "류진주": "09", "미야모토슈이치로": "10", "박정현": "11", "서현성": "12", "손예현": "13", "오누리": "14", "오세욱": "15", "원효인": "16", "유환": "17", "윤성준": "18", "이홍주": "19", "전혜진": "20", "한아린": "21", "염숭이": "22"};
+const STYLES = {
+  mii: {
+    label: "옛 버전", charH: 1.25, models: (n) => `../models3d/mii/${n}.glb`, all3d: true,
+    round: 2.5, flat: false, seg: 16, roughness: 0.72,
+    // 미: 2D 미 그림처럼 깨끗하게 — 밝은 가구, 옅고 부드러운 그림자, 그림 색이 그대로 나오는 캐릭터
+    pal: { wall: "#f7f6f3", base: "#e3e6e8", door: "#8a94a0", panel: "#dde4e8", cap: "#ffffff", desk: "#ffffff", cabinet: "#e4e8eb", black: "#4a525d", mesh: "#b9c3cb", chair: "#cfd6dc", bin: "#e6eaed", leaf: "#b3d65e", floor: "#efece6", floorLine: "rgba(150,140,128,.14)", bg: "#f1f3f5" },
+    light: { hemi: 1.25, sun: 1.0, sunColor: "#fffaf2", fill: 0.4, env: 0.5, shadowRadius: 12, shadowIntensity: 0.45, tone: THREE.NeutralToneMapping, exposure: 1.0, fog: null },
+    floorGloss: 0.85, charRough: 0.9, charBaked: 0.85,
+  },
+  // 10/26 밤 버전: 3D 원래 텍스처 그대로 + 그때의 사무실 색·조명 (models3d/mii_1026/)
+  mii1026: {
+    label: "기본", charH: 1.25, models: (n) => `models3d/m/${FILE_ID[n]}.glb`, all3d: true, cut: "mii",
+    round: 2.5, flat: false, seg: 16, roughness: 0.72,
+    pal: { wall: "#f6f4f0", base: "#d9dde0", door: "#4b5563", panel: "#cfd9df", cap: "#ffffff", desk: "#ffffff", cabinet: "#d4dade", black: "#2b2f36", mesh: "#4a5563", chair: "#39404a", leaf: "#a7d14a", floor: "#ebe7e0", floorLine: "rgba(150,140,128,.25)", bg: "#eef1f4" },
+    light: { hemi: 0.95, sun: 1.45, sunColor: "#ffffff", fill: 0.45, env: 0.55, shadowRadius: 6, tone: THREE.NeutralToneMapping, exposure: 1.05, fog: null },
+    floorGloss: 0.75, charRough: 0.82,
+  },
+  lowpoly: {
+    label: "로우폴리", charH: 1.75, models: (n) => n === "손주용" ? "../models3d/test/lowpoly_손주용_opt.glb" : null, all3d: false,
+    round: 0, flat: true, seg: 6, roughness: 0.95,
+    pal: { wall: "#e9e6e1", base: "#b9bcbf", door: "#3a3f46", panel: "#b7bdc2", cap: "#e7e8e6", desk: "#ecebe6", cabinet: "#b3b8bc", black: "#24262a", mesh: "#3a3e44", chair: "#2b2e33", leaf: "#9cc743", floor: "#cfd0cf", floorLine: "rgba(90,96,102,.35)", bg: "#dfe3e6" },
+    light: { hemi: 1.1, sun: 1.9, sunColor: "#fff8ee", fill: 0.3, env: 0.12, shadowRadius: 1, tone: THREE.NeutralToneMapping, exposure: 1.0, fog: null },
+    floorGloss: 1.0, charRough: 0.95,
+  },
+  movie: {
+    label: "영화풍", charH: 1.55, models: (n) => n === "손주용" ? "../models3d/test/movie_손주용_opt.glb" : null, all3d: false,
+    round: 1.2, flat: false, seg: 20, roughness: 0.6,
+    pal: { wall: "#f3ede4", base: "#c9c3ba", door: "#3b3631", panel: "#c8c2b8", cap: "#f6f2ea", desk: "#f7f3ec", cabinet: "#cbc4b9", black: "#1f1d1b", mesh: "#35322f", chair: "#2a2725", leaf: "#a9cf4c", floor: "#d8d3cb", floorLine: "rgba(120,110,98,.35)", bg: "#e6ddd0" },
+    light: { hemi: 0.55, sun: 2.5, sunColor: "#ffdfb3", fill: 0.55, env: 0.65, shadowRadius: 4, tone: THREE.ACESFilmicToneMapping, exposure: 1.0, fog: ["#e6ddd0", 26, 60] },
+    floorGloss: 0.22, charRough: 0.7,
+  },
+};
+// 기본 그림체 = 미 어젯밤 (10-27 사용자 결정). 다른 그림체는 ?style= 로만
+const STYLE_KEY = STYLES[new URLSearchParams(location.search).get("style")] ? new URLSearchParams(location.search).get("style") : "mii1026";
+const STY = STYLES[STYLE_KEY];
+document.querySelectorAll(".styles a").forEach((a) => a.classList.toggle("on", a.dataset.s === STYLE_KEY));
+if (!STY.all3d) {
+  const note = document.getElementById("note");
+  note.hidden = false;
+  note.textContent = `${STY.label}: 3D 변환은 시범 1명(손주용)만 — 나머지는 2D 그림을 세워 둔 것. 이 그림체로 정하면 같은 방법으로 22명 3D 변환(약 2.8만 크레딧).`;
+}
+
+// 팀 22명 (Magnific 단체 그림 순서). 자리: 배치도 번호 — 석용현 님 E-84 는 실제, 나머지는 아래쪽 블록에 임시
+const NAMES = ["석용현","손주용","김현준","허지용","박성현","송나정","홍수연","곡숙진","김선주","류진주","미야모토슈이치로",
+  "박정현","서현성","손예현","오누리","오세욱","원효인","유환","윤성준","이홍주","전혜진","한아린"];
+// 고정석 (10-27 사용자가 정한 배치 그대로 — 모두에게 같은 자리)
+const SEAT_OF = {
+  손예현: 91, 유환: 74, 미야모토슈이치로: 80, 박정현: 86, 박성현: 92, 김현준: 75, 오세욱: 81, 홍수연: 87, 오누리: 93,
+  원효인: 64, 한아린: 70, 김선주: 82, 류진주: 94, 곡숙진: 65, 서현성: 71, 손주용: 83, 전혜진: 95,
+  윤성준: 66, 이홍주: 72, 석용현: 84, 허지용: 90, 송나정: 96, 염숭이: 106,
+};
+const FREE = [104, 82, 83, 90, 94, 95, 96, 106, 70, 71, 72, 103, 64, 65, 66];
+// 3D 그림체(오늘·어젯밤)에는 염숭이(원숭이 모습의 직원)도 있다 — 다른 직원과 똑같이 「내 캐릭터」로 고를 수 있다
+if (STYLE_KEY === "mii" || STYLE_KEY === "mii1026") NAMES.push("염숭이");
+
+// ── 배치도: 세로 6줄(A~F), 칸막이를 사이에 둔 두 줄이 등을 맞댄다 (자리 번호 = NK-8-E-번호)
+const COLS = [
+  { key: "A", bar: -5, face: -1, upper: [61, 62, 63], lower: [64, 65, 66, null], aisle: 90 },
+  { key: "B", bar: 193, face: 1, upper: [67, 68, 69], lower: [70, 71, 72, 103], aisle: 90 },
+  { key: "C", bar: 193, face: -1, upper: [73, 74, 75], lower: [76, 77, 78, 104], aisle: 295 },
+  { key: "D", bar: 397, face: 1, upper: [79, 80, 81], lower: [82, 83, 84, 105], aisle: 295 },
+  { key: "E", bar: 397, face: -1, upper: [85, 86, 87], lower: [88, 89, 90, null], aisle: 500 },
+  { key: "F", bar: 602, face: 1, upper: [91, 92, 93], lower: [94, 95, 96, 106], aisle: 500 },
+];
+const ALL_DESKS = COLS.flatMap((c) => [...c.upper, ...c.lower]).filter((n) => n != null).sort((a, b) => a - b);
+// 컴퓨터를 치운 책상 (10-27 사용자 지정): 76·77·78 = 간식 책상, 104 = 빈 책상 — 사람 자리로는 쓰지 않는다
+const NO_PC = new Set([76, 77, 78, 104]), SNACK_DESKS = new Set([76, 77, 78]);
+// 글 탭에 따로 이름을 붙일 사람 (없으면 모두 「📷 일상」) · 간식 목록을 비울 수 있는 사람 (10-28)
+const DIARY = {}; // 따로 이름 붙인 글 탭 (예: { 이름: { icon: "👶", title: "육아일기" } }) — 10-28 사용자: 육아일기 없이 모두 같은 SNS(📷 일상)로
+const SNACK_ADMIN = "석용현";
+// 내 상태 (본인이 사람 카드 「⚙️ 내 상태」에서 고른다): 회의·집중은 머리 위 아이콘, 재택·휴가는 출근해 있어도 사무실 자리를 비운다
+const MODES = { meeting: ["📅", "회의 중"], focus: ["🎧", "집중하는 중"], home: ["🏠", "재택 근무 중"], vacation: ["🌴", "휴가 중"] };
+const AWAY_MODES = new Set(["home", "vacation"]);
+const ALL_SEATS = ALL_DESKS.filter((n) => !NO_PC.has(n));
+
+// ── 고정석: 「자리 지정」에서 바꾸고 저장한 자리 → 없으면 기본 배치(SEAT_OF, 나머지는 FREE 차례로)
+// 저장 위치: 이 브라우저(「저장」) 와 office3d/seats.js (기본으로 쓸 자리 파일). 둘 중 나중에 저장한 쪽을 쓴다
+const SEAT_KEY = "teamOfficeSeats";
+function savedSeats() {
+  let local = null;
+  try { local = JSON.parse(localStorage.getItem(SEAT_KEY)); } catch {}
+  const file = window.__SEATS || null;
+  if (local && file) return (local.saved || "") > (file.saved || "") ? local : file;
+  return local || file;
+}
+const DEFAULT_SEAT = (() => { let k = 0; return NAMES.map((n) => SEAT_OF[n] ?? FREE[k++]); })();
+// 이름 → 자리 번호 표를 사람 순서대로 자리 번호 배열로 (겹치거나 없는 자리는 기본 배치 → 빈자리 순으로)
+function assignSeats(map) {
+  const taken = new Set(), out = NAMES.map(() => null);
+  NAMES.forEach((n, i) => {
+    const no = map?.[n];
+    if (ALL_SEATS.includes(no) && !taken.has(no)) { out[i] = no; taken.add(no); }
+  });
+  NAMES.forEach((n, i) => {
+    if (out[i] != null) return;
+    // 저장한(없으면 기본) 자리가 찼거나 사람 자리가 아니면(간식 책상 등) — 그 자리에서 가장 가까운 빈자리로 (멀리 떨어진 첫 빈자리 말고)
+    const want = map?.[n] ?? DEFAULT_SEAT[i], free = ALL_SEATS.filter((s) => !taken.has(s));
+    const at = deskXY(want);
+    out[i] = free.includes(want) ? want : at ? free.reduce((a, s) => (Math.hypot(...deskXY(s).map((v, k) => v - at[k])) < Math.hypot(...deskXY(a).map((v, k) => v - at[k])) ? s : a)) : free[0];
+    taken.add(out[i]);
+  });
+  return out;
+}
+// 배치도 위 책상 자리 (픽셀 단위, 가까운 빈자리 고를 때만)
+function deskXY(no) {
+  for (const c of COLS) {
+    let i = c.upper.indexOf(no);
+    if (i >= 0) return [c.bar - c.face * 19.5, [71, 148, 225][i]];
+    i = c.lower.indexOf(no);
+    if (i >= 0) return [c.bar - c.face * 19.5, [376, 453, 530, 607][i]];
+  }
+  return null;
+}
+const SAVED = window.__SEATS || null; // 자리는 고정 — 브라우저에 저장해 둔 자리는 쓰지 않는다 (바꾸려면 위 SEAT_OF)
+const SEAT_NO = assignSeats(SAVED?.seats);
+const stage = document.getElementById("stage");
+
+// ───────────── 장면 ─────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+// 화면 해상도: PC 는 최대 1.5배, 휴대폰은 이름·말풍선 글씨가 뿌옇지 않게 최대 2배(아이폰 화면은 3배).
+// 버벅이면 매 프레임 속도를 보고 낮추되(아래 adaptQuality) 휴대폰은 1.5배 밑으로는 안 내린다 — 대신 그림자를 덜 자주
+const PHONE = matchMedia("(pointer: coarse)").matches;
+const DPR_MAX = Math.min(devicePixelRatio, PHONE ? 2 : 1.5), DPR_MIN = Math.min(DPR_MAX, PHONE ? 1.5 : 1);
+let dpr = DPR_MAX;
+renderer.setPixelRatio(dpr);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.autoUpdate = false; // 그림자는 두 프레임에 한 번만 다시 그린다 (step)
+renderer.shadowMap.type = STY.flat ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = STY.light.tone;
+renderer.toneMappingExposure = STY.light.exposure;
+stage.prepend(renderer.domElement);
+// 글씨 층: 이름표·말풍선·머리 위 아이콘은 3D 와 따로 화면 해상도 그대로 그려서, 3D 해상도가 내려가도 늘 또렷하게 (누르기는 아래 3D 화면이 받는다)
+const uiScene = new THREE.Scene();
+const uiRenderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+uiRenderer.setPixelRatio(Math.min(devicePixelRatio, 3));
+uiRenderer.outputColorSpace = renderer.outputColorSpace;
+uiRenderer.setClearColor(0x000000, 0);
+uiRenderer.domElement.className = "uilayer";
+renderer.domElement.after(uiRenderer.domElement);
+uiRenderer.toneMapping = renderer.toneMapping; uiRenderer.toneMappingExposure = renderer.toneMappingExposure; // 글씨 색이 전과 같게
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(STY.pal.bg);
+if (STY.light.fog) scene.fog = new THREE.Fog(...STY.light.fog);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = STY.light.env;
+const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
+const HOME = { pos: new THREE.Vector3(2.4, 15.5, 15.2), target: new THREE.Vector3(-0.2, 0, 0.9) };
+let SCR = 1; // 화면 모양에 따른 글씨 배율 (resize 가 정한다: 휴대폰 세로·가로)
+const labelF = () => (VIEW.label / 100) * SCR;
+camera.position.copy(HOME.pos);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.copy(HOME.target);
+controls.enableDamping = true;
+controls.maxPolarAngle = 1.32;
+controls.minDistance = 2;
+controls.maxDistance = 34;
+
+const hemi = new THREE.HemisphereLight("#ffffff", "#a3a8ad", STY.light.hemi);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(STY.light.sunColor, STY.light.sun);
+sun.position.set(5, 13, 7);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -11, right: 11, top: 11, bottom: -11, near: 1, far: 45 });
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.02;
+sun.shadow.radius = STY.light.shadowRadius;
+sun.shadow.intensity = STY.light.shadowIntensity ?? 1;
+scene.add(sun);
+const fill = new THREE.DirectionalLight("#e8eef7", STY.light.fill);
+fill.position.set(-8, 6, 5);
+scene.add(fill);
+
+const mats = new Map();
+function M(color, opts = {}) {
+  const key = color + JSON.stringify(opts);
+  if (!mats.has(key)) mats.set(key, new THREE.MeshStandardMaterial({ color, roughness: STY.roughness, flatShading: STY.flat, ...opts }));
+  return mats.get(key);
+}
+function mesh(geo, mat, parent, pos = [0, 0, 0], shadow = true) {
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(...pos);
+  m.castShadow = shadow;
+  m.receiveShadow = true;
+  if (parent) parent.add(m);
+  return m;
+}
+// 모서리 둥글기: 미는 통통하게, 로우폴리는 각지게
+const box = (w, h, d, r = 0) => {
+  const rr = Math.min(r * STY.round, w / 2.2, h / 2.2, d / 2.2);
+  // 둥근 모서리 마디 수: 작은 둥글기는 1마디면 충분 (3마디면 상자 하나에 삼각형 588개 — 책상 40개면 30만 개)
+  return rr > 0.001 ? new RoundedBoxGeometry(w, h, d, rr < 0.02 ? 1 : 2, rr) : new THREE.BoxGeometry(w, h, d);
+};
+const cyl = (r0, r1, h) => new THREE.CylinderGeometry(r0, r1, h, STY.seg);
+const v = (x, z) => new THREE.Vector3(x, 0, z);
+
+// ───────────── 캐릭터 먼저 (몸 치수로 가구 높이를 정한다) ─────────────
+// 시작 화면 로딩바: 동작 1 + 캐릭터 수만큼 (사무실 짓기·첫 그림은 마지막 10%)
+const lfill = document.getElementById("lfill"), lmsg = document.getElementById("lmsg");
+const LOAD = { done: 0, total: 1 + NAMES.length };
+const loadTick = () => {
+  LOAD.done++;
+  lfill.style.width = `${(LOAD.done / LOAD.total) * 90}%`;
+  lmsg.textContent = `캐릭터 불러오는 중 ${Math.max(0, LOAD.done - 1)} / ${NAMES.length}`;
+};
+// ───────────── 사용 안내: 처음 온 사람(아직 「나예요」 전)에게 시작 화면이 끝나면 한 번 — 테스트 판은 이 브라우저에서 처음 한 번 ─────────────
+const GUIDE_KEY = "teamOfficeGuideSeen";
+let guideEl = null;
+function openGuide() {
+  if (guideEl) return;
+  guideEl = document.createElement("div");
+  guideEl.className = "guide";
+  guideEl.setAttribute("role", "dialog"); guideEl.setAttribute("aria-label", "우리팀 사용 안내");
+  const st = (n, ic, t, d) => `<div class="st"><div class="ic">${ic}<i>${n}</i></div><div><b>${t}</b><span>${d}</span></div></div>`;
+  guideEl.innerHTML = `<div class="gcard">
+    <header><img src="app/icon-192.png" alt="" onerror="this.remove()"><div><h2>우리팀 사용 안내</h2><p>처음 오신 분을 위한 1분 가이드</p></div></header>
+    <div class="rule"><div class="em">☕</div><div><b>여기는 잡담만 하는 곳이에요</b><span>업무 얘기는 <strong>메일·메신저로!</strong> 여기서는 점심 메뉴, 주말 이야기, 간식처럼 가볍고 즐거운 수다만 나눠요.</span></div></div>
+    <div class="steps">
+      ${st(1, "🙋", "처음 한 번 등록", "사원 목록의 내 이름에서 <em>나예요</em> → 비밀번호(8자 이상) 정하기")}
+      ${st(2, "🟢", "출근 · 퇴근", "내 이름 줄의 <em>출근</em> <em>퇴근</em>을 누르면 사무실에 내 캐릭터가 앉아요")}
+      ${st(3, "✏️", "상태 메시지", "<em>상태 메시지</em>로 머리 위에 한마디 — 초록 말풍선으로 떠요")}
+      ${st(4, "👆", "사람 누르기", "방명록 남기기, 칭찬 하트(한 사람에게 하루 한 번)")}
+      ${st(5, "📷", "피드", "일상 사진·글 올리기, 좋아요·댓글 — 반응은 🔔 알림으로")}
+      ${st(6, "💬", "1:1 대화", "두 사람만 열 수 있게 잠겨 있어요 (관리자도 못 봐요)")}
+    </div>
+    <div class="app"><div class="ic">📲</div><div><b>휴대폰에 앱처럼 깔기</b><span>안드로이드: 「앱 설치」(휴대폰은 위쪽 ⋯ 안) · 아이폰: Safari 공유 → 홈 화면에 추가</span></div></div>
+    <div class="foot"><span>· 비밀번호를 잊으면 지난 1:1 대화는 아무도 못 열어요</span><span>· 회사 기밀·개인정보는 올리지 않기</span><span>· 서로 기분 좋게!</span></div>
+    <button type="button" class="go">시작하기</button>
+  </div>`;
+  const close = () => { guideEl?.remove(); guideEl = null; try { localStorage.setItem(GUIDE_KEY, "1"); } catch {} removeEventListener("keydown", onKey, true); };
+  const onKey = (e) => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } };
+  guideEl.querySelector(".go").onclick = close;
+  guideEl.onclick = (e) => { if (e.target === guideEl) close(); };
+  addEventListener("keydown", onKey, true);
+  document.body.append(guideEl);
+  setTimeout(() => guideEl?.querySelector(".go").focus({ preventScroll: true }), 50);
+}
+function maybeGuide() {
+  let seen = false;
+  try { seen = !!localStorage.getItem(GUIDE_KEY); } catch {}
+  if (LIVE && !seen && (window.__TEST || !MY.char)) openGuide();
+}
+document.getElementById("guideBtn").onclick = openGuide;
+window.__openGuide = openGuide;
+function introDone() {
+  lfill.style.width = "100%";
+  lmsg.textContent = "다 됐어요";
+  setTimeout(() => { document.getElementById("intro").classList.add("done"); document.body.classList.remove("loading"); }, 350);
+  setTimeout(maybeGuide, 1100); // 시작 화면이 사라진 뒤
+}
+addEventListener("unhandledrejection", (e) => { lmsg.textContent = `불러오다 멈췄어요 — 새로고침해 보세요 (${e.reason?.message ?? e.reason})`; });
+const clips = await loadClips("models3d/clips.json");
+loadTick();
+const H = STY.charH;
+const loadOne = async (name) => {
+  const url = STY.models(name);
+  if (!url) return null;
+  return loadCharacter(url, clips, { height: H, shadow: true, style: { roughness: STY.charRough, flat: false, baked: STY.charBaked } });
+};
+const models = await Promise.all(NAMES.map((n) => loadOne(n).then((c) => { loadTick(); return c; })));
+// 임산부: 배를 살짝 나오게 — 모델은 그대로 두고, 불러온 뒤 배 앞쪽 점만 앞으로 부풀린다 (뼈대를 따라 앉고 걸을 때도 같이 움직임)
+const BELLY = { 홍수연: 1 };
+function addBelly(c, k = 1) {
+  c.root.traverse((o) => {
+    if (!o.isSkinnedMesh) return;
+    const sk = o.skeleton, bone = (n) => { const i = sk.bones.findIndex((b) => b.name === n); return i < 0 ? null : new THREE.Vector3().setFromMatrixPosition(sk.boneInverses[i].clone().invert()); };
+    const hips = bone("Hips"), sp = bone("Spine01") || bone("Spine");
+    if (!hips || !sp) return;
+    const g = o.geometry, P = g.attributes.position, N = g.attributes.normal;
+    const torso = sp.y - hips.y, yc = hips.y + torso * 0.45, zc = hips.z, xc = hips.x, sy = torso * 0.62, sx = torso * 0.8;
+    let zf = -Infinity; // 배 가운데 줄에서 가장 앞에 있는 점 = 지금 배 앞면
+    for (let i = 0; i < P.count; i++) if (Math.abs(P.getX(i) - xc) < sx * 0.3 && Math.abs(P.getY(i) - yc) < sy * 0.3) zf = Math.max(zf, P.getZ(i));
+    if (!(zf > zc)) return;
+    const A = (zf - zc) * 1.15 * k, n = new THREE.Vector3();
+    for (let i = 0; i < P.count; i++) {
+      const x = P.getX(i) - xc, y = P.getY(i) - yc, z = P.getZ(i);
+      const front = THREE.MathUtils.clamp((z - zc) / (zf - zc), 0, 1), d = A * Math.exp(-((x / sx) ** 2) - (y / sy) ** 2) * front * front;
+      if (d < 1e-4) continue;
+      P.setZ(i, z + d);
+      if (N) { n.set(N.getX(i) + d * (2 * x) / (sx * sx), N.getY(i) + d * (2 * y) / (sy * sy), N.getZ(i)).normalize(); N.setXYZ(i, n.x, n.y, n.z); } // 둥글게 빛 받게
+    }
+    P.needsUpdate = true; if (N) N.needsUpdate = true;
+    g.computeBoundingBox(); g.computeBoundingSphere();
+  });
+}
+models.forEach((c, i) => { if (c && BELLY[NAMES[i]]) addBelly(c, BELLY[NAMES[i]]); });
+lmsg.textContent = "사무실 꾸미는 중";
+
+const wp = new THREE.Vector3();
+function bodyY(c, bone) { c.root.getObjectByName(bone).getWorldPosition(wp); return wp; }
+// 앉은 자세 재기: 타자 동작 1.5초째 — 발이 바닥에서 뜬 만큼 몸을 내리고, 그때의 허벅지·손 높이가 의자·책상 높이
+function measure(c) {
+  c.wrap.position.set(0, 0, 0);
+  c.wrap.updateMatrixWorld(true);
+  c.mixer.stopAllAction();
+  c.actions.idle.reset().play(); c.mixer.update(0.5); c.wrap.updateMatrixWorld(true);
+  const foot0 = bodyY(c, "LeftFoot").y;
+  c.mixer.stopAllAction();
+  c.actions.typing.reset().play(); c.mixer.update(1.5); c.wrap.updateMatrixWorld(true);
+  const drop = Math.max(0, Math.min(bodyY(c, "LeftFoot").y, bodyY(c, "RightFoot").y) - foot0);
+  const seat = bodyY(c, "LeftUpLeg").y - drop - 0.05 * H;
+  const hand = (bodyY(c, "LeftHand").y + bodyY(c, "RightHand").y) / 2 - drop;
+  const handZ = (bodyY(c, "LeftHand").z + bodyY(c, "RightHand").z) / 2;
+  c.mixer.stopAllAction();
+  return { drop, seat, hand, handZ };
+}
+const sizes = models.map((c) => (c ? measure(c) : null));
+const real = sizes.filter(Boolean);
+const median = (a) => a.slice().sort((x, y) => x - y)[a.length >> 1];
+const DH = median(real.map((s) => s.hand)) - 0.02 * H;            // 책상 높이
+const SEAT = median(real.map((s) => s.seat));                       // 의자 앉는 면 (사람마다 조금씩 다르게 맞춘다)
+const HAND_FWD = median(real.map((s) => s.handZ));                  // 앉았을 때 손이 엉덩이보다 앞으로 나간 거리
+const PH = DH + 0.34 * H;                                           // 칸막이: 앉은 눈높이 정도
+const IN_DIST = 0.35 + Math.max(0.05, HAND_FWD - 0.07);             // 책상 가운데 ~ 앉은 엉덩이 거리
+const OUT_DIST = IN_DIST + 0.38 * (H / 1.25);
+window.__dims = { H, DH, SEAT, HAND_FWD, PH, IN_DIST };
+
+// ───────────── 사무실 ─────────────
+// 8층 E구역 사진·좌석 배치도 기준. 평면 배치는 그림체와 상관없이 같고, 높이와 재질만 바뀐다
+const PAL = STY.pal;
+const office = new THREE.Group();
+scene.add(office);
+const S = 0.02, mx = (px) => (px - 310) * S, mz = (py) => (py - 335) * S;
+const ROOM = { x0: -6.8, x1: 6.4, z0: -6.5, z1: 6.5 };
+const RW = ROOM.x1 - ROOM.x0, RD = ROOM.z1 - ROOM.z0, RCX = (ROOM.x0 + ROOM.x1) / 2;
+const MAIN_Z = mz(301);
+const WALL_H = Math.max(2.4, H * 1.75);
+
+function floorTexture(color = PAL.floor) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 512;
+  const g = c.getContext("2d");
+  const base = new THREE.Color(color);
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+    const k = ((i * 7 + j * 13) % 9 - 4) * (STY.flat ? 0.012 : 0.006);
+    g.fillStyle = "#" + base.clone().offsetHSL(0, 0, k).getHexString();
+    g.fillRect(i * 128, j * 128, 128, 128);
+  }
+  g.strokeStyle = PAL.floorLine;
+  g.lineWidth = 2;
+  for (let k = 0; k <= 4; k++) {
+    g.beginPath(); g.moveTo(k * 128, 0); g.lineTo(k * 128, 512); g.stroke();
+    g.beginPath(); g.moveTo(0, k * 128); g.lineTo(512, k * 128); g.stroke();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(RW / 4, RD / 4);
+  t.anisotropy = 8;
+  return t;
+}
+const floor = mesh(new THREE.PlaneGeometry(RW, RD), new THREE.MeshStandardMaterial({ map: floorTexture(), roughness: STY.floorGloss }), office, [RCX, 0, 0], false);
+floor.rotation.x = -Math.PI / 2;
+mesh(new THREE.BoxGeometry(RW + 0.3, 0.3, RD + 0.3), M("#b9bdc0"), office, [RCX, -0.18, 0], false); // 받침판 윗면은 바닥보다 3cm 아래 (1mm 면 멀리서 볼 때 바닥과 겹쳐 빗금처럼 번쩍임)
+
+// 왼쪽 벽 + 출입문 (문 높이도 캐릭터 키에 맞춘다)
+const WALL = M(PAL.wall), BASE = M(PAL.base), DOORM = M(PAL.door);
+const DOOR = { x: ROOM.x0, z: MAIN_Z, w: 1.1, h: Math.max(1.75, H * 1.4) };
+{
+  // 벽은 문틀 속까지만 (벽 끝면이 문틀 안쪽 면과 같은 자리에 있으면 두 면이 번갈아 보이며 깜박인다)
+  const z0 = ROOM.z0, z1 = DOOR.z - DOOR.w / 2 - 0.035, z2 = DOOR.z + DOOR.w / 2 + 0.035, z3 = ROOM.z1, hy = DOOR.h + 0.035;
+  mesh(box(0.2, WALL_H, z1 - z0), WALL, office, [DOOR.x - 0.1, WALL_H / 2, (z0 + z1) / 2]);
+  mesh(box(0.2, WALL_H, z3 - z2), WALL, office, [DOOR.x - 0.1, WALL_H / 2, (z2 + z3) / 2]);
+  mesh(box(0.2, WALL_H - hy, z2 - z1), WALL, office, [DOOR.x - 0.1, hy + (WALL_H - hy) / 2, DOOR.z]);
+  mesh(box(0.03, 0.1, z1 - z0), BASE, office, [DOOR.x + 0.015, 0.05, (z0 + z1) / 2]);
+  mesh(box(0.03, 0.1, z3 - z2), BASE, office, [DOOR.x + 0.015, 0.05, (z2 + z3) / 2]);
+  mesh(box(0.24, 0.07, DOOR.w + 0.14), M("#3a3d42"), office, [DOOR.x - 0.1, DOOR.h + 0.035, DOOR.z]);
+  for (const s of [-1, 1]) mesh(box(0.24, DOOR.h, 0.07), M("#3a3d42"), office, [DOOR.x - 0.1, DOOR.h / 2, DOOR.z + s * (DOOR.w / 2 + 0.035)]);
+  mesh(box(0.04, 0.15, 0.36, 0.01), M("#1f9d55", { emissive: "#2ecc71", emissiveIntensity: 0.9 }), office, [DOOR.x + 0.02, DOOR.h + 0.3, DOOR.z]);
+}
+const doorPivot = new THREE.Group();
+doorPivot.position.set(DOOR.x - 0.1, 0, DOOR.z - DOOR.w / 2);
+office.add(doorPivot);
+mesh(box(0.05, DOOR.h, DOOR.w + 0.01, 0.008), DOORM, doorPivot, [0, DOOR.h / 2 + 0.005, DOOR.w / 2]); // 옆·위 문틀 속으로 살짝 겹치게 (틈으로 바깥이 깜박이지 않게)
+mesh(box(0.04, 0.03, 0.18), M("#b8bcc0", { metalness: 0.7, roughness: 0.3 }), doorPivot, [0.05, DOOR.h * 0.47, DOOR.w - 0.16]);
+
+// 위쪽 유리벽
+{
+  const z = mz(20), frame = M("#2a2c30");
+  mesh(new THREE.BoxGeometry(RW, 0.05, 0.08), frame, office, [RCX, WALL_H - 0.02, z]);
+  mesh(new THREE.BoxGeometry(RW, 0.06, 0.08), frame, office, [RCX, 0.03, z]);
+  for (let x = ROOM.x0; x <= ROOM.x1 + 0.01; x += RW / 8) mesh(new THREE.BoxGeometry(0.05, WALL_H, 0.08), frame, office, [x, WALL_H / 2, z]);
+  mesh(new THREE.PlaneGeometry(RW, WALL_H - 0.08), new THREE.MeshStandardMaterial({ color: "#dff0fa", transparent: true, opacity: 0.2, roughness: 0.05, depthWrite: false }), office, [RCX, WALL_H / 2, z], false);
+}
+
+// E1·E2 기둥
+function stencilTexture(text) {
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 180;
+  const g = c.getContext("2d");
+  g.font = "700 140px Arial, sans-serif";
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillStyle = "#4a4d52";
+  g.fillText(text, 128, 96);
+  g.globalCompositeOperation = "destination-out";
+  for (let y = 0; y < 180; y += 14) g.fillRect(0, y, 256, 6);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function pillar(x, z, text) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  office.add(g);
+  mesh(box(0.9, WALL_H, 0.9, 0.02), M("#f2f2f0"), g, [0, WALL_H / 2, 0]);
+  const mat = new THREE.MeshStandardMaterial({ map: stencilTexture(text), transparent: true, roughness: 0.8 });
+  for (const [px, pz, ry] of [[0, 0.452, 0], [0.452, 0, Math.PI / 2], [0, -0.452, Math.PI], [-0.452, 0, -Math.PI / 2]]) {
+    mesh(new THREE.PlaneGeometry(0.68, 0.48), mat, g, [px, WALL_H * 0.77, pz], false).rotation.y = ry;
+  }
+}
+pillar(mx(35), mz(607), "E2");
+pillar(mx(442), mz(607), "E1");
+
+// 영화풍: 화분·따뜻한 조명 갓 (그림체가 풍부한 만큼 소품도 조금 더)
+if (STYLE_KEY === "movie") {
+  for (const [x, z] of [[mx(35) + 0.75, mz(607)], [mx(442) - 0.75, mz(607)], [ROOM.x0 + 0.5, ROOM.z1 - 0.5], [ROOM.x1 - 0.5, ROOM.z1 - 0.5]]) {
+    const g = new THREE.Group();
+    g.position.set(x, 0, z);
+    office.add(g);
+    mesh(cyl(0.2, 0.15, 0.4), M("#b8805a", { roughness: 0.8 }), g, [0, 0.2, 0]);
+    for (let i = 0; i < 7; i++) {
+      const l = mesh(new THREE.SphereGeometry(0.22 - i * 0.012, 14, 10), M(i % 2 ? "#6f9e3c" : "#86b548", { roughness: 0.85 }), g, [Math.sin(i * 2.1) * 0.12, 0.55 + i * 0.12, Math.cos(i * 2.1) * 0.12]);
+      l.scale.set(1, 0.8, 1);
+    }
+  }
+  const lampMat = M("#fff3dc", { emissive: "#ffd9a0", emissiveIntensity: 1.2 });
+  for (let x = -5; x <= 5; x += 2.5) for (const z of [mz(148), mz(490)]) {
+    mesh(cyl(0.006, 0.006, 0.8), M("#2a2725"), office, [x, WALL_H - 0.4, z], false);
+    mesh(cyl(0.12, 0.3, 0.22), M("#2a2725"), office, [x, WALL_H - 0.9, z], false);
+    mesh(new THREE.SphereGeometry(0.09, 12, 8), lampMat, office, [x, WALL_H - 1.0, z], false);
+  }
+}
+
+// ── 책상·의자: 같은 모양을 한 번만 만들어 재질별로 합친다 (책상 40개 그리기 횟수 줄이기)
+function part(geo, pos = [0, 0, 0], ry = 0, pre = null) {
+  const g = geo.index ? geo.toNonIndexed() : geo.clone();
+  for (const k of Object.keys(g.attributes)) if (!["position", "normal", "uv"].includes(k)) g.deleteAttribute(k);
+  if (!g.attributes.uv) g.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+  if (pre) g.translate(...pre);
+  if (ry) g.rotateY(ry);
+  g.translate(...pos);
+  return g;
+}
+const merge = (parts) => mergeGeometries(parts);
+const MON = 0.31 * Math.min(1.15, H / 1.25); // 모니터 크기도 앉은키에 맞춘다
+const DESK_GEO = {
+  white: part(box(1.4, 0.035, 0.7, 0.008), [0, DH - 0.018, 0]),
+  keys: merge([ // 키보드·마우스 (컴퓨터 치운 책상엔 없다 — 그림은 white 와 같은 재질로 합친다)
+    part(box(0.42, 0.02, 0.14, 0.006), [0, DH + 0.01, -0.2]),
+    part(box(0.06, 0.02, 0.09, 0.008), [0.32, DH + 0.01, -0.19]),
+  ]),
+  grey: merge([
+    part(box(0.03, DH - 0.035, 0.66), [-0.68, (DH - 0.035) / 2, 0.01]),
+    part(box(0.03, DH - 0.035, 0.66), [0.68, (DH - 0.035) / 2, 0.01]),
+    part(box(0.42, DH - 0.06, 0.55, 0.01), [0.44, (DH - 0.06) / 2, 0.06]),
+  ]),
+  black: merge([
+    ...[-1, 1].flatMap((s) => [
+      part(box(0.18, 0.012, 0.14), [s * 0.25, DH + 0.006, 0.22], s * 0.18),
+      part(box(0.035, MON * 0.65, 0.025), [s * 0.25, DH, 0.22], s * 0.18, [0, MON * 0.35, 0.02]),
+      part(box(0.5 * MON / 0.31, MON, 0.03, 0.01), [s * 0.25, DH, 0.22], s * 0.18, [0, MON, 0]),
+    ]),
+    part(box(0.19, 0.4, 0.4, 0.01), [-0.6, DH + 0.2, 0.08]),
+  ]),
+  screen: merge([-1, 1].map((s) => {
+    const g = new THREE.PlaneGeometry(0.47 * MON / 0.31, MON * 0.9).toNonIndexed();
+    g.rotateY(Math.PI);
+    g.translate(0, MON, -0.016);
+    g.rotateY(s * 0.18);
+    g.translate(s * 0.25, DH, 0.22);
+    return g;
+  })),
+};
+// 의자: 앉는 면 높이 1(=0.355 기준)로 만들어 두고, 앉는 사람 엉덩이 높이에 맞춰 키운다
+const CHAIR_GEO = {
+  black: merge([
+    ...[0, 1, 2, 3, 4].flatMap((i) => {
+      const a = (i / 5) * Math.PI * 2;
+      return [part(box(0.28, 0.03, 0.05), [Math.cos(a) * 0.14, 0.06, Math.sin(a) * 0.14], -a), part(new THREE.SphereGeometry(0.03, STY.seg / 2, 6), [Math.cos(a) * 0.27, 0.03, Math.sin(a) * 0.27])];
+    }),
+    part(cyl(0.03, 0.03, 0.22), [0, 0.18, 0]),
+    part(box(0.48, 0.07, 0.46, 0.03), [0, 0.32, 0]),
+    part(box(0.05, 0.26, 0.04), [0, 0.45, -0.23]),
+    ...[-1, 1].flatMap((s) => [part(box(0.03, 0.16, 0.03), [s * 0.26, 0.42, -0.05]), part(box(0.06, 0.025, 0.26, 0.01), [s * 0.26, 0.51, -0.02])]),
+  ]),
+  mesh: merge([part(box(0.44, 0.46, 0.05, 0.02), [0, 0.68, -0.25]), part(box(0.3, 0.13, 0.05, 0.02), [0, 1.0, -0.27])]),
+};
+const CHAIR_SEAT = 0.355;
+const DESK_MAT = { white: M(PAL.desk, { roughness: STY.flat ? 0.95 : 0.5 }), grey: M(PAL.cabinet), black: M(PAL.black, { roughness: 0.5 }) };
+const CHAIR_MAT = { black: M(PAL.chair, { roughness: 0.6 }), mesh: M(PAL.mesh, { roughness: 0.95 }) };
+// ── 모니터 화면: 80대를 한 장(2048²)에 칸으로 모아 그린다 (그림은 screens.js). 바뀐 칸만 GPU 로 보내고, 영상 칸만 초당 8번
+// (캔버스를 그대로 GPU 로 보내면 브라우저가 느린 길로 가서 칸 하나에 0.2초 — 픽셀 배열로 보낸다)
+const TW = 256, TH = 152, ACOLS = 8, AS = 2048;
+const ATLAS = new THREE.DataTexture(new Uint8Array(AS * AS * 4), AS, AS); // 위쪽 줄이 0번 줄 (뒤집지 않음)
+ATLAS.colorSpace = THREE.SRGBColorSpace;
+ATLAS.magFilter = THREE.LinearFilter;
+ATLAS.minFilter = THREE.LinearMipmapLinearFilter;
+ATLAS.generateMipmaps = true;
+ATLAS.anisotropy = 4;
+const tileCanvas = document.createElement("canvas");
+tileCanvas.width = TW;
+tileCanvas.height = TH;
+const tctx = tileCanvas.getContext("2d", { willReadFrequently: true });
+const TILE_SRC = new THREE.DataTexture(new Uint8Array(TW * TH * 4), TW, TH); // 칸 하나를 GPU 로 보낼 때의 원본
+const tiles = [];      // 칸마다 { kind, seed, t0 }
+let atlasLive = false; // 첫 그림이 GPU 에 올라간 뒤부터는 칸 단위로 보낸다
+const tilePos = (i) => [(i % ACOLS) * TW, Math.floor(i / ACOLS) * TH];
+const _dst = new THREE.Vector2();
+function paintTile(i, t, mip = true) {
+  const s = tiles[i];
+  ScreenArt.draw(s.kind, tctx, TW, TH, s.seed, t + s.t0);
+  const px = tctx.getImageData(0, 0, TW, TH).data;
+  const [x, y] = tilePos(i);
+  if (!atlasLive) { // 처음엔 큰 배열에 써 두고 첫 그리기 때 한 번에 올린다
+    const a = ATLAS.image.data;
+    for (let r = 0; r < TH; r++) a.set(px.subarray(r * TW * 4, (r + 1) * TW * 4), ((y + r) * AS + x) * 4);
+    ATLAS.needsUpdate = true;
+    return;
+  }
+  TILE_SRC.image.data.set(px);
+  ATLAS.generateMipmaps = mip; // 영상 칸 여러 개를 보낼 땐 밉맵은 마지막에 한 번만
+  renderer.copyTextureToTexture(TILE_SRC, ATLAS, null, _dst.set(x, y));
+  ATLAS.generateMipmaps = true;
+}
+// 자리의 모니터 두 대: 켜지면 각각 무작위 화면 (둘 다 영상이면 하나는 다시 고른다), 꺼지면 검은 화면
+// 사람마다 정해 둔 모니터 화면 [왼쪽, 오른쪽] (null = 무작위)
+const FIXED_SCREENS = { 오누리: ["soccer", "soccer"], 미야모토슈이치로: ["dokdo", null], 한아린: [null, "cat"], 염숭이: [null, "banana"] };
+function setScreens(seat, on, t, m) {
+  seat.on = on;
+  seat.fixed = on ? FIXED_SCREENS[m?.name] : null;
+  seat.swap = 15 + Math.random() * 45; // 일하는 동안 가끔 다른 화면으로
+  seat.tiles.forEach((i, k) => {
+    let kind = on ? seat.fixed?.[k] || ScreenArt.pick() : "off";
+    if (on && k === 1 && !seat.fixed?.[1] && ScreenArt.ANIM.has(kind) && ScreenArt.ANIM.has(tiles[seat.tiles[0]].kind)) kind = "excel";
+    Object.assign(tiles[i], { kind, seed: (Math.random() * 1e9) | 0, t0: Math.random() * 600 });
+    paintTile(i, t);
+  });
+}
+// ── 책상·모니터·의자·명패: 40자리를 재질마다 한 덩어리로 (그리기 횟수 수백 번 → 몇 번)
+const DESK_PARTS = { white: [], grey: [], black: [] }, SCREEN_PARTS = [], CHAIR_LIST = [], CARD_PARTS = [];
+const _m4 = new THREE.Matrix4();
+function makeDesk(x, z, rot, pc = true) { // 로컬: 앉는 쪽 -z, 모니터 쪽 +z. pc=false: 컴퓨터(모니터·본체·키보드) 치운 책상
+  _m4.makeRotationY(rot).setPosition(x, 0, z);
+  for (const k of ["white", "grey", "black"]) if (pc || k !== "black") DESK_PARTS[k].push(DESK_GEO[k].clone().applyMatrix4(_m4));
+  if (!pc) return [];
+  DESK_PARTS.white.push(DESK_GEO.keys.clone().applyMatrix4(_m4));
+  // 모니터 두 대 → 화면 모음의 칸 두 개
+  const g = DESK_GEO.screen.clone(), uv = g.attributes.uv, ids = [tiles.length, tiles.length + 1];
+  for (let k = 0; k < uv.count; k++) {
+    const [tx, ty] = tilePos(ids[k < uv.count / 2 ? 0 : 1]);
+    uv.setXY(k, (tx + 1 + uv.getX(k) * (TW - 2)) / AS, (ty + 1 + (1 - uv.getY(k)) * (TH - 2)) / AS);
+  }
+  SCREEN_PARTS.push(g.applyMatrix4(_m4));
+  for (const i of ids) { tiles[i] = { kind: "off", seed: 1, t0: 0 }; paintTile(i, 0); }
+  return ids;
+}
+// 간식 책상: 과자 봉지 더미·과자 상자·쿠키 접시·막대 과자·사탕 — 색은 꼭짓점 색으로 넣고 한 덩어리로 합친다
+const SNACK_PARTS = [];
+function snackPiece(geo, color, m) {
+  const g = (geo.index ? geo.toNonIndexed() : geo).applyMatrix4(m);
+  g.deleteAttribute("uv");
+  const c = new THREE.Color(color), n = g.attributes.position.count;
+  g.setAttribute("color", new THREE.Float32BufferAttribute(Array.from({ length: n * 3 }, (_, i) => [c.r, c.g, c.b][i % 3]), 3));
+  SNACK_PARTS.push(g);
+}
+function addSnacks(x, z, rot, seed) {
+  let s = seed >>> 0; // 책상마다 늘 같은 모양 (고정 난수)
+  const rnd = () => { s = (s + 0x6d2b79f5) >>> 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const pick = (a) => a[Math.floor(rnd() * a.length)];
+  const desk = new THREE.Matrix4().makeRotationY(rot).setPosition(x, DH, z);
+  const at = (px, py, pz, ry = 0, rx = 0, rz = 0) => new THREE.Matrix4().compose(new THREE.Vector3(px, py, pz), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(1, 1, 1)).premultiply(desk);
+  const BAG = ["#e63b2e", "#f5c242", "#2f7de1", "#3aa655", "#f08a24", "#8e44ad", "#e84393"];
+  const BAG_T = 0.05; // 봉지 두께 (가운데가 가장 빵빵)
+  const bag = (px, py, pz, ry, rx, rz, w = 0.2, l = 0.27) => { // 베개처럼 빵빵한 과자 봉지 + 위아래 납작한 띠 + 상표
+    const col = pick(BAG), m = at(px, py, pz, ry, rx, rz);
+    const body = new THREE.BoxGeometry(w, BAG_T, l, 8, 1, 10), p = body.attributes.position;
+    for (let i = 0; i < p.count; i++) { // 가장자리로 갈수록 얇게 (봉지 끝은 납작)
+      const u = (2 * p.getX(i)) / w, q = (2 * p.getZ(i)) / l;
+      p.setY(i, p.getY(i) * Math.max(0.12, (1 - u ** 4) * (1 - q ** 6)));
+    }
+    body.computeVertexNormals();
+    snackPiece(body, col, m);
+    const band = new THREE.Color(col).offsetHSL(0, 0, -0.12);
+    for (const e of [-1, 1]) snackPiece(new THREE.BoxGeometry(w * 1.02, 0.007, 0.03), band, m.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0, e * (l / 2 + 0.01))));
+    snackPiece(new THREE.CircleGeometry(w * 0.24, 14).rotateX(-Math.PI / 2), pick(["#ffffff", "#ffe066"]), m.clone().multiply(new THREE.Matrix4().makeTranslation(0, BAG_T / 2 + 0.001, 0)));
+  };
+  const pile = (px, pz) => { // 봉지를 아무렇게나 쌓은 더미 (아래층은 넓게, 위로 갈수록 좁게) + 칸막이에 기대 세운 봉지
+    const n = 4 + Math.floor(rnd() * 3);
+    for (let i = 0; i < n; i++) {
+      const lay = i < 3 ? 0 : i < 5 ? 1 : 2, sp = [0.13, 0.07, 0.02][lay];
+      bag(px + (rnd() - 0.5) * sp * 2, BAG_T / 2 + lay * BAG_T * 0.75, pz + (rnd() - 0.5) * sp, rnd() * Math.PI, (rnd() - 0.5) * 0.3, (rnd() - 0.5) * 0.3);
+    }
+    if (rnd() < 0.7) bag(px + (rnd() - 0.5) * 0.1, 0.13, 0.27, (rnd() - 0.5) * 0.4, -1.25, 0); // 칸막이 쪽에 기대 선 봉지
+  };
+  const boxes = (px, pz) => { // 과자 상자 쌓기 (2층)
+    const col = pick(["#c0392b", "#1f6fb2", "#f39c12", "#16a085"]), ry = (rnd() - 0.5) * 0.4;
+    for (const [dx, dy] of [[-0.075, 0], [0.075, 0], [0, 1]]) {
+      const g = new THREE.BoxGeometry(0.14, 0.055, 0.1);
+      snackPiece(g, dy ? new THREE.Color(col).offsetHSL(0, 0, 0.1) : col, at(px + dx * Math.cos(ry), 0.0275 + dy * 0.055, pz - dx * Math.sin(ry), ry + dy * 0.3));
+      snackPiece(new THREE.PlaneGeometry(0.08, 0.03), "#fff7e0", at(px + dx * Math.cos(ry), 0.0275 + dy * 0.055, pz - dx * Math.sin(ry), ry + dy * 0.3).multiply(new THREE.Matrix4().makeTranslation(0, 0, -0.0505)).multiply(new THREE.Matrix4().makeRotationY(Math.PI)));
+    }
+  };
+  const cookies = (px, pz) => { // 접시에 수북한 쿠키
+    snackPiece(new THREE.CylinderGeometry(0.12, 0.1, 0.012, 20), "#f4f4f2", at(px, 0.006, pz));
+    for (let i = 0; i < 9; i++) {
+      const lay = i < 6 ? 0 : 1, a = (i % 6) * (Math.PI / 3) + lay * 0.5, r = lay ? 0.03 : 0.065;
+      snackPiece(new THREE.CylinderGeometry(0.036, 0.036, 0.013, 14), rnd() < 0.35 ? "#6b4226" : "#d39b57",
+        at(px + Math.cos(a) * r, 0.02 + lay * 0.016, pz + Math.sin(a) * r, 0, (rnd() - 0.5) * 0.35, (rnd() - 0.5) * 0.35));
+    }
+  };
+  const sticks = (px, pz) => { // 막대 과자 상자 몇 개 세워 두기
+    for (let i = 0; i < 3; i++) snackPiece(new THREE.BoxGeometry(0.05, 0.17, 0.022), pick(["#e74c3c", "#c0392b", "#e84393", "#f1c40f"]), at(px + (i - 1) * 0.06, 0.085, pz + (rnd() - 0.5) * 0.03, (rnd() - 0.5) * 0.3, 0, (rnd() - 0.5) * 0.12));
+  };
+  const KINDS = [pile, boxes, cookies, sticks];
+  [-0.45, -0.12, 0.2, 0.48].forEach((px, i) => (i % 2 ? pile : pick(KINDS))(px + (rnd() - 0.5) * 0.06, (rnd() - 0.5) * 0.18));
+  for (let i = 0; i < 10; i++) snackPiece(new THREE.SphereGeometry(0.012, 8, 5), pick(BAG), at((rnd() - 0.5) * 1.2, 0.012, (rnd() - 0.5) * 0.5)); // 흩어진 사탕
+}
+// 의자는 자리 표시용 빈 물체 — 그림은 InstancedMesh 두 개로 40개를 한꺼번에 (syncChairs)
+function makeChair(seatH) {
+  const g = new THREE.Object3D();
+  fitChair(g, seatH);
+  office.add(g);
+  CHAIR_LIST.push(g);
+  return g;
+}
+// 의자 높이를 앉는 사람에 맞춘다 (자리를 바꾸면 다시)
+function fitChair(g, seatH) {
+  const s = seatH / CHAIR_SEAT;
+  g.scale.set(Math.max(0.55, s * 0.9 + 0.1), s, Math.max(0.55, s * 0.9 + 0.1)); // 의자 폭은 덜 줄인다
+}
+// 칸막이 명패: 한 장에 모아 그린다. 자리 번호는 민감해서 글씨 없이 빈 명패만 (10-28)
+const CARD_W = 160, CARD_H = 56, CARD_COLS = 8;
+const cardCanvas = document.createElement("canvas");
+cardCanvas.width = CARD_W * CARD_COLS;
+cardCanvas.height = CARD_H * Math.ceil(ALL_DESKS.length / CARD_COLS);
+function addCard(text, x, y, z, ry) {
+  const i = CARD_PARTS.length, cx = (i % CARD_COLS) * CARD_W, cy = Math.floor(i / CARD_COLS) * CARD_H;
+  const g = cardCanvas.getContext("2d");
+  g.fillStyle = "#ffffff"; g.fillRect(cx, cy, CARD_W, CARD_H);
+  g.strokeStyle = "#c9ccd0"; g.lineWidth = 4; g.strokeRect(cx + 2, cy + 2, CARD_W - 4, CARD_H - 4);
+  g.fillStyle = "#3a3d42"; g.font = "600 30px Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  if (text) g.fillText(text, cx + CARD_W / 2, cy + 30);
+  const geo = new THREE.PlaneGeometry(0.24, 0.085), uv = geo.attributes.uv;
+  for (let k = 0; k < uv.count; k++) uv.setXY(k, (cx + uv.getX(k) * CARD_W) / cardCanvas.width, 1 - (cy + (1 - uv.getY(k)) * CARD_H) / cardCanvas.height);
+  CARD_PARTS.push(geo.applyMatrix4(_m4.makeRotationY(ry).setPosition(x, y, z)));
+}
+// 잎 캐노피
+function leafGeometry(L = 1.45, W = 0.78) {
+  const g = new THREE.PlaneGeometry(L, W, STY.flat ? 8 : 32, STY.flat ? 4 : 12);
+  const pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const u = Math.min(Math.max(pos.getX(i) / L + 0.5, 0), 1);
+    const w = Math.pow(Math.sin(Math.PI * Math.pow(u, 0.8)), 0.75);
+    const y = pos.getY(i) * w;
+    pos.setXYZ(i, u * L, y, -0.24 * (y / (W / 2)) ** 2 - 0.3 * (u - 0.25) ** 2);
+  }
+  g.rotateX(-Math.PI / 2);
+  g.computeVertexNormals();
+  return g;
+}
+function leafTexture() {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 256;
+  const g = c.getContext("2d");
+  const base = new THREE.Color(PAL.leaf);
+  const grad = g.createLinearGradient(0, 0, 512, 0);
+  grad.addColorStop(0, "#" + base.clone().offsetHSL(0, 0, -0.04).getHexString());
+  grad.addColorStop(1, "#" + base.clone().offsetHSL(0, 0, 0.05).getHexString());
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 512, 256);
+  g.strokeStyle = "rgba(96,140,32,.75)";
+  g.lineWidth = 6;
+  g.beginPath(); g.moveTo(0, 128); g.lineTo(512, 128); g.stroke();
+  g.lineWidth = 3;
+  for (let x = 40; x < 470; x += 52) for (const s of [-1, 1]) { g.beginPath(); g.moveTo(x, 128); g.quadraticCurveTo(x + 40, 128 + s * 60, x + 70, 128 + s * 125); g.stroke(); }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const LEAF_GEO = leafGeometry(1.1, 0.6); // 위에서 내려다볼 때 앉은 사람을 덜 가리게 실제보다 조금 작게
+const LEAF_MAT = new THREE.MeshStandardMaterial({ map: leafTexture(), side: THREE.DoubleSide, transparent: true, opacity: 0.72, roughness: 0.9, depthWrite: false, flatShading: STY.flat });
+// 잎사귀는 사람마다 켜고 끈다 (「내 캐릭터」) — 그 사람 자리의 칸막이에서 자라 앉은 사람 쪽으로 기운다.
+// 줄기·잎 InstancedMesh 두 개에 켠 사람만 담는다 (refreshLeaves)
+const STEM_GEO = cyl(0.012, 0.012, 0.34);
+function leafMatrices(seat) {
+  const f = seat.rot > 0 ? 1 : -1, barX = seat.desk.x + f * 0.39; // 칸막이는 책상 앞(모니터 쪽)
+  const base = new THREE.Matrix4().makeRotationY(f > 0 ? Math.PI : 0).setPosition(barX, PH, seat.desk.z); // 잎 끝(+x)이 사람 쪽으로
+  const l = new THREE.Object3D();
+  l.position.set(0, 0.34, 0);
+  l.rotation.set(-f * 0.08, 0, 0.32);
+  l.updateMatrix();
+  return [new THREE.Matrix4().makeTranslation(0, 0.17, 0).premultiply(base), l.matrix.premultiply(base)];
+}
+
+// ── 배치도 (COLS 는 위에): 칸막이를 사이에 둔 두 줄이 등을 맞댄다
+const UPPER = [71, 148, 225].map(mz), LOWER = [376, 453, 530, 607].map(mz), PITCH = 77 * S;
+const seatOwner = {};
+SEAT_NO.forEach((no, i) => { seatOwner[no] = i; });
+const SEAT_BY_NO = {};
+const panelParts = [], capParts = [], binParts = [];
+for (const bar of [-5, 193, 397, 602]) {
+  const x = mx(bar);
+  for (const [z0, z1] of [[mz(35), mz(262)], [mz(340), mz(645)]]) {
+    panelParts.push(part(box(0.06, PH, z1 - z0), [x, PH / 2, (z0 + z1) / 2]));
+    capParts.push(part(box(0.09, 0.03, z1 - z0 + 0.03), [x, PH + 0.015, (z0 + z1) / 2]));
+  }
+}
+for (const col of COLS) {
+  const barX = mx(col.bar), f = col.face, rot = f > 0 ? Math.PI / 2 : -Math.PI / 2;
+  const deskX = barX - f * 0.39;
+  for (const [rows, nums] of [[UPPER, col.upper], [LOWER, col.lower]]) {
+    const used = rows.filter((_, i) => nums[i] != null);
+    const edges = [used[0] - PITCH / 2, ...used.map((z) => z + PITCH / 2)];
+    for (const ze of edges) {
+      panelParts.push(part(box(0.78, PH, 0.04), [barX - f * 0.42, PH / 2, ze]));
+      capParts.push(part(box(0.78, 0.03, 0.07), [barX - f * 0.42, PH + 0.015, ze]));
+    }
+    nums.forEach((no, i) => {
+      if (no == null) return;
+      const z = rows[i];
+      const ids = makeDesk(deskX, z, rot, !NO_PC.has(no));
+      if (SNACK_DESKS.has(no)) addSnacks(deskX, z, rot, no * 7919);
+      const owner = seatOwner[no];
+      const chair = makeChair(owner != null && sizes[owner] ? sizes[owner].seat : SEAT);
+      const side = z < MAIN_Z ? 1 : -1;
+      const seat = {
+        no, rot, tiles: ids, chair, on: false,
+        inPos: v(deskX - f * IN_DIST, z),
+        outPos: v(deskX - f * OUT_DIST, z),
+        approach: v(deskX - f * OUT_DIST, z + side * 0.62),
+        stand: v(deskX - f * (OUT_DIST + 0.1), z + side * 0.25),
+        aisleX: mx(col.aisle),
+        center: v(deskX - f * IN_DIST * 0.55, z), // 자리 지정 때 누르는 곳 (책상~의자 가운데)
+        desk: v(deskX, z), // 책상 가운데 (책상 위 소품 놓을 때)
+      };
+      chair.position.copy(seat.inPos);
+      chair.rotation.y = rot;
+      SEAT_BY_NO[no] = seat;
+      binParts.push(part(cyl(0.14, 0.12, 0.32), [deskX - f * 0.52, 0.16, z - side * 0.6]));
+      addCard("", barX - f * 0.032, PH - 0.11, z - 0.45, f > 0 ? -Math.PI / 2 : Math.PI / 2);
+    });
+  }
+}
+mesh(merge(panelParts), M(PAL.panel, { roughness: 0.95 }), office);
+mesh(merge(capParts), M(PAL.cap, { roughness: 0.5 }), office);
+mesh(merge(binParts), M(PAL.bin ?? "#1d1e20", { roughness: 0.6 }), office);
+for (const k of ["white", "grey", "black"]) mesh(merge(DESK_PARTS[k]), DESK_MAT[k], office);
+if (SNACK_PARTS.length) mesh(merge(SNACK_PARTS), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5 }), office);
+mesh(merge(SCREEN_PARTS), new THREE.MeshBasicMaterial({ map: ATLAS, toneMapped: false }), office, [0, 0, 0], false);
+{
+  const t = new THREE.CanvasTexture(cardCanvas);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  mesh(merge(CARD_PARTS), new THREE.MeshStandardMaterial({ map: t, roughness: 0.7 }), office, [0, 0, 0], false);
+}
+const leafInst = [new THREE.InstancedMesh(STEM_GEO, M("#8a8f94"), NAMES.length), new THREE.InstancedMesh(LEAF_GEO, LEAF_MAT, NAMES.length)];
+for (const im of leafInst) { im.count = 0; im.frustumCulled = false; office.add(im); }
+leafInst[0].castShadow = true;
+const chairInst = ["black", "mesh"].map((k) => {
+  const im = new THREE.InstancedMesh(CHAIR_GEO[k], CHAIR_MAT[k], CHAIR_LIST.length);
+  im.castShadow = im.receiveShadow = true;
+  im.frustumCulled = false;
+  office.add(im);
+  return im;
+});
+function syncChairs() { // 의자 40개 위치를 한 번에 (매 프레임 — 의자는 앉고 일어날 때 움직인다)
+  CHAIR_LIST.forEach((c, i) => {
+    c.updateMatrix();
+    for (const im of chairInst) im.setMatrixAt(i, c.matrix);
+  });
+  for (const im of chairInst) im.instanceMatrix.needsUpdate = true;
+}
+// 움직이지 않는 사무실은 매 프레임 행렬 계산을 건너뛴다 (움직이는 건 의자와 문뿐)
+const CHAIRS = new Set(Object.values(SEAT_BY_NO).map((s) => s.chair));
+office.updateMatrixWorld(true);
+office.traverse((o) => { if (o !== office && o !== doorPivot && !CHAIRS.has(o)) o.matrixAutoUpdate = false; });
+
+const DOOR_OUT = v(DOOR.x - 1.0, DOOR.z), DOOR_IN = v(DOOR.x + 0.9, DOOR.z);
+const pathIn = (seat) => [DOOR_OUT, DOOR_IN, v(seat.aisleX, MAIN_Z), v(seat.aisleX, seat.approach.z), seat.approach].map((p) => p.clone());
+const pathOut = (seat) => pathIn(seat).reverse();
+
+// ───────────── 사람 ─────────────
+const ease = (k) => k * k * (3 - 2 * k);
+const smooth = (a, b, x) => ease(Math.min(1, Math.max(0, (x - a) / (b - a))));
+function lerpAngle(a, b, k) {
+  let d = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return a + d * k;
+}
+function makeLabel(text) {
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 72;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  // 이름표는 화면에서 늘 같은 크기 (멀리서 사무실 전체를 볼 때도 읽히게)
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true, sizeAttenuation: false }));
+  spr.scale.set(0.1, 0.0281, 1);
+  spr.renderOrder = 10;
+  const COL = { work: "#2f9e62", move: "#d08a1e", away: "#a3a7ad" };
+  const draw = (status) => {
+    const g = c.getContext("2d");
+    g.clearRect(0, 0, 256, 72);
+    g.font = "600 27px Pretendard, 'Malgun Gothic', sans-serif";
+    const w = Math.min(248, g.measureText(text).width + 70);
+    const x0 = (256 - w) / 2;
+    g.fillStyle = "rgba(255,253,249,.95)";
+    g.beginPath(); g.roundRect(x0, 10, w, 52, 26); g.fill();
+    g.fillStyle = COL[status];
+    g.beginPath(); g.arc(x0 + 28, 36, 8, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#23252a";
+    g.textBaseline = "middle";
+    g.fillText(text, x0 + 46, 37);
+    tex.needsUpdate = true;
+  };
+  uiScene.add(spr);
+  return { spr, draw };
+}
+// 3D 로 바꾸지 않은 사람: 2D 그림을 세워 둔다 (카메라 쪽으로 돌고, 걸을 때 살짝 들썩인다)
+const texLoader = new THREE.TextureLoader();
+function makeStandee(name) {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({ transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, visible: false });
+  cutImage("../magnific/cut", STY.cut ?? STYLE_KEY, name).then((url) => texLoader.load(url, (tx) => {
+    tx.colorSpace = THREE.SRGBColorSpace;
+    mat.map = tx;
+    mat.visible = true;
+    mat.needsUpdate = true;
+    card.scale.set(H * tx.image.width / tx.image.height, H, 1);
+  }));
+  const card = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), mat);
+  card.castShadow = true;
+  card.scale.set(H * 0.4, H, 1);
+  g.add(card);
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.18 * H / 1.25, 20), new THREE.MeshBasicMaterial({ color: "#000", transparent: true, opacity: 0.18, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.005;
+  g.add(shadow);
+  return { wrap: g, card };
+}
+
+const STATUS_TEXT = { away: "출근 전", enter: "출근하는 중", work: "근무 중", leave: "퇴근하는 중", gone: "퇴근", trip: "잠깐 자리 비움", lunch: "점심 먹는 중", toLunch: "점심 먹으러 가는 중" };
+const SPEED = 0.95 * (H / 1.25) ** 0.7; // 걷는 속도도 키에 맞춘다
+const tmp = new THREE.Vector3();
+
+class Person {
+  constructor(name, idx) {
+    this.name = name;
+    this.idx = idx;
+    this.seat = SEAT_BY_NO[SEAT_NO[idx]];
+    this.c = models[idx];
+    this.size = sizes[idx] || { drop: 0 };
+    if (this.c) {
+      this.head = this.c.root.getObjectByName("Head"); // 이름표 위치 (매 프레임 이름으로 찾지 않게)
+      this.root = this.c.wrap;
+      this.c.root.traverse((o) => { if (o.isMesh) o.userData.pid = idx; });
+    } else {
+      this.sd = makeStandee(name);
+      this.root = this.sd.wrap;
+      this.sd.card.userData.pid = idx;
+    }
+    scene.add(this.root);
+    this.label = makeLabel(name);
+    this.everLeft = false;
+    this.setAway();
+  }
+  get status() { return this.state === "away" ? "away" : this.state === "work" ? "work" : "move"; }
+  get statusText() {
+    const md = PERSONAL.get(this.name)?.mode;
+    if (MODES[md] && (AWAY_MODES.has(md) ? this.state === "away" : this.state === "work" || this.state === "workLeave")) return MODES[md][1];
+    if (this.state === "away") return isLunch() && wantIn(this) ? STATUS_TEXT.lunch : this.everLeft ? STATUS_TEXT.gone : STATUS_TEXT.away;
+    if (isLunch() && ["workLeave", "slideOut", "standUp", "pushChair", "leave"].includes(this.state)) return STATUS_TEXT.toLunch;
+    if (this.state === "work" || this.state === "workLeave") return STATUS_TEXT.work;
+    if (this.trip && this.state !== "leave") return STATUS_TEXT.trip;
+    return ["leave", "slideOut", "standUp", "pushChair"].includes(this.state) ? STATUS_TEXT.leave : STATUS_TEXT.enter;
+  }
+  play(name, fade) { if (this.c) this.c.play(name, fade); }
+  setAway() {
+    this.trip = null;
+    this.state = "away";
+    this.root.visible = false;
+    this.label.spr.visible = false;
+    this.seat.chair.position.copy(this.seat.inPos);
+    this.label.draw("away");
+  }
+  setWorking() {
+    this.trip = null;
+    const r = this.root;
+    r.visible = true;
+    this.label.spr.visible = true;
+    if (this.c) {
+      r.position.copy(this.seat.inPos);
+      r.position.y = -this.size.drop;
+      r.rotation.y = this.seat.rot;
+      this.play("typing", 0);
+      this.c.mixer.update(Math.random() * 5);
+    } else {
+      r.position.copy(this.seat.stand);
+    }
+    this.seat.chair.position.copy(this.seat.inPos);
+    this.state = "work";
+    this.label.draw("work");
+  }
+  arrive(delay = 0) {
+    if (this.state !== "away") return;
+    this.state = "wait";
+    this.timer = delay;
+    changed();
+  }
+  leave(delay = 0) {
+    if (this.state !== "work") return;
+    this.state = "workLeave";
+    this.timer = delay;
+    changed();
+  }
+  go(state) { this.state = state; this.timer = 0; }
+  // 잠깐 자리 비우기: trip = { go: [자리 앞 → … → 목적지], face: 도착해서 볼 곳, stay: 머무는 초, partner?: 이야기 상대 }
+  startTrip(trip) {
+    if (this.state !== "work" || !this.c) return false;
+    this.trip = trip;
+    this.label.draw("move");
+    this.go("slideOut");
+    changed();
+    return true;
+  }
+  walk(dt) {
+    const r = this.root;
+    let step = SPEED * dt;
+    while (step > 0 && this.pi < this.path.length) {
+      const d = tmp.copy(this.path[this.pi]).sub(r.position).setY(0);
+      const len = d.length();
+      if (len < 1e-4) { this.pi++; continue; }
+      if (this.c) r.rotation.y = lerpAngle(r.rotation.y, Math.atan2(d.x, d.z), Math.min(1, dt * 8));
+      if (len <= step) { r.position.x = this.path[this.pi].x; r.position.z = this.path[this.pi].z; step -= len; this.pi++; }
+      else { r.position.addScaledVector(d, step / len); step = 0; }
+    }
+    this.phase = (this.phase || 0) + dt * 9;
+    if (this.sd) this.sd.card.position.y = Math.abs(Math.sin(this.phase)) * 0.04 * H;
+    return this.pi >= this.path.length;
+  }
+  update(dt) {
+    if (this.chaos) return; // 어항 모드 이벤트가 조종하는 중
+    const r = this.root, s = this.seat, sd = !this.c;
+    switch (this.state) {
+      case "away":
+        return;
+      case "wait":
+        if ((this.timer -= dt) > 0) return;
+        this.path = pathIn(s);
+        if (sd) this.path[this.path.length - 1] = s.stand.clone();
+        this.pi = 1;
+        r.position.copy(this.path[0]);
+        r.rotation.y = Math.PI / 2;
+        r.visible = true;
+        this.label.spr.visible = true;
+        this.play("walk", 0.2);
+        this.go("enter");
+        this.label.draw("move");
+        break;
+      case "enter":
+      case "leave":
+        if (this.walk(dt)) {
+          if (sd) {
+            if (this.sd) this.sd.card.position.y = 0;
+            if (this.state === "enter") { this.go("work"); this.label.draw("work"); changed(); }
+            else { this.everLeft = true; this.setAway(); changed(); return; }
+          } else if (this.state === "enter") { this.fromRot = r.rotation.y; this.play("idle", 0.3); this.go("pullChair"); }
+          else { this.everLeft = true; this.setAway(); changed(); return; }
+        }
+        break;
+      case "pullChair": { // 의자를 빼며 책상 쪽으로 돈다
+        const k = Math.min((this.timer += dt) / 0.6, 1);
+        s.chair.position.lerpVectors(s.inPos, s.outPos, ease(k));
+        r.rotation.y = lerpAngle(this.fromRot, s.rot, ease(k)); // 책상 쪽을 보고 서면 의자는 뒤에 있다
+        if (k >= 1) { this.go("sitDown"); this.play("sit_down", 0.25); }
+        break;
+      }
+      case "sitDown": { // 앉는 동작(약 3초) 동안 의자 앞으로 옮기고, 발이 바닥에 닿게 몸을 내린다
+        const a = this.c.actions.sit_down, dur = a.getClip().duration;
+        const k = Math.min((this.timer += dt) / dur, 1);
+        r.position.lerpVectors(s.approach, s.outPos, smooth(0, 0.45, k));
+        r.position.y = -this.size.drop * smooth(0.35, 0.9, k);
+        if (k >= 1) { this.go("slideIn"); this.play("typing", 0.5); }
+        break;
+      }
+      case "slideIn": {
+        const k = Math.min((this.timer += dt) / 0.6, 1);
+        r.position.lerpVectors(s.outPos, s.inPos, ease(k));
+        r.position.y = -this.size.drop;
+        s.chair.position.set(r.position.x, 0, r.position.z);
+        if (k >= 1) { this.go("work"); this.label.draw("work"); changed(); }
+        break;
+      }
+      case "workLeave":
+        if ((this.timer -= dt) <= 0) {
+          this.label.draw("move");
+          if (sd) { this.path = pathOut(s); this.path[0] = s.stand.clone(); this.pi = 1; this.go("leave"); }
+          else this.go("slideOut");
+          changed();
+        }
+        break;
+      case "work":
+        break;
+      case "tripGo": // 목적지까지 걷기
+        if (this.walk(dt)) { this.fromRot = r.rotation.y; this.play("idle", 0.3); this.go("tripStay"); this.trip.arrive?.(this); }
+        break;
+      case "tripStay": { // 목적지를 보고 잠깐 (이야기 상대가 있으면 번갈아 「…」)
+        const t = this.trip, f = t.face;
+        r.rotation.y = lerpAngle(this.fromRot, Math.atan2(f.x - r.position.x, f.z - r.position.z), ease(Math.min(this.timer / 0.5, 1)));
+        this.timer += dt;
+        if (t.partner) talkDots(this, t.partner, this.timer);
+        if (this.timer < t.stay) break;
+        talkDots(this, t.partner, -1);
+        if (!shouldBeIn(this)) { // 그사이 퇴근을 눌렀거나 점심시간이 되면 자리로 안 가고 바로 나간다
+          const end = t.go[t.go.length - 1], ax = t.go[t.go.length - 2].x;
+          this.path = [end.clone(), v(ax, end.z), v(ax, MAIN_Z), DOOR_IN.clone(), DOOR_OUT.clone()];
+          this.trip = null; this.pi = 1; this.play("walk", 0.3); this.go("leave"); changed();
+          break;
+        }
+        this.path = t.go.map((p) => p.clone()).reverse();
+        this.pi = 1; this.play("walk", 0.3); this.go("tripBack");
+        break;
+      }
+      case "tripBack": // 자리로 돌아와 다시 앉는다 (출근해 들어올 때와 같은 동작)
+        if (this.walk(dt)) { this.trip = null; this.fromRot = r.rotation.y; this.play("idle", 0.3); this.go("pullChair"); changed(); }
+        break;
+      case "slideOut": {
+        const k = Math.min((this.timer += dt) / 0.6, 1);
+        r.position.lerpVectors(s.inPos, s.outPos, ease(k));
+        r.position.y = -this.size.drop;
+        s.chair.position.set(r.position.x, 0, r.position.z);
+        if (k >= 1) { this.go("standUp"); this.play("stand_up", 0.4); }
+        break;
+      }
+      case "standUp": {
+        const a = this.c.actions.stand_up, dur = a.getClip().duration;
+        const k = Math.min((this.timer += dt) / dur, 1);
+        r.position.y = -this.size.drop * (1 - smooth(0.05, 0.6, k));
+        r.position.x = THREE.MathUtils.lerp(s.outPos.x, s.approach.x, smooth(0.55, 1, k));
+        r.position.z = THREE.MathUtils.lerp(s.outPos.z, s.approach.z, smooth(0.55, 1, k));
+        if (k >= 1) { this.play("idle", 0.3); this.go("pushChair"); }
+        break;
+      }
+      case "pushChair": {
+        const k = Math.min((this.timer += dt) / 0.5, 1);
+        s.chair.position.lerpVectors(s.outPos, s.inPos, ease(k));
+        if (k >= 1) {
+          this.path = this.trip ? this.trip.go.map((p) => p.clone()) : pathOut(s);
+          this.pi = 1; this.play("walk", 0.3); this.go(this.trip ? "tripGo" : "leave");
+        }
+        break;
+      }
+    }
+  }
+  placeLabel() {
+    const r = this.root;
+    if (this.c) {
+      this.head.getWorldPosition(tmp);
+      this.label.spr.position.set(tmp.x, tmp.y + 0.36 * H, tmp.z);
+    } else this.label.spr.position.set(r.position.x, r.position.y + H * 1.12, r.position.z);
+  }
+}
+
+const crew = NAMES.map((n, i) => new Person(n, i));
+document.getElementById("total").textContent = `${crew.length}명`;
+
+// 원효인 님 책상 위 피규어 — 「Chibi Friren :3」 by CubeModeller (Sketchfab, CC BY 4.0), models3d/shrink_prop.py 로 줄인 것.
+// 자리를 옮기면 따라간다 (place → putFigure). 못 읽어도 사무실은 그대로
+const FIG = { owner: "원효인", url: "models3d/props/frieren.glb", h: 0.17, at: [0.56, 0.06], turn: -0.5 };
+let figure = null;
+function putFigure() {
+  const m = crew.find((o) => o.name === FIG.owner);
+  if (!figure || !m) return;
+  const s = m.seat, local = new THREE.Vector3(FIG.at[0], DH, FIG.at[1]).applyAxisAngle(new THREE.Vector3(0, 1, 0), s.rot);
+  figure.position.copy(s.desk).add(local);
+  figure.rotation.y = s.rot + Math.PI + FIG.turn; // 모델 앞(+z)이 앉은 사람 쪽(책상 -z)을 보게, 조금 비스듬히
+}
+loadGLB(FIG.url).then((g) => {
+  figure = g.scene;
+  figure.scale.setScalar(FIG.h); // shrink_prop.py 가 키 1·바닥 가운데 원점으로 맞춰 둠
+  figure.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+  office.add(figure);
+  putFigure();
+  renderer.shadowMap.needsUpdate = true;
+}).catch((e) => console.warn("피규어 못 읽음", e));
+
+// ───────────── 각자 하는 것: 출근·퇴근 · 말풍선 · 내 자리 잎사귀 ─────────────
+// claude.ai 에 올린 페이지에서 열면 claude.ai 로그인으로 사람을 가린다. 목록에서 처음 한 번 내 이름의 「나예요」를 누르면
+// 그 뒤로 그 캐릭터의 출퇴근·말풍선·잎사귀는 본인만 바꿀 수 있고(db 규칙: people/<내 id> 문서만 쓸 수 있다), 모두의 화면에 바로 나온다.
+// 같은 캐릭터를 두 사람이 고르면 먼저 고른 사람 것. 페이지 주인은 연결을 풀 수 있다.
+// 파일로 열면(이 PC 만): 누구 것이든 눌러 시험 — 이 브라우저에만 남는다.
+const MINE_KEY = "teamOfficeMine";
+const IN_CLAUDE = !!window.claude?.use;
+// 구경용 버전(window.__DEMO = true 로 연 페이지, build_artifact.py --demo): 버튼 없이 사람들이 알아서 출퇴근한다
+// 어항 모드(주소 끝 ?aquarium 또는 window.__AQUARIUM): 구경용처럼 알아서 지내다가 가끔 갑자기 이벤트 (chaos.js)
+const AQUARIUM = !!window.__AQUARIUM || new URLSearchParams(location.search).has("aquarium");
+// 실시간 모드(window.__LIVE = { url, key } — live_config.js / build_artifact.py): 진짜 출퇴근 — 알아서 출퇴근 흉내는 끈다
+const LIVE = window.__LIVE?.url && window.__LIVE?.key ? window.__LIVE : null;
+const TEST_FIRST = !!window.__TEST && new URLSearchParams(location.search).has("first"); // 첫 이용자 체험 판(?first): 로그인 전 · 내 캐릭터 미등록 · 테스트 도우미 없음
+const DEMO = (!!window.__DEMO || AQUARIUM) && !LIVE;
+const DEMO_IN = new Map(); // 이름 → 지금 출근해 있을지 (처음엔 셋 빼고 모두)
+const PERSONAL = new Map(); // 캐릭터 이름 → { on(출근), bubble, leaf }
+const AUTO = new Map(); // 자동으로 나온 말(혼잣말·반응): 이름 → { text, until } — 직접 쓴 상태 메시지(PERSONAL.bubble)와 따로, 몇 초 뒤 사라진다
+const ME = { shared: false, pending: IN_CLAUDE || !!LIVE, db: null, uid: null, owner: false, name: null, owners: new Map(), busy: false };
+let LOCAL = { people: {} };
+try { LOCAL = { ...LOCAL, ...JSON.parse(localStorage.getItem(MINE_KEY)) }; } catch {}
+const saveLocal = () => { try { localStorage.setItem(MINE_KEY, JSON.stringify(LOCAL)); } catch {} };
+// 출근해 있어야 하나: 누른 대로. 아무도 안 누른 캐릭터는 — 파일로 열면(시험) 출근, claude.ai 에선 출근 전
+const wantIn = (m) => DEMO ? DEMO_IN.get(m.name) ?? true : LIVE ? !!PERSONAL.get(m.name)?.on && !AWAY_MODES.has(PERSONAL.get(m.name)?.mode) : PERSONAL.get(m.name)?.on ?? !(ME.shared || ME.pending);
+const canCtl = (m) => LIVE ? !ME.pending && ((!!window.__TEST && !TEST_FIRST) || MY.char === m.name) : !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
+if (DEMO) for (const n of [...NAMES].sort(() => Math.random() - 0.5).slice(0, 3)) DEMO_IN.set(n, false);
+
+// 말풍선: 이름표 바로 위, 이름표처럼 화면에서 늘 같은 크기 (이름표 크기 설정을 따른다)
+function makeBubble() {
+  // 살짝 볼록한 말풍선 (그림자·위쪽 반짝임·아래쪽 음영), 글씨는 이름표 크기를 따른다. 옆으로 넉넉하게 (한 줄에 많이)
+  // 캔버스 크기는 늘 같게 (WebGL 텍스처는 처음 크기로 자리를 잡아 두므로, 크기를 바꿔 그리면 예전 그림이 남는다)
+  const CW = 640, CH = 128;
+  const c = document.createElement("canvas");
+  c.width = CW;
+  c.height = CH;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true, sizeAttenuation: false }));
+  spr.renderOrder = 11;
+  uiScene.add(spr);
+  const b = { spr, text: "" };
+  b.fit = () => { // 캔버스 1px = 이름표와 같은 화면 크기
+    const f = labelF(), k = (0.1 / 256) * f;
+    spr.scale.set(CW * k, CH * k, 1);
+    spr.center.set(0.5, -(0.0281 * f * 0.42) / (CH * k)); // 아래 끝(꼬리)이 이름표 위에 닿게
+  };
+  b.set = (text, kind = "user") => {
+    b.text = text; b.kind = kind;
+    const auto = kind === "auto";
+    const g = c.getContext("2d");
+    g.clearRect(0, 0, CW, CH); // 예전 말풍선 지우기
+    tex.needsUpdate = true;
+    if (!text) { spr.visible = false; return; }
+    g.font = auto ? "italic 500 27px Pretendard, 'Malgun Gothic', sans-serif" : "600 28px Pretendard, 'Malgun Gothic', sans-serif";
+    // 띄어쓰기 단위로 줄바꿈 (한 낱말이 너무 길면 글자 단위), 두 줄까지 — 넘치면 끝에 …
+    const MAXW = 540, fits = (t) => g.measureText(t).width <= MAXW, lines = [];
+    let cur = "";
+    for (const word of text.split(/(?<= )/)) {
+      if (fits(cur + word)) { cur += word; continue; }
+      if (cur.trim()) { lines.push(cur.trimEnd()); cur = ""; }
+      for (const ch of word) { if (fits(cur + ch)) cur += ch; else { lines.push(cur); cur = ch; } }
+    }
+    if (cur.trim()) lines.push(cur.trimEnd());
+    if (lines.length > 2) {
+      lines.length = 2;
+      while (!fits(lines[1] + "…") && lines[1].length) lines[1] = lines[1].slice(0, -1);
+      lines[1] += "…";
+    }
+    const w = Math.min(CW - 20, Math.max(auto ? 96 : 110, Math.max(...lines.map((l) => g.measureText(l).width)) + (auto ? 52 : 64))), hb = (auto ? 16 : 22) + lines.length * 36;
+    const x0 = (CW - w) / 2, y0 = CH - 26 - hb, cx = CW / 2; // 아래(꼬리) 쪽에 붙여 그린다 — 한 줄이면 위가 빈다
+    if (auto) { // 자동으로 나온 말: 옅은 회색 생각 구름 (알약 + 작은 동그라미 둘, 꼬리 없음)
+      const r = Math.min(hb / 2, 28);
+      g.save(); g.shadowColor = "rgba(20,24,32,.18)"; g.shadowBlur = 6; g.shadowOffsetY = 2;
+      g.fillStyle = "rgba(243,244,247,.88)";
+      g.beginPath(); g.roundRect(x0, y0, w, hb, r); g.fill();
+      g.beginPath(); g.arc(cx - 6, y0 + hb + 9, 7, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(cx + 3, y0 + hb + 20, 4, 0, Math.PI * 2); g.fill();
+      g.restore();
+      g.strokeStyle = "rgba(35,37,42,.10)"; g.lineWidth = 1.5; g.beginPath(); g.roundRect(x0, y0, w, hb, r); g.stroke();
+      g.fillStyle = "#6b6f76"; g.textAlign = "center"; g.textBaseline = "middle";
+      lines.forEach((l, i) => g.fillText(l, cx, y0 + 8 + 18 + i * 36));
+      b.fit();
+      return;
+    }
+    const shape = () => {
+      g.beginPath(); g.roundRect(x0, y0, w, hb, 24);
+      g.moveTo(cx - 15, y0 + hb - 2); g.quadraticCurveTo(cx - 2, y0 + hb + 6, cx + 1, y0 + hb + 20); g.quadraticCurveTo(cx + 6, y0 + hb + 6, cx + 16, y0 + hb - 2);
+    };
+    const body = g.createLinearGradient(0, y0, 0, y0 + hb + 20);
+    body.addColorStop(0, "#ffffff"); body.addColorStop(0.55, "#f6f7f9"); body.addColorStop(1, "#dfe3e9");
+    g.save();
+    g.shadowColor = "rgba(20,24,32,.35)"; g.shadowBlur = 8; g.shadowOffsetY = 4;
+    g.fillStyle = body; shape(); g.fill();
+    g.restore();
+    g.save(); shape(); g.clip();
+    const shine = g.createLinearGradient(0, y0, 0, y0 + hb * 0.5);
+    shine.addColorStop(0, "rgba(255,255,255,.95)"); shine.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = shine; g.beginPath(); g.roundRect(x0 + 8, y0 + 3, w - 16, hb * 0.45, 18); g.fill();
+    const rim = g.createLinearGradient(0, y0 + hb * 0.55, 0, y0 + hb);
+    rim.addColorStop(0, "rgba(120,130,150,0)"); rim.addColorStop(1, "rgba(120,130,150,.22)");
+    g.fillStyle = rim; g.fillRect(x0, y0 + hb * 0.55, w, hb * 0.45 + 22);
+    g.restore();
+    g.strokeStyle = "#34c759"; g.lineWidth = 4; shape(); g.stroke(); // 직접 쓴 상태 메시지: 초록 테두리
+    g.fillStyle = body; g.fillRect(cx - 13, y0 + hb - 3, 27, 6); g.fillStyle = rim; g.fillRect(cx - 13, y0 + hb - 3, 27, 6); // 꼬리와 몸 사이 선 지우기
+    g.fillStyle = "#23252a"; g.textAlign = "center"; g.textBaseline = "middle";
+    lines.forEach((l, i) => g.fillText(l, cx, y0 + 11 + 18 + i * 36));
+    b.fit();
+  };
+  return b;
+}
+function refreshLeaves() {
+  let n = 0;
+  for (const m of crew) {
+    if (!PERSONAL.get(m.name)?.leaf) continue;
+    const [stem, lf] = leafMatrices(m.seat);
+    leafInst[0].setMatrixAt(n, stem);
+    leafInst[1].setMatrixAt(n, lf);
+    n++;
+  }
+  for (const im of leafInst) { im.count = n; im.instanceMatrix.needsUpdate = true; }
+  renderer.shadowMap.needsUpdate = true;
+}
+function renderMine() { // 캐릭터마다 말풍선·잎사귀를 장면에, 버튼을 목록에
+  for (const m of crew) {
+    const a = AUTO.get(m.name), t = a ? a.text : PERSONAL.get(m.name)?.bubble || "", kind = a ? "auto" : "user";
+    if (t && !m.bubble) m.bubble = makeBubble();
+    if (m.bubble && (m.bubble.text !== t || m.bubble.kind !== kind)) m.bubble.set(t, kind);
+  }
+  refreshLeaves();
+  renderRowActs();
+  window.__social?.sync(); // 로그인하면 열린 사람 카드·간식 창도 쓰기 칸이 열린다
+}
+
+// 출퇴근: 누른 대로 걸어 들어오고 나간다. 퇴근한 사람은 다시 출근을 누를 때까지 안 들어온다
+// 점심시간(실제 시각 12:00~12:59)에는 출근한 사람도 모두 밥 먹으러 나갔다가 1시에 돌아온다
+const isLunch = () => window.__lunch ?? new Date().getHours() === 12; // __lunch: 점검용으로 시각 대신
+const shouldBeIn = (m) => wantIn(m) && !isLunch();
+let attendTimer = 0, wasLunch = isLunch(), demoTimer = 4;
+function demoTick(dt) { // 구경용: 4~9초마다 한 명씩 들고 남 (대부분은 근무 중)
+  if ((demoTimer -= dt) > 0) return;
+  demoTimer = 4 + Math.random() * 5;
+  const ins = NAMES.filter((n) => DEMO_IN.get(n) ?? true), outs = NAMES.filter((n) => !(DEMO_IN.get(n) ?? true));
+  if (outs.length && (ins.length < 18 || Math.random() < 0.5)) DEMO_IN.set(outs[(Math.random() * outs.length) | 0], true);
+  else if (ins.length > 15) DEMO_IN.set(ins[(Math.random() * ins.length) | 0], false);
+}
+// 구경용: 가끔 누군가 혼잣말 말풍선 (한 번에 둘까지, 6~10초)
+const CHATTER = ["국밥 먹고 싶다~", "오늘 점심 뭐 먹지?", "커피 마실 사람?", "퇴근하고 싶다…", "회의 언제 끝나지", "빌드 또 깨졌네", "간식 누가 갖다 놨어요?", "졸리다…",
+  "이번 주 금요일이다!", "엑셀 함수 아는 사람?", "오늘 날씨 좋다", "배고파…", "버그 잡았다!", "택배 왔나?", "떡볶이 땡긴다", "주말에 뭐 해요?", "모니터 눈 아프다", "아 맞다 그거…",
+  "점심 맛있었다~", "제출 마감 언제였지?", "아이스 아메리카노 한 잔", "오늘 야근각인가", "간식 책상 털러 가야지", "다들 수고 많으세요!"];
+let chatTimer = 5;
+function sayFor(m, text, sec) {
+  AUTO.set(m.name, { text, until: simTime + sec });
+  renderMine();
+}
+window.__sayFor = sayFor; // 점검용
+function autoTick() {
+  let gone = false;
+  for (const [n, a] of AUTO) if (a.until < simTime) { AUTO.delete(n); gone = true; }
+  if (gone) renderMine();
+}
+function chatTick(dt) {
+  if ((chatTimer -= dt) > 0) return;
+  chatTimer = 5 + Math.random() * 8;
+  const talking = AUTO.size + [...PERSONAL.values()].filter((p) => p.bubble).length;
+  const ws = crew.filter((m) => m.state === "work" && !AUTO.has(m.name) && !PERSONAL.get(m.name)?.bubble);
+  if (talking >= 2 || !ws.length) return;
+  sayFor(ws[(Math.random() * ws.length) | 0], CHATTER[(Math.random() * CHATTER.length) | 0], 6 + Math.random() * 4);
+}
+function attendTick(dt) {
+  autoTick();
+  if (DEMO) { demoTick(dt); chatTick(dt); }
+  if ((attendTimer -= dt) > 0 || editing) return;
+  attendTimer = 0.4;
+  const lunch = isLunch(), turn = lunch !== wasLunch; // 점심 시작·끝: 한꺼번에 말고 줄지어 (최대 25~40초에 걸쳐)
+  wasLunch = lunch;
+  for (const m of crew) {
+    const w = shouldBeIn(m);
+    if (w && m.state === "away") m.arrive(turn ? Math.random() * 40 : Math.random() * 0.6);
+    else if (!w && m.state === "work") m.leave(turn ? Math.random() * 25 : Math.random() * 0.4);
+  }
+  if (turn) changed();
+}
+function placeAttendance() { // 처음 열 때: 걷지 않고 바로 그 자리에
+  for (const m of crew) (shouldBeIn(m) ? m.setWorking() : m.setAway());
+  changed();
+}
+
+const meNote = document.getElementById("meNote"), meMsg = document.getElementById("meMsg");
+function meSay(text, warn = false) { meMsg.textContent = text; meMsg.className = warn ? "msg warn" : "msg"; }
+// 목록 줄마다 버튼: 내가 바꿀 수 있는 캐릭터면 출근·퇴근·말풍선·잎사귀, 아직 내 캐릭터가 없으면 빈 캐릭터에 「나예요」
+let bubbleOpen = null;
+function renderRowActs() {
+  if (LIVE) return renderLiveRows();
+  const nobody = ME.shared && ![...PERSONAL.values()].some((p) => p.on);
+  meNote.textContent = DEMO ? "" : ME.pending ? "확인하는 중…" : !ME.shared ? "이 PC 시험 모드 — 누구 것이든 눌러 볼 수 있어요 (이 브라우저에만 남아요)"
+    : !ME.name ? "처음 한 번, 목록에서 내 이름 줄의 「나예요」를 눌러 주세요 — 누르면 바로 출근해요"
+    : nobody ? "아직 출근한 사람이 없어요 — 내 줄의 「출근」을 누르면 들어와요" : "";
+  meNote.hidden = !meNote.textContent;
+  for (const r of rows) {
+    const m = r.m, p = PERSONAL.get(m.name) || {}, o = ME.owners.get(m.name);
+    let html = "";
+    if (canCtl(m)) {
+      html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
+        `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">말풍선</button><button class="btn${p.leaf ? " on" : ""}" data-act="leaf">잎사귀</button>`;
+    } else if (ME.shared && !ME.name && !o) html = `<button class="btn" data-act="claim">나예요</button>`;
+    else if (ME.shared && ME.owner && o) html = `<button class="btn" data-act="free">연결 풀기</button>`;
+    if (r.acts.innerHTML !== html) r.acts.innerHTML = html;
+    r.acts.hidden = !html;
+    const open = bubbleOpen === m && canCtl(m);
+    if (open && r.more.hidden && document.activeElement !== r.input) r.input.value = p.bubble || "";
+    r.more.hidden = !open;
+  }
+  changed();
+}
+// 내 문서 쓰기 (한 번에 하나씩)
+async function meWrite(fn, okText) {
+  if (ME.busy) return;
+  ME.busy = true;
+  try {
+    await fn();
+    if (okText) meSay(okText);
+  } catch (e) {
+    console.error("저장 실패", e);
+    meSay(e?.code === "invalid_argument" ? "쓸 권한이 없어요 — 페이지 공유에서 「참여자」 이상이어야 해요" : `저장하지 못했어요 (${e?.code || e?.message || e}) — 새로고침 뒤 다시 눌러 주세요`, true);
+  }
+  ME.busy = false;
+}
+function applyLocal(first = false) { // 파일로 열었을 때: 이 브라우저에 저장된 대로
+  PERSONAL.clear();
+  for (const [n, p] of Object.entries(LOCAL.people)) PERSONAL.set(n, p);
+  if (first) placeAttendance();
+  renderMine();
+}
+function updateFor(m, patch, okText) {
+  if (!canCtl(m)) return;
+  if (!ME.shared) {
+    LOCAL.people[m.name] = { ...LOCAL.people[m.name], ...patch };
+    saveLocal(); applyLocal(); meSay(okText || "");
+    return;
+  }
+  meWrite(() => ME.db.doc(`people/${ME.uid}`).update(patch), okText);
+}
+// 되돌리기 어려운 버튼은 두 번 눌러 확정 (claude.ai 페이지에서는 confirm 창이 뜨지 않는다)
+const ARM = new Map();
+function armed(key, el, label) {
+  if ((ARM.get(key) || 0) > performance.now()) { ARM.delete(key); return true; }
+  ARM.set(key, performance.now() + 4000);
+  if (el) el.textContent = label;
+  setTimeout(renderRowActs, 4100);
+  return false;
+}
+function onRowAct(m, act, r, el) {
+  if (LIVE) return onLiveAct(m, act, r);
+  const p = PERSONAL.get(m.name) || {};
+  if (act === "in") updateFor(m, { on: true, onAt: Date.now() }, `${m.name} 출근`);
+  else if (act === "out") updateFor(m, { on: false, onAt: Date.now() }, `${m.name} 퇴근`);
+  else if (act === "leaf") updateFor(m, { leaf: !p.leaf }, p.leaf ? "잎사귀를 껐어요" : "잎사귀를 켰어요");
+  else if (act === "bubble") { bubbleOpen = bubbleOpen === m ? null : m; renderRowActs(); if (bubbleOpen) r.input.focus(); }
+  else if (act === "say") updateFor(m, { bubble: r.input.value.trim().slice(0, 40), bubbleAt: Date.now() }, "말풍선을 띄웠어요");
+  else if (act === "clear") { r.input.value = ""; updateFor(m, { bubble: "" }, "말풍선을 지웠어요"); }
+  else if (act === "claim") {
+    if (ME.owners.has(m.name)) { meSay("이미 다른 분이 고른 캐릭터예요", true); return; }
+    // 한 번에 연결 + 바로 출근 (잘못 골랐으면 페이지 주인이 「연결 풀기」)
+    meSay("연결하는 중…");
+    meWrite(() => ME.db.doc(`people/${ME.uid}`).set({ name: m.name, claimedAt: Date.now(), on: true, onAt: Date.now(), bubble: "", leaf: false }), `${m.name} — 이제 내 캐릭터예요. 출근했어요`);
+  } else if (act === "free") {
+    const o = ME.owners.get(m.name);
+    if (o && armed("free:" + m.name, el, "한 번 더 누르면 풀기")) meWrite(() => ME.db.doc(`people/${o.uid}`).delete(), `${m.name} 연결을 풀었어요`);
+  }
+}
+// ───────────── 실시간 모드 (Supabase: window.__LIVE = { url, key }) ─────────────
+// 누구나 링크로 들어와서 처음 한 번 내 이름 줄의 「나예요」 + 비밀번호(8자 이상). 그 뒤로 출근·퇴근·상태 메시지는 그 사람만 (서버 함수가 확인).
+// 비밀번호는 서버로 보내지 않는다: 브라우저가 비밀번호에서 「확인값」(서버가 확인)과 「대화 열쇠 잠금」을 따로 만들어(dmcrypt.js) 앞의 것만 보낸다.
+// 같은 비밀번호로 1:1 대화 열쇠도 잠그므로, 저장소 주인도 대화 내용을 못 읽는다. 예전 숫자 4자리로 정한 사람은 로그인할 때 새 비밀번호로 바꾼다.
+// 다른 PC 에서는 「로그인」으로 비밀번호만. 표: office_people (supabase_setup.sql)
+const LIVE_KEY = "teamOfficeLive";
+let MY = { char: null, pin: null };
+const MY_STORE = window.__TEST && !TEST_FIRST ? sessionStorage : localStorage; // 테스트 판: 탭마다 다른 사람으로 로그인 (두 탭으로 서로 대화해 보기)
+const MY_KEY = LIVE_KEY + (TEST_FIRST ? "First" : "");
+try { MY = { ...MY, ...JSON.parse(MY_STORE.getItem(MY_KEY)) }; } catch {}
+const saveMy = () => { try { MY_STORE.setItem(MY_KEY, JSON.stringify(MY)); } catch {} };
+if (window.__TEST && !TEST_FIRST && !MY.char) { MY = { char: "석용현", pin: "0000" }; saveMy(); } // 테스트 판: 처음부터 로그인된 채로
+const PW_CHANGED = (!window.__TEST || TEST_FIRST) && !!MY.pin && !/^[0-9a-f]{64}$/.test(MY.pin); // 예전 숫자 4자리로 로그인돼 있던 기기
+if (PW_CHANGED) { MY = { char: null, pin: null }; saveMy(); }
+// 대화 열쇠: 서버에 잠가 둔 것을 비밀번호로 풀어 이 기기에 두고, 없으면 새로 만들어 잠가서 올린다
+async function setupDmKey(char, auth, wrap) {
+  try {
+    const { data, error } = await SB.rpc("office_key_get", { p_char: char, p_pin: auth });
+    if (error) throw error;
+    if (data?.status !== "ok") return false;
+    let key, pub = data.pub;
+    if (data.priv && pub) key = await DMCrypt.unwrap(wrap, data.priv);
+    else {
+      const k = await DMCrypt.newPair(wrap);
+      const r = await SB.rpc("office_key_set", { p_char: char, p_pin: auth, p_pub: k.pub, p_priv: k.priv });
+      if (r.error || r.data !== "ok") return false;
+      key = k.key; pub = k.pub;
+    }
+    await DMCrypt.keep(char, key, pub);
+    return true;
+  } catch (e) { console.warn("대화 열쇠를 준비하지 못했어요", e); return false; }
+}
+async function myPub(char) { try { const { data } = await SB.from("office_pubkeys").select("char,pub").eq("char", char); return data?.[0]?.pub || null; } catch { return null; } }
+const DM_KEYS = { // social.js 가 쓰는 것: 이 기기의 내 대화 열쇠 / 없을 때 비밀번호로 한 번 풀기
+  async mine() {
+    if (!MY.char || !SB) return null;
+    let s = await DMCrypt.saved(MY.char);
+    const pub = await myPub(MY.char);
+    if (s && pub && s.pub !== pub) s = null; // 다른 기기에서 열쇠를 새로 만들었으면 이 기기 것은 낡음
+    if (!s && window.__TEST && !TEST_FIRST) { const { wrap } = await DMCrypt.fromPassword(MY.char, window.__TEST_PW); await setupDmKey(MY.char, MY.pin, wrap); s = await DMCrypt.saved(MY.char); }
+    return s || null;
+  },
+  async unlock(pw) {
+    if (!MY.char) return "no_char";
+    const { auth, wrap } = await DMCrypt.fromPassword(MY.char, pw);
+    if (auth !== MY.pin) return "bad_pin";
+    return (await setupDmKey(MY.char, auth, wrap)) ? "ok" : "fail";
+  },
+};
+function testAs(name) { // 테스트 판: 누구로든 바로 바꿔 쓰고 대화해 보기
+  MY = { char: name, pin: "0000" }; saveMy(); bubbleOpen = null;
+  if (window.__testSel) window.__testSel.value = name;
+  meSay(`🧪 지금 나: ${name}`); renderMine();
+}
+let SB = null, pinOpen = null; // pinOpen: { m, mode: "claim" | "login" }
+window.__personal = PERSONAL; // 점검용
+function liveApply(rowsIn) { // 서버의 표 → 캐릭터마다 출근·상태 메시지
+  for (const r of rowsIn) PERSONAL.set(r.char, { on: !!r.on_duty, bubble: String(r.msg || "").slice(0, 40), mode: r.mode || "", birthday: r.birthday || "" });
+}
+async function liveInit() {
+  renderMine();
+  try {
+    await new Promise((ok, no) => { // 라이브러리는 실시간 모드일 때만 읽는다
+      if (window.supabase) return ok();
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js";
+      s.onload = ok; s.onerror = () => no(new Error("라이브러리를 못 읽었어요"));
+      document.head.append(s);
+    });
+    SB = window.supabase.createClient(LIVE.url, LIVE.key, { auth: { persistSession: false } });
+    const { data, error } = await SB.from("office_people").select("*");
+    if (error) throw error;
+    PERSONAL.clear(); liveApply(data);
+    if (PW_CHANGED) meSay("비밀번호가 8자 이상으로 바뀌었어요 — 내 이름 줄의 「로그인」에서 예전 숫자 4자리를 넣으면 새 비밀번호를 정할 수 있어요", true);
+    if (MY.char && !PERSONAL.has(MY.char)) { MY = { char: null, pin: null }; saveMy(); } // 주인이 지웠으면 다시 고르기
+    ME.pending = false;
+    placeAttendance(); renderMine();
+    SB.channel("office").on("postgres_changes", { event: "*", schema: "public", table: "office_people" }, (p) => {
+      if (p.eventType === "DELETE") PERSONAL.delete(p.old.char); else liveApply([p.new]);
+      renderMine();
+    }).subscribe();
+  } catch (e) {
+    console.error(e);
+    ME.pending = false; renderMine();
+    meSay(`출퇴근 정보를 못 불러왔어요 (${e.message || e}) — 새로고침해 보세요`, true);
+  }
+}
+async function liveCall(fn, args, okText) {
+  if (ME.busy || !SB) return null;
+  ME.busy = true;
+  try {
+    const { data, error } = await SB.rpc(fn, args);
+    if (error) throw error;
+    const msg = { bad_pin: "비밀번호가 달라요", locked: "여러 번 틀려서 10분 동안 잠겼어요", taken: "이미 다른 분이 고른 캐릭터예요", no_char: "아직 연결 안 된 캐릭터예요", bad_input: "비밀번호는 8자 이상이에요" }[data];
+    if (data === "ok") { if (okText) meSay(okText); } else meSay(msg || String(data), true);
+    return data;
+  } catch (e) {
+    console.error(e); meSay(`저장하지 못했어요 (${e.message || e})`, true); return null;
+  } finally { ME.busy = false; }
+}
+function renderLiveRows() {
+  const nobody = !ME.pending && ![...PERSONAL.values()].some((p) => p.on);
+  meNote.textContent = ME.pending ? "출퇴근 정보를 불러오는 중…"
+    : !MY.char ? "처음 한 번, 내 이름 줄의 「나예요」를 누르고 비밀번호(8자 이상)를 정해 주세요. 이 비밀번호로 1:1 대화도 잠겨요 — 잊으면 지난 대화는 아무도 못 열어요. 다른 기기에선 「로그인」"
+    : nobody ? "아직 출근한 사람이 없어요" : "";
+  meNote.hidden = !meNote.textContent;
+  for (const r of rows) {
+    const m = r.m, p = PERSONAL.get(m.name) || {};
+    let html = "", side = "";
+    if (canCtl(m)) {
+      html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
+        `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button>`;
+      side = window.__TEST && !TEST_FIRST ? `<button class="btn${MY.char === m.name ? " on" : ""}" data-act="as" title="테스트: 이 사람으로 쓰고 대화해 보기">${MY.char === m.name ? "지금 나" : "이 사람으로"}</button>`
+        : `<button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`;
+    } else if (!ME.pending && !MY.char) html = PERSONAL.has(m.name) ? `<button class="btn" data-act="login">로그인</button>` : `<button class="btn" data-act="claim">나예요</button>`;
+    if (r.acts.innerHTML !== html) r.acts.innerHTML = html;
+    r.acts.hidden = !html;
+    if (r.side.innerHTML !== side) r.side.innerHTML = side;
+    r.side.hidden = !side;
+    const open = bubbleOpen === m && canCtl(m);
+    if (open && r.more.hidden && document.activeElement !== r.input) r.input.value = p.bubble || "";
+    r.more.hidden = !open;
+    const po = pinOpen?.m === m && !MY.char;
+    if (po && (r.pin.hidden || r.pin.dataset.mode !== pinOpen.mode)) {
+      r.pin.dataset.mode = pinOpen.mode; r.pinIn.value = "";
+      r.pinOk.textContent = { claim: "정하고 출근", login: "로그인", upgrade: "새 비밀번호로" }[pinOpen.mode];
+      r.pinIn.placeholder = pinOpen.mode === "login" ? "비밀번호" : "새 비밀번호 (8자 이상)";
+      r.pinIn.autocomplete = pinOpen.mode === "login" ? "current-password" : "new-password";
+    }
+    r.pin.hidden = !po;
+  }
+  changed();
+}
+async function onLiveAct(m, act, r) {
+  if (act === "claim" || act === "login") { pinOpen = pinOpen?.m === m ? null : { m, mode: act }; renderLiveRows(); if (pinOpen) r.pinIn.focus(); return; }
+  if (act === "pinok") {
+    const pw = r.pinIn.value, mode = pinOpen?.mode;
+    if (mode === "login" && /^\d{4}$/.test(pw)) { // 예전 숫자 4자리: 맞으면 새 비밀번호 정하기로
+      if ((await liveCall("office_login", { p_char: m.name, p_pin: pw })) === "ok") {
+        pinOpen = { m, mode: "upgrade", old: pw }; renderLiveRows(); r.pinIn.focus();
+        meSay("확인했어요 — 이제 새 비밀번호(8자 이상)를 정해 주세요. 이 비밀번호로 1:1 대화도 잠겨요");
+      }
+      return;
+    }
+    if (pw.length < DMCrypt.MIN) { meSay(`비밀번호는 ${DMCrypt.MIN}자 이상이에요`, true); return; }
+    meSay("확인하는 중…");
+    const { auth, wrap } = await DMCrypt.fromPassword(m.name, pw); // 비밀번호 자체는 서버로 안 보낸다
+    const res = mode === "upgrade" ? await liveCall("office_change_pin", { p_char: m.name, p_pin: pinOpen.old, p_new: auth }, "새 비밀번호로 바꿨어요")
+      : await liveCall(mode === "claim" ? "office_claim" : "office_login", { p_char: m.name, p_pin: auth }, mode === "claim" ? `${m.name} — 이제 내 캐릭터예요. 출근했어요` : `${m.name} 님으로 들어왔어요`);
+    if (res !== "ok") return;
+    MY = { char: m.name, pin: auth }; saveMy(); pinOpen = null; renderMine();
+    setupDmKey(m.name, auth, wrap).then(() => window.__social?.sync());
+    return;
+  }
+  if (!canCtl(m)) return;
+  const who = window.__TEST && !TEST_FIRST ? { p_char: m.name, p_pin: "0000" } : { p_char: MY.char, p_pin: MY.pin }; // 테스트 판: 누른 줄의 사람으로
+  const set = async (args, ok) => { const res = await liveCall("office_set", { ...who, ...args }, ok); if (res === "bad_pin" || res === "no_char") { MY = { char: null, pin: null }; saveMy(); renderMine(); } };
+  if (act === "in") set({ p_on: true }, "출근했어요");
+  else if (act === "out") set({ p_on: false }, "퇴근했어요");
+  else if (act === "bubble") { bubbleOpen = bubbleOpen === m ? null : m; renderLiveRows(); if (bubbleOpen) r.input.focus(); }
+  else if (act === "say") set({ p_msg: r.input.value.trim().slice(0, 40) }, "상태 메시지를 띄웠어요");
+  else if (act === "clear") { r.input.value = ""; set({ p_msg: "" }, "상태 메시지를 지웠어요"); }
+  else if (act === "as") testAs(m.name);
+  else if (act === "logout") { DMCrypt.forget(MY.char); MY = { char: null, pin: null }; saveMy(); bubbleOpen = null; meSay("이 PC 에서 로그아웃했어요"); renderMine(); }
+}
+// claude.ai 에서 열렸으면 함께 쓰는 저장소로 (파일로 열면 window.claude 가 없다)
+(async () => {
+  if (LIVE) return;
+  const [db, user] = IN_CLAUDE ? await Promise.all([window.claude.use("db"), window.claude.use("user")]) : [null, null];
+  const uid = user ? await user.id() : null;
+  if (!db || !uid) { // 함께 쓰기를 못 하면 이 PC 시험 모드
+    if (ME.pending) { ME.pending = false; applyLocal(true); }
+    return;
+  }
+  Object.assign(ME, { db, uid, owner: await user.isOwner() });
+  let first = true;
+  db.collection("people").onSnapshot((snap) => {
+    ME.owners.clear();
+    for (const d of snap.docs) { // 같은 캐릭터를 여럿이 골랐으면 먼저 고른 사람
+      const v = d.data(), o = ME.owners.get(v?.name);
+      if (!v?.name || !NAMES.includes(v.name)) continue;
+      if (!o || v.claimedAt < o.claimedAt || (v.claimedAt === o.claimedAt && d.id < o.uid)) ME.owners.set(v.name, { uid: d.id, claimedAt: v.claimedAt || 0, on: !!v.on, bubble: String(v.bubble || ""), leaf: !!v.leaf });
+    }
+    const mine = snap.docs.find((d) => d.id === uid)?.data();
+    ME.name = mine && ME.owners.get(mine.name)?.uid === uid ? mine.name : null;
+    if (mine && !ME.name) meSay(`${mine.name} 캐릭터는 다른 분이 먼저 골랐어요 — 연결이 풀리면 다시 골라 주세요`, true);
+    PERSONAL.clear();
+    for (const [n, o] of ME.owners) PERSONAL.set(n, { on: o.on, bubble: o.bubble.slice(0, 40), leaf: o.leaf });
+    ME.shared = true; ME.pending = false;
+    if (first) { first = false; placeAttendance(); } // 처음엔 걷지 않고 바로
+    renderMine();
+  }, (e) => meSay(`함께 보기가 끊겼어요 (${e.code}) — 새로고침해 보세요`, true));
+})();
+
+// 처음 화면: 각자 누른 대로 (출근한 사람만 앉아 있다)
+for (const m of crew) (shouldBeIn(m) ? m.setWorking() : m.setAway());
+// ?who=이름 으로 열면 그 사람을 따라간다 (자리에 앉혀서)
+const WHO = crew.find((m) => m.name === new URLSearchParams(location.search).get("who"));
+
+// ───────────── 화면 옆 목록 ─────────────
+const list = document.getElementById("list");
+let selected = null;
+let editing = false, editSel = null; // 자리 지정 중인지, 자리 바꿀 사람
+const rows = crew.map((m) => {
+  const li = document.createElement("li");
+  li.innerHTML = `<img alt=""><div class="who"><b></b><span><i class="dot"></i><em></em></span><small></small></div><div class="side" hidden></div><select title="자리"></select>` +
+    `<div class="acts" hidden></div><div class="more" hidden><input maxlength="40" placeholder="말풍선에 쓸 말 (40자)"><button class="btn dark" data-act="say">띄우기</button><button class="btn" data-act="clear">지우기</button></div>` +
+    `<div class="more pin" hidden><input type="password" maxlength="64" placeholder="비밀번호"><button class="btn dark" data-act="pinok">확인</button></div>`;
+  li.querySelector("img").src = `faces/${FILE_ID[m.name]}.jpg`;
+  li.querySelector("b").textContent = m.name;
+  const row = { m, li, dot: li.querySelector(".dot"), text: li.querySelector("em"), msg: li.querySelector(".who small"), sel: li.querySelector("select"),
+    acts: li.querySelector(".acts"), side: li.querySelector(".side"), more: li.querySelector(".more"), input: li.querySelector("input"),
+    pin: li.querySelector(".pin"), pinIn: li.querySelector(".pin input"), pinOk: li.querySelector('.pin [data-act="pinok"]') };
+  li.onclick = (e) => {
+    const a = e.target.closest("[data-act]");
+    if (a) return onRowAct(m, a.dataset.act, row, a);
+    if (!e.target.closest(".acts,.side,.more,select")) { if (editing) pickForSeat(m); else { select(m); window.__social?.openPerson(m.name); } }
+  };
+  row.input.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) onRowAct(m, "say", row); };
+  row.pinIn.onkeydown = (e) => { if (e.key === "Enter") onRowAct(m, "pinok", row); };
+  row.sel.onchange = () => { editSel = null; moveTo(m, +row.sel.value); };
+  list.append(li);
+  return row;
+});
+function changed() {
+  const n = { work: 0, move: 0, away: 0 };
+  const owner = {};
+  for (const m of crew) owner[m.seat.no] = m.name;
+  for (const r of rows) {
+    const st = r.m.status;
+    n[st]++;
+    r.dot.className = "dot " + st;
+    r.text.textContent = r.m.statusText; // 자리 번호는 안 보여 준다
+    const said = PERSONAL.get(r.m.name)?.bubble || "";
+    r.msg.textContent = said ? `“${said}”` : ""; // 직접 쓴 상태 메시지 (머리 위 초록 테두리 말풍선과 같은 글)
+    const w = wantIn(r.m), bi = r.acts.querySelector('[data-act="in"]'), bo = r.acts.querySelector('[data-act="out"]');
+    if (bi) { bi.disabled = w; bo.disabled = !w; } // 이미 출근(퇴근)이면 그 버튼은 눌러 둔 상태
+    r.li.classList.toggle("sel", (editing ? editSel : selected) === r.m);
+    if (editing) {
+      // 자리 고르기: 빈자리 / 누가 앉은 자리 (고르면 서로 바뀜)
+      r.sel.innerHTML = ALL_SEATS.map((no) => `<option value="${no}"${no === r.m.seat.no ? " selected" : ""}>E-${no}${owner[no] && owner[no] !== r.m.name ? " · " + owner[no] : no === r.m.seat.no ? "" : " · 빈자리"}</option>`).join("");
+    }
+  }
+  document.getElementById("counts").innerHTML =
+    `<span class="chip" title="근무 중"><i class="dot work"></i><span class="lbl">근무 중 </span>${n.work}</span>` +
+    (n.move ? `<span class="chip" title="이동 중"><i class="dot move"></i><span class="lbl">이동 중 </span>${n.move}</span>` : "") +
+    `<span class="chip" title="자리에 없음"><i class="dot"></i><span class="lbl">자리에 없음 </span>${n.away}</span>` +
+    (isLunch() ? `<span class="chip">🍚<span class="lbl"> 점심시간 12:00~13:00</span></span>` : "");
+}
+changed();
+if (LIVE) queueMicrotask(liveInit); // 실시간 모드: Supabase 에서 출퇴근·상태 메시지
+else if (IN_CLAUDE) queueMicrotask(renderMine); // claude.ai: 함께 쓰는 저장소를 기다리는 동안
+else queueMicrotask(() => applyLocal(true)); // 파일로 열면: 이 브라우저에 저장된 대로 (화면 설정 VIEW 까지 만든 뒤에)
+// 시점 버튼: 누르면 그쪽으로 날아간다 (사람 따라가기는 풀린다)
+const CAMS = [
+  ["전체", HOME.target, HOME.pos],
+  ["위에서", v(RCX, 0.4), new THREE.Vector3(RCX, 24, 0.9)],
+  ["입구에서", new THREE.Vector3(0.5, 0.4, MAIN_Z), new THREE.Vector3(ROOM.x0 - 2.2, 4.2, MAIN_Z + 0.4)],
+  ["반대편", new THREE.Vector3(-0.2, 0, -0.4), new THREE.Vector3(-2.6, 14.5, -15.5)],
+  ["창가 쪽", new THREE.Vector3(0, 0, 0.6), new THREE.Vector3(16.5, 9.5, 2.2)],
+  ["간식 책상", new THREE.Vector3(-1.95, DH, 2.36), new THREE.Vector3(1.3, 3.6, 5.2)],
+];
+const camBar = document.getElementById("cams");
+// 휴대폰: 시점 막대를 「🎥 지금 시점」 단추 하나로 접고, 누르면 위로 목록 (PC 는 막대 그대로)
+const camWrap = document.createElement("div"), camsBtn = document.createElement("button");
+camWrap.className = "camwrap"; camsBtn.className = "camsbtn"; camsBtn.type = "button"; camsBtn.setAttribute("aria-haspopup", "true");
+camBar.before(camWrap); camWrap.append(camsBtn, camBar);
+const camOpen = (on) => { camWrap.classList.toggle("open", on); camsBtn.setAttribute("aria-expanded", String(on)); };
+const camLabel = () => { camsBtn.innerHTML = `<span class="ico">🎥</span><span>${camBar.querySelector("button.on")?.textContent || "시점"}</span>`; };
+camsBtn.onclick = () => camOpen(!camWrap.classList.contains("open"));
+addEventListener("pointerdown", (e) => { if (camWrap.classList.contains("open") && !camWrap.contains(e.target)) camOpen(false); }, true);
+new MutationObserver(camLabel).observe(camBar, { subtree: true, attributes: true, attributeFilter: ["class"], childList: true });
+camBar.innerHTML = `<button data-tour>자동 둘러보기</button>` + CAMS.map(([t], i) => `<button data-i="${i}">${t}</button>`).join("");
+const tourBtn = camBar.querySelector("[data-tour]");
+camBar.onclick = (e) => {
+  if (e.target.closest("button")) camOpen(false);
+  if (e.target.closest("[data-tour]")) { if (TOUR.active) stopTour(); else startTour(); return; }
+  const c = CAMS[e.target.dataset.i];
+  if (!c) return;
+  selected = null; changed();
+  flyTo(c[1], c[2]);
+  for (const b of camBar.children) b.classList.toggle("on", b === e.target);
+};
+
+// ───────────── 둘러보기: 띄워 두면 카메라가 알아서 사무실을 비춘다 ─────────────
+// 손대지 않고 15초(처음 열면 8초)가 지나면 시작: 크게 돌기 · 누군가 가까이 · 위에서 · 통로 따라 · 구석에서 를 번갈아 천천히.
+// 화면·목록을 만지거나 시점 버튼을 누르면 바로 멈춘다. 「자동 둘러보기」 버튼으로 바로 시작/멈춤. 어항 이벤트 중엔 이벤트 화면 그대로
+const TOUR = { on: true, idle: 7, active: false, shot: null, t: 0, n: 0, evt: false };
+const TOUR_WAIT = 15;
+const SHOTS = ["orbit", "person", "overhead", "person", "aisle", "corner", "person"];
+const SHOT_LEN = { orbit: 24, person: 13, overhead: 16, aisle: 18, corner: 14 };
+const tourPos = new THREE.Vector3(), tourAt = new THREE.Vector3();
+function startTour() {
+  TOUR.active = true; fly = null; selected = null; changed();
+  for (const b of camBar.children) b.classList.toggle("on", b === tourBtn);
+  nextShot();
+}
+function stopTour() {
+  TOUR.active = false; TOUR.idle = 0;
+  tourBtn.classList.remove("on");
+}
+function pickStar() { // 가까이 볼 사람: 이야기하거나 말풍선을 띄웠거나 돌아다니는 사람 먼저
+  const seen = crew.filter((m) => m.root.visible && m.state !== "away");
+  if (!seen.length) return null;
+  const busy = seen.filter((m) => m.bubble?.text || m.status === "move");
+  const pool = busy.length && Math.random() < 0.7 ? busy : seen;
+  return pool[(Math.random() * pool.length) | 0];
+}
+function nextShot() {
+  let kind = SHOTS[TOUR.n++ % SHOTS.length];
+  const star = kind === "person" ? pickStar() : null;
+  if (kind === "person" && !star) kind = "orbit";
+  const dir = Math.random() < 0.5 ? 1 : -1;
+  TOUR.shot = {
+    kind, star, dir, len: SHOT_LEN[kind],
+    a0: kind === "person" ? star.root.rotation.y + dir * (0.6 + Math.random() * 0.6) : Math.atan2(camera.position.x - RCX, camera.position.z - MAIN_Z),
+    cam: CAMS[[2, 3, 4, 5][(Math.random() * 4) | 0]],
+  };
+  TOUR.t = 0;
+}
+function shotGoal(sh, t) { // 이 장면에서 t 초 때 카메라 자리(tourPos)와 보는 곳(tourAt)
+  const u = Math.min(1, t / sh.len), e = u * u * (3 - 2 * u), K = H / 1.25;
+  if (sh.kind === "orbit") {
+    const a = sh.a0 + t * 0.045 * sh.dir;
+    tourPos.set(RCX + Math.sin(a) * 15.5, 11 + Math.sin(t * 0.25) * 1.5, MAIN_Z + Math.cos(a) * 15.5);
+    tourAt.set(RCX, 0.3, MAIN_Z);
+  } else if (sh.kind === "person") {
+    const p = sh.star.root.position, a = sh.a0 + t * 0.07 * sh.dir;
+    tourAt.set(p.x, H * 0.6, p.z);
+    tourPos.set(p.x + Math.sin(a) * 3.4 * K, 2.4 * K, p.z + Math.cos(a) * 3.4 * K);
+    tourPos.x = Math.min(ROOM.x1 - 0.4, Math.max(ROOM.x0 + 0.4, tourPos.x)); // 벽 밖으로 나가지 않게
+    tourPos.z = Math.min(ROOM.z1 - 0.4, Math.max(ROOM.z0 + 0.4, tourPos.z));
+  } else if (sh.kind === "overhead") {
+    const x = RCX + sh.dir * (e * 6 - 3);
+    tourPos.set(x, 18, MAIN_Z + 3);
+    tourAt.set(x, 0, MAIN_Z - 0.6);
+  } else if (sh.kind === "aisle") { // 큰 통로를 따라 천천히 (머리 위 높이)
+    const x0 = ROOM.x0 + 0.8, x1 = ROOM.x1 - 2.4, x = sh.dir > 0 ? x0 + (x1 - x0) * e : x1 - (x1 - x0) * e;
+    tourPos.set(x, 2.3 * K, MAIN_Z + 0.15);
+    tourAt.set(x + sh.dir * 4, 0.7 * K, MAIN_Z);
+  } else { // 구석에서: 시점 버튼 자리에서 아주 조금씩 다가간다
+    const [, at, pos] = sh.cam;
+    tourAt.copy(at);
+    tourPos.copy(pos).lerp(at, 0.16 * e);
+  }
+}
+function tourTick(dt) {
+  if (!TOUR.active) {
+    if (window.__social?.open || guideEl) TOUR.idle = 0; // 사람 카드·사용 안내를 읽는 동안은 가만히
+    else if (TOUR.on && !editing && (TOUR.idle += dt) >= TOUR_WAIT) startTour();
+    return;
+  }
+  if (CHAOS?.active || editing) { TOUR.evt = true; return; } // 이벤트 중엔 이벤트 화면 그대로
+  if (TOUR.evt) { TOUR.evt = false; nextShot(); }
+  const sh = TOUR.shot;
+  if ((TOUR.t += dt) > sh.len || (sh.star && (!sh.star.root.visible || sh.star.state === "away"))) return nextShot();
+  shotGoal(sh, TOUR.t);
+  const k = 1 - Math.exp(-dt * (0.7 + Math.min(TOUR.t, 6) * 0.25)); // 장면이 바뀌면 천천히 넘어가고, 자리 잡으면 따라붙는다
+  camera.position.lerp(tourPos, k);
+  controls.target.lerp(tourAt, k);
+}
+// ───────────── 사무실 밖 배경: 각자 고르기 또는 랜덤(5분마다) — 이 브라우저에 기억 (bg.js) ─────────────
+const BG_KEY = "teamOfficeBg";
+const BG = window.OfficeBg ? window.OfficeBg({ THREE, scene, renderer, camera, center: new THREE.Vector3(RCX, 0, 0), size: { w: RW, d: RD }, baseBg: STY.pal.bg }) : null;
+const bgState = { pick: window.__TEST ? "random" : "none", next: 0 };
+try { bgState.pick = localStorage.getItem(BG_KEY) || bgState.pick; } catch {}
+function applyBg(pick) {
+  if (!BG) return;
+  bgState.pick = pick;
+  try { localStorage.setItem(BG_KEY, pick); } catch {}
+  if (pick === "random") { randomBg(); bgState.next = 300; } else BG.set(BG.kinds.some((k) => k.id === pick) ? pick : "none");
+  for (const b of bgMenu.children) b.classList.toggle("on", b.dataset.bg === pick);
+}
+function randomBg() { const pool = BG.kinds.filter((k) => k.id !== "none" && k.id !== BG.id); BG.set(pool[(Math.random() * pool.length) | 0].id); }
+// 화면 바깥 여백(아이폰 주소창 아래 등)과 상태 막대 색을 배경에 맞춘다 — [맨 위, 맨 아래] (장면 그림을 읽으면 멈칫할 수 있어 정해 둔 색)
+const EDGE_OF = { none: ["#eef1f4", "#eef1f4"], sky: ["#eff5ff", "#8dbbea"], sea: ["#b1d3e5", "#5fc3d7"], forest: ["#cbe0bb", "#96c864"] };
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+let edgeFor = null;
+function bgTick(dt) {
+  if (!BG) return;
+  if (BG.id !== edgeFor) {
+    edgeFor = BG.id;
+    const [top, bottom] = EDGE_OF[edgeFor] || EDGE_OF.none;
+    document.documentElement.style.backgroundColor = document.body.style.backgroundColor = bottom;
+    themeMeta?.setAttribute("content", top);
+  }
+  BG.tick(dt);
+  if (bgState.pick === "random" && (bgState.next -= dt) <= 0) { bgState.next = 300; randomBg(); }
+}
+const bgMenu = document.createElement("div");
+bgMenu.className = "bgmenu";
+bgMenu.hidden = true;
+if (BG) {
+  bgMenu.innerHTML = BG.kinds.map((k) => `<button data-bg="${k.id}">${k.emoji} ${k.label}</button>`).join("") + `<button data-bg="random">🎲 랜덤 (5분마다 바뀜)</button>`;
+  // 시점 막대(카메라)와 성질이 달라 따로 단추: 시점 막대 왼쪽, 메뉴는 단추 바로 위로 (🖼 은 일부 PC 글꼴에서 한자처럼 보여서 🌅)
+  const bw = document.createElement("div"), bb = document.createElement("button");
+  bw.className = "bgwrap";
+  bb.className = "bgbtn"; bb.type = "button";
+  bb.innerHTML = '<span class="ico">🌅</span><span class="lbl"> 배경</span>';
+  bb.title = "사무실 밖 배경 고르기"; bb.setAttribute("aria-label", "배경"); bb.setAttribute("aria-haspopup", "true");
+  bw.append(bb, bgMenu);
+  camWrap.before(bw);
+  const bgOpen = (on) => { bgMenu.hidden = !on; bb.classList.toggle("on", on); bb.setAttribute("aria-expanded", String(on)); };
+  bb.onclick = () => bgOpen(bgMenu.hidden);
+  addEventListener("pointerdown", (e) => { if (!bgMenu.hidden && !bw.contains(e.target)) bgOpen(false); }, true); // 바깥을 누르면 닫기
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !bgMenu.hidden) bgOpen(false); });
+  bgMenu.onclick = (e) => { const b = e.target.closest("[data-bg]"); if (b) { applyBg(b.dataset.bg); bgOpen(false); window.__social?.track?.("bg"); } };
+  applyBg(bgState.pick);
+}
+
+// ───────────── 위젯: 다른 창 위에 늘 떠 있는 작은 창 (PC Chrome·Edge 의 문서 PIP — 모서리를 끌어 크기 조절, 닫으면 제자리로) ─────────────
+let pipWin = null;
+if ("documentPictureInPicture" in window && !matchMedia("(pointer: coarse)").matches) {
+  const pb = document.createElement("button");
+  pb.className = "sx-hb pinbtn";
+  pb.textContent = "📌 위에 띄우기";
+  pb.title = "다른 창 위에 늘 떠 있는 작은 창으로 (모서리를 끌어 크기 조절)";
+  stage.append(pb); // 오른쪽 위 구석
+  pb.onclick = async () => {
+    if (pipWin) return pipWin.close();
+    try { pipWin = await window.documentPictureInPicture.requestWindow({ width: 560, height: 360 }); } catch (e) { console.error(e); return; }
+    const d = pipWin.document, ph = document.createElement("div");
+    for (const n of document.querySelectorAll("style")) d.head.append(n.cloneNode(true));
+    d.title = "팀 사무실";
+    d.body.className = "pip";
+    ph.className = "pipph";
+    ph.textContent = "📌 사무실이 다른 창 위에 떠 있는 작은 창에 나와 있어요 — 그 창을 닫으면 여기로 돌아와요";
+    stage.replaceWith(ph);
+    d.body.append(stage);
+    for (const ev of ["pointerdown", "wheel", "keydown"]) pipWin.addEventListener(ev, tourHands, { capture: true, passive: true });
+    pipWin.addEventListener("resize", () => win.requestAnimationFrame(resize)); // 크기를 바꾸는 동안은 다음 그림 때 맞춘다
+    for (const ev of ["focus", "blur"]) pipWin.addEventListener(ev, () => setTimeout(syncSound, 0)); // 위에 띄운 작은 창도 활성화돼 있을 때만
+    renderer.setAnimationLoop(null); // 원래 창을 내려도 멈추지 않게 위젯 창의 그리기 주기로
+    const win = pipWin;
+    const loop = () => { if (pipWin !== win) return; try { frameLoop(); } catch (e) { console.error(e); } win.requestAnimationFrame(loop); }; // 한 번 오류가 나도 멈추지 않게
+    win.requestAnimationFrame(loop);
+    pb.classList.add("on");
+    win.addEventListener("pagehide", () => {
+      pipWin = null;
+      ph.replaceWith(stage);
+      renderer.setAnimationLoop(frameLoop);
+      pb.classList.remove("on");
+      resize();
+    });
+    resize();
+  };
+}
+
+// 사람이 만지면 멈춘다 (둘러보기 버튼 빼고)
+const tourHands = (e) => { if (e.target?.closest?.("[data-tour]")) return; TOUR.idle = 0; if (TOUR.active) stopTour(); };
+for (const ev of ["pointerdown", "wheel", "keydown", "touchstart"]) addEventListener(ev, tourHands, { capture: true, passive: true });
+window.__tour = TOUR; // 점검용
+
+// ───────────── 휴대폰: 사원 목록 접고 펴기 ─────────────
+const appEl = document.getElementById("app");
+// 아이폰 홈 화면 앱: 상태 막대를 투명하게(black-translucent) 두면 아이폰이 앱 화면을 「전체 − 상태 막대」 높이로 위에 붙여 아래 띠가 비고,
+// 코드로는 못 채운다 → 상태 막대를 보통(default)으로 둔다 (build_artifact.py · 설치를 다시 해야 반영)
+if (matchMedia("(pointer: coarse)").matches) document.getElementById("howto").textContent = "한 손가락으로 돌려 보기 · 두 손가락으로 확대 · 사람을 누르면 그 사람 카드";
+// 아이폰: 키보드가 올라와도 화면 크기가 안 바뀌어서, 보이는 높이와의 차이(--kb)만큼 아래 시트·카드를 올린다 (안드로이드는 resizes-content 로 저절로)
+if (window.visualViewport) {
+  const vv = window.visualViewport, fitKb = () => { const kb = Math.max(0, document.getElementById("app").getBoundingClientRect().height - vv.height - vv.offsetTop); document.documentElement.style.setProperty("--kb", kb > 80 ? `${Math.round(kb)}px` : "0px"); };
+  vv.addEventListener("resize", fitKb);
+  vv.addEventListener("scroll", fitKb);
+}
+let listPushed = false, listBack = false, listPushLater = false; // 휴대폰: 목록을 열면 기록을 하나 넣어 뒤로가기로 접는다 (social.js 의 카드와 같은 방식)
+const setList = (open, fromBack = false) => {
+  appEl.classList.toggle("list-open", open);
+  document.getElementById("listBtn").textContent = open ? "👥 목록 접기" : "👥 사원 목록";
+  if (open && !listPushed && matchMedia("(max-width:820px),(max-height:520px)").matches) {
+    if (listBack) listPushLater = true; else { history.pushState({ listSheet: 1 }, ""); listPushed = true; }
+  }
+  if (!open) { listPushLater = false; if (listPushed) { listPushed = false; if (!fromBack) { listBack = true; history.back(); } } }
+};
+addEventListener("popstate", (e) => {
+  if (listBack) { listBack = false; if (listPushLater && appEl.classList.contains("list-open")) { listPushLater = false; history.pushState({ listSheet: 1 }, ""); listPushed = true; } return; }
+  if (listPushed && !e.state?.listSheet && appEl.classList.contains("list-open")) setList(false, true);
+});
+document.getElementById("listBtn").onclick = () => setList(!appEl.classList.contains("list-open"));
+document.getElementById("listClose").onclick = () => setList(false);
+
+// ───────────── 앱으로 설치 (웹앱, 스토어 없이): 안드로이드·PC 크롬은 설치 창, 아이폰은 「공유 → 홈 화면에 추가」 안내 ─────────────
+if (window.__PWA && "serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch((e) => console.warn("sw", e));
+{
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const ib = document.createElement("button");
+  ib.className = "sx-hb installbtn";
+  ib.type = "button";
+  ib.innerHTML = '<span class="ico">📲</span><span class="lbl"> 앱 설치</span>';
+  ib.title = "홈 화면에 앱으로 설치 (스토어 없이)";
+  ib.setAttribute("aria-label", "앱으로 설치");
+  ib.hidden = true;
+  let evt = null;
+  if (window.__PWA && !standalone) {
+    addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); evt = e; ib.hidden = false; });
+    addEventListener("appinstalled", () => { ib.hidden = true; evt = null; });
+    if (isIOS) ib.hidden = false;
+  }
+  const help = document.createElement("div");
+  help.className = "iohelp";
+  help.hidden = true;
+  help.innerHTML = `<div class="iocard"><b>홈 화면에 앱으로 설치</b>
+    <ol><li><b>Safari</b>로 이 페이지를 열고, 아래(또는 위) <span class="ioshare">공유 <i></i></span> 단추를 눌러요</li>
+    <li>목록에서 <b>「홈 화면에 추가」</b>를 눌러요</li><li>오른쪽 위 <b>「추가」</b> — 홈 화면의 아이콘으로 앱처럼 열려요</li></ol>
+    <button type="button" class="btn dark">알겠어요</button></div>`;
+  document.body.append(help);
+  help.onclick = (e) => { if (e.target === help || e.target.closest("button")) help.hidden = true; };
+  ib.onclick = async () => {
+    if (evt) { evt.prompt(); const r = await evt.userChoice.catch(() => null); if (r?.outcome === "accepted") ib.hidden = true; evt = null; return; }
+    help.hidden = false;
+  };
+  document.querySelector(".hud").append(ib);
+}
+
+// ───────────── 사람 카드(방명록 · SNS 피드) · 간식 신청 (social.js) ─────────────
+window.__social = window.Social ? window.Social({
+  live: !!LIVE, sb: () => (LIVE ? SB : null), me: () => (LIVE && MY.char && MY.pin ? { char: MY.char, pin: MY.pin } : null),
+  face: (n) => rows.find((r) => r.m.name === n)?.li.querySelector("img").src || "",
+  status: (n) => { const m = crew.find((c) => c.name === n); return { text: m ? m.statusText : "", msg: PERSONAL.get(n)?.bubble || "" }; },
+  diary: DIARY, snackAdmin: SNACK_ADMIN, modes: MODES, names: crew.map((m) => m.name), hud: document.querySelector(".hud"),
+  people: (n) => PERSONAL.get(n) || {},
+  patchPerson: (n, patch) => { PERSONAL.set(n, { ...(PERSONAL.get(n) || {}), ...patch }); renderMine(); },
+  test: !!window.__TEST && !TEST_FIRST, switchTo: (n) => testAs(n), dmKeys: DM_KEYS,
+  openList: () => { setList(true); meSay("내 이름 줄에서 「나예요」(처음 한 번) 또는 「로그인」을 눌러 주세요"); },
+}) : null;
+if (TEST_FIRST) { // 첫 이용자 체험 판 안내 (목록 맨 위)
+  const n = document.createElement("div");
+  n.className = "testnote";
+  n.innerHTML = "🧪 <b>첫 이용자 체험 판</b> · 이 브라우저에만 저장 <button type=button data-reset>처음 상태로</button><details><summary>사용법</summary>처음 온 사람처럼 시작해요. 사원 목록의 「석용현」 줄에서 「나예요」를 누르고 비밀번호(8자 이상)를 정해 보세요. 다른 사람들은 이미 등록된 상태예요. <a href='./'>모두 로그인된 테스트 판으로</a></details>";
+  n.querySelector("[data-reset]").onclick = () => { try { localStorage.removeItem("teamOfficeTestDbFirst"); localStorage.removeItem("teamOfficeLiveFirst"); localStorage.removeItem(GUIDE_KEY); sessionStorage.clear(); indexedDB.deleteDatabase("teamOfficeKeysTest"); } catch {} setTimeout(() => location.reload(), 150); };
+  document.querySelector("#panel header").prepend(n);
+} else if (window.__TEST) { // 테스트 판 안내 (목록 맨 위)
+  const n = document.createElement("div");
+  n.className = "testnote";
+  n.innerHTML = "🧪 <b>테스트 판</b> · 이 브라우저에만 저장 <button type=button data-reset>처음 상태로</button><details><summary>사용법</summary>모두 로그인된 상태예요. 위쪽 「🧪 나」나 줄마다 「이 사람으로」를 누르면 그 사람이 돼서 글·하트·대화를 해 볼 수 있어요. 대화방의 「상대로 답장」으로 양쪽을 번갈아 써 보세요.</details>";
+  n.querySelector("[data-reset]").onclick = () => { try { localStorage.removeItem("teamOfficeTestDb"); localStorage.removeItem(GUIDE_KEY); sessionStorage.clear(); indexedDB.deleteDatabase("teamOfficeKeysTest"); } catch {} setTimeout(() => location.reload(), 150); };
+  document.querySelector("#panel header").prepend(n);
+  const lab = document.createElement("label"), sel = document.createElement("select");
+  lab.className = "testme"; lab.title = "테스트: 누구로 쓸지";
+  sel.innerHTML = crew.map((m) => `<option>${m.name}</option>`).join("");
+  sel.value = MY.char; sel.onchange = () => testAs(sel.value);
+  lab.append(Object.assign(document.createElement("span"), { textContent: "🧪 나" }), sel); // 글자와 이름 사이는 CSS gap (띄어쓰기는 단추 안에서 지워짐)
+  document.querySelector(".hud").append(lab);
+  window.__testSel = sel;
+}
+// ───────────── 세로 휴대폰 위쪽 「⋯」: 한 줄에 못 넣은 것 (어항 모드 · 설정 · 통계 · 앱 설치) — 진짜 단추를 대신 눌러 준다 ─────────────
+{
+  const hud = document.querySelector(".hud"), mb = document.createElement("button"), menu = document.createElement("div");
+  mb.className = "sx-hb morebtn"; mb.type = "button"; mb.textContent = "⋯"; mb.title = "더보기";
+  mb.setAttribute("aria-label", "더보기"); mb.setAttribute("aria-haspopup", "true");
+  menu.className = "hudmore"; menu.hidden = true;
+  hud.append(mb); stage.append(menu);
+  const open = (on) => { menu.hidden = !on; mb.setAttribute("aria-expanded", String(on)); if (on) fill(); };
+  function fill() {
+    const q = (c) => hud.querySelector(c), tog = q(".cx-toggle"), gear = q(".cx-gear"), st = q(".statsbtn"), ins = q(".installbtn"), items = [];
+    const item = (icon, label, target, sw) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.innerHTML = `<span>${icon}</span><span>${label}</span>` + (sw == null ? "" : `<i class="sw${sw ? " on" : ""}"></i>`);
+      b.onclick = () => { if (sw == null) open(false); target.click(); if (sw != null) setTimeout(fill, 0); }; // 켜고 끄기는 메뉴를 열어 둔 채
+      return b;
+    };
+    if (tog) items.push(item("🐠", "어항 모드", tog, tog.getAttribute("aria-pressed") === "true"));
+    if (gear) items.push(item("⚙", "어항 모드 설정", gear));
+    if (st && !st.hidden) items.push(item("📊", "방문 통계", st));
+    if (ins && !ins.hidden) items.push(item("📲", "앱 설치", ins));
+    items.push(item("❔", "사용 안내", document.getElementById("guideBtn")));
+    menu.replaceChildren(...items);
+  }
+  mb.onclick = () => open(menu.hidden);
+  addEventListener("pointerdown", (e) => { if (!menu.hidden && !menu.contains(e.target) && e.target !== mb) open(false); }, true);
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !menu.hidden) open(false); });
+}
+controls.addEventListener("start", () => { for (const b of camBar.children) b.classList.remove("on"); }); // 직접 돌리면 표시 끔
+
+
+// ───────────── 가끔 일어나 돌아다니기 · 이야기하기 ─────────────
+// 아주 가끔(20~55초에 한 번, 동시에 둘까지) 일하던 사람 하나가 일어나: 다른 사람 자리에 가서 이야기하거나(둘이 번갈아 「…」),
+// 간식 책상에 들르거나, 큰 통로를 잠깐 걷다가 자리로 돌아와 다시 앉는다. 길은 출퇴근과 같은 통로(자기 줄 통로 → 큰 통로 → 상대 줄 통로)
+const TRIP = { next: 18 + Math.random() * 20 };
+const CAT_TALK = ["귀여워~", "냥냥아~", "츄르 먹을래?", "이리 와~", "배 만져도 돼?", "오늘도 귀엽네", "꾹꾹이 해 줘~", "누가 제일 예쁘지?"];
+function routeTo(seat, aisleX, pt) { // 내 자리 앞 → 목적지
+  const a = seat.approach, p = [a.clone(), v(seat.aisleX, a.z)];
+  if (Math.abs(aisleX - seat.aisleX) > 0.01) p.push(v(seat.aisleX, MAIN_Z), v(aisleX, MAIN_Z));
+  p.push(v(aisleX, pt.z), pt.clone());
+  return p;
+}
+function tripTick(dt) {
+  if (editing || (TRIP.next -= dt) > 0) return;
+  TRIP.next = 20 + Math.random() * 35;
+  const busy = crew.filter((m) => m.trip).length;
+  const free = crew.filter((m) => m.state === "work" && m.c && shouldBeIn(m) && !crew.some((o) => o.trip?.partner === m));
+  if (busy >= 2 || free.length < 2) return;
+  const m = free[(Math.random() * free.length) | 0], r = Math.random();
+  if (CATS && r < 0.2) catTrip(m); // 한아린 자리 고양이 보러 가기
+  else if (r < 0.6) { // 다른 사람 자리에 가서 이야기
+    const others = free.filter((o) => o !== m);
+    const o = others[(Math.random() * others.length) | 0], s = o.seat;
+    m.startTrip({ go: routeTo(m.seat, s.aisleX, s.approach), face: s.inPos.clone(), stay: 7 + Math.random() * 7, partner: o });
+  } else if (r < 0.8) { // 간식 책상
+    const s = SEAT_BY_NO[[...SNACK_DESKS][(Math.random() * SNACK_DESKS.size) | 0]];
+    if (s) m.startTrip({ go: routeTo(m.seat, s.aisleX, s.approach), face: s.desk.clone(), stay: 4 + Math.random() * 4 });
+  } else { // 큰 통로를 잠깐 걷기
+    const ax = COLS[(Math.random() * COLS.length) | 0].aisle, x = mx(ax), z = MAIN_Z + (Math.random() - 0.5) * 0.5;
+    m.startTrip({ go: routeTo(m.seat, x, v(x, z)), face: v(x + (Math.random() - 0.5) * 4, z + (Math.random() - 0.5) * 4), stay: 3 + Math.random() * 3 });
+  }
+}
+window.__trip = TRIP; // 점검용
+// 고양이 보러 가기: 고양이와 통로 사이에 서서 한마디 → 가까운 고양이가 다가와 비비거나(하트) 벌러덩
+function catTrip(m) {
+  const cat = CATS.cats[(Math.random() * CATS.cats.length) | 0], cp = cat.root.position;
+  const [x, z] = CATS.inside(cp.x + (catSeat.aisleX - cp.x) * 0.6, cp.z + (Math.random() < 0.5 ? -0.35 : 0.35));
+  m.startTrip({ go: routeTo(m.seat, catSeat.aisleX, v(x, z)), face: cp.clone(), stay: 6 + Math.random() * 3,
+    arrive: (who) => { CATS.visit(CATS.nearest(who.root.position), who.root.position, 6); sayFor(who, CAT_TALK[(Math.random() * CAT_TALK.length) | 0], 3.5); } });
+}
+window.__catTrip = (name) => catTrip(crew.find((m) => m.name === name)); // 점검용
+// 이야기 중 「…」: 이름표 오른쪽에 작게, 둘이 번갈아
+const DOTS_TEX = (() => {
+  const c = document.createElement("canvas");
+  c.width = 128; c.height = 96;
+  const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.strokeStyle = "rgba(35,37,42,.25)"; g.lineWidth = 3;
+  g.beginPath(); g.roundRect(6, 6, 116, 64, 30); g.moveTo(30, 68); g.lineTo(22, 90); g.lineTo(52, 68); g.fill(); g.stroke();
+  g.fillRect(28, 62, 26, 8);
+  g.fillStyle = "#70737a";
+  for (const x of [38, 64, 90]) { g.beginPath(); g.arc(x, 38, 8, 0, Math.PI * 2); g.fill(); }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+})();
+function talkDots(a, b, time) {
+  for (const [m, on] of [[a, time >= 0 && Math.floor(time / 1.4) % 2 === 0], [b, time >= 0 && Math.floor(time / 1.4) % 2 === 1]]) {
+    if (!m) continue;
+    if (on && !m.dots) {
+      m.dots = new THREE.Sprite(new THREE.SpriteMaterial({ map: DOTS_TEX, depthTest: false, transparent: true, sizeAttenuation: false }));
+      m.dots.renderOrder = 11;
+      uiScene.add(m.dots);
+    }
+    if (m.dots) m.dots.visible = on;
+  }
+}
+// ───────────── 김선주: 가끔 뿌웅~ (엉덩이에서 갈색 방귀 연기) ─────────────
+// 사무실에 있을 때 20~45초마다 한 번 (처음은 열고 6~12초 뒤). 멀리서 전체를 볼 때도 보이게 연기는 크게, 글씨는 이름표처럼
+// 화면에서 늘 같은 크기. 소리는 페이지를 한 번이라도 누른 뒤에만(브라우저 규칙), 화면에 보일 때만 작게
+const FART = { who: "김선주", next: 6 + Math.random() * 6, puffs: [] };
+FART.smog = (() => { // 몽글몽글한 갈색 연기 한 덩이
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const g = c.getContext("2d");
+  for (const [x, y, r] of [[64, 66, 48], [40, 74, 30], [88, 60, 32], [62, 42, 30], [80, 86, 26]]) {
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, "rgba(118,82,38,.8)");
+    gr.addColorStop(0.55, "rgba(126,92,46,.42)");
+    gr.addColorStop(1, "rgba(126,92,46,0)");
+    g.fillStyle = gr;
+    g.fillRect(0, 0, 128, 128);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+})();
+FART.word = (() => { // 「뿌웅~」 글씨 (틀 없이)
+  const c = document.createElement("canvas");
+  c.width = 320; c.height = 120;
+  const g = c.getContext("2d");
+  g.font = "900 78px Pretendard, 'Malgun Gothic', sans-serif";
+  g.textAlign = "center"; g.textBaseline = "middle";
+  g.lineJoin = "round"; g.lineWidth = 14; g.strokeStyle = "#fffaf0";
+  g.strokeText("뿌웅~", 160, 62);
+  g.fillStyle = "#7a4a1c";
+  g.fillText("뿌웅~", 160, 62);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+})();
+let audioCtx = null;
+addEventListener("pointerdown", () => { try { audioCtx ??= new AudioContext(); syncSound(); } catch {} });
+// 소리는 이 창이 활성화돼 있을 때만 — 작업표시줄로 내려가 있거나 다른 창을 보고 있으면 멈춘다 (방귀·어항 이벤트 소리 모두 audioCtx 가 켜져 있을 때만 남)
+function soundOn() { return !document.hidden && (document.hasFocus() || !!pipWin?.document.hasFocus()); }
+function syncSound() { if (audioCtx) (soundOn() ? audioCtx.resume() : audioCtx.suspend()).catch(() => {}); }
+for (const ev of ["focus", "blur"]) addEventListener(ev, syncSound);
+document.addEventListener("visibilitychange", syncSound);
+window.__audio = () => audioCtx; // 점검용
+function fartSound() { // 부르르 떨리는 낮은 소리를 즉석에서 만든다 (소리 파일 없음)
+  if (!audioCtx || audioCtx.state !== "running") return;
+  const t0 = audioCtx.currentTime, end = t0 + 0.75 + Math.random() * 0.3;
+  const o = audioCtx.createOscillator(), lp = audioCtx.createBiquadFilter(), am = audioCtx.createGain(), vol = audioCtx.createGain();
+  const lfo = audioCtx.createOscillator(), depth = audioCtx.createGain();
+  o.type = "sawtooth";
+  o.frequency.setValueAtTime(92 + Math.random() * 20, t0);
+  o.frequency.exponentialRampToValueAtTime(52, end);
+  lp.type = "lowpass"; lp.frequency.value = 380;
+  am.gain.value = 0.55; depth.gain.value = 0.45; lfo.frequency.value = 24 + Math.random() * 10; // 부르르
+  vol.gain.setValueAtTime(0.0001, t0);
+  vol.gain.exponentialRampToValueAtTime(0.12, t0 + 0.05);
+  vol.gain.setValueAtTime(0.12, end - 0.25);
+  vol.gain.exponentialRampToValueAtTime(0.0001, end);
+  lfo.connect(depth).connect(am.gain);
+  o.connect(lp).connect(am).connect(vol).connect(audioCtx.destination);
+  o.start(t0); lfo.start(t0); o.stop(end + 0.02); lfo.stop(end + 0.02);
+}
+function fart() {
+  const m = crew.find((o) => o.name === FART.who);
+  if (!m || !m.root.visible || !m.c) return false;
+  const hip = m.c.root.getObjectByName("Hips").getWorldPosition(new THREE.Vector3());
+  const back = new THREE.Vector3(-Math.sin(m.root.rotation.y), 0, -Math.cos(m.root.rotation.y));
+  const at = hip.addScaledVector(back, 0.1 * H / 1.25).add(new THREE.Vector3(0, -0.04 * H, 0));
+  const k = H / 1.25;
+  for (let i = 0; i < 10; i++) { // 뒤로 뿜어져 나와 부풀며 위로 퍼진다
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: FART.smog, transparent: true, depthWrite: false, opacity: 0 }));
+    spr.position.copy(at).add(new THREE.Vector3((Math.random() - 0.5) * 0.06, (Math.random() - 0.5) * 0.05, (Math.random() - 0.5) * 0.06));
+    spr.material.rotation = Math.random() * Math.PI * 2;
+    scene.add(spr);
+    const vel = back.clone().multiplyScalar((0.35 + Math.random() * 0.45) * k)
+      .add(new THREE.Vector3((Math.random() - 0.5) * 0.3, 0.05 + Math.random() * 0.15, (Math.random() - 0.5) * 0.3).multiplyScalar(k));
+    FART.puffs.push({ spr, vel, age: -i * 0.05, life: 2.6 + Math.random() * 1.4, s0: (0.24 + Math.random() * 0.14) * k, spin: (Math.random() - 0.5) * 0.8 });
+  }
+  const word = new THREE.Sprite(new THREE.SpriteMaterial({ map: FART.word, transparent: true, depthWrite: false, depthTest: false, sizeAttenuation: false }));
+  word.renderOrder = 12;
+  word.position.copy(at).addScaledVector(back, 0.25 * k).add(new THREE.Vector3(0, 0.25 * k, 0));
+  uiScene.add(word);
+  FART.puffs.push({ spr: word, vel: new THREE.Vector3(0, 0.22 * k, 0), age: 0, life: 2.0, s0: 0.11 * SCR, word: true }); // 화면 폭의 약 1/9
+  if (frustum.containsPoint(at)) fartSound();
+  if (DEMO) { // 구경용: 근처 사람이 한마디
+    const near = crew.filter((o) => o !== m && o.state === "work" && o.root.position.distanceTo(m.root.position) < 3.2);
+    if (near.length) setTimeout(() => sayFor(near[(Math.random() * near.length) | 0], ["누가 방귀 뀌었어?!", "으악 냄새…", "창문 좀 열어요!"][(Math.random() * 3) | 0], 4), 900);
+  }
+  return true;
+}
+function fartTick(dt) {
+  if ((FART.next -= dt) <= 0) FART.next = fart() ? 20 + Math.random() * 25 : 3;
+  for (let i = FART.puffs.length - 1; i >= 0; i--) {
+    const p = FART.puffs[i];
+    p.age += dt;
+    if (p.age < 0) continue;
+    const t = p.age / p.life;
+    if (t >= 1) { p.spr.removeFromParent(); p.spr.material.dispose(); FART.puffs.splice(i, 1); continue; }
+    p.spr.position.addScaledVector(p.vel, dt);
+    if (p.word) { // 툭 튀어나왔다가 떠오르며 사라진다
+      const pop = t < 0.15 ? 0.6 + 0.7 * Math.sin((t / 0.15) * Math.PI * 0.5) * 1.15 : 1.0 + 0.05 * Math.sin(t * 20);
+      p.spr.scale.set(p.s0 * pop, p.s0 * pop * 0.375, 1);
+      p.spr.material.opacity = t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
+      continue;
+    }
+    p.vel.multiplyScalar(Math.pow(0.35, dt)); // 뿜는 힘은 금방 줄고
+    p.vel.y += 0.12 * dt; // 천천히 떠오른다
+    const s = p.s0 * (1 + 3.2 * Math.sqrt(t));
+    p.spr.scale.set(s, s, 1);
+    p.spr.material.rotation += p.spin * dt;
+    p.spr.material.opacity = t < 0.1 ? (t / 0.1) * 0.9 : 0.9 * Math.pow(1 - (t - 0.1) / 0.9, 1.4);
+  }
+}
+window.__fart = fart; // 점검용
+
+// ───────────── 아이콘: 사람 머리 위(생일·상태·새 글·하트) · 간식 책상 위 (누르면 그 사람 카드 · 간식 신청) ─────────────
+// 아이콘 그림: 동그라미(이모지) 또는 알약(❤3 같은 글자) — 같은 그림은 한 번만 그린다
+const ICON_TEX = new Map();
+function iconTex(text, bg, pill = false, color = "#d6336c") {
+  const key = `${text}|${bg}|${pill}|${color}`;
+  if (ICON_TEX.has(key)) return ICON_TEX.get(key);
+  const font = pill ? "bold 50px Pretendard, 'Malgun Gothic', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif" : "62px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif";
+  const c = document.createElement("canvas"), m0 = c.getContext("2d");
+  m0.font = font;
+  const W = pill ? Math.max(128, Math.ceil(m0.measureText(text).width) + 66) : 128; // 알약은 글 길이만큼
+  c.width = W; c.height = 128;
+  const g = c.getContext("2d");
+  g.fillStyle = "rgba(0,0,0,.16)"; g.beginPath(); g.roundRect(10, 15, W - 20, 108, 54); g.fill(); // 살짝 그림자
+  g.fillStyle = bg; g.beginPath(); g.roundRect(10, 9, W - 20, 108, 54); g.fill();
+  g.strokeStyle = "#fff"; g.lineWidth = 7; g.stroke();
+  g.font = font;
+  g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = color;
+  g.fillText(text, W / 2, 66);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const v = { tex, aspect: W / 128 };
+  ICON_TEX.set(key, v);
+  return v;
+}
+function badgeSprite(emoji, bg) {
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: iconTex(emoji, bg).tex, depthTest: false, transparent: true, sizeAttenuation: false }));
+  spr.renderOrder = 12;
+  uiScene.add(spr);
+  return spr;
+}
+// 머리 위 아이콘 줄: 생일 🎂 · 회의/집중 · 새 글 📷 · 오늘 받은 칭찬 ❤N — 누르면 그 사람 카드
+function iconList(m) {
+  const p = PERSONAL.get(m.name) || {}, out = [];
+  if (window.__social?.isBday(m.name)) out.push(["🎂", "#fff0d2", "notes"]);
+  if (MODES[p.mode] && !AWAY_MODES.has(p.mode)) out.push([`${MODES[p.mode][0]} ${MODES[p.mode][1].replace("하는 중", "")}`, "#e6eeff", "notes", true, "#2f4f9e"]); // 「📅 회의 중」처럼 글자도 (아이콘만으론 알기 어려워서)
+  const fresh = window.__social?.feedNew(m.name); // 안 본 새 글
+  if (DIARY[m.name]) out.push(fresh ? [`${DIARY[m.name].icon} 새 글`, "#ffe1ea", "diary", true, "#d6336c"] : [DIARY[m.name].icon, "#ffe1ea", "diary"]);
+  else if (fresh) out.push(["📷 새 글", "#e3eeff", "diary", true, "#1f5fbf"]);
+  const h = window.__social?.heartCount(m.name) || 0;
+  if (h) out.push([`❤${h > 99 ? "99+" : h}`, "#ffffff", "notes", true]);
+  return out;
+}
+for (const m of crew) m.icons = [];
+const snackSeats = [...SNACK_DESKS].map((n) => SEAT_BY_NO[n]).filter(Boolean);
+const snackBadge = snackSeats.length ? badgeSprite("🍪", "#fff0d2") : null;
+if (snackBadge) {
+  snackBadge.position.copy(snackSeats.reduce((a, st) => a.add(st.desk), new THREE.Vector3()).multiplyScalar(1 / snackSeats.length)).setY(DH + 0.7 * H);
+  snackBadge.userData.open = () => window.__social?.openSnacks();
+}
+// 아이콘 크기: 가까이선 화면 크기 그대로, 줌아웃하면 사무실과 같이 작아진다 (멀리서 아이콘만 커 보이지 않게, 10-28)
+const ICON_WORLD = 0.2, SNACK_WORLD = 0.32;
+function badgeTick() { // 이름표(말풍선이 있으면 그 위) 바로 위에 가로로 나란히, 살짝 둥실
+  const f = labelF(), bob = Math.sin(simTime * 2.4) * 0.003;
+  for (const m of crew) {
+    const list = m.root.visible ? iconList(m) : [];
+    while (m.icons.length < list.length) m.icons.push(badgeSprite("👶", "#fff"));
+    m.icons.forEach((s, i) => { s.visible = i < list.length; });
+    if (!list.length) continue;
+    const sz = Math.min(0.036 * f, ICON_WORLD / camera.position.distanceTo(m.label.spr.position)), gap = sz * 0.12, ws = list.map((it) => sz * iconTex(it[0], it[1], !!it[3], it[4]).aspect);
+    let x = -(ws.reduce((a, b) => a + b, 0) + gap * (list.length - 1)) / 2;
+    const dy = (m.bubble?.spr.visible ? 0.059 : 0.016) * f + sz / 2 + bob * f;
+    list.forEach(([text, bg, tab, pill, color], i) => {
+      const s = m.icons[i], t = iconTex(text, bg, !!pill, color), w = ws[i];
+      if (s.material.map !== t.tex) { s.material.map = t.tex; s.material.needsUpdate = true; }
+      s.scale.set(w, sz, 1);
+      s.position.copy(m.label.spr.position);
+      s.center.set(0.5 - (x + w / 2) / w, 0.5 - dy / sz);
+      s.userData.open = () => window.__social?.openPerson(m.name, tab);
+      x += w + gap;
+    });
+  }
+  if (snackBadge) { const sz = Math.min(0.05 * SCR, SNACK_WORLD / camera.position.distanceTo(snackBadge.position)); snackBadge.scale.set(sz, sz, 1); snackBadge.center.set(0.5, 0.5 - (bob * Math.min(SCR, sz / 0.05)) / sz); }
+}
+const badgeHit = () => ray.intersectObjects([snackBadge, ...crew.flatMap((m) => m.icons)].filter((b) => b && b.visible))[0];
+
+// ───────────── 선택 · 카메라 ─────────────
+const ring = new THREE.Mesh(new THREE.RingGeometry(0.3 * H / 1.25, 0.37 * H / 1.25, 40), new THREE.MeshBasicMaterial({ color: "#2f9e62", transparent: true, opacity: 0.85 }));
+ring.rotation.x = -Math.PI / 2;
+ring.visible = false;
+scene.add(ring);
+let fly = null;
+function flyTo(target, pos) { fly = { t: 0, ft: controls.target.clone(), tt: target.clone(), fp: camera.position.clone(), tp: pos.clone() }; }
+function select(m) {
+  selected = m;
+  changed();
+  if (m.state === "away") return;
+  const at = m.root.position.clone().setY(H * 0.55);
+  flyTo(at, at.clone().add(new THREE.Vector3(2.6, 2.4, 3.2).multiplyScalar(H / 1.25)));
+}
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+let downAt = null;
+renderer.domElement.addEventListener("pointerdown", (e) => { downAt = [e.clientX, e.clientY]; });
+function pointerRay(e) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+  ray.setFromCamera(mouse, camera);
+}
+const personHit = () => ray.intersectObjects(crew.filter((m) => m.root.visible).map((m) => m.root), true).find((h) => h.object.userData.pid != null);
+// 두 번 빠르게 누르면(PC 는 더블클릭) 누른 곳으로 다가간다 — 이미 가까우면 조금 더 (책상 높이 평면에서 누른 곳, 방 안으로)
+const zoomPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -H * 0.4), zoomAt = new THREE.Vector3();
+let lastTap = null;
+function zoomTo(e) {
+  pointerRay(e);
+  if (!ray.ray.intersectPlane(zoomPlane, zoomAt)) return;
+  zoomAt.x = THREE.MathUtils.clamp(zoomAt.x, ROOM.x0 + 0.5, ROOM.x1 - 0.5); zoomAt.z = THREE.MathUtils.clamp(zoomAt.z, ROOM.z0 + 0.5, ROOM.z1 - 0.5);
+  const dir = camera.position.clone().sub(controls.target), d = Math.max(controls.minDistance + 0.4, dir.length() * 0.5);
+  selected = null; changed();
+  for (const b of camBar.children) b.classList.remove("on");
+  if (TOUR.active) stopTour();
+  flyTo(zoomAt, zoomAt.clone().add(dir.normalize().multiplyScalar(d)));
+}
+renderer.domElement.addEventListener("dblclick", (e) => { if (e.pointerType !== "touch" && !editing && !pipWin) zoomTo(e); });
+renderer.domElement.addEventListener("pointerup", (e) => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  if (appEl.classList.contains("list-open") && matchMedia("(max-width:820px),(max-height:520px)").matches) return setList(false); // 휴대폰: 목록이 열려 있으면 사무실을 눌러 접기
+  pointerRay(e);
+  if (editing) { const hit = personHit(); return seatClick(hit ? crew[hit.object.userData.pid] : null); }
+  if (e.pointerType !== "mouse") { // 손가락: 같은 곳을 0.32초 안에 두 번 → 다가가기
+    const now = performance.now();
+    if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) { lastTap = null; return zoomTo(e); }
+    lastTap = { t: now, x: e.clientX, y: e.clientY };
+  }
+  const cat = CATS?.hit(ray); // 고양이를 누르면 「냐옹~」 하고 벌러덩
+  if (cat) return CATS.pet(cat);
+  const bh = badgeHit(); // 아이콘 먼저 (새 글 · 간식 신청 · 하트 …)
+  if (bh) return pipWin ? null : bh.object.userData.open();
+  const hit = personHit();
+  if (hit) { const m = crew[hit.object.userData.pid]; select(m); if (!pipWin) window.__social?.openPerson(m.name); } // 사람을 누르면 그 사람 카드(방명록). 위젯 창에선 따라가기만
+});
+renderer.domElement.addEventListener("pointermove", (e) => {
+  pointerRay(e);
+  if (!editing) { renderer.domElement.style.cursor = badgeHit() || CATS?.hit(ray) ? "pointer" : ""; return; }
+  const no = seatUnderRay();
+  if (no !== hoverSeat) { hoverSeat = no; updateMarks(); }
+});
+
+// ───────────── 자리 지정 (고정석) ─────────────
+// 사람을 고르고(목록·3D) → 책상을 누르거나 목록의 자리 번호를 고른다. 누가 앉은 자리면 서로 바꾼다. 「저장」해야 남는다
+const panelEl = document.getElementById("panel"), seatBar = document.getElementById("seatbar"), seatMsg = document.getElementById("seatMsg");
+const seatBtn = document.getElementById("seatEdit");
+let before = null, hoverSeat = null, savedAll = { ...(SAVED?.seats || {}) };
+const seatMap = () => Object.fromEntries(crew.map((m) => [m.name, m.seat.no]));
+const dirty = () => before && crew.some((m) => before[m.name] !== m.seat.no);
+
+// 자리 표시: 바닥에 칸 색 (빈자리 초록 · 누가 앉은 자리 회색 · 고른 사람 자리 주황 · 마우스 올린 자리 파랑) + 빈자리 번호표
+const markMat = (color, opacity) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false });
+const MARK = { free: markMat("#2f9e62", 0.42), used: markMat("#8a94a0", 0.3), sel: markMat("#d08a1e", 0.8), hover: markMat("#2f6fe4", 0.55) };
+const MARK_GEO = new THREE.PlaneGeometry(IN_DIST + 0.55, PITCH * 0.84);
+function seatTag(no) {
+  const c = document.createElement("canvas");
+  c.width = 160;
+  c.height = 64;
+  const g = c.getContext("2d");
+  g.fillStyle = "rgba(47,158,98,.95)";
+  g.beginPath(); g.roundRect(4, 6, 152, 52, 26); g.fill();
+  g.fillStyle = "#fff";
+  g.font = "bold 30px Pretendard, 'Malgun Gothic', sans-serif";
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillText(`E-${no}`, 80, 33);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true }));
+  spr.scale.set(0.4 * H / 1.25, 0.16 * H / 1.25, 1);
+  spr.renderOrder = 10;
+  return spr;
+}
+const seatMarks = {};
+for (const no of ALL_SEATS) {
+  const s = SEAT_BY_NO[no];
+  const mk = new THREE.Mesh(MARK_GEO, MARK.free);
+  mk.rotation.x = -Math.PI / 2;
+  mk.position.set(s.center.x, 0.015, s.center.z);
+  mk.visible = false;
+  const tag = seatTag(no);
+  tag.position.set(s.center.x, PH + 0.18 * H, s.center.z);
+  tag.visible = false;
+  scene.add(mk, tag);
+  seatMarks[no] = { mk, tag };
+}
+function updateMarks() {
+  const used = new Set(crew.map((m) => m.seat.no));
+  for (const no of ALL_SEATS) {
+    const { mk, tag } = seatMarks[no];
+    mk.visible = editing;
+    mk.material = no === hoverSeat ? MARK.hover : editSel?.seat.no === no ? MARK.sel : used.has(no) ? MARK.used : MARK.free;
+    tag.visible = editing && (!used.has(no) || no === hoverSeat);
+  }
+}
+// 마우스 아래 자리: 책상 높이쯤의 평면과 만나는 점에서 가장 가까운 자리
+const seatPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -DH * 0.6), planeHit = new THREE.Vector3();
+function seatUnderRay() {
+  if (!ray.ray.intersectPlane(seatPlane, planeHit)) return null;
+  let best = null, bd = 0.8;
+  for (const no of ALL_SEATS) {
+    const c = SEAT_BY_NO[no].center, d = Math.hypot(c.x - planeHit.x, c.z - planeHit.z);
+    if (d < bd) { bd = d; best = no; }
+  }
+  return best;
+}
+// 의자 높이는 앉는 사람 몸에 맞춘다 (빈자리는 보통 높이)
+function refitChairs() {
+  const who = {};
+  for (const m of crew) who[m.seat.no] = m;
+  for (const no of ALL_SEATS) fitChair(SEAT_BY_NO[no].chair, who[no]?.size.seat ?? SEAT);
+}
+function place(m, no) {
+  const wasIn = m.state !== "away";
+  m.setAway();
+  if (m.seat.on) setScreens(m.seat, false, simTime); // 비운 자리 모니터는 끈다
+  m.seat = SEAT_BY_NO[no];
+  SEAT_NO[m.idx] = no;
+  if (m.name === FIG.owner) putFigure();
+  refreshLeaves();
+  if (wasIn) m.setWorking(); // 자리를 바꾸면 새 자리에 바로 앉아 있다
+}
+function moveTo(m, no) {
+  if (!SEAT_BY_NO[no] || m.seat.no === no) return;
+  const other = crew.find((o) => o !== m && o.seat.no === no), from = m.seat.no;
+  place(m, no);
+  if (other) place(other, from);
+  refitChairs();
+  noteChange();
+}
+function applyMap(map) {
+  const target = assignSeats(map);
+  crew.forEach((m, i) => moveTo(m, target[i])); // 한 명씩 제자리로 (바꿔 앉히기를 되풀이하면 모두 맞춰진다)
+  noteChange();
+}
+function noteChange() {
+  changed();
+  updateMarks();
+  const n = before ? crew.filter((m) => before[m.name] !== m.seat.no).length : 0;
+  seatMsg.className = "msg warn";
+  seatMsg.textContent = n ? `${n}명 자리가 바뀌었어요 · 「저장」해야 남아요` : "";
+}
+function pickForSeat(m) {
+  editSel = editSel === m ? null : m;
+  changed();
+  updateMarks();
+}
+function seatClick(person) {
+  // 고른 사람이 있으면: 누른 자리(빈자리·다른 사람 자리·다른 사람)로 옮기고 고르기를 끝낸다 → 다음 클릭은 새로 사람 고르기
+  // 고른 사람이 없으면: 누른 사람(또는 누른 자리에 앉은 사람)을 고른다
+  const no = person ? person.seat.no : seatUnderRay();
+  if (no == null) return;
+  const owner = person || crew.find((m) => m.seat.no === no);
+  if (editSel && editSel !== owner) {
+    const m = editSel;
+    editSel = null;
+    moveTo(m, no);
+  } else if (owner) pickForSeat(owner);
+}
+// 「저장」: 이 브라우저가 기억한다 (다음에 열면 이 자리). 서버로 열었으면 seats.js 파일에도 쓴다
+async function saveSeats() {
+  savedAll = { ...savedAll, ...seatMap() }; // 다른 그림체에만 있는 사람 자리도 지킨다
+  const data = { saved: new Date().toISOString(), seats: savedAll };
+  let ok = false;
+  try { localStorage.setItem(SEAT_KEY, JSON.stringify(data)); ok = true; } catch {}
+  if (location.protocol.startsWith("http")) {
+    try { await fetch("/__seats", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }); } catch {}
+  }
+  before = seatMap();
+  seatMsg.className = "msg" + (ok ? "" : " warn");
+  seatMsg.textContent = ok ? "저장했어요 — 다음에 열어도 이 자리예요" : "저장하지 못했어요 (브라우저 저장소가 막혀 있어요)";
+  return ok;
+}
+function setEditing(on) {
+  if (!on && dirty()) {
+    if (confirm("바꾼 자리를 저장할까요?\n(취소하면 바꾸기 전 자리로 돌아갑니다)")) saveSeats();
+    else applyMap(before);
+  }
+  editing = on;
+  editSel = null;
+  hoverSeat = null;
+  panelEl.classList.toggle("edit", on);
+  seatBar.hidden = !on;
+  seatBtn.textContent = on ? "자리 지정 끝내기" : "자리 지정";
+  seatBtn.classList.toggle("dark", on);
+  if (on) {
+    before = seatMap();
+    seatMsg.textContent = "";
+    // 모두 자리에 앉혀서(안 보이는 사람 없이) 고르기 쉽게 — 끝내면 각자 누른 대로 돌아간다
+    for (const m of crew) if (m.state !== "work") m.setWorking();
+    selected = null;
+    flyTo(HOME.target, HOME.pos); // 전체가 보이게
+  }
+  changed();
+  updateMarks();
+  if (!on) placeAttendance();
+}
+seatBtn.onclick = () => setEditing(!editing);
+// 관리 도구(자리 지정은 자리 번호가 보인다)는 내 PC 에서 파일로 열 때만 — 구경용·실시간·claude.ai 판에선 ?admin 을 붙여도 안 나온다
+document.getElementById("adminTools").hidden = !new URLSearchParams(location.search).has("admin") || DEMO || !!LIVE || IN_CLAUDE;
+
+// ───────────── 화면 설정 (바닥 색 · 이름표) — 이 브라우저에 기억 ─────────────
+const VIEW_KEY = "teamOfficeView";
+const FLOORS = [PAL.floor, "#e6e7e8", "#cfd1d3", "#b1b4b7", "#8c9094", "#6a6e73"]; // 기본 + 밝은 회색 → 진한 회색
+const VIEW_DEF = { floor: FLOORS[5], label: 60, labelOn: true }; // 사용자가 고른 기본값: 진한 회색 바닥 · 이름표 60%
+const VIEW = { ...VIEW_DEF };
+try { Object.assign(VIEW, JSON.parse(localStorage.getItem(VIEW_KEY)) || {}); } catch {}
+const viewBar = document.getElementById("viewbar"), floorSw = document.getElementById("floorSw"), floorPick = document.getElementById("floorPick");
+const labelSize = document.getElementById("labelSize"), labelSizeV = document.getElementById("labelSizeV"), labelOn = document.getElementById("labelOn");
+const hex = (c) => "#" + new THREE.Color(c).getHexString();
+function fitLabels() {
+  const f = labelF();
+  for (const m of crew) { m.label.spr.scale.set(0.1 * f, 0.0281 * f, 1); m.bubble?.fit(); }
+}
+floorSw.innerHTML = FLOORS.map((c, i) => `<button style="background:${c}" data-c="${c}" title="${i ? "회색" : "기본"}"></button>`).join("");
+function applyView() {
+  const old = floor.material.map;
+  floor.material.map = floorTexture(VIEW.floor);
+  floor.material.needsUpdate = true;
+  old.dispose();
+  fitLabels();
+  labelSize.value = VIEW.label;
+  labelSizeV.textContent = `${VIEW.label}%`;
+  labelOn.checked = VIEW.labelOn;
+  floorPick.value = hex(VIEW.floor);
+  for (const b of floorSw.children) b.classList.toggle("on", hex(b.dataset.c) === hex(VIEW.floor));
+  try { localStorage.setItem(VIEW_KEY, JSON.stringify(VIEW)); } catch {}
+}
+floorSw.onclick = (e) => { if (e.target.dataset.c) { VIEW.floor = e.target.dataset.c; applyView(); } };
+floorPick.oninput = () => { VIEW.floor = floorPick.value; applyView(); };
+labelSize.oninput = () => { VIEW.label = +labelSize.value; applyView(); };
+labelOn.onchange = () => { VIEW.labelOn = labelOn.checked; applyView(); };
+document.getElementById("viewReset").onclick = () => { Object.assign(VIEW, VIEW_DEF); applyView(); };
+document.getElementById("viewEdit").onclick = (e) => {
+  viewBar.hidden = !viewBar.hidden;
+  e.target.classList.toggle("dark", !viewBar.hidden);
+};
+applyView();
+document.getElementById("seatSave").onclick = saveSeats;
+document.getElementById("seatCancel").onclick = () => { applyMap(before); seatMsg.textContent = ""; };
+document.getElementById("seatReset").onclick = () => applyMap({});
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h);
+  uiRenderer.setSize(w, h);
+  const a = w / h;
+  camera.aspect = a;
+  // 좁은 화면(휴대폰 세로 등): 옆이 잘리지 않게 시야를 넓힌다 (가로 시야는 PC 와 비슷하게)
+  camera.fov = a < 1.4 ? Math.min(80, (2 * Math.atan(Math.tan(Math.PI / 12) * 1.4 / a) * 180) / Math.PI) : 30;
+  camera.updateProjectionMatrix();
+  // 화면에 붙은 글씨(이름표·말풍선)는 시야를 넓힌 만큼 되돌리고, 폭이 좁으면 조금 작게 · 키가 낮으면(휴대폰 가로) 조금 크게
+  const scr = (Math.tan((camera.fov * Math.PI) / 360) / Math.tan(Math.PI / 12)) * (a < 1 ? Math.min(1, Math.max(0.8, w / 1100)) : 1) * (h < 600 ? (600 / h) ** 0.9 : 1);
+  if (Math.abs(scr - SCR) > 1e-3) { SCR = scr; fitLabels(); }
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+
+// ───────────── 매 프레임 ─────────────
+// 성능: 사람 동작은 화면에 보이는 사람만 매 프레임, 안 보이면 4프레임에 한 번 몰아서 갱신
+const frustum = new THREE.Frustum(), pm = new THREE.Matrix4(), sph = new THREE.Sphere();
+let frame = 0, simTime = 0, vidT = 0;
+const perf = document.getElementById("perf");
+let pf = 0, pacc = 0, fastSec = 0;
+// 버벅이면 해상도를 낮추고(최소 1배 = 화면 그대로), 한동안 여유가 있으면 조금씩 되돌린다
+let shadowEvery = 2; // 그림자를 다시 그리는 간격(프레임) — 해상도를 더 못 내리는 느린 기기면 늘린다 (휴대폰)
+function adaptQuality(fps) {
+  if (document.hidden) return;
+  if (fps < 42) {
+    fastSec = 0;
+    if (dpr > DPR_MIN) { dpr = Math.max(DPR_MIN, +(dpr - 0.15).toFixed(2)); renderer.setPixelRatio(dpr); resize(); } // 정해 둔 밑으로는 안 내린다 (계단·지글거림·뿌연 글씨)
+    else if (shadowEvery < 8) shadowEvery *= 2;
+    return;
+  }
+  if (fps > 57) {
+    if (++fastSec < 4) return;
+    fastSec = 0;
+    if (shadowEvery > 2) shadowEvery /= 2; // 여유가 생기면 그림자부터 되돌리고, 그다음 해상도
+    else if (dpr < DPR_MAX) { dpr = Math.min(DPR_MAX, +(dpr + 0.1).toFixed(2)); renderer.setPixelRatio(dpr); resize(); }
+    return;
+  }
+  fastSec = 0;
+}
+// 영상 화면은 초당 8번만 새로 그린다
+function videoTick(dt) {
+  if ((vidT += dt) < 0.125) return;
+  vidT = 0;
+  const live = [];
+  for (let i = 0; i < tiles.length; i++) if (ScreenArt.ANIM.has(tiles[i].kind)) live.push(i);
+  live.forEach((i, k) => paintTile(i, simTime, k === live.length - 1));
+}
+function step(dt) {
+  frame++;
+  simTime += dt;
+  if (!CHAOS?.active) { attendTick(dt); tripTick(dt); fartTick(dt); }
+  CHAOS?.tick(dt);
+  CATS?.tick(dt);
+  WX?.tick(dt);
+  pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+  frustum.setFromProjectionMatrix(pm);
+  for (const m of crew) {
+    m.update(dt);
+    if (m.c && m.root.visible) {
+      sph.set(m.root.position, H);
+      m.acc = (m.acc || 0) + dt;
+      if (m.frozen) m.acc = 0; // 얼음·낮잠: 동작 멈춤
+      else if (frustum.intersectsSphere(sph) || frame % 4 === m.idx % 4) { m.c.mixer.update(m.acc); m.acc = 0; }
+    }
+    if (m.sd && m.root.visible) m.sd.card.rotation.y = Math.atan2(camera.position.x - m.root.position.x, camera.position.z - m.root.position.z);
+    if (m.root.visible) m.placeLabel();
+    if (!VIEW.labelOn) m.label.spr.visible = false;
+    else if (m.root.visible) m.label.spr.visible = true;
+    if (m.dots) {
+      if (!m.root.visible) m.dots.visible = false;
+      if (m.dots.visible) {
+        const f = labelF();
+        m.dots.scale.set(0.04 * f, 0.03 * f, 1);
+        m.dots.center.set(-1.15, -0.05);
+        m.dots.position.copy(m.label.spr.position);
+      }
+    }
+    if (m.bubble) {
+      m.bubble.spr.visible = m.root.visible && !!m.bubble.text;
+      if (m.bubble.spr.visible) m.bubble.spr.position.copy(m.label.spr.position);
+    }
+    // 모니터: 앉아 있으면 켜고(무작위 화면), 일어나면 끈다. 일하는 동안 가끔 다른 화면으로
+    const on = m.state === "work" || m.state === "workLeave", s = m.seat;
+    if (s.on !== on) setScreens(s, on, simTime, m);
+    else if (on && (s.swap -= dt) <= 0) {
+      s.swap = 15 + Math.random() * 45;
+      const free = [0, 1].filter((k) => !s.fixed?.[k] && s.tiles[k] != null); // 정해 둔 화면은 그대로
+      if (!free.length) continue;
+      const i = s.tiles[free[(Math.random() * free.length) | 0]];
+      Object.assign(tiles[i], { kind: ScreenArt.pick(), seed: (Math.random() * 1e9) | 0 });
+      paintTile(i, simTime);
+    }
+  }
+  badgeTick();
+  bgTick(dt);
+  videoTick(dt);
+  syncChairs();
+  if (frame % shadowEvery === 0) renderer.shadowMap.needsUpdate = true;
+  const near = crew.some((m) => m.root.visible && m.root.position.distanceTo(DOOR_IN) < 2.2 && Math.abs(m.root.position.z - DOOR.z) < 1.2);
+  // 문: 목표 각도에 거의 닿으면 딱 맞춘다 (0 에 끝없이 다가가며 미세하게 움직이면 문틈이 깜박인다)
+  const dDoor = (near ? 1.35 : 0) - doorPivot.rotation.y;
+  doorPivot.rotation.y = Math.abs(dDoor) < 0.002 ? (near ? 1.35 : 0) : doorPivot.rotation.y + dDoor * Math.min(1, dt * 5);
+  if (selected && selected.root.visible) {
+    ring.visible = true;
+    ring.position.set(selected.root.position.x, 0.012, selected.root.position.z);
+  } else ring.visible = false;
+  tourTick(dt);
+  if (fly) {
+    fly.t = Math.min(1, fly.t + dt / 0.9);
+    const k = ease(fly.t);
+    controls.target.lerpVectors(fly.ft, fly.tt, k);
+    camera.position.lerpVectors(fly.fp, fly.tp, k);
+    if (fly.t >= 1) fly = null;
+  }
+  controls.update();
+}
+// 어항 모드 붙이기
+// 한아린 책상 둘레의 고양이 두 마리 (자리를 옮기면 따라가지 않고 처음 자리 둘레에서 논다)
+const catSeat = crew.find((m) => m.name === "한아린")?.seat;
+const WALKING = new Set(["enter", "leave", "tripGo", "tripBack"]); // 걷는 중 (고양이가 알아채는 사람)
+const CATS = window.OfficeCats && catSeat ? window.OfficeCats({ THREE, scene, uiScene, camera, seat: catSeat, aisleX: catSeat.aisleX, H, audio: () => audioCtx, scr: () => SCR,
+  people: () => crew.filter((m) => m.root.visible && WALKING.has(m.state)).map((m) => ({ pos: m.root.position, moving: true, name: m.name })) }) : null;
+const WX = window.OfficeWeather ? window.OfficeWeather({ THREE, scene, ROOM, renderer, camera, stage, hud: document.querySelector(".hud"), audio: () => audioCtx }) : null;
+const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
+  THREE, scene, camera, controls, renderer, office, crew, H, DH, PH, WALL_H, ROOM, DOOR_IN, DOOR_OUT, MAIN_Z, RCX,
+  lights: { hemi, sun, fill }, stage, hud: document.querySelector(".hud"), flyTo,
+  seats: () => Object.values(SEAT_BY_NO), snackSeats: () => [...SNACK_DESKS].map((n) => SEAT_BY_NO[n]).filter(Boolean),
+  chairs: () => CHAIR_LIST, audio: () => audioCtx, setPaused: () => {}, restorePeople: () => placeAttendance(), live: !!LIVE,
+  tour: TOUR, scr: () => SCR,
+}) : null;
+window.__chaos = CHAOS; // 점검용
+const clock = new THREE.Clock();
+if (WHO) select(WHO);
+renderer.shadowMap.needsUpdate = true;
+function frameLoop() { // 위젯 창으로 옮기면 그 창의 그리기 주기가 부른다
+  const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
+  step(dt);
+  renderer.render(scene, camera);
+  if (pipWin) { renderer.autoClear = false; renderer.render(uiScene, camera); renderer.autoClear = true; } // 작은 창: 글씨도 3D 화면에 (두 번째 화면은 창 크기를 바꾸면 깨짐)
+  else uiRenderer.render(uiScene, camera); // 글씨 층 (화면 해상도 그대로)
+  atlasLive = true;
+  pf++; pacc += raw;
+  if (pacc > 1) {
+    const fps = pf / pacc;
+    adaptQuality(fps);
+    perf.textContent = `${Math.round(fps)} fps · 해상도 ${dpr.toFixed(2)} · 그리기 ${renderer.info.render.calls} · 삼각형 ${(renderer.info.render.triangles / 1000).toFixed(0)}k`;
+    pf = 0; pacc = 0;
+  }
+}
+renderer.setAnimationLoop(frameLoop);
+requestAnimationFrame(() => requestAnimationFrame(introDone)); // 첫 그림이 그려진 뒤에 시작 화면을 걷는다
+// 점검용: 시간 빨리 돌리기 (미리보기 창이 뒤에 있으면 초당 1~2프레임이라)
+window.__sim = (sec) => { for (let t = 0; t < sec; t += 1 / 30) step(1 / 30); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); uiRenderer.render(uiScene, camera); atlasLive = true; };
+window.__crew = crew;
+window.__view = { camera, controls, flyTo, THREE, renderer, scene, uiScene, uiRenderer, render: () => { renderer.render(scene, camera); uiRenderer.render(uiScene, camera); } };
+</script>
+</body>
+</html>
