@@ -66,7 +66,9 @@ button{font:inherit}
 #list .acts,#list .more{display:flex;gap:4px;flex-basis:100%;padding-left:46px}
 #list .acts[hidden],#list .more[hidden]{display:none}
 #list .acts .btn,#list .more .btn{padding:4px 9px;min-width:0;white-space:nowrap}
-#list .acts{flex-wrap:wrap} /* 단추가 많으면 글자를 쪼개지 말고 다음 줄로 */
+#list .acts{flex-wrap:nowrap} /* 출근·퇴근·상태 메시지는 한 줄로 */
+#list .side{flex:none;display:flex;gap:4px}
+#list .side .btn{padding:4px 10px;min-width:0;white-space:nowrap}
 #list .btn.on{background:var(--work);border-color:var(--work);color:#fff}
 #list .more input{flex:1;width:0;min-width:0;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--panel);color:var(--ink)}
 #panel.edit #list .acts,#panel.edit #list .more{display:none}
@@ -115,6 +117,10 @@ body.loading #app{opacity:0}
 .bgmenu button{border:0;background:none;border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;text-align:left;cursor:pointer;color:var(--ink);white-space:nowrap}
 .bgmenu button:hover{background:#f3eee6}
 .bgmenu button.on{background:var(--ink);color:#fff}
+/* 배경: 시점 막대와 성질이 달라 따로 단추 (메뉴는 단추 바로 위로 열림) */
+.bgwrap{position:relative;flex:none;display:flex;margin-right:4px}
+.bgwrap .bgmenu{right:auto;left:0;bottom:calc(100% + 8px)}
+.bgbtn{display:inline-flex;align-items:center;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:0 11px;font-size:12px;cursor:pointer;color:var(--ink);white-space:nowrap}
 .testnote{background:#fff4d6;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.55;margin-bottom:10px;color:#6b4f10}
 .testme{display:inline-flex;align-items:center;gap:2px;background:#fff4d6;border:1px solid #efd28a;border-radius:10px;padding:3px 4px 3px 9px;font-size:12px;color:#6b4f10}
 .testme select{font:inherit;font-size:12px;font-weight:700;border:0;background:none;color:inherit;cursor:pointer}
@@ -125,7 +131,7 @@ body.loading #app{opacity:0}
 .pipph{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:14px;line-height:1.6}
 body.pip{margin:0;height:100vh;overflow:hidden;background:var(--bg)}
 body.pip #stage{width:100vw;height:100vh}
-body.pip .hud button,body.pip .listbtn,body.pip .bgmenu,body.pip .pinbtn{display:none}
+body.pip .hud button,body.pip .listbtn,body.pip .bgwrap,body.pip .pinbtn{display:none}
 .pinbtn{position:absolute;right:12px;top:12px;z-index:6}
 .hud{max-width:calc(100% - 170px)}
 /* 휴대폰·좁은 창: 사무실을 화면 가득, 사람 목록은 버튼으로 접고 편다 (세로: 아래에서 올라옴 · 가로: 오른쪽에서 나옴) */
@@ -147,7 +153,7 @@ body.pip .hud button,body.pip .listbtn,body.pip .bgmenu,body.pip .pinbtn{display
   .testme select{max-width:84px}
   .chip{padding:3px 8px;font-size:11px}
   .view{left:calc(10px + env(safe-area-inset-left));right:calc(10px + env(safe-area-inset-right));bottom:calc(10px + env(safe-area-inset-bottom));pointer-events:none}
-  .bgmenu{right:calc(10px + env(safe-area-inset-right));bottom:calc(54px + env(safe-area-inset-bottom))}
+  .view .bgbtn .lbl{display:none} /* 휴대폰: 아래 줄도 배경은 아이콘만 */
   #panel{padding-bottom:env(safe-area-inset-bottom);bottom:var(--kb,0px)} /* --kb: 아이폰 키보드 높이 (입력칸이 가리지 않게) */
   .view>*{pointer-events:auto}
   .cams{min-width:0;margin-left:auto;overflow-x:auto;scrollbar-width:none}
@@ -252,9 +258,23 @@ html body .sx-gate .btn{margin-top:10px}
 html body .cx-menu{background:rgba(249,249,251,.94);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
 html body .cx-grid button{border:0;background:#fff;border-radius:12px}
 html body .cx-x{position:absolute;right:10px;top:10px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(118,118,128,.12);font-size:20px;line-height:30px;color:#8e8e93;cursor:pointer;padding:0}
+/* 위쪽 줄: 칩·단추를 모두 같은 높이로 (10-29 — 어항 모드 단추만 스위치 때문에 두꺼웠음) */
+html body .hud .chip,html body .hud .sx-hb,html body .hud .cx-btn,html body .hud .testme,html body .pinbtn{box-sizing:border-box;height:32px;min-height:0;display:inline-flex;align-items:center;padding-top:0;padding-bottom:0}
+html body .hud .cx-gear{width:32px;padding:0;justify-content:center}
+html body .pinbtn{position:absolute;right:12px;top:12px;z-index:6} /* social.js 의 .sx-hb{position:relative} 가 덮어써 화면 밖으로 밀려나던 것 */
+html body .cx-toggle b{width:30px;height:18px;margin-left:8px;vertical-align:middle}
+html body .cx-toggle b::after{width:14px;height:14px}
+html body .cx-toggle.on b::after{transform:translateX(12px)}
+/* 아래 줄: 사원 목록 · 배경 단추는 시점 막대와 같은 높이 */
+html body .view{align-items:stretch}
+html body .bgbtn{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:.5px solid rgba(0,0,0,.08);box-shadow:0 6px 18px rgba(0,0,0,.08);border-radius:12px;font-weight:600;font-size:12.5px;padding:0 13px;color:var(--ink)}
+html body .bgbtn:hover{background:rgba(255,255,255,.9)}
+html body .bgbtn.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14),0 6px 18px rgba(0,0,0,.08)}
+html body .view .listbtn{border-radius:12px;padding-top:0;padding-bottom:0}
 [hidden]{display:none!important} /* 숨긴 것은 어떤 단추 모양 규칙보다 우선 */
 /* 손가락 기기: 누르는 곳을 넉넉히 (아이폰 권장 44pt 에 가깝게) */
 @media (pointer:coarse){html body .sx-hb,html body .cx-btn,html body .listbtn,html body .chip,html body .testme{min-height:36px;display:inline-flex;align-items:center}
+  html body .hud .chip,html body .hud .sx-hb,html body .hud .cx-btn,html body .hud .testme,html body .pinbtn{height:36px}html body .hud .cx-gear{width:36px}html body .bgbtn{min-height:36px}
   html body .cams button{min-height:34px}html body #list .btn{min-height:32px}html body .sx-x{width:34px;height:34px;line-height:34px}
   html body .sx-likebtn,html body .sx-del{min-height:32px}html body .sx-tabs button{min-height:34px}}
 @media (max-width:820px),(max-height:520px){html body .sx-card{border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom)}html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme{padding:6px 10px;font-size:12.5px}}
@@ -1658,14 +1678,17 @@ function renderLiveRows() {
   meNote.hidden = !meNote.textContent;
   for (const r of rows) {
     const m = r.m, p = PERSONAL.get(m.name) || {};
-    let html = "";
-    if (canCtl(m)) html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
-      `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button>` +
-      (window.__TEST ? `<button class="btn${MY.char === m.name ? " on" : ""}" data-act="as" title="테스트: 이 사람으로 쓰고 대화해 보기">${MY.char === m.name ? "지금 나" : "이 사람으로"}</button>`
-        : `<button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`);
-    else if (!ME.pending && !MY.char) html = PERSONAL.has(m.name) ? `<button class="btn" data-act="login">로그인</button>` : `<button class="btn" data-act="claim">나예요</button>`;
+    let html = "", side = "";
+    if (canCtl(m)) {
+      html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
+        `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button>`;
+      side = window.__TEST ? `<button class="btn${MY.char === m.name ? " on" : ""}" data-act="as" title="테스트: 이 사람으로 쓰고 대화해 보기">${MY.char === m.name ? "지금 나" : "이 사람으로"}</button>`
+        : `<button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`;
+    } else if (!ME.pending && !MY.char) html = PERSONAL.has(m.name) ? `<button class="btn" data-act="login">로그인</button>` : `<button class="btn" data-act="claim">나예요</button>`;
     if (r.acts.innerHTML !== html) r.acts.innerHTML = html;
     r.acts.hidden = !html;
+    if (r.side.innerHTML !== side) r.side.innerHTML = side;
+    r.side.hidden = !side;
     const open = bubbleOpen === m && canCtl(m);
     if (open && r.more.hidden && document.activeElement !== r.input) r.input.value = p.bubble || "";
     r.more.hidden = !open;
@@ -1736,18 +1759,18 @@ let selected = null;
 let editing = false, editSel = null; // 자리 지정 중인지, 자리 바꿀 사람
 const rows = crew.map((m) => {
   const li = document.createElement("li");
-  li.innerHTML = `<img alt=""><div class="who"><b></b><span><i class="dot"></i><em></em></span></div><select title="자리"></select>` +
+  li.innerHTML = `<img alt=""><div class="who"><b></b><span><i class="dot"></i><em></em></span></div><div class="side" hidden></div><select title="자리"></select>` +
     `<div class="acts" hidden></div><div class="more" hidden><input maxlength="40" placeholder="말풍선에 쓸 말 (40자)"><button class="btn dark" data-act="say">띄우기</button><button class="btn" data-act="clear">지우기</button></div>` +
     `<div class="more pin" hidden><input type="password" inputmode="numeric" maxlength="4" placeholder="비밀번호 숫자 4자리"><button class="btn dark" data-act="pinok">확인</button></div>`;
   li.querySelector("img").src = `faces/${FILE_ID[m.name]}.jpg`;
   li.querySelector("b").textContent = m.name;
   const row = { m, li, dot: li.querySelector(".dot"), text: li.querySelector("em"), sel: li.querySelector("select"),
-    acts: li.querySelector(".acts"), more: li.querySelector(".more"), input: li.querySelector("input"),
+    acts: li.querySelector(".acts"), side: li.querySelector(".side"), more: li.querySelector(".more"), input: li.querySelector("input"),
     pin: li.querySelector(".pin"), pinIn: li.querySelector(".pin input"), pinOk: li.querySelector('.pin [data-act="pinok"]') };
   li.onclick = (e) => {
     const a = e.target.closest("[data-act]");
     if (a) return onRowAct(m, a.dataset.act, row, a);
-    if (!e.target.closest(".acts,.more,select")) { if (editing) pickForSeat(m); else { select(m); window.__social?.openPerson(m.name); } }
+    if (!e.target.closest(".acts,.side,.more,select")) { if (editing) pickForSeat(m); else { select(m); window.__social?.openPerson(m.name); } }
   };
   row.input.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) onRowAct(m, "say", row); };
   row.pinIn.onkeydown = (e) => { if (e.key === "Enter") onRowAct(m, "pinok", row); };
@@ -1903,13 +1926,19 @@ bgMenu.className = "bgmenu";
 bgMenu.hidden = true;
 if (BG) {
   bgMenu.innerHTML = BG.kinds.map((k) => `<button data-bg="${k.id}">${k.emoji} ${k.label}</button>`).join("") + `<button data-bg="random">🎲 랜덤 (5분마다 바뀜)</button>`;
-  stage.append(bgMenu);
-  const bb = document.createElement("button");
-  bb.textContent = "배경"; // 🖼 은 일부 PC 글꼴에서 한자처럼 보여서 뺌
-  tourBtn.after(bb); // 휴대폰에서도 줄 끝까지 밀지 않고 보이게 앞쪽에
-  bb.onclick = () => { bgMenu.hidden = !bgMenu.hidden; };
-  addEventListener("pointerdown", (e) => { if (!bgMenu.hidden && !bgMenu.contains(e.target) && e.target !== bb) bgMenu.hidden = true; }, true); // 바깥을 누르면 닫기
-  bgMenu.onclick = (e) => { const b = e.target.closest("[data-bg]"); if (b) { applyBg(b.dataset.bg); bgMenu.hidden = true; } };
+  // 시점 막대(카메라)와 성질이 달라 따로 단추: 시점 막대 왼쪽, 메뉴는 단추 바로 위로 (🖼 은 일부 PC 글꼴에서 한자처럼 보여서 🌅)
+  const bw = document.createElement("div"), bb = document.createElement("button");
+  bw.className = "bgwrap";
+  bb.className = "bgbtn"; bb.type = "button";
+  bb.innerHTML = '<span class="ico">🌅</span><span class="lbl"> 배경</span>';
+  bb.title = "사무실 밖 배경 고르기"; bb.setAttribute("aria-label", "배경"); bb.setAttribute("aria-haspopup", "true");
+  bw.append(bb, bgMenu);
+  camBar.before(bw);
+  const bgOpen = (on) => { bgMenu.hidden = !on; bb.classList.toggle("on", on); bb.setAttribute("aria-expanded", String(on)); };
+  bb.onclick = () => bgOpen(bgMenu.hidden);
+  addEventListener("pointerdown", (e) => { if (!bgMenu.hidden && !bw.contains(e.target)) bgOpen(false); }, true); // 바깥을 누르면 닫기
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !bgMenu.hidden) bgOpen(false); });
+  bgMenu.onclick = (e) => { const b = e.target.closest("[data-bg]"); if (b) { applyBg(b.dataset.bg); bgOpen(false); } };
   applyBg(bgState.pick);
 }
 
