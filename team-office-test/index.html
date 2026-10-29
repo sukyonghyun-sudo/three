@@ -367,6 +367,8 @@ html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 
 <script src="bg.js"></script>
 <!-- 한아린 책상 둘레에서 노는 고양이 두 마리 -->
 <script src="cats.js"></script>
+<!-- 실시간 날씨 (판교 사옥): 비·눈은 바깥에만, 흐림·안개 분위기, 천둥번개, 빗소리 -->
+<script src="weather.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -2930,6 +2932,7 @@ function step(dt) {
   if (!CHAOS?.active) { attendTick(dt); tripTick(dt); fartTick(dt); }
   CHAOS?.tick(dt);
   CATS?.tick(dt);
+  WX?.tick(dt);
   pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
   frustum.setFromProjectionMatrix(pm);
   for (const m of crew) {
@@ -2998,6 +3001,7 @@ const catSeat = crew.find((m) => m.name === "한아린")?.seat;
 const WALKING = new Set(["enter", "leave", "tripGo", "tripBack"]); // 걷는 중 (고양이가 알아채는 사람)
 const CATS = window.OfficeCats && catSeat ? window.OfficeCats({ THREE, scene, uiScene, camera, seat: catSeat, aisleX: catSeat.aisleX, H, audio: () => audioCtx, scr: () => SCR,
   people: () => crew.filter((m) => m.root.visible && WALKING.has(m.state)).map((m) => ({ pos: m.root.position, moving: true, name: m.name })) }) : null;
+const WX = window.OfficeWeather ? window.OfficeWeather({ THREE, scene, ROOM, renderer, camera, stage, hud: document.querySelector(".hud"), audio: () => audioCtx }) : null;
 const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
   THREE, scene, camera, controls, renderer, office, crew, H, DH, PH, WALL_H, ROOM, DOOR_IN, DOOR_OUT, MAIN_Z, RCX,
   lights: { hemi, sun, fill }, stage, hud: document.querySelector(".hud"), flyTo,
