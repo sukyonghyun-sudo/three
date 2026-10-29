@@ -780,7 +780,7 @@ function floorTexture(color = PAL.floor) {
 }
 const floor = mesh(new THREE.PlaneGeometry(RW, RD), new THREE.MeshStandardMaterial({ map: floorTexture(), roughness: STY.floorGloss }), office, [RCX, 0, 0], false);
 floor.rotation.x = -Math.PI / 2;
-mesh(new THREE.BoxGeometry(RW + 0.3, 0.3, RD + 0.3), M("#b9bdc0"), office, [RCX, -0.151, 0], false);
+mesh(new THREE.BoxGeometry(RW + 0.3, 0.3, RD + 0.3), M("#b9bdc0"), office, [RCX, -0.18, 0], false); // 받침판 윗면은 바닥보다 3cm 아래 (1mm 면 멀리서 볼 때 바닥과 겹쳐 빗금처럼 번쩍임)
 
 // 왼쪽 벽 + 출입문 (문 높이도 캐릭터 키에 맞춘다)
 const WALL = M(PAL.wall), BASE = M(PAL.base), DOORM = M(PAL.door);
