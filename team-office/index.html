@@ -18,7 +18,11 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
   font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;overflow:hidden}
 #app{display:grid;grid-template-columns:minmax(0,1fr) 300px;position:fixed;inset:0} /* 높이를 계산하지 않고 화면 네 끝에 붙인다 — 아이폰 설치 앱·주소창·홈 막대 때문에 100vh/100dvh 가 모자라 아래가 하얗게 비던 것 */
-html,body{overscroll-behavior:none}
+/* 화면을 돌려도 칸 크기는 늘 화면 그대로: 3D 그림 크기(돌리기 전 값)가 칸을 밀어 늘이지 못하게 · 접힌 목록이 화면 밖에서 폭을 늘리지 못하게 (10-29) */
+#app{grid-template-rows:minmax(0,1fr);overflow:hidden;overflow:clip}
+#stage{min-height:0}
+#app.rot,#app.rot *{transition:none!important} /* 돌리는 순간엔 목록이 미끄러지는 효과 없이 바로 제자리 */
+html,body{overscroll-behavior:none;touch-action:manipulation} /* 단추·목록을 두 번 눌러도 페이지가 확대되지 않게 (3D 화면은 따로 처리) */
 #stage{position:relative;min-width:0;overflow:hidden}
 #stage canvas{display:block;cursor:grab}
 #stage canvas:active{cursor:grabbing}
@@ -146,6 +150,8 @@ body.loading #app{opacity:0}
   .hud .morebtn{display:inline-flex;justify-content:center;margin-left:auto}
   .hud .testme>span{display:none}
   .hud .testme select{max-width:76px}
+  .hud>*{flex-shrink:0}
+  .hud .testme{flex:0 1 auto;min-width:0;overflow:hidden} /* 자리가 모자라면 시험용 칸이 줄어 「⋯」 가 화면 밖으로 안 밀린다 */
 }
 .bgwrap .bgmenu{right:auto;left:0;bottom:calc(100% + 8px)}
 .bgbtn{display:inline-flex;align-items:center;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:0 11px;font-size:12px;cursor:pointer;color:var(--ink);white-space:nowrap}
@@ -2245,10 +2251,38 @@ const appEl = document.getElementById("app");
 // 코드로는 못 채운다 → 상태 막대를 보통(default)으로 둔다 (build_artifact.py · 설치를 다시 해야 반영)
 if (matchMedia("(pointer: coarse)").matches) document.getElementById("howto").textContent = "한 손가락으로 돌려 보기 · 두 손가락으로 확대 · 사람을 누르면 그 사람 카드";
 // 아이폰: 키보드가 올라와도 화면 크기가 안 바뀌어서, 보이는 높이와의 차이(--kb)만큼 아래 시트·카드를 올린다 (안드로이드는 resizes-content 로 저절로)
-if (window.visualViewport) {
-  const vv = window.visualViewport, fitKb = () => { const kb = Math.max(0, document.getElementById("app").getBoundingClientRect().height - vv.height - vv.offsetTop); document.documentElement.style.setProperty("--kb", kb > 80 ? `${Math.round(kb)}px` : "0px"); };
-  vv.addEventListener("resize", fitKb);
-  vv.addEventListener("scroll", fitKb);
+// 키보드는 입력칸에 쓰는 중에만 있다고 본다 — 가로→세로로 돌리는 순간 아이폰이 돌리기 전 높이를 잠깐 알려 주면 --kb 가 크게 남아 목록·창이 화면 가운데에 붕 떠 있었음 (10-29)
+const typing = () => { const a = document.activeElement; return !!a && (a.tagName === "TEXTAREA" || a.isContentEditable || (a.tagName === "INPUT" && !/^(button|checkbox|radio|range|color|file|submit|reset|image|hidden)$/.test(a.type))); };
+const fitKb = () => {
+  const vv = window.visualViewport;
+  const kb = vv && typing() ? Math.max(0, appEl.getBoundingClientRect().height - vv.height - vv.offsetTop) : 0;
+  document.documentElement.style.setProperty("--kb", kb > 80 ? `${Math.round(kb)}px` : "0px");
+};
+const settle = (fn) => { fn(); requestAnimationFrame(fn); for (const t of [120, 350, 700, 1200]) setTimeout(fn, t); }; // 돌린 뒤 크기가 늦게 정해지는 기기까지 몇 번 더
+if (window.visualViewport) { visualViewport.addEventListener("resize", fitKb); visualViewport.addEventListener("scroll", fitKb); }
+addEventListener("focusin", () => settle(fitKb));
+addEventListener("focusout", () => settle(fitKb));
+addEventListener("resize", () => settle(fitKb));
+// 아이폰: 손가락 두 개로 페이지 자체가 확대되면 돌린 뒤에도 확대가 남는다 → 페이지 확대는 막는다 (3D 확대는 그대로)
+for (const t of ["gesturestart", "gesturechange"]) document.addEventListener(t, (e) => e.preventDefault(), { passive: false });
+// 화면을 돌릴 때(가로↔세로): 목록이 미끄러지는 효과는 잠깐 끄고, 「⋯」 메뉴는 닫고, 남은 확대·밀림은 되돌리고, 크기는 몇 번 더 맞춘다
+{
+  const land = matchMedia("(orientation: landscape)"), vp = document.querySelector('meta[name="viewport"]');
+  let wasLand = land.matches, rotT = 0;
+  const onRotate = () => {
+    if (land.matches === wasLand) return;
+    wasLand = land.matches;
+    appEl.classList.add("rot");
+    clearTimeout(rotT);
+    rotT = setTimeout(() => appEl.classList.remove("rot"), 900);
+    document.querySelector(".hudmore")?.setAttribute("hidden", "");
+    if (window.visualViewport && Math.abs(visualViewport.scale - 1) > 0.01 && vp) { const c = vp.content; vp.content = c + ",user-scalable=no"; requestAnimationFrame(() => (vp.content = c)); } // 아이폰: 다시 쓰면 확대가 1배로
+    scrollTo(0, 0);
+    settle(() => { fitKb(); try { resize(); } catch {} });
+  };
+  if (land.addEventListener) land.addEventListener("change", onRotate); else land.addListener(onRotate);
+  addEventListener("orientationchange", () => setTimeout(onRotate, 0));
+  addEventListener("resize", onRotate);
 }
 let listPushed = false, listBack = false, listPushLater = false; // 휴대폰: 목록을 열면 기록을 하나 넣어 뒤로가기로 접는다 (social.js 의 카드와 같은 방식)
 const setList = (open, fromBack = false) => {
