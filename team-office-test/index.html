@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="우리팀 테스트">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>우리팀</title>
@@ -2053,7 +2053,7 @@ const camLabel = () => { camsBtn.innerHTML = `<span class="ico">🎥</span><span
 camsBtn.onclick = () => camOpen(!camWrap.classList.contains("open"));
 addEventListener("pointerdown", (e) => { if (camWrap.classList.contains("open") && !camWrap.contains(e.target)) camOpen(false); }, true);
 new MutationObserver(camLabel).observe(camBar, { subtree: true, attributes: true, attributeFilter: ["class"], childList: true });
-camBar.innerHTML = `<button data-tour>둘러보기</button>` + CAMS.map(([t], i) => `<button data-i="${i}">${t}</button>`).join("");
+camBar.innerHTML = `<button data-tour>자동 둘러보기</button>` + CAMS.map(([t], i) => `<button data-i="${i}">${t}</button>`).join("");
 const tourBtn = camBar.querySelector("[data-tour]");
 camBar.onclick = (e) => {
   if (e.target.closest("button")) camOpen(false);
@@ -2067,7 +2067,7 @@ camBar.onclick = (e) => {
 
 // ───────────── 둘러보기: 띄워 두면 카메라가 알아서 사무실을 비춘다 ─────────────
 // 손대지 않고 15초(처음 열면 8초)가 지나면 시작: 크게 돌기 · 누군가 가까이 · 위에서 · 통로 따라 · 구석에서 를 번갈아 천천히.
-// 화면·목록을 만지거나 시점 버튼을 누르면 바로 멈춘다. 「둘러보기」 버튼으로 바로 시작/멈춤. 어항 이벤트 중엔 이벤트 화면 그대로
+// 화면·목록을 만지거나 시점 버튼을 누르면 바로 멈춘다. 「자동 둘러보기」 버튼으로 바로 시작/멈춤. 어항 이벤트 중엔 이벤트 화면 그대로
 const TOUR = { on: true, idle: 7, active: false, shot: null, t: 0, n: 0, evt: false };
 const TOUR_WAIT = 15;
 const SHOTS = ["orbit", "person", "overhead", "person", "aisle", "corner", "person"];
@@ -2235,18 +2235,8 @@ window.__tour = TOUR; // 점검용
 
 // ───────────── 휴대폰: 사원 목록 접고 펴기 ─────────────
 const appEl = document.getElementById("app");
-// 아이폰 홈 화면 앱(설치 앱): 화면 높이를 상태 막대만큼 짧게 알려 줘서 아래가 비고 단추가 떠 있던 것 — 기기가 아는 실제 화면 높이로 맞춘다
-const APP_FULL = () => { const land = innerWidth > innerHeight; return land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height); };
-if (navigator.standalone && /iPhone|iPod/.test(navigator.userAgent)) { // 아이패드는 창 나누기로 실제로 작을 수 있어 빼 둔다
-  const fitApp = () => {
-    appEl.style.height = ""; appEl.style.bottom = "";
-    const full = APP_FULL();
-    if (appEl.getBoundingClientRect().height < full - 1) { appEl.style.bottom = "auto"; appEl.style.height = `${full}px`; }
-  };
-  fitApp();
-  addEventListener("resize", fitApp);
-  addEventListener("orientationchange", () => setTimeout(fitApp, 350));
-}
+// 아이폰 홈 화면 앱: 상태 막대를 투명하게(black-translucent) 두면 아이폰이 앱 화면을 「전체 − 상태 막대」 높이로 위에 붙여 아래 띠가 비고,
+// 코드로는 못 채운다 → 상태 막대를 보통(default)으로 둔다 (build_artifact.py · 설치를 다시 해야 반영)
 if (matchMedia("(pointer: coarse)").matches) document.getElementById("howto").textContent = "한 손가락으로 돌려 보기 · 두 손가락으로 확대 · 사람을 누르면 그 사람 카드";
 // 아이폰: 키보드가 올라와도 화면 크기가 안 바뀌어서, 보이는 높이와의 차이(--kb)만큼 아래 시트·카드를 올린다 (안드로이드는 resizes-content 로 저절로)
 if (window.visualViewport) {

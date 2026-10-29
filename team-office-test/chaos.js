@@ -1275,7 +1275,7 @@ window.Chaos = function (ctx) {
     <div class="cx-row" style="flex-wrap:wrap;align-items:center;font-size:12px">
       <span>얼마나 자주</span>
       <select data-freq style="font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:3px 6px"><option>자주</option><option>보통</option><option>가끔</option></select>
-      <label><input type="checkbox" data-pref="tour"> 손 안 대면 천천히 둘러보기</label>
+      <label><input type="checkbox" data-pref="tour"> 손 안 대면 자동 둘러보기</label>
       <label><input type="checkbox" data-pref="wide"> 사람 목록 숨기고 크게 보기</label>
     </div>
     <div class="cx-row" style="flex-wrap:wrap;font-size:12px">${CATS.map((c) => `<label><input type="checkbox" data-cat="${c}"> ${c}</label>`).join("")}</div>
