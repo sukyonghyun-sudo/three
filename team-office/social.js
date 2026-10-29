@@ -140,6 +140,12 @@ window.Social = function Social(ctx) {
   .sx-st-rank b{text-align:right;font-weight:600;color:#1c1c1e;font-variant-numeric:tabular-nums}
   .sx-st-note{font-size:11.5px;color:#8e8e93;line-height:1.55;margin-top:14px}
   .sx-st-who{max-height:300px;overflow:auto}
+  .sx-st-live{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .sx-st-on{display:inline-flex;align-items:center;gap:6px;border:0;background:#fff;border-radius:999px;padding:4px 12px 4px 4px;font:inherit;font-size:13px;font-weight:600;color:#1c1c1e;cursor:pointer}
+  .sx-st-on .sx-av{width:26px;height:26px}
+  .sx-st-on span::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#34c759;margin-left:5px;vertical-align:1px}
+  .sx-st-on small{font-size:11.5px;color:#8e8e93;font-weight:500}
+  .sx-st-anon{font-size:12.5px;color:#6c6c70}
   .sx-st-who li.today b::after{content:"오늘";margin-left:6px;font-size:10.5px;font-weight:700;color:#1f8f43;background:#e3f6e8;border-radius:6px;padding:1px 6px;vertical-align:1px}
   .sx-badge{min-width:20px;height:20px;border-radius:10px;background:#e5484d;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;flex:none}
   .sx-chat{background:#f6f1e9}
@@ -725,25 +731,37 @@ window.Social = function Social(ctx) {
   // ───────── 📊 방문 통계 (석용현만) ─────────
   const STATS_ADMIN = ctx.snackAdmin;
   let statsDays = 14;
-  function openStats() { clearInterval(dmTimer); view = { kind: "stats", reload: () => renderStats() }; show(); renderStats(); }
-  async function renderStats() {
-    const my = ++seq;
-    card.replaceChildren(header(el("div", "em", "📊"), "방문 통계", `${STATS_ADMIN} 님만 볼 수 있어요 · 대화 내용은 남기지 않아요`));
-    const body = el("div", "sx-body");
-    card.append(body);
-    if (!gate(body, "방문 통계", false)) return;
-    msgEl = el("div", "sx-msg");
-    const seg = el("div", "sx-st-seg");
-    for (const n of [7, 14, 30]) { const b = el("button", n === statsDays ? "on" : null, `${n}일`); b.type = "button"; b.onclick = () => { statsDays = n; renderStats(); }; seg.append(b); }
-    body.append(seg, msgEl);
-    const wait = el("div", "sx-empty", "불러오는 중…");
-    body.append(wait);
+  let statsTimer = 0;
+  function openStats() {
+    clearInterval(dmTimer); clearInterval(statsTimer);
+    view = { kind: "stats", reload: () => renderStats() }; show(); renderStats();
+    statsTimer = setInterval(() => { // 열어 두면 1분마다 저절로 새로 (지금 보는 중 · 오늘 숫자)
+      if (view?.kind !== "stats" || wrap.hidden) return clearInterval(statsTimer);
+      if (!document.hidden) renderStats(true);
+    }, 60000);
+  }
+  async function renderStats(silent = false) { // silent: 다 받아 온 뒤에 바꿔 그리고 스크롤은 그대로
+    const my = ++seq, keep = silent ? card.querySelector(".sx-body")?.scrollTop || 0 : 0;
+    let body, wait;
+    const frame = () => {
+      card.replaceChildren(header(el("div", "em", "📊"), "방문 통계", `${STATS_ADMIN} 님만 볼 수 있어요 · 대화 내용은 남기지 않아요`));
+      body = el("div", "sx-body");
+      card.append(body);
+      if (!gate(body, "방문 통계", false)) return false;
+      msgEl = el("div", "sx-msg");
+      const seg = el("div", "sx-st-seg");
+      for (const n of [7, 14, 30]) { const b = el("button", n === statsDays ? "on" : null, `${n}일`); b.type = "button"; b.onclick = () => { statsDays = n; renderStats(); }; seg.append(b); }
+      body.append(seg, msgEl);
+      return true;
+    };
+    if (!silent) { if (!frame()) return; wait = el("div", "sx-empty", "불러오는 중…"); body.append(wait); }
+    else if (!ctx.me() || !ctx.sb()) return;
     const me = ctx.me(), sb = ctx.sb();
     let d = null;
     try { const r = await sb.rpc("office_stats", { p_char: me.char, p_pin: me.pin, p_days: statsDays }); if (r.error) throw r.error; d = r.data; }
-    catch (e) { console.error(e); if (my === seq) { wait.remove(); say(missing(e) ? NOT_READY : `불러오지 못했어요 (${e.message || e})`, true); } return; }
+    catch (e) { console.error(e); if (my === seq && !silent) { wait.remove(); say(missing(e) ? NOT_READY : `불러오지 못했어요 (${e.message || e})`, true); } return; }
     if (my !== seq) return;
-    wait.remove();
+    if (silent) { if (d?.status !== "ok" || !frame()) return; } else wait.remove();
     if (d?.status !== "ok") { say(d?.status === "not_allowed" ? "통계는 석용현 님만 볼 수 있어요" : MSG[d?.status] || String(d?.status), true); return; }
     const t = d.today || {}, num = (x) => (+x || 0).toLocaleString("ko-KR");
     const tile = (v, label, sub) => { const x = el("div", "sx-st-tile"), b = el("b", null, v), sp = el("span", null, label); if (sub) sp.append(el("br"), el("small", null, sub)); x.append(b, sp); return x; };
@@ -754,6 +772,18 @@ window.Social = function Social(ctx) {
     // 누가 들어왔나: 로그인한 사람 (최근 들어온 순) + 이 기간에 안 들어온 사람
     const ppl = d.people || [], DEV = { pc: "PC", phone: "휴대폰", app: "앱" };
     const lastWhen = (iso) => { const dd = Math.round((new Date(new Date().toDateString()) - new Date(new Date(iso).toDateString())) / 864e5); return dd <= 0 ? shortWhen(iso) : dd === 1 ? "어제" : `${dd}일 전`; };
+    const liveNow = ppl.filter((x) => Date.now() - Date.parse(x.last_at) < 5 * 60e3);
+    const live = el("div", "sx-st-live");
+    for (const x of liveNow) {
+      const b = el("button", "sx-st-on"); b.type = "button";
+      b.append(face(x.char), el("span", null, x.char), el("small", null, DEV[x.device] || "PC"));
+      b.onclick = () => openPerson(x.char);
+      live.append(b);
+    }
+    const others = Math.max(0, (+d.now || 0) - liveNow.length);
+    if (others) live.append(el("span", "sx-st-anon", liveNow.length ? `그 밖에 ${others}대 (로그인 안 함 · 같은 사람의 다른 기기)` : `로그인 안 한 사람 ${others}대`));
+    if (!liveNow.length && !others) live.append(el("span", "sx-st-anon", "지금은 아무도 안 보고 있어요"));
+    body.append(el("h4", "sx-h", `지금 보는 중 — ${liveNow.length}명 (최근 5분 · 1분마다 새로)`), live);
     const who = el("ul", "sx-list sx-inbox sx-st-who");
     who.replaceChildren(...(ppl.length ? ppl.map((x) => {
       const li = el("li"), c = el("div", "c"), tm = el("time", null, lastWhen(x.last_at));
@@ -807,6 +837,7 @@ window.Social = function Social(ctx) {
     for (const [k, n] of us) { const row = el("div"), bar = el("em"); bar.style.width = `${(n / maxU) * 100}%`; row.append(el("span", null, USE_NAME[k]), el("div"), el("b", null, num(n))); row.children[1].append(bar); rank.append(row); }
     const box4 = el("div", "sx-st-box"); box4.style.paddingBottom = "12px"; box4.append(us.length ? rank : el("div", "sx-empty", "아직 기록이 없어요"));
     body.append(el("h4", "sx-h", `많이 쓴 기능 — 최근 ${statsDays}일 횟수`), box4);
+    if (silent) body.scrollTop = keep;
     body.append(el("p", "sx-st-note", "같은 브라우저는 하루에 한 번으로 세요(기기를 바꾸면 따로 세짐). 이름은 로그인한 사람만 — 비밀번호가 맞을 때만 남겨요. 1:1 대화는 보낸 횟수만 세고, 내용은 잠겨 있어 아무도 몰라요."));
   }
   function renderFeedView() {
