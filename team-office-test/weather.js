@@ -1,6 +1,6 @@
 // 실시간 날씨 (판교 사옥) — 일반 <script> 로 읽는다. window.OfficeWeather(ctx) → { tick(dt), set(kind), state }
 // Open-Meteo(무료 · 키 없음)에서 30분마다 지금 날씨를 받아: 비·눈은 사무실 바깥에만 내리고(지붕 없이 위에서 보는 모양이라 안은 마른 채),
-// 흐림·비·안개는 화면을 살짝 어둡고 차분하게, 천둥번개는 번쩍 + 조금 뒤 우르릉. 빗소리·천둥소리는 창이 활성화돼 있을 때만(audioCtx 가 켜져 있을 때).
+// 흐림·비·안개는 화면을 살짝 어둡고 차분하게(안개도 뿌연 막 없이 흐린 날처럼), 천둥번개는 번쩍 + 조금 뒤 우르릉. 빗소리·천둥소리는 창이 활성화돼 있을 때만(audioCtx 가 켜져 있을 때).
 // 위쪽 줄 날씨 칩(🌧️ 14°)을 누르면: 지금 날씨 · 효과 끄기 · 소리 끄기. 미리 보기: 주소 끝 ?weather=rain|heavy|snow|thunder|fog|cloudy|clear
 window.OfficeWeather = function (ctx) {
   const { THREE, scene, ROOM } = ctx;
@@ -81,7 +81,7 @@ window.OfficeWeather = function (ctx) {
   tint.after(flash);
   const MOOD = { // 막 색 · 진하기
     clear: ["rgba(0,0,0,0)", 0], night: ["rgba(0,0,0,0)", 0], cloudy: ["rgba(90,100,115,.10)", 1], overcast: ["rgba(80,90,105,.16)", 1],
-    fog: ["linear-gradient(180deg, rgba(225,230,236,.55), rgba(225,230,236,.18) 55%, rgba(225,230,236,.08))", 1],
+    fog: ["rgba(80,90,105,.16)", 1], // 안개: 뿌연 막은 빼고(사용자) 흐린 날과 같은 분위기만
     drizzle: ["rgba(70,85,105,.16)", 1], rain: ["rgba(55,70,95,.22)", 1], heavy: ["rgba(40,52,75,.30)", 1], snow: ["rgba(200,214,232,.18)", 1], thunder: ["rgba(35,40,62,.34)", 1],
   };
 
