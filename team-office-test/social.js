@@ -105,6 +105,11 @@ window.Social = function Social(ctx) {
   .sx-inbox .c b{font-size:13px}
   .sx-inbox .c span{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
   .sx-inbox time{font-size:11px;color:var(--muted);white-space:nowrap}
+  .sx-actlist li{position:relative}
+  .sx-actlist li.new{background:#eef5ff!important}
+  .sx-actlist li.new::before{content:"";position:absolute;left:-1px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#007aff}
+  .sx-actlist .c b{font-weight:700}
+  .sx-actlist .c .k{display:inline;font-size:13px;font-weight:500;color:var(--ink);margin:0;white-space:normal}
   .sx-badge{min-width:20px;height:20px;border-radius:10px;background:#e5484d;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;flex:none}
   .sx-chat{background:#f6f1e9}
   .sx-msgs{display:flex;flex-direction:column;gap:6px}
@@ -585,6 +590,74 @@ window.Social = function Social(ctx) {
     toastEl.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => { toastEl.hidden = true; }, 7000);
   }
+  // ───────── 🔔 알림: 남이 내 글에 단 댓글 · 좋아요 (새 글 확인할 때 같이 · 실시간 소식이 오면 바로) ─────────
+  // 본 시각은 사람마다 이 브라우저에. 처음 쓰는 사람은 하루 안의 반응만 새것으로
+  const ACT_KEY = "teamOfficeActSeen";
+  let acts = [], actSeen = 0, actInit = false;
+  const actKey = () => `${ACT_KEY}:${ctx.me()?.char || ""}`;
+  const saveActSeen = () => { try { localStorage.setItem(actKey(), String(actSeen)); } catch {} };
+  function loadActSeen() {
+    acts = []; actInit = false; actSeen = 0;
+    try { actSeen = +localStorage.getItem(actKey()) || 0; } catch {}
+    if (!actSeen && ctx.me()) { actSeen = Date.now() - 864e5; saveActSeen(); }
+    setActBadge();
+  }
+  const actNew = () => acts.filter((a) => a.t > actSeen);
+  function setActBadge() {
+    if (!hud.actBadge) return;
+    const n = actNew().length;
+    hud.actBadge.hidden = !n; hud.actBadge.textContent = n > 99 ? "99+" : String(n);
+    hud.act.hidden = !ctx.me();
+  }
+  async function pollActs() {
+    const sb = ctx.sb(), me = ctx.me()?.char;
+    if (!sb || !me) { acts = []; setActBadge(); return; }
+    try {
+      const mine = await fetchRows(sb.from("office_diary").select("id,body").eq("char", me).order("id", { ascending: false }).limit(50));
+      const ids = mine.map((r) => r.id), text = new Map(mine.map((r) => [r.id, r.body || "사진"]));
+      const [cm, lk] = ids.length ? await Promise.all([
+        fetchRows(sb.from("office_diary_comments").select("id,post_id,from_char,body,created_at").in("post_id", ids).order("id", { ascending: false }).limit(60)),
+        fetchRows(sb.from("office_diary_likes").select("post_id,char,created_at").in("post_id", ids).order("created_at", { ascending: false }).limit(60)),
+      ]) : [[], []];
+      if (ctx.me()?.char !== me) return; // 그사이 사람이 바뀜 (테스트 판)
+      const next = [
+        ...cm.filter((c) => c.from_char !== me).map((c) => ({ key: "c" + c.id, kind: "cmt", who: c.from_char, text: c.body, post: text.get(c.post_id), at: c.created_at, t: Date.parse(c.created_at) })),
+        ...lk.filter((l) => l.char !== me).map((l) => ({ key: `l${l.post_id}:${l.char}`, kind: "like", who: l.char, post: text.get(l.post_id), at: l.created_at, t: Date.parse(l.created_at) })),
+      ].sort((a, b) => b.t - a.t).slice(0, 50);
+      const fresh = next.filter((a) => a.t > actSeen && !(actInit && acts.some((o) => o.key === a.key))); // 처음 읽을 땐 그동안 안 본 것, 그 뒤론 새로 온 것
+      acts = next; actInit = true; setActBadge();
+      if (fresh.length) actToast(fresh[0], fresh.length);
+      if (view?.kind === "acts") renderActs();
+    } catch (e) { if (!missing(e)) console.error(e); }
+  }
+  const actLine = (a) => (a.kind === "cmt" ? "님이 내 글에 댓글을 남겼어요" : "님이 내 글을 좋아해요");
+  function actToast(a, n) { // 「○○ 님이 내 글에 댓글을 남겼어요」 — 누르면 알림 목록
+    toastEl.replaceChildren(face(a.who), el("span", null, n > 1 ? `내 글에 새 반응 ${n}건` : `${a.who} ${actLine(a)}`), el("b", null, "보기"));
+    toastEl.onclick = () => { toastEl.hidden = true; openActs(); };
+    toastEl.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => { toastEl.hidden = true; }, 7000);
+  }
+  function openActs() { clearInterval(dmTimer); view = { kind: "acts", reload: pollActs }; show(); renderActs(); }
+  function renderActs() {
+    if (view.seen == null && actInit) view.seen = actSeen; // 연 순간까지 안 본 것은 이 창에서 파랗게
+    card.replaceChildren(header(el("div", "em", "🔔"), "알림", "내 글에 달린 댓글·좋아요"));
+    const body = el("div", "sx-body");
+    card.append(body);
+    if (!gate(body, "알림", false)) return;
+    const list = el("ul", "sx-list sx-inbox sx-actlist");
+    body.append(list);
+    if (!actInit) { list.append(el("li", "sx-empty", "불러오는 중…")); return; }
+    list.replaceChildren(...(acts.length ? acts.map((a) => {
+      const li = el("li", a.t > view.seen ? "new" : null), c = el("div", "c"), t = el("time", null, ago(a.at)), who = el("div");
+      t.dateTime = a.at; t.title = when(a.at);
+      who.append(el("b", null, a.who), el("span", "k", " " + actLine(a)));
+      c.append(who, el("span", null, a.kind === "cmt" ? `“${a.text}”` : `내 글: ${a.post || ""}`));
+      li.append(face(a.who), c, t);
+      li.onclick = () => openPerson(ctx.me().char, "diary");
+      return li;
+    }) : [el("li", "sx-empty", "아직 알림이 없어요. 일상에 글을 올리면, 누가 댓글·좋아요를 남길 때 여기에 떠요")]));
+    if (acts.length && acts[0].t > actSeen) { actSeen = acts[0].t; saveActSeen(); setActBadge(); } // 열어 봤으면 다 본 것으로
+  }
   function openFeed() { clearInterval(dmTimer); view = { kind: "feed" }; show(); renderFeedView(); }
   function renderFeedView() {
     const my = ++seq;
@@ -729,6 +802,14 @@ window.Social = function Social(ctx) {
     hud.feed.append(hud.feedBadge);
     hud.feed.type = "button";
     hud.feed.onclick = () => { listen(); openFeed(); };
+    hud.act = el("button", "sx-hb");
+    hud.act.innerHTML = '<span class="ico">🔔</span><span class="lbl"> 알림</span>';
+    hud.act.title = "내 글에 달린 댓글·좋아요"; hud.act.setAttribute("aria-label", "알림");
+    hud.actBadge = el("span", "sx-badge");
+    hud.actBadge.hidden = true;
+    hud.act.append(hud.actBadge);
+    hud.act.type = "button"; hud.act.hidden = true; // 로그인한 뒤에만
+    hud.act.onclick = () => { listen(); openActs(); };
     hud.dm = el("button", "sx-hb");
     hud.dm.innerHTML = '<span class="ico">💬</span><span class="lbl"> 대화</span>'; // 휴대폰은 아이콘만
     hud.dm.title = "1:1 대화"; hud.dm.setAttribute("aria-label", "1:1 대화");
@@ -737,7 +818,7 @@ window.Social = function Social(ctx) {
     hud.dm.append(hud.badge);
     hud.dm.type = "button";
     hud.dm.onclick = () => { listen(); openInbox(); };
-    ctx.hud.append(hud.feed, hud.dm);
+    ctx.hud.append(hud.feed, hud.act, hud.dm);
   } else hud.badge = el("span");
 
   // ───────── 간식 신청 ─────────
@@ -834,13 +915,13 @@ window.Social = function Social(ctx) {
     const poke = (kind) => () => { if (view && view.reload && (kind === "snacks" ? view.kind === "snacks" : view.kind === "person" && view.tab === "notes")) clearTimeout(listen.t), (listen.t = setTimeout(() => view?.reload?.(), 300)); };
     live.on("postgres_changes", { event: "*", schema: "public", table: "office_notes" }, poke("notes"))
       .on("postgres_changes", { event: "*", schema: "public", table: "office_snacks" }, poke("snacks"))
-      .on("postgres_changes", { event: "*", schema: "public", table: "office_diary_likes" }, () => { if (view?.kind === "feed" || (view?.kind === "person" && view.tab === "diary")) { clearTimeout(listen.c); listen.c = setTimeout(() => view?.reloadCmts?.(), 300); } })
-      .on("postgres_changes", { event: "*", schema: "public", table: "office_diary_comments" }, () => { if (view?.kind === "feed" || (view?.kind === "person" && view.tab === "diary")) { clearTimeout(listen.c); listen.c = setTimeout(() => view?.reloadCmts?.(), 300); } })
+      .on("postgres_changes", { event: "*", schema: "public", table: "office_diary_likes" }, () => { clearTimeout(listen.a); listen.a = setTimeout(pollActs, 400); if (view?.kind === "feed" || (view?.kind === "person" && view.tab === "diary")) { clearTimeout(listen.c); listen.c = setTimeout(() => view?.reloadCmts?.(), 300); } })
+      .on("postgres_changes", { event: "*", schema: "public", table: "office_diary_comments" }, () => { clearTimeout(listen.a); listen.a = setTimeout(pollActs, 400); if (view?.kind === "feed" || (view?.kind === "person" && view.tab === "diary")) { clearTimeout(listen.c); listen.c = setTimeout(() => view?.reloadCmts?.(), 300); } })
       .on("postgres_changes", { event: "*", schema: "public", table: "office_hearts" }, () => { clearTimeout(listen.h); listen.h = setTimeout(async () => { await loadHearts(); if (view?.kind === "person") renderPerson(); }, 300); })
       .subscribe();
     loadHearts();
-    pollFeed();
-    setInterval(() => { if (!document.hidden) pollFeed(); }, ctx.test ? 8000 : 30000);
+    pollFeed(); pollActs();
+    setInterval(() => { if (!document.hidden) { pollFeed(); pollActs(); } }, ctx.test ? 8000 : 30000);
   }
 
   return {
@@ -849,6 +930,7 @@ window.Social = function Social(ctx) {
     openInbox() { listen(); openInbox(); },
     openThread(name) { listen(); openThread(name); },
     openFeed() { listen(); openFeed(); },
+    openActs() { listen(); openActs(); },
     feedNew,
     heartCount: (name) => hearts.get(name) || 0,
     isBday,
@@ -859,7 +941,7 @@ window.Social = function Social(ctx) {
       if (key === sync.key) return;
       const prev = sync.me;
       sync.key = key; sync.me = me;
-      if (prev !== me) { loadSeen(); setFeedBadge(); ctx.onChange?.(); } // 사람이 바뀌면 그 사람이 본 글 기준으로
+      if (prev !== me) { loadSeen(); setFeedBadge(); loadActSeen(); pollActs(); ctx.onChange?.(); } // 사람이 바뀌면 그 사람이 본 글·알림 기준으로
       clearInterval(unreadTimer);
       if (me) { unreadTimer = setInterval(() => { if (!document.hidden) pollUnread(); }, 20000); pollUnread(); } else setUnread(0);
       loadHearts();
@@ -867,7 +949,7 @@ window.Social = function Social(ctx) {
       if (prev === me) return view.reload?.(); // 저장소만 막 준비됨
       // 대화방에서 상대로 바뀌면(테스트 판) 방금까지의 나와 이어서
       const dm = () => (view.name === me ? (prev ? openThread(prev) : openInbox()) : openThread(view.name));
-      ({ snacks: renderSnacks, inbox: renderInbox, dm, feed: renderFeedView }[view.kind] || renderPerson)();
+      ({ snacks: renderSnacks, inbox: renderInbox, dm, feed: renderFeedView, acts: () => { view.seen = null; renderActs(); } }[view.kind] || renderPerson)();
     },
   };
   function sync() {}

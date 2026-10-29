@@ -2,7 +2,7 @@
 // 모두 출근한 상태로 시작, 아무 이름이나 「로그인」 + 아무 숫자 4자리. 탭 두 개면 서로 다른 사람으로 1:1 대화를 주고받을 수 있다
 // 규칙(글자 수·하루 한 번·링크 모양)은 supabase_setup.sql / supabase_social.sql / supabase_more.sql 함수와 같게
 (() => {
-  const KEY = "teamOfficeTestDb", VER = 6;
+  const KEY = "teamOfficeTestDb", VER = 7;
   const NAMES = window.__TEST_NAMES || [];
   const now = () => new Date().toISOString();
   const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
@@ -26,6 +26,15 @@
     P("석용현").birthday = "03-14";
     const note = (to, from, body, min) => ({ id: id.n++, to_char: to, from_char: from, body, created_at: ago(min) });
     const dm = (from, to, body, min, read = true) => ({ id: id.n++, from_char: from, to_char: to, body, created_at: ago(min), read_at: read ? ago(min - 1) : null });
+    const post = (char, body, ph, min) => ({ id: id.n++, char, body, photo: ph, created_at: ago(min) });
+    const D = [
+      post("홍수연", "오늘 처음으로 뒤집기 성공! 👏", photo("#ffd1dc", "#bde0fe", "뒤집기 성공 👶"), 60 * 26),
+      post("석용현", "팀 사무실 페이지 테스트 중 🧪 마음껏 눌러 보세요", null, 60 * 5),
+      post("홍수연", "이유식 첫날. 반은 먹고 반은 얼굴에…", null, 60 * 3),
+      post("김현준", "오늘 점심 국밥 성공 🍲 역시 1층 국밥집", photo("#f6d365", "#fda085", "국밥 🍲"), 60 * 2),
+      post("오누리", "어제 축구 보신 분? 마지막 골 미쳤다 ⚽", null, 70),
+      post("원효인", "책상 피규어 친구가 생겼어요", photo("#a1c4fd", "#c2e9fb", "피규어 ✨"), 35),
+    ];
     return {
       ver: VER,
       office_people: people,
@@ -33,16 +42,11 @@
         note("송나정", "홍수연", "나정님 생일 축하해요!! 🎉", 50), note("송나정", "김현준", "생일 축하합니다 🎂 맛있는 거 드세요", 20),
         note("김현준", "홍수연", "어제 회의 자료 고마웠어요!", 300), note("석용현", "원효인", "사무실 페이지 너무 귀여워요 ㅋㅋ", 120),
       ],
-      office_diary: [
-        { id: id.n++, char: "홍수연", body: "오늘 처음으로 뒤집기 성공! 👏", photo: photo("#ffd1dc", "#bde0fe", "뒤집기 성공 👶"), created_at: ago(60 * 26) },
-        { id: id.n++, char: "홍수연", body: "이유식 첫날. 반은 먹고 반은 얼굴에…", photo: null, created_at: ago(60 * 3) },
-        { id: id.n++, char: "김현준", body: "오늘 점심 국밥 성공 🍲 역시 1층 국밥집", photo: photo("#f6d365", "#fda085", "국밥 🍲"), created_at: ago(60 * 2) },
-        { id: id.n++, char: "오누리", body: "어제 축구 보신 분? 마지막 골 미쳤다 ⚽", photo: null, created_at: ago(70) },
-        { id: id.n++, char: "원효인", body: "책상 피규어 친구가 생겼어요", photo: photo("#a1c4fd", "#c2e9fb", "피규어 ✨"), created_at: ago(35) },
-      ],
+      office_diary: D,
       office_diary_comments: [
-        { id: 9001, post_id: 1, from_char: "송나정", body: "와 벌써 뒤집기라니 대단해요 👏", created_at: ago(60 * 20) },
-        { id: 9002, post_id: 1, from_char: "홍수연", body: "감사해요 ㅎㅎ 하루 종일 뒤집어요", created_at: ago(60 * 19) },
+        { id: id.n++, post_id: D[0].id, from_char: "송나정", body: "와 벌써 뒤집기라니 대단해요 👏", created_at: ago(60 * 20) },
+        { id: id.n++, post_id: D[0].id, from_char: "홍수연", body: "감사해요 ㅎㅎ 하루 종일 뒤집어요", created_at: ago(60 * 19) },
+        { id: id.n++, post_id: D[1].id, from_char: "김현준", body: "오 이거 재밌네요 ㅋㅋ 국밥 버튼도 만들어 주세요", created_at: ago(25) },
       ],
       office_snacks: [
         { id: id.n++, who: "김현준", item: "허니버터칩 2봉", link: "https://www.example.com/honey", created_at: ago(200) },
@@ -50,8 +54,8 @@
       ],
       office_hearts: [["홍수연", "석용현"], ["김현준", "석용현"], ["원효인", "송나정"], ["한아린", "송나정"], ["석용현", "홍수연"], ["오누리", "김현준"]]
         .map(([f, t]) => ({ id: id.n++, from_char: f, to_char: t, day: kst(), created_at: ago(30) })),
-      office_diary_likes: [[1, "송나정"], [1, "김현준"], [1, "원효인"], [1, "석용현"], [3, "오누리"], [3, "손주용"], [5, "한아린"]]
-        .map(([post_id, c]) => ({ post_id, char: c, created_at: ago(20) })),
+      office_diary_likes: [[0, "송나정"], [0, "김현준"], [0, "원효인"], [0, "석용현"], [3, "오누리"], [3, "손주용"], [1, "송나정", 12], [1, "원효인", 50]]
+        .map(([i, c, min]) => ({ post_id: D[i].id, char: c, created_at: ago(min || 20) })),
       office_dms: [
         dm("김현준", "석용현", "용현님 오늘 점심 국밥 어때요?", 40), dm("석용현", "김현준", "좋아요 12시에 1층에서 봐요", 38),
         dm("김현준", "석용현", "넵 👍", 37, false), dm("홍수연", "석용현", "육아일기 기능 고마워요 😊", 10, false),

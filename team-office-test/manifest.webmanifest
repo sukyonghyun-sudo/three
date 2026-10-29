@@ -1,6 +1,6 @@
 {
- "name": "메이플W 사업유닛 사무실 (테스트)",
- "short_name": "팀 사무실 테스트",
+ "name": "우리팀 (테스트)",
+ "short_name": "우리팀 테스트",
  "lang": "ko",
  "dir": "ltr",
  "start_url": "./",
@@ -9,7 +9,7 @@
  "orientation": "any",
  "background_color": "#f2f2f7",
  "theme_color": "#f2f2f7",
- "description": "메이플W 사업유닛 팀 사무실 — 출퇴근·상태 메시지·피드·1:1 대화",
+ "description": "우리팀 사무실 — 출퇴근·상태 메시지·피드·1:1 대화",
  "icons": [
   {
    "src": "app/icon-192.png",
