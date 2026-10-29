@@ -110,6 +110,35 @@ window.Social = function Social(ctx) {
   .sx-actlist li.new::before{content:"";position:absolute;left:-1px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#007aff}
   .sx-actlist .c b{font-weight:700}
   .sx-actlist .c .k{display:inline;font-size:13px;font-weight:500;color:var(--ink);margin:0;white-space:normal}
+  .sx-st-seg{display:flex;gap:2px;background:rgba(118,118,128,.12);border-radius:9px;padding:2px;margin-bottom:14px}
+  .sx-st-seg button{flex:1;border:0;background:none;border-radius:7px;padding:6px 8px;font:inherit;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+  .sx-st-seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+  .sx-st-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  @media (max-width:520px){.sx-st-tiles{grid-template-columns:repeat(2,1fr)}}
+  .sx-st-tile{background:#fff;border-radius:12px;padding:10px 12px}
+  .sx-st-tile b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em;color:#1c1c1e;font-variant-numeric:tabular-nums}
+  .sx-st-tile span{display:block;font-size:12px;color:#6c6c70;margin-top:1px}
+  .sx-st-tile small{font-size:11px;color:#8e8e93}
+  .sx-st-box{background:#fff;border-radius:12px;padding:12px 12px 8px}
+  .sx-st-cols{position:relative;display:flex;align-items:flex-end;gap:2px;height:120px;border-bottom:1px solid rgba(60,60,67,.18)}
+  .sx-st-cols i{position:relative;flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;cursor:default}
+  .sx-st-cols i::before{content:"";display:block;width:100%;height:var(--h);min-height:2px;background:#2a78d6;border-radius:4px 4px 0 0}
+  .sx-st-cols i.z::before{background:rgba(118,118,128,.18);min-height:1px}
+  .sx-st-cols i.today::before{background:#1f5fb0}
+  .sx-st-cols i:hover::before{filter:brightness(1.15)}
+  .sx-st-cols i[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(var(--h) + 6px);transform:translateX(-50%);white-space:nowrap;background:#1c1c1e;color:#fff;font-size:11.5px;font-weight:600;font-style:normal;padding:4px 8px;border-radius:7px;z-index:2;pointer-events:none}
+  .sx-st-x{display:flex;gap:2px;margin-top:4px}
+  .sx-st-x span{flex:1;min-width:0;text-align:center;font-size:10.5px;color:#8e8e93;white-space:nowrap;overflow:visible}
+  .sx-st-stack{display:flex;gap:2px;height:14px;border-radius:7px;overflow:hidden}
+  .sx-st-stack i{display:block;height:100%}
+  .sx-st-leg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12.5px;color:#3a3a3c}
+  .sx-st-leg span{display:inline-flex;align-items:center;gap:6px}
+  .sx-st-leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .sx-st-rank{display:flex;flex-direction:column;gap:7px}
+  .sx-st-rank div{display:grid;grid-template-columns:110px 1fr 40px;align-items:center;gap:8px;font-size:12.5px;color:#3a3a3c}
+  .sx-st-rank em{display:block;height:12px;background:#2a78d6;border-radius:0 4px 4px 0;font-style:normal;min-width:2px}
+  .sx-st-rank b{text-align:right;font-weight:600;color:#1c1c1e;font-variant-numeric:tabular-nums}
+  .sx-st-note{font-size:11.5px;color:#8e8e93;line-height:1.55;margin-top:14px}
   .sx-badge{min-width:20px;height:20px;border-radius:10px;background:#e5484d;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;flex:none}
   .sx-chat{background:#f6f1e9}
   .sx-msgs{display:flex;flex-direction:column;gap:6px}
@@ -160,6 +189,7 @@ window.Social = function Social(ctx) {
     bad_pin: "비밀번호가 달라요 — 사원 목록에서 다시 로그인해 주세요", locked: "여러 번 틀려서 10분 동안 잠겼어요", no_char: "아직 연결 안 된 캐릭터예요",
     empty: "내용을 써 주세요", too_long: "글이 너무 길어요", bad_photo: "사진을 올리지 못했어요 (용량)", too_many: "오늘은 더 올릴 수 없어요",
     bad_link: "링크는 http:// 나 https:// 로 시작하는 주소만 돼요", not_allowed: "지울 수 없는 글이에요",
+    not_locked: "잠그지 않은 메시지는 보낼 수 없어요 — 새로고침해 주세요",
     already: "오늘은 이미 보냈어요 (하루 한 번)", bad_input: "입력이 올바르지 않아요",
   };
   const today = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); // 한국 날짜 (생일·하트는 하루 단위)
@@ -212,6 +242,7 @@ window.Social = function Social(ctx) {
       const { data, error } = await sb.rpc(fn, { p_char: me.char, p_pin: me.pin, ...args });
       if (error) throw error;
       if (data !== "ok") say(MSG[data] || String(data), true);
+      else if (USE_OF[fn]) track(USE_OF[fn]);
       return data;
     } catch (e) {
       console.error(e);
@@ -233,7 +264,7 @@ window.Social = function Social(ctx) {
     else { history.pushState({ sxCard: 1 }, ""); pushed = true; }
   }
   // 글·사진·대화는 PC 에서 넓게 (560px)
-  const fitCard = () => card.classList.toggle("wide", !!view && (view.kind === "feed" || view.kind === "dm" || (view.kind === "person" && view.tab === "diary")));
+  const fitCard = () => card.classList.toggle("wide", !!view && (view.kind === "feed" || view.kind === "dm" || view.kind === "stats" || (view.kind === "person" && view.tab === "diary")));
   function close(fromBack = false) {
     wrap.hidden = true; view = null; seq++; clearInterval(dmTimer); pushAfterBack = false;
     if (pushed) { pushed = false; if (!fromBack) { backPending = true; history.back(); } }
@@ -637,7 +668,7 @@ window.Social = function Social(ctx) {
     toastEl.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => { toastEl.hidden = true; }, 7000);
   }
-  function openActs() { clearInterval(dmTimer); view = { kind: "acts", reload: pollActs }; show(); renderActs(); }
+  function openActs() { clearInterval(dmTimer); view = { kind: "acts", reload: pollActs }; show(); renderActs(); track("alerts"); }
   function renderActs() {
     if (view.seen == null && actInit) view.seen = actSeen; // 연 순간까지 안 본 것은 이 창에서 파랗게
     card.replaceChildren(header(el("div", "em", "🔔"), "알림", "내 글에 달린 댓글·좋아요"));
@@ -658,7 +689,107 @@ window.Social = function Social(ctx) {
     }) : [el("li", "sx-empty", "아직 알림이 없어요. 일상에 글을 올리면, 누가 댓글·좋아요를 남길 때 여기에 떠요")]));
     if (acts.length && acts[0].t > actSeen) { actSeen = acts[0].t; saveActSeen(); setActBadge(); } // 열어 봤으면 다 본 것으로
   }
-  function openFeed() { clearInterval(dmTimer); view = { kind: "feed" }; show(); renderFeedView(); }
+  function openFeed() { clearInterval(dmTimer); view = { kind: "feed" }; show(); renderFeedView(); track("feed"); }
+
+  // ───────── 방문 기록 (이름 없이): 이 브라우저의 무작위 번호 · 기기 · 로그인했는지 · 기능 쓴 횟수. 열 때 한 번 + 보는 동안 1분마다 ─────────
+  const USE_OF = { office_heart: "heart", office_note_add: "note", office_diary_post: "post", office_diary_like: "like", office_diary_comment: "comment", office_dm_send: "dm", office_snack_add: "snack" };
+  const USE_NAME = { feed: "피드 보기", like: "좋아요", comment: "댓글", post: "글 올리기", dm: "1:1 대화 보내기", heart: "칭찬 하트", alerts: "알림 보기", note: "방명록", snack: "간식 신청", bg: "배경 바꾸기" };
+  let uses = {}, visitOn = false;
+  function track(what) { uses[what] = (uses[what] || 0) + 1; }
+  const visitId = () => {
+    let v = "";
+    try { v = localStorage.getItem("teamOfficeVid") || ""; if (!/^[0-9a-f]{16}$/.test(v)) { v = [...crypto.getRandomValues(new Uint8Array(8))].map((b) => b.toString(16).padStart(2, "0")).join(""); localStorage.setItem("teamOfficeVid", v); } } catch {}
+    return v || "0000000000000000";
+  };
+  const device = () => (matchMedia("(display-mode: standalone)").matches || navigator.standalone ? "app" : matchMedia("(pointer: coarse)").matches ? "phone" : "pc");
+  async function visit(open) {
+    const sb = ctx.sb();
+    if (!sb) return;
+    const sent = uses; uses = {};
+    try {
+      const { data, error } = await sb.rpc("office_visit", { p_vid: visitId(), p_device: device(), p_login: !!ctx.me(), p_open: open, p_uses: sent });
+      if (error || data !== "ok") throw error || new Error(data);
+    } catch (e) { for (const k in sent) uses[k] = (uses[k] || 0) + sent[k]; if (!missing(e)) console.warn("방문 기록", e); } // 못 보냈으면 다음에 같이
+  }
+  function startVisits() {
+    if (visitOn || !ctx.sb()) return;
+    visitOn = true;
+    visit(true);
+    setInterval(() => { if (!document.hidden) visit(false); }, 60000);
+    addEventListener("visibilitychange", () => { if (document.hidden && Object.keys(uses).length) visit(false); });
+  }
+
+  // ───────── 📊 방문 통계 (석용현만) ─────────
+  const STATS_ADMIN = ctx.snackAdmin;
+  let statsDays = 14;
+  function openStats() { clearInterval(dmTimer); view = { kind: "stats", reload: () => renderStats() }; show(); renderStats(); }
+  async function renderStats() {
+    const my = ++seq;
+    card.replaceChildren(header(el("div", "em", "📊"), "방문 통계", `${STATS_ADMIN} 님만 볼 수 있어요 · 이름·대화 내용은 남기지 않아요`));
+    const body = el("div", "sx-body");
+    card.append(body);
+    if (!gate(body, "방문 통계", false)) return;
+    msgEl = el("div", "sx-msg");
+    const seg = el("div", "sx-st-seg");
+    for (const n of [7, 14, 30]) { const b = el("button", n === statsDays ? "on" : null, `${n}일`); b.type = "button"; b.onclick = () => { statsDays = n; renderStats(); }; seg.append(b); }
+    body.append(seg, msgEl);
+    const wait = el("div", "sx-empty", "불러오는 중…");
+    body.append(wait);
+    const me = ctx.me(), sb = ctx.sb();
+    let d = null;
+    try { const r = await sb.rpc("office_stats", { p_char: me.char, p_pin: me.pin, p_days: statsDays }); if (r.error) throw r.error; d = r.data; }
+    catch (e) { console.error(e); if (my === seq) { wait.remove(); say(missing(e) ? NOT_READY : `불러오지 못했어요 (${e.message || e})`, true); } return; }
+    if (my !== seq) return;
+    wait.remove();
+    if (d?.status !== "ok") { say(d?.status === "not_allowed" ? "통계는 석용현 님만 볼 수 있어요" : MSG[d?.status] || String(d?.status), true); return; }
+    const t = d.today || {}, num = (x) => (+x || 0).toLocaleString("ko-KR");
+    const tile = (v, label, sub) => { const x = el("div", "sx-st-tile"), b = el("b", null, v), sp = el("span", null, label); if (sub) sp.append(el("br"), el("small", null, sub)); x.append(b, sp); return x; };
+    const tiles = el("div", "sx-st-tiles");
+    tiles.append(tile(num(t.people), "오늘 들어온 사람", `로그인 ${num(t.login)}명`), tile(num(t.opens), "오늘 연 횟수"), tile(num(d.now), "지금 보는 중", "최근 5분"),
+      tile(t.people ? `${Math.round((+t.minutes || 0) / t.people)}분` : "0분", "한 사람이 머문 시간", "오늘 평균"));
+    body.append(tiles);
+    // 날마다 들어온 사람 (막대 하나 = 하루)
+    const days = d.days || [], maxD = Math.max(1, ...days.map((x) => +x.people || 0)), todayKey = days.at(-1)?.day;
+    const cols = el("div", "sx-st-cols"), xs = el("div", "sx-st-x"), every = days.length > 16 ? 5 : days.length > 8 ? 2 : 1;
+    days.forEach((x, i) => {
+      const dt = new Date(x.day + "T00:00:00"), lab = `${dt.getMonth() + 1}/${dt.getDate()}`, n = +x.people || 0;
+      const bar = el("i", (n ? "" : "z") + (x.day === todayKey ? " today" : ""));
+      bar.style.setProperty("--h", `${(n / maxD) * 100}%`);
+      bar.dataset.tip = `${dt.getMonth() + 1}월 ${dt.getDate()}일 (${"일월화수목금토"[dt.getDay()]}) · ${n}명 (로그인 ${+x.login || 0})`;
+      cols.append(bar);
+      xs.append(el("span", null, (days.length - 1 - i) % every === 0 ? (x.day === todayKey ? "오늘" : lab) : ""));
+    });
+    const box1 = el("div", "sx-st-box"); box1.append(cols, xs);
+    body.append(el("h4", "sx-h", `날마다 들어온 사람 — 최근 ${statsDays}일 (가장 많은 날 ${maxD}명)`), box1);
+    // 몇 시에 여나 (7시~22시)
+    const hrs = d.hours || {}, H = Array.from({ length: 16 }, (_, i) => i + 7), maxH = Math.max(1, ...H.map((h) => +hrs[h] || 0));
+    const hc = el("div", "sx-st-cols"), hx = el("div", "sx-st-x");
+    for (const h of H) {
+      const n = +hrs[h] || 0, bar = el("i", n ? "" : "z");
+      bar.style.setProperty("--h", `${(n / maxH) * 100}%`);
+      bar.dataset.tip = `${h < 12 ? "오전" : "오후"} ${h % 12 || 12}시 · ${n}번`;
+      hc.append(bar); hx.append(el("span", null, h % 3 === 0 ? `${h}시` : ""));
+    }
+    const box2 = el("div", "sx-st-box"); box2.append(hc, hx);
+    body.append(el("h4", "sx-h", "몇 시에 많이 열까 — 연 횟수"), box2);
+    // 기기
+    const dv = d.devices || {}, DV = [["pc", "PC", "#2a78d6"], ["phone", "휴대폰", "#eb6834"], ["app", "설치한 앱", "#1baf7a"]], sumD = DV.reduce((a, [k]) => a + (+dv[k] || 0), 0);
+    const stack = el("div", "sx-st-stack"), leg = el("div", "sx-st-leg");
+    for (const [k, name, c] of DV) {
+      const n = +dv[k] || 0, pct = sumD ? Math.round((n / sumD) * 100) : 0;
+      if (n) { const seg2 = el("i"); seg2.style.cssText = `flex:${n};background:${c}`; seg2.title = `${name} ${pct}%`; stack.append(seg2); }
+      const it = el("span"), sw = el("i"); sw.style.background = c; it.append(sw, `${name} ${pct}%`); leg.append(it);
+    }
+    const box3 = el("div", "sx-st-box"); box3.style.paddingBottom = "12px"; box3.append(sumD ? stack : el("div", "sx-empty", "아직 기록이 없어요"), leg);
+    body.append(el("h4", "sx-h", "어떤 기기로 볼까 — 하루 방문 기준"), box3);
+    // 많이 쓴 기능
+    const us = Object.entries(d.uses || {}).filter(([k, n]) => USE_NAME[k] && +n > 0).sort((a, b) => b[1] - a[1]), maxU = Math.max(1, ...us.map(([, n]) => +n));
+    const rank = el("div", "sx-st-rank");
+    for (const [k, n] of us) { const row = el("div"), bar = el("em"); bar.style.width = `${(n / maxU) * 100}%`; row.append(el("span", null, USE_NAME[k]), el("div"), el("b", null, num(n))); row.children[1].append(bar); rank.append(row); }
+    const box4 = el("div", "sx-st-box"); box4.style.paddingBottom = "12px"; box4.append(us.length ? rank : el("div", "sx-empty", "아직 기록이 없어요"));
+    body.append(el("h4", "sx-h", `많이 쓴 기능 — 최근 ${statsDays}일 횟수`), box4);
+    body.append(el("p", "sx-st-note", "같은 브라우저는 하루에 한 사람으로 세요(기기를 바꾸면 따로 세짐). 이름은 남기지 않고, 1:1 대화는 보낸 횟수만 세요 — 내용은 잠겨 있어 아무도 몰라요."));
+  }
   function renderFeedView() {
     const my = ++seq;
     card.replaceChildren(header(el("div", "em", "📷"), "모두의 피드", "직원들이 올린 글·사진 — 댓글도 남겨 보세요"));
@@ -699,13 +830,43 @@ window.Social = function Social(ctx) {
     }
   }
 
+  // ───────── 1:1 대화 잠금 (dmcrypt.js): 내 열쇠 + 상대 공개 열쇠 → 두 사람만 여는 열쇠. 저장소엔 "e1:…" 만 ─────────
+  async function pubsOf(names) {
+    const sb = ctx.sb();
+    if (!sb || !names.length) return new Map();
+    try { return new Map((await fetchRows(sb.from("office_pubkeys").select("char,pub").in("char", names))).map((r) => [r.char, r.pub])); }
+    catch (e) { if (!missing(e)) console.error(e); return new Map(); }
+  }
+  async function readDm(pair, body) { // 잠긴 것은 열고, 못 열면 안내 (예전 열쇠로 잠긴 것 등)
+    if (!window.DMCrypt?.isLocked(body)) return body;
+    return (pair && (await DMCrypt.unlock(pair, body))) ?? "🔒 열 수 없는 메시지 (예전 비밀번호로 잠긴 것)";
+  }
+  function unlockBox(body, done) { // 이 기기에 내 대화 열쇠가 없을 때: 비밀번호를 한 번 더
+    const g = el("div", "sx-gate"), row = el("div", "sx-row"), inp = el("input");
+    inp.type = "password"; inp.placeholder = "비밀번호"; inp.autocomplete = "current-password";
+    inp.style.cssText = "flex:1;min-width:0;font:inherit;font-size:14px;border:0;background:#fff;border-radius:10px;padding:0 12px;height:36px";
+    const go = async () => {
+      if (!inp.value) return;
+      say("여는 중…");
+      const r = await ctx.dmKeys.unlock(inp.value);
+      if (r === "ok") { say(""); done(); } else say(r === "bad_pin" ? "비밀번호가 달라요" : "열지 못했어요 — 잠시 뒤 다시 해 주세요", true);
+    };
+    inp.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) go(); };
+    g.append(el("b", null, "🔒 이 기기에서 대화를 처음 열어요"), el("br"), "대화는 비밀번호로 잠겨 있어서, 로그인할 때 쓰는 비밀번호를 한 번만 넣어 주세요. 이 기기에서는 다시 묻지 않아요.");
+    row.style.marginTop = "10px";
+    row.append(inp, btn("열기", "dark", go));
+    g.append(row);
+    body.append(g);
+    setTimeout(() => inp.focus(), 50);
+  }
+
   // ───────── 1:1 대화 (두 사람만: 열려 있는 동안 4초마다 새 말 읽기, 안 읽은 수는 20초마다) ─────────
   let dmTimer = 0, unreadTimer = 0;
   function face48(name) { const i = el("img"); i.alt = ""; i.src = ctx.face(name); return i; }
   function openInbox() { clearInterval(dmTimer); view = { kind: "inbox" }; show(); renderInbox(); }
   async function renderInbox() {
     const my = ++seq;
-    card.replaceChildren(header(el("div", "em", "💬"), "1:1 대화", "보낸 사람과 받은 사람만 볼 수 있어요"));
+    card.replaceChildren(header(el("div", "em", "💬"), "1:1 대화", "🔒 잠겨 있어요 — 두 사람만 열 수 있어요 (관리자도 못 봐요)"));
     const body = el("div", "sx-body");
     card.append(body);
     if (!gate(body, "1:1 대화")) return;
@@ -718,9 +879,16 @@ window.Social = function Social(ctx) {
     if (my !== seq) return;
     if (!rows) { list.replaceChildren(); return; }
     setUnread(rows.reduce((a, r) => a + (+r.unread || 0), 0));
-    list.replaceChildren(...(rows.length ? rows.map((r) => {
+    const [mine, pubs] = await Promise.all([ctx.dmKeys.mine(), pubsOf(rows.map((r) => r.with))]);
+    const last = await Promise.all(rows.map(async (r) => {
+      if (!DMCrypt.isLocked(r.last)) return r.last;
+      if (!mine || !pubs.get(r.with)) return "🔒 메시지";
+      return (await DMCrypt.unlock(await DMCrypt.pairKey(mine.key, me, r.with, pubs.get(r.with)), r.last)) ?? "🔒 메시지";
+    }));
+    if (my !== seq) return;
+    list.replaceChildren(...(rows.length ? rows.map((r, i) => {
       const li = el("li"), c = el("div", "c"), t = el("time", null, shortWhen(r.last_at));
-      c.append(el("b", null, r.with), el("span", null, (r.last_from === me ? "나: " : "") + r.last));
+      c.append(el("b", null, r.with), el("span", null, (r.last_from === me ? "나: " : "") + last[i]));
       li.append(face(r.with), c, t);
       if (+r.unread) li.append(el("span", "sx-badge", String(r.unread)));
       li.onclick = () => openThread(r.with);
@@ -730,7 +898,7 @@ window.Social = function Social(ctx) {
   function openThread(name) { clearInterval(dmTimer); view = { kind: "dm", name, last: 0, day: "" }; show(); renderThread(); }
   function renderThread() {
     const my = ++seq, name = view.name;
-    const head = header(face48(name), name, "1:1 대화 · 두 사람만 볼 수 있어요"), back = el("button", "sx-back", "‹");
+    const head = header(face48(name), name, "🔒 1:1 대화 · 두 사람만 열 수 있어요 (관리자도 못 봐요)"), back = el("button", "sx-back", "‹");
     back.type = "button"; back.title = "대화 목록"; back.onclick = openInbox;
     head.prepend(back);
     if (ctx.test && ctx.me()) { // 테스트 판: 상대가 돼서 답장해 보기
@@ -745,12 +913,14 @@ window.Social = function Social(ctx) {
     const list = el("div", "sx-msgs"), foot = el("div", "sx-foot"), ta = el("textarea");
     msgEl = el("div", "sx-msg");
     body.append(list, msgEl);
+    list.append(el("div", "sx-empty", "여는 중…"));
     ta.rows = 1; ta.maxLength = 500; ta.placeholder = "메시지 (Enter 보내기 · Shift+Enter 줄바꿈)";
+    let pair = null; // 두 사람만 여는 열쇠 (준비되면)
     const send = btn("보내기", "dark", async () => {
       const t = ta.value.trim();
-      if (!t) return;
+      if (!t || !pair) return;
       ta.value = "";
-      if ((await call("office_dm_send", { p_to: name, p_body: t })) === "ok") load(); else ta.value = t;
+      if ((await call("office_dm_send", { p_to: name, p_body: await DMCrypt.lock(pair, t) })) === "ok") load(); else ta.value = t;
     });
     ta.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send.click(); } };
     foot.append(ta, send);
@@ -759,26 +929,36 @@ window.Social = function Social(ctx) {
     async function load() {
       const rows = await rpcRows("office_dm_thread", { p_with: name, p_after: view?.last || 0 });
       if (my !== seq || !rows) return;
+      const texts = await Promise.all(rows.map((r) => readDm(pair, r.body)));
+      if (my !== seq) return;
       if (!view.last && !rows.length) list.replaceChildren(el("div", "sx-empty", `${name} 님에게 첫 메시지를 보내 보세요`));
       if (!rows.length) return;
       if (!view.last) list.replaceChildren();
       const atEnd = body.scrollHeight - body.scrollTop - body.clientHeight < 60;
-      for (const r of rows) {
+      rows.forEach((r, i) => {
         const day = when(r.created_at).replace(/ 오[전후].*$/, "");
         if (day !== view.day) { view.day = day; list.append(el("div", "sx-day", day)); }
-        const m = el("div", "sx-m" + (r.from_char === me ? " me" : ""), r.body), t = el("time", null, when(r.created_at).replace(/^.* (오[전후])/, "$1"));
+        const m = el("div", "sx-m" + (r.from_char === me ? " me" : ""), texts[i]), t = el("time", null, when(r.created_at).replace(/^.* (오[전후])/, "$1"));
         t.dateTime = r.created_at;
         m.append(t);
         list.append(m);
         view.last = Math.max(view.last, +r.id);
-      }
+      });
       if (atEnd || rows.length) body.scrollTop = body.scrollHeight;
       pollUnread();
     }
     view.reload = load;
-    load();
-    dmTimer = setInterval(() => { if (view?.kind === "dm" && view.name === name && !wrap.hidden && !document.hidden) load(); }, 4000);
-    setTimeout(() => ta.focus(), 50);
+    send.disabled = ta.disabled = true;
+    (async () => { // 내 열쇠(이 기기) + 상대 공개 열쇠 → 두 사람 열쇠
+      const [mine, pubs] = await Promise.all([ctx.dmKeys.mine(), pubsOf([name])]);
+      if (my !== seq) return;
+      if (!mine) { list.replaceChildren(); unlockBox(list, () => { if (my === seq) renderThread(); }); return; }
+      const pub = pubs.get(name);
+      if (pub) { pair = await DMCrypt.pairKey(mine.key, me, name, pub); send.disabled = ta.disabled = false; setTimeout(() => ta.focus(), 50); }
+      else say(`${name} 님은 아직 새 비밀번호로 로그인하지 않아서 메시지를 잠글 수 없어요 — 그분이 한 번 로그인하면 보낼 수 있어요`, true);
+      load();
+      dmTimer = setInterval(() => { if (view?.kind === "dm" && view.name === name && !wrap.hidden && !document.hidden) load(); }, 4000);
+    })();
   }
   // 위 단추(💬)의 빨간 숫자
   function setUnread(n) { hud.badge.hidden = !n; hud.badge.textContent = n > 99 ? "99+" : String(n); }
@@ -818,7 +998,12 @@ window.Social = function Social(ctx) {
     hud.dm.append(hud.badge);
     hud.dm.type = "button";
     hud.dm.onclick = () => { listen(); openInbox(); };
-    ctx.hud.append(hud.feed, hud.act, hud.dm);
+    hud.stats = el("button", "sx-hb");
+    hud.stats.innerHTML = '<span class="ico">📊</span><span class="lbl"> 통계</span>';
+    hud.stats.title = "방문 통계 (석용현만)"; hud.stats.setAttribute("aria-label", "방문 통계");
+    hud.stats.type = "button"; hud.stats.hidden = true;
+    hud.stats.onclick = () => { listen(); openStats(); };
+    ctx.hud.append(hud.feed, hud.act, hud.dm, hud.stats);
   } else hud.badge = el("span");
 
   // ───────── 간식 신청 ─────────
@@ -931,13 +1116,16 @@ window.Social = function Social(ctx) {
     openThread(name) { listen(); openThread(name); },
     openFeed() { listen(); openFeed(); },
     openActs() { listen(); openActs(); },
+    openStats() { listen(); openStats(); },
+    track,
     feedNew,
     heartCount: (name) => hearts.get(name) || 0,
     isBday,
     get open() { return !wrap.hidden; },
     sync() { // 로그인·사람 바꾸기·저장소 준비가 되면 열린 창을 다시 그리고, 하트·안 읽은 대화를 다시 센다
-      listen();
+      listen(); startVisits();
       const me = ctx.me()?.char || null, key = `${me}|${!!ctx.sb()}`;
+      if (hud.stats) hud.stats.hidden = me !== STATS_ADMIN;
       if (key === sync.key) return;
       const prev = sync.me;
       sync.key = key; sync.me = me;
@@ -949,7 +1137,8 @@ window.Social = function Social(ctx) {
       if (prev === me) return view.reload?.(); // 저장소만 막 준비됨
       // 대화방에서 상대로 바뀌면(테스트 판) 방금까지의 나와 이어서
       const dm = () => (view.name === me ? (prev ? openThread(prev) : openInbox()) : openThread(view.name));
-      ({ snacks: renderSnacks, inbox: renderInbox, dm, feed: renderFeedView, acts: () => { view.seen = null; renderActs(); } }[view.kind] || renderPerson)();
+      if (view.kind === "stats" && me !== STATS_ADMIN) return close();
+      ({ snacks: renderSnacks, inbox: renderInbox, dm, feed: renderFeedView, acts: () => { view.seen = null; renderActs(); }, stats: renderStats }[view.kind] || renderPerson)();
     },
   };
   function sync() {}

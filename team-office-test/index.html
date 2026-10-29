@@ -290,6 +290,8 @@ html body .view .listbtn{border-radius:12px;padding-top:0;padding-bottom:0}
 <!-- 어항 모드(?aquarium): 가끔 갑자기 벌어지는 이벤트 26가지 -->
 <script src="chaos.js"></script>
 <!-- 사람 카드(방명록 · SNS 피드 · 하트 · 내 상태) · 1:1 대화 · 간식 신청: 실시간 판에서 읽고 쓴다 -->
+<!-- 1:1 대화 잠금: 비밀번호에서 열쇠를 만들어 브라우저 안에서만 잠그고 연다 (저장소 주인도 못 읽게) -->
+<script src="dmcrypt.js"></script>
 <script src="social.js"></script>
 <!-- 사무실 밖 배경 (기본 · 하늘 · 바다 · 숲): 각자 고르거나 랜덤 -->
 <script src="bg.js"></script>
@@ -1614,7 +1616,9 @@ function onRowAct(m, act, r, el) {
   }
 }
 // ───────────── 실시간 모드 (Supabase: window.__LIVE = { url, key }) ─────────────
-// 누구나 링크로 들어와서 처음 한 번 내 이름 줄의 「나예요」 + 4자리 비밀번호. 그 뒤로 출근·퇴근·상태 메시지는 그 사람만 (비밀번호는 서버 함수가 확인).
+// 누구나 링크로 들어와서 처음 한 번 내 이름 줄의 「나예요」 + 비밀번호(8자 이상). 그 뒤로 출근·퇴근·상태 메시지는 그 사람만 (서버 함수가 확인).
+// 비밀번호는 서버로 보내지 않는다: 브라우저가 비밀번호에서 「확인값」(서버가 확인)과 「대화 열쇠 잠금」을 따로 만들어(dmcrypt.js) 앞의 것만 보낸다.
+// 같은 비밀번호로 1:1 대화 열쇠도 잠그므로, 저장소 주인도 대화 내용을 못 읽는다. 예전 숫자 4자리로 정한 사람은 로그인할 때 새 비밀번호로 바꾼다.
 // 다른 PC 에서는 「로그인」으로 비밀번호만. 표: office_people (supabase_setup.sql)
 const LIVE_KEY = "teamOfficeLive";
 let MY = { char: null, pin: null };
@@ -1622,6 +1626,43 @@ const MY_STORE = window.__TEST ? sessionStorage : localStorage; // 테스트 판
 try { MY = { ...MY, ...JSON.parse(MY_STORE.getItem(LIVE_KEY)) }; } catch {}
 const saveMy = () => { try { MY_STORE.setItem(LIVE_KEY, JSON.stringify(MY)); } catch {} };
 if (window.__TEST && !MY.char) { MY = { char: "석용현", pin: "0000" }; saveMy(); } // 테스트 판: 처음부터 로그인된 채로
+const PW_CHANGED = !window.__TEST && !!MY.pin && !/^[0-9a-f]{64}$/.test(MY.pin); // 예전 숫자 4자리로 로그인돼 있던 기기
+if (PW_CHANGED) { MY = { char: null, pin: null }; saveMy(); }
+// 대화 열쇠: 서버에 잠가 둔 것을 비밀번호로 풀어 이 기기에 두고, 없으면 새로 만들어 잠가서 올린다
+async function setupDmKey(char, auth, wrap) {
+  try {
+    const { data, error } = await SB.rpc("office_key_get", { p_char: char, p_pin: auth });
+    if (error) throw error;
+    if (data?.status !== "ok") return false;
+    let key, pub = data.pub;
+    if (data.priv && pub) key = await DMCrypt.unwrap(wrap, data.priv);
+    else {
+      const k = await DMCrypt.newPair(wrap);
+      const r = await SB.rpc("office_key_set", { p_char: char, p_pin: auth, p_pub: k.pub, p_priv: k.priv });
+      if (r.error || r.data !== "ok") return false;
+      key = k.key; pub = k.pub;
+    }
+    await DMCrypt.keep(char, key, pub);
+    return true;
+  } catch (e) { console.warn("대화 열쇠를 준비하지 못했어요", e); return false; }
+}
+async function myPub(char) { try { const { data } = await SB.from("office_pubkeys").select("char,pub").eq("char", char); return data?.[0]?.pub || null; } catch { return null; } }
+const DM_KEYS = { // social.js 가 쓰는 것: 이 기기의 내 대화 열쇠 / 없을 때 비밀번호로 한 번 풀기
+  async mine() {
+    if (!MY.char || !SB) return null;
+    let s = await DMCrypt.saved(MY.char);
+    const pub = await myPub(MY.char);
+    if (s && pub && s.pub !== pub) s = null; // 다른 기기에서 열쇠를 새로 만들었으면 이 기기 것은 낡음
+    if (!s && window.__TEST) { const { wrap } = await DMCrypt.fromPassword(MY.char, window.__TEST_PW); await setupDmKey(MY.char, MY.pin, wrap); s = await DMCrypt.saved(MY.char); }
+    return s || null;
+  },
+  async unlock(pw) {
+    if (!MY.char) return "no_char";
+    const { auth, wrap } = await DMCrypt.fromPassword(MY.char, pw);
+    if (auth !== MY.pin) return "bad_pin";
+    return (await setupDmKey(MY.char, auth, wrap)) ? "ok" : "fail";
+  },
+};
 function testAs(name) { // 테스트 판: 누구로든 바로 바꿔 쓰고 대화해 보기
   MY = { char: name, pin: "0000" }; saveMy(); bubbleOpen = null;
   if (window.__testSel) window.__testSel.value = name;
@@ -1646,6 +1687,7 @@ async function liveInit() {
     const { data, error } = await SB.from("office_people").select("*");
     if (error) throw error;
     PERSONAL.clear(); liveApply(data);
+    if (PW_CHANGED) meSay("비밀번호가 8자 이상으로 바뀌었어요 — 내 이름 줄의 「로그인」에서 예전 숫자 4자리를 넣으면 새 비밀번호를 정할 수 있어요", true);
     if (MY.char && !PERSONAL.has(MY.char)) { MY = { char: null, pin: null }; saveMy(); } // 주인이 지웠으면 다시 고르기
     ME.pending = false;
     placeAttendance(); renderMine();
@@ -1665,7 +1707,7 @@ async function liveCall(fn, args, okText) {
   try {
     const { data, error } = await SB.rpc(fn, args);
     if (error) throw error;
-    const msg = { bad_pin: "비밀번호가 달라요", locked: "여러 번 틀려서 10분 동안 잠겼어요", taken: "이미 다른 분이 고른 캐릭터예요", no_char: "아직 연결 안 된 캐릭터예요", bad_input: "비밀번호는 숫자 4자리예요" }[data];
+    const msg = { bad_pin: "비밀번호가 달라요", locked: "여러 번 틀려서 10분 동안 잠겼어요", taken: "이미 다른 분이 고른 캐릭터예요", no_char: "아직 연결 안 된 캐릭터예요", bad_input: "비밀번호는 8자 이상이에요" }[data];
     if (data === "ok") { if (okText) meSay(okText); } else meSay(msg || String(data), true);
     return data;
   } catch (e) {
@@ -1675,7 +1717,7 @@ async function liveCall(fn, args, okText) {
 function renderLiveRows() {
   const nobody = !ME.pending && ![...PERSONAL.values()].some((p) => p.on);
   meNote.textContent = ME.pending ? "출퇴근 정보를 불러오는 중…"
-    : !MY.char ? "처음 한 번, 내 이름 줄의 「나예요」를 누르고 숫자 4자리 비밀번호를 정해 주세요. 다른 PC 에선 「로그인」"
+    : !MY.char ? "처음 한 번, 내 이름 줄의 「나예요」를 누르고 비밀번호(8자 이상)를 정해 주세요. 이 비밀번호로 1:1 대화도 잠겨요 — 잊으면 지난 대화는 아무도 못 열어요. 다른 기기에선 「로그인」"
     : nobody ? "아직 출근한 사람이 없어요" : "";
   meNote.hidden = !meNote.textContent;
   for (const r of rows) {
@@ -1695,7 +1737,12 @@ function renderLiveRows() {
     if (open && r.more.hidden && document.activeElement !== r.input) r.input.value = p.bubble || "";
     r.more.hidden = !open;
     const po = pinOpen?.m === m && !MY.char;
-    if (po && r.pin.hidden) { r.pinIn.value = ""; r.pinOk.textContent = pinOpen.mode === "claim" ? "정하고 출근" : "로그인"; }
+    if (po && (r.pin.hidden || r.pin.dataset.mode !== pinOpen.mode)) {
+      r.pin.dataset.mode = pinOpen.mode; r.pinIn.value = "";
+      r.pinOk.textContent = { claim: "정하고 출근", login: "로그인", upgrade: "새 비밀번호로" }[pinOpen.mode];
+      r.pinIn.placeholder = pinOpen.mode === "login" ? "비밀번호" : "새 비밀번호 (8자 이상)";
+      r.pinIn.autocomplete = pinOpen.mode === "login" ? "current-password" : "new-password";
+    }
     r.pin.hidden = !po;
   }
   changed();
@@ -1703,11 +1750,22 @@ function renderLiveRows() {
 async function onLiveAct(m, act, r) {
   if (act === "claim" || act === "login") { pinOpen = pinOpen?.m === m ? null : { m, mode: act }; renderLiveRows(); if (pinOpen) r.pinIn.focus(); return; }
   if (act === "pinok") {
-    const pin = r.pinIn.value.trim();
-    if (!/^\d{4}$/.test(pin)) { meSay("비밀번호는 숫자 4자리예요", true); return; }
-    const claim = pinOpen?.mode === "claim";
-    const res = await liveCall(claim ? "office_claim" : "office_login", { p_char: m.name, p_pin: pin }, claim ? `${m.name} — 이제 내 캐릭터예요. 출근했어요` : `${m.name} 님으로 들어왔어요`);
-    if (res === "ok") { MY = { char: m.name, pin }; saveMy(); pinOpen = null; renderMine(); }
+    const pw = r.pinIn.value, mode = pinOpen?.mode;
+    if (mode === "login" && /^\d{4}$/.test(pw)) { // 예전 숫자 4자리: 맞으면 새 비밀번호 정하기로
+      if ((await liveCall("office_login", { p_char: m.name, p_pin: pw })) === "ok") {
+        pinOpen = { m, mode: "upgrade", old: pw }; renderLiveRows(); r.pinIn.focus();
+        meSay("확인했어요 — 이제 새 비밀번호(8자 이상)를 정해 주세요. 이 비밀번호로 1:1 대화도 잠겨요");
+      }
+      return;
+    }
+    if (pw.length < DMCrypt.MIN) { meSay(`비밀번호는 ${DMCrypt.MIN}자 이상이에요`, true); return; }
+    meSay("확인하는 중…");
+    const { auth, wrap } = await DMCrypt.fromPassword(m.name, pw); // 비밀번호 자체는 서버로 안 보낸다
+    const res = mode === "upgrade" ? await liveCall("office_change_pin", { p_char: m.name, p_pin: pinOpen.old, p_new: auth }, "새 비밀번호로 바꿨어요")
+      : await liveCall(mode === "claim" ? "office_claim" : "office_login", { p_char: m.name, p_pin: auth }, mode === "claim" ? `${m.name} — 이제 내 캐릭터예요. 출근했어요` : `${m.name} 님으로 들어왔어요`);
+    if (res !== "ok") return;
+    MY = { char: m.name, pin: auth }; saveMy(); pinOpen = null; renderMine();
+    setupDmKey(m.name, auth, wrap).then(() => window.__social?.sync());
     return;
   }
   if (!canCtl(m)) return;
@@ -1719,7 +1777,7 @@ async function onLiveAct(m, act, r) {
   else if (act === "say") set({ p_msg: r.input.value.trim().slice(0, 40) }, "상태 메시지를 띄웠어요");
   else if (act === "clear") { r.input.value = ""; set({ p_msg: "" }, "상태 메시지를 지웠어요"); }
   else if (act === "as") testAs(m.name);
-  else if (act === "logout") { MY = { char: null, pin: null }; saveMy(); bubbleOpen = null; meSay("이 PC 에서 로그아웃했어요"); renderMine(); }
+  else if (act === "logout") { DMCrypt.forget(MY.char); MY = { char: null, pin: null }; saveMy(); bubbleOpen = null; meSay("이 PC 에서 로그아웃했어요"); renderMine(); }
 }
 // claude.ai 에서 열렸으면 함께 쓰는 저장소로 (파일로 열면 window.claude 가 없다)
 (async () => {
@@ -1763,7 +1821,7 @@ const rows = crew.map((m) => {
   const li = document.createElement("li");
   li.innerHTML = `<img alt=""><div class="who"><b></b><span><i class="dot"></i><em></em></span></div><div class="side" hidden></div><select title="자리"></select>` +
     `<div class="acts" hidden></div><div class="more" hidden><input maxlength="40" placeholder="말풍선에 쓸 말 (40자)"><button class="btn dark" data-act="say">띄우기</button><button class="btn" data-act="clear">지우기</button></div>` +
-    `<div class="more pin" hidden><input type="password" inputmode="numeric" maxlength="4" placeholder="비밀번호 숫자 4자리"><button class="btn dark" data-act="pinok">확인</button></div>`;
+    `<div class="more pin" hidden><input type="password" maxlength="64" placeholder="비밀번호"><button class="btn dark" data-act="pinok">확인</button></div>`;
   li.querySelector("img").src = `faces/${FILE_ID[m.name]}.jpg`;
   li.querySelector("b").textContent = m.name;
   const row = { m, li, dot: li.querySelector(".dot"), text: li.querySelector("em"), sel: li.querySelector("select"),
@@ -1940,7 +1998,7 @@ if (BG) {
   bb.onclick = () => bgOpen(bgMenu.hidden);
   addEventListener("pointerdown", (e) => { if (!bgMenu.hidden && !bw.contains(e.target)) bgOpen(false); }, true); // 바깥을 누르면 닫기
   addEventListener("keydown", (e) => { if (e.key === "Escape" && !bgMenu.hidden) bgOpen(false); });
-  bgMenu.onclick = (e) => { const b = e.target.closest("[data-bg]"); if (b) { applyBg(b.dataset.bg); bgOpen(false); } };
+  bgMenu.onclick = (e) => { const b = e.target.closest("[data-bg]"); if (b) { applyBg(b.dataset.bg); bgOpen(false); window.__social?.track?.("bg"); } };
   applyBg(bgState.pick);
 }
 
@@ -2052,14 +2110,14 @@ window.__social = window.Social ? window.Social({
   diary: DIARY, snackAdmin: SNACK_ADMIN, modes: MODES, names: crew.map((m) => m.name), hud: document.querySelector(".hud"),
   people: (n) => PERSONAL.get(n) || {},
   patchPerson: (n, patch) => { PERSONAL.set(n, { ...(PERSONAL.get(n) || {}), ...patch }); renderMine(); },
-  test: !!window.__TEST, switchTo: (n) => testAs(n),
+  test: !!window.__TEST, switchTo: (n) => testAs(n), dmKeys: DM_KEYS,
   openList: () => { setList(true); meSay("내 이름 줄에서 「나예요」(처음 한 번) 또는 「로그인」을 눌러 주세요"); },
 }) : null;
 if (window.__TEST) { // 테스트 판 안내 (목록 맨 위)
   const n = document.createElement("div");
   n.className = "testnote";
   n.innerHTML = "🧪 <b>테스트 판</b> · 이 브라우저에만 저장 <button type=button data-reset>처음 상태로</button><details><summary>사용법</summary>모두 로그인된 상태예요. 위쪽 「🧪 나」나 줄마다 「이 사람으로」를 누르면 그 사람이 돼서 글·하트·대화를 해 볼 수 있어요. 대화방의 「상대로 답장」으로 양쪽을 번갈아 써 보세요.</details>";
-  n.querySelector("[data-reset]").onclick = () => { try { localStorage.removeItem("teamOfficeTestDb"); sessionStorage.clear(); } catch {} location.reload(); };
+  n.querySelector("[data-reset]").onclick = () => { try { localStorage.removeItem("teamOfficeTestDb"); sessionStorage.clear(); indexedDB.deleteDatabase("teamOfficeKeysTest"); } catch {} setTimeout(() => location.reload(), 150); };
   document.querySelector("#panel header").prepend(n);
   const lab = document.createElement("label"), sel = document.createElement("select");
   lab.className = "testme"; lab.title = "테스트: 누구로 쓸지";

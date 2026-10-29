@@ -4,6 +4,7 @@
 (() => {
   const KEY = "teamOfficeTestDb", VER = 7;
   const NAMES = window.__TEST_NAMES || [];
+  window.__TEST_PW = "우리팀테스트비번"; // 테스트 판: 모두 이 비밀번호로 대화 열쇠를 만들어 둔다 (dmcrypt.js)
   const now = () => new Date().toISOString();
   const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
   const kst = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
@@ -58,7 +59,7 @@
         .map(([i, c, min]) => ({ post_id: D[i].id, char: c, created_at: ago(min || 20) })),
       office_dms: [
         dm("김현준", "석용현", "용현님 오늘 점심 국밥 어때요?", 40), dm("석용현", "김현준", "좋아요 12시에 1층에서 봐요", 38),
-        dm("김현준", "석용현", "넵 👍", 37, false), dm("홍수연", "석용현", "육아일기 기능 고마워요 😊", 10, false),
+        dm("김현준", "석용현", "넵 👍", 37, false), dm("홍수연", "석용현", "피드에 사진 올려 봤어요 😊", 10, false),
       ],
       nextId: id.n,
     };
@@ -68,6 +69,48 @@
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { console.warn("테스트 저장 실패 (사진이 너무 많으면 저장 공간이 찰 수 있어요)", e); } };
   db = load();
   if (!db) { db = seed(); save(); }
+  db.office_pubkeys ||= []; db.office_privs ||= {}; // 대화 열쇠: 공개(모두 보기) · 잠근 비밀 열쇠(본인만)
+  // 방문 기록 (이름 없이): 테스트 판은 지난 3주 가짜 방문을 넣어 둔다 — 평일 14~21명, 주말 2~5명
+  const kstDay = (ms = Date.now()) => new Date(ms + 9 * 3600e3).toISOString().slice(0, 10);
+  const kstHour = () => new Date(Date.now() + 9 * 3600e3).getUTCHours();
+  if (!db.office_visits) {
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1)), pick = (w) => { let r = Math.random() * w.reduce((a, x) => a + x[1], 0); for (const [v, n] of w) if ((r -= n) < 0) return v; return w[0][0]; };
+    const HW = [[8, 2], [9, 9], [10, 7], [11, 4], [12, 3], [13, 6], [14, 4], [15, 3], [16, 3], [17, 5], [18, 3], [19, 1], [21, 1]];
+    db.office_visits = [];
+    for (let back = 20; back >= 0; back--) {
+      const ms = Date.now() - back * 864e5, day = kstDay(ms), dow = new Date(ms + 9 * 3600e3).getUTCDay(), weekend = dow === 0 || dow === 6;
+      const people = back === 0 ? rnd(9, 13) : weekend ? rnd(2, 5) : rnd(14, 21);
+      for (let i = 0; i < people; i++) {
+        const opens = rnd(1, weekend ? 1 : 4), hours = Array.from({ length: opens }, () => pick(HW)).filter((h) => back > 0 || h <= kstHour());
+        const u = { feed: rnd(0, 4), like: rnd(0, 5), comment: rnd(0, 2), dm: rnd(0, 4), heart: rnd(0, 1), alerts: rnd(0, 2), post: Math.random() < 0.15 ? 1 : 0, note: Math.random() < 0.2 ? 1 : 0, snack: Math.random() < 0.06 ? 1 : 0, bg: Math.random() < 0.1 ? 1 : 0 };
+        db.office_visits.push({ day, vid: "seed" + back + "x" + i, device: pick([["pc", 6], ["phone", 3], ["app", 1]]), logged_in: Math.random() < 0.8, opens: hours.length || 1,
+          minutes: rnd(3, weekend ? 20 : 140), hours: hours.length ? hours : [Math.min(kstHour(), 9)], uses: Object.fromEntries(Object.entries(u).filter(([, n]) => n)), last_at: new Date(ms - 3600e3).toISOString() });
+      }
+    }
+    save();
+  }
+  // 처음 한 번: 모두의 대화 열쇠를 만들고, 넣어 둔 대화를 잠가 둔다 (dmcrypt.js 를 쓰므로 페이지가 다 읽힌 뒤에)
+  let keysReady = null;
+  function ensureKeys() {
+    return (keysReady ||= (async () => {
+      const C = window.DMCrypt;
+      if (!C) return;
+      const unlocked = new Map();
+      for (const c of NAMES) {
+        if (db.office_pubkeys.some((k) => k.char === c)) continue;
+        const { wrap } = await C.fromPassword(c, window.__TEST_PW), k = await C.newPair(wrap);
+        db.office_pubkeys.push({ char: c, pub: k.pub, updated_at: now() }); db.office_privs[c] = k.priv; unlocked.set(c, k.key);
+      }
+      const keyOf = async (c) => { if (!unlocked.has(c)) { const { wrap } = await C.fromPassword(c, window.__TEST_PW); unlocked.set(c, await C.unwrap(wrap, db.office_privs[c])); } return unlocked.get(c); };
+      for (const d of db.office_dms) {
+        if (C.isLocked(d.body)) continue;
+        const pub = db.office_pubkeys.find((k) => k.char === d.to_char)?.pub;
+        if (!pub || !db.office_privs[d.from_char]) continue;
+        d.body = await C.lock(await C.pairKey(await keyOf(d.from_char), d.from_char, d.to_char, pub), d.body);
+      }
+      save();
+    })().catch((e) => console.error("테스트 열쇠", e))); // 실패해도 다시 돌지 않게 (무한 반복 막기)
+  }
   // 이름이 늘었으면 출근한 사람으로 채운다
   for (const c of NAMES) if (!db.office_people.some((p) => p.char === c)) db.office_people.push({ char: c, on_duty: true, msg: "", mode: "", birthday: "", updated_at: now() });
 
@@ -81,11 +124,50 @@
     for (const t of ["office_notes", "office_snacks", "office_hearts", "office_diary_comments", "office_diary_likes"]) notify(t);
   });
   // 테스트: 비밀번호는 아무 숫자 4자리
-  const pinOk = (p) => /^\d{4}$/.test(String(p || ""));
+  const pinOk = (p) => /^(\d{4}|[0-9a-f]{64})$/.test(String(p || "")); // 테스트 판: 아무 숫자 4자리 또는 브라우저가 만든 확인값
   const verify = (c, p) => (!db.office_people.some((r) => r.char === c) ? "no_char" : pinOk(p) ? "ok" : "bad_pin");
   const nid = () => db.nextId++;
   const R = {
-    office_claim: ({ p_char, p_pin }) => (pinOk(p_pin) ? "ok" : "bad_input"),
+    office_claim: ({ p_char, p_pin }) => (/^[0-9a-f]{64}$/.test(String(p_pin || "")) ? "ok" : "bad_input"),
+    office_change_pin: ({ p_char, p_pin, p_new }) => { const v = verify(p_char, p_pin); if (v !== "ok") return v; return /^[0-9a-f]{64}$/.test(String(p_new || "")) ? "ok" : "bad_input"; },
+    office_visit: ({ p_vid, p_device, p_login, p_open, p_uses }) => {
+      if (!/^[0-9a-z]{8,40}$/.test(String(p_vid || ""))) return "bad_input";
+      const day = kstDay(), h = kstHour();
+      let v = db.office_visits.find((x) => x.day === day && x.vid === p_vid);
+      if (!v) { v = { day, vid: p_vid, device: "pc", logged_in: false, opens: 0, minutes: 0, hours: [], uses: {}, last_at: now() }; db.office_visits.push(v); }
+      else if (!p_open && Date.parse(v.last_at) < Date.now() - 50000) v.minutes++;
+      v.device = ["pc", "phone", "app"].includes(p_device) ? p_device : "pc"; v.logged_in ||= !!p_login;
+      if (p_open) { v.opens++; if (v.hours.length < 48) v.hours.push(h); }
+      for (const [k, n] of Object.entries(p_uses || {})) if (typeof n === "number") v.uses[k] = (v.uses[k] || 0) + Math.max(0, Math.min(50, n | 0));
+      v.last_at = now(); save(); return "ok";
+    },
+    office_stats: ({ p_char, p_pin, p_days }) => {
+      const v = verify(p_char, p_pin); if (v !== "ok") return { status: v };
+      if (p_char !== "석용현") return { status: "not_allowed" };
+      const n = Math.max(1, Math.min(90, p_days || 14)), today = kstDay(), from = kstDay(Date.now() - (n - 1) * 864e5);
+      const rows = db.office_visits.filter((x) => x.day >= from && x.day <= today), td = rows.filter((x) => x.day === today);
+      const days = Array.from({ length: n }, (_, i) => kstDay(Date.now() - (n - 1 - i) * 864e5)).map((day) => { const r = rows.filter((x) => x.day === day); return { day, people: r.length, login: r.filter((x) => x.logged_in).length }; });
+      const add = (o, k, c = 1) => { o[k] = (o[k] || 0) + c; return o; };
+      return {
+        status: "ok",
+        today: { people: td.length, login: td.filter((x) => x.logged_in).length, opens: td.reduce((a, x) => a + x.opens, 0), minutes: td.reduce((a, x) => a + x.minutes, 0) },
+        now: db.office_visits.filter((x) => Date.parse(x.last_at) > Date.now() - 300000).length,
+        days, hours: rows.reduce((o, x) => (x.hours.forEach((h) => add(o, h)), o), {}), devices: rows.reduce((o, x) => add(o, x.device), {}),
+        uses: rows.reduce((o, x) => (Object.entries(x.uses).forEach(([k, c]) => add(o, k, c)), o), {}),
+        minutes: rows.reduce((a, x) => a + x.minutes, 0), visits: rows.length,
+      };
+    },
+    office_key_get: async ({ p_char, p_pin }) => {
+      const v = verify(p_char, p_pin); if (v !== "ok") return { status: v };
+      await ensureKeys();
+      return { status: "ok", pub: db.office_pubkeys.find((k) => k.char === p_char)?.pub || null, priv: db.office_privs[p_char] || null };
+    },
+    office_key_set: ({ p_char, p_pin, p_pub, p_priv }) => {
+      const v = verify(p_char, p_pin); if (v !== "ok") return v;
+      if (!p_pub || !p_priv || p_pub.length > 200 || p_priv.length > 2000) return "bad_input";
+      db.office_pubkeys = db.office_pubkeys.filter((k) => k.char !== p_char).concat({ char: p_char, pub: p_pub, updated_at: now() }); db.office_privs[p_char] = p_priv;
+      save(); return "ok";
+    },
     office_login: ({ p_char, p_pin }) => verify(p_char, p_pin),
     office_set: ({ p_char, p_pin, p_on, p_msg }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return v;
@@ -167,11 +249,13 @@
     },
     office_dm_send: ({ p_char, p_pin, p_to, p_body }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return v;
-      const b = String(p_body || "").trim(); if (!b || !p_to || p_to === p_char) return "empty"; if (b.length > 500) return "too_long";
+      const b = String(p_body || "").trim(); if (!b || !p_to || p_to === p_char) return "empty";
+      if (!b.startsWith("e1:")) return "not_locked"; if (b.length > 4000) return "too_long"; // 브라우저에서 잠근 것만 (주인도 못 읽게)
       db.office_dms.push({ id: nid(), from_char: p_char, to_char: p_to, body: b, created_at: now(), read_at: null }); save(); return "ok";
     },
-    office_dm_thread: ({ p_char, p_pin, p_with, p_after }) => {
+    office_dm_thread: async ({ p_char, p_pin, p_with, p_after }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return { status: v };
+      await ensureKeys();
       let changed = false;
       for (const d of db.office_dms) if (d.to_char === p_char && d.from_char === p_with && !d.read_at) { d.read_at = now(); changed = true; }
       if (changed) save();
@@ -179,8 +263,9 @@
         .sort((a, b) => a.id - b.id).slice(-200).map(({ read_at, ...r }) => r);
       return { status: "ok", rows };
     },
-    office_dm_inbox: ({ p_char, p_pin }) => {
+    office_dm_inbox: async ({ p_char, p_pin }) => {
       const v = verify(p_char, p_pin); if (v !== "ok") return { status: v };
+      await ensureKeys();
       const by = new Map();
       for (const d of [...db.office_dms].sort((a, b) => a.id - b.id)) {
         if (d.from_char !== p_char && d.to_char !== p_char) continue;
@@ -199,6 +284,7 @@
       order(c, o) { ord = [c, o?.ascending !== false]; return q; }, limit(n) { lim = n; return q; }, range(a, b) { rng = [a, b]; return q; },
       then(res, rej) {
         if (table === "office_dms" || table === "office_pins") return Promise.resolve({ data: [], error: null }).then(res, rej); // 실제처럼 직접 읽기 막힘
+        if (table === "office_pubkeys" && !keysReady) return ensureKeys().then(() => q.then(res, rej));
         let d = (db[table] || []).filter((r) => f.every((fn) => fn(r))).map((r) => ({ ...r }));
         if (ord) d.sort((a, b) => (a[ord[0]] < b[ord[0]] ? -1 : a[ord[0]] > b[ord[0]] ? 1 : 0) * (ord[1] ? 1 : -1));
         if (rng) d = d.slice(rng[0], rng[1] + 1);
@@ -211,7 +297,7 @@
   window.supabase = {
     createClient: () => ({
       from: query,
-      rpc: async (fn, args) => { await new Promise((r) => setTimeout(r, 80)); return R[fn] ? { data: R[fn](args || {}), error: null } : { data: null, error: { message: `없는 함수 ${fn}` } }; },
+      rpc: async (fn, args) => { await new Promise((r) => setTimeout(r, 80)); return R[fn] ? { data: await R[fn](args || {}), error: null } : { data: null, error: { message: `없는 함수 ${fn}` } }; },
       channel: () => {
         const ch = { on: (_t, filt, cb) => { subs.push({ table: filt.table, cb }); return ch; }, subscribe: () => ch };
         return ch;
