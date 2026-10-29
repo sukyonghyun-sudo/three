@@ -160,6 +160,8 @@ body.loading #app{opacity:0}
 body.pip{margin:0;height:100vh;overflow:hidden;background:var(--bg)}
 body.pip #stage{width:100vw;height:100vh}
 body.pip .hud button,body.pip .listbtn,body.pip .bgwrap,body.pip .pinbtn{display:none}
+/* 위에 띄운 작은 창: 사무실과 근무 수만 (단추 모양 규칙보다 우선) · 글씨는 3D 화면에 같이 그린다 */
+html body.pip .hud>:not(.counts),html body.pip .view,html body.pip .pinbtn,html body.pip canvas.uilayer,html body.pip .sx-toast,html body.pip .cx-banner{display:none!important}
 .pinbtn{position:absolute;right:12px;top:12px;z-index:6}
 .hud{max-width:calc(100% - 170px)}
 /* 휴대폰·좁은 창: 사무실을 화면 가득, 사람 목록은 버튼으로 접고 편다 (세로: 아래에서 올라옴 · 가로: 오른쪽에서 나옴) */
@@ -362,6 +364,8 @@ html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 
 <script src="social.js"></script>
 <!-- 사무실 밖 배경 (기본 · 하늘 · 바다 · 숲): 각자 고르거나 랜덤 -->
 <script src="bg.js"></script>
+<!-- 한아린 책상 둘레에서 노는 고양이 두 마리 -->
+<script src="cats.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -1429,7 +1433,7 @@ class Person {
       case "work":
         break;
       case "tripGo": // 목적지까지 걷기
-        if (this.walk(dt)) { this.fromRot = r.rotation.y; this.play("idle", 0.3); this.go("tripStay"); }
+        if (this.walk(dt)) { this.fromRot = r.rotation.y; this.play("idle", 0.3); this.go("tripStay"); this.trip.arrive?.(this); }
         break;
       case "tripStay": { // 목적지를 보고 잠깐 (이야기 상대가 있으면 번갈아 「…」)
         const t = this.trip, f = t.face;
@@ -2210,10 +2214,11 @@ if ("documentPictureInPicture" in window && !matchMedia("(pointer: coarse)").mat
     stage.replaceWith(ph);
     d.body.append(stage);
     for (const ev of ["pointerdown", "wheel", "keydown"]) pipWin.addEventListener(ev, tourHands, { capture: true, passive: true });
-    pipWin.addEventListener("resize", resize);
+    pipWin.addEventListener("resize", () => win.requestAnimationFrame(resize)); // 크기를 바꾸는 동안은 다음 그림 때 맞춘다
     for (const ev of ["focus", "blur"]) pipWin.addEventListener(ev, () => setTimeout(syncSound, 0)); // 위에 띄운 작은 창도 활성화돼 있을 때만
     renderer.setAnimationLoop(null); // 원래 창을 내려도 멈추지 않게 위젯 창의 그리기 주기로
-    const win = pipWin, loop = () => { if (pipWin !== win) return; frameLoop(); win.requestAnimationFrame(loop); };
+    const win = pipWin;
+    const loop = () => { if (pipWin !== win) return; try { frameLoop(); } catch (e) { console.error(e); } win.requestAnimationFrame(loop); }; // 한 번 오류가 나도 멈추지 않게
     win.requestAnimationFrame(loop);
     pb.classList.add("on");
     win.addEventListener("pagehide", () => {
@@ -2359,6 +2364,7 @@ controls.addEventListener("start", () => { for (const b of camBar.children) b.cl
 // 아주 가끔(20~55초에 한 번, 동시에 둘까지) 일하던 사람 하나가 일어나: 다른 사람 자리에 가서 이야기하거나(둘이 번갈아 「…」),
 // 간식 책상에 들르거나, 큰 통로를 잠깐 걷다가 자리로 돌아와 다시 앉는다. 길은 출퇴근과 같은 통로(자기 줄 통로 → 큰 통로 → 상대 줄 통로)
 const TRIP = { next: 18 + Math.random() * 20 };
+const CAT_TALK = ["귀여워~", "냥냥아~", "츄르 먹을래?", "이리 와~", "배 만져도 돼?", "오늘도 귀엽네", "꾹꾹이 해 줘~", "누가 제일 예쁘지?"];
 function routeTo(seat, aisleX, pt) { // 내 자리 앞 → 목적지
   const a = seat.approach, p = [a.clone(), v(seat.aisleX, a.z)];
   if (Math.abs(aisleX - seat.aisleX) > 0.01) p.push(v(seat.aisleX, MAIN_Z), v(aisleX, MAIN_Z));
@@ -2372,7 +2378,8 @@ function tripTick(dt) {
   const free = crew.filter((m) => m.state === "work" && m.c && shouldBeIn(m) && !crew.some((o) => o.trip?.partner === m));
   if (busy >= 2 || free.length < 2) return;
   const m = free[(Math.random() * free.length) | 0], r = Math.random();
-  if (r < 0.55) { // 다른 사람 자리에 가서 이야기
+  if (CATS && r < 0.2) catTrip(m); // 한아린 자리 고양이 보러 가기
+  else if (r < 0.6) { // 다른 사람 자리에 가서 이야기
     const others = free.filter((o) => o !== m);
     const o = others[(Math.random() * others.length) | 0], s = o.seat;
     m.startTrip({ go: routeTo(m.seat, s.aisleX, s.approach), face: s.inPos.clone(), stay: 7 + Math.random() * 7, partner: o });
@@ -2385,6 +2392,14 @@ function tripTick(dt) {
   }
 }
 window.__trip = TRIP; // 점검용
+// 고양이 보러 가기: 고양이와 통로 사이에 서서 한마디 → 가까운 고양이가 다가와 비비거나(하트) 벌러덩
+function catTrip(m) {
+  const cat = CATS.cats[(Math.random() * CATS.cats.length) | 0], cp = cat.root.position;
+  const [x, z] = CATS.inside(cp.x + (catSeat.aisleX - cp.x) * 0.6, cp.z + (Math.random() < 0.5 ? -0.35 : 0.35));
+  m.startTrip({ go: routeTo(m.seat, catSeat.aisleX, v(x, z)), face: cp.clone(), stay: 6 + Math.random() * 3,
+    arrive: (who) => { CATS.visit(CATS.nearest(who.root.position), who.root.position, 6); sayFor(who, CAT_TALK[(Math.random() * CAT_TALK.length) | 0], 3.5); } });
+}
+window.__catTrip = (name) => catTrip(crew.find((m) => m.name === name)); // 점검용
 // 이야기 중 「…」: 이름표 오른쪽에 작게, 둘이 번갈아
 const DOTS_TEX = (() => {
   const c = document.createElement("canvas");
@@ -2645,6 +2660,8 @@ renderer.domElement.addEventListener("pointerup", (e) => {
     if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) { lastTap = null; return zoomTo(e); }
     lastTap = { t: now, x: e.clientX, y: e.clientY };
   }
+  const cat = CATS?.hit(ray); // 고양이를 누르면 「냐옹~」 하고 벌러덩
+  if (cat) return CATS.pet(cat);
   const bh = badgeHit(); // 아이콘 먼저 (새 글 · 간식 신청 · 하트 …)
   if (bh) return pipWin ? null : bh.object.userData.open();
   const hit = personHit();
@@ -2652,7 +2669,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
 });
 renderer.domElement.addEventListener("pointermove", (e) => {
   pointerRay(e);
-  if (!editing) { renderer.domElement.style.cursor = badgeHit() ? "pointer" : ""; return; }
+  if (!editing) { renderer.domElement.style.cursor = badgeHit() || CATS?.hit(ray) ? "pointer" : ""; return; }
   const no = seatUnderRay();
   if (no !== hoverSeat) { hoverSeat = no; updateMarks(); }
 });
@@ -2911,6 +2928,7 @@ function step(dt) {
   simTime += dt;
   if (!CHAOS?.active) { attendTick(dt); tripTick(dt); fartTick(dt); }
   CHAOS?.tick(dt);
+  CATS?.tick(dt);
   pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
   frustum.setFromProjectionMatrix(pm);
   for (const m of crew) {
@@ -2974,6 +2992,11 @@ function step(dt) {
   controls.update();
 }
 // 어항 모드 붙이기
+// 한아린 책상 둘레의 고양이 두 마리 (자리를 옮기면 따라가지 않고 처음 자리 둘레에서 논다)
+const catSeat = crew.find((m) => m.name === "한아린")?.seat;
+const WALKING = new Set(["enter", "leave", "tripGo", "tripBack"]); // 걷는 중 (고양이가 알아채는 사람)
+const CATS = window.OfficeCats && catSeat ? window.OfficeCats({ THREE, scene, uiScene, camera, seat: catSeat, aisleX: catSeat.aisleX, H, audio: () => audioCtx, scr: () => SCR,
+  people: () => crew.filter((m) => m.root.visible && WALKING.has(m.state)).map((m) => ({ pos: m.root.position, moving: true, name: m.name })) }) : null;
 const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
   THREE, scene, camera, controls, renderer, office, crew, H, DH, PH, WALL_H, ROOM, DOOR_IN, DOOR_OUT, MAIN_Z, RCX,
   lights: { hemi, sun, fill }, stage, hud: document.querySelector(".hud"), flyTo,
@@ -2989,7 +3012,8 @@ function frameLoop() { // 위젯 창으로 옮기면 그 창의 그리기 주기
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
   step(dt);
   renderer.render(scene, camera);
-  uiRenderer.render(uiScene, camera); // 글씨 층 (화면 해상도 그대로)
+  if (pipWin) { renderer.autoClear = false; renderer.render(uiScene, camera); renderer.autoClear = true; } // 작은 창: 글씨도 3D 화면에 (두 번째 화면은 창 크기를 바꾸면 깨짐)
+  else uiRenderer.render(uiScene, camera); // 글씨 층 (화면 해상도 그대로)
   atlasLive = true;
   pf++; pacc += raw;
   if (pacc > 1) {
