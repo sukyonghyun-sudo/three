@@ -22,6 +22,7 @@ html,body{overscroll-behavior:none}
 #stage{position:relative;min-width:0;overflow:hidden}
 #stage canvas{display:block;cursor:grab}
 #stage canvas:active{cursor:grabbing}
+#stage canvas.uilayer{position:absolute;left:0;top:0;pointer-events:none;cursor:default}
 .hud{position:absolute;left:16px;top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .hud h1{margin:0;font-size:18px;font-weight:700}
 .counts{display:flex;gap:6px;pointer-events:none}
@@ -539,8 +540,10 @@ const stage = document.getElementById("stage");
 
 // ───────────── 장면 ─────────────
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-// 화면 해상도: 처음엔 최대 1.5배, 버벅이면 매 프레임 속도를 보고 자동으로 낮춘다 (아래 adaptQuality)
-const DPR_MAX = Math.min(devicePixelRatio, 1.5);
+// 화면 해상도: PC 는 최대 1.5배, 휴대폰은 이름·말풍선 글씨가 뿌옇지 않게 최대 2배(아이폰 화면은 3배).
+// 버벅이면 매 프레임 속도를 보고 낮추되(아래 adaptQuality) 휴대폰은 1.5배 밑으로는 안 내린다 — 대신 그림자를 덜 자주
+const PHONE = matchMedia("(pointer: coarse)").matches;
+const DPR_MAX = Math.min(devicePixelRatio, PHONE ? 2 : 1.5), DPR_MIN = Math.min(DPR_MAX, PHONE ? 1.5 : 1);
 let dpr = DPR_MAX;
 renderer.setPixelRatio(dpr);
 renderer.shadowMap.enabled = true;
@@ -550,6 +553,15 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = STY.light.tone;
 renderer.toneMappingExposure = STY.light.exposure;
 stage.prepend(renderer.domElement);
+// 글씨 층: 이름표·말풍선·머리 위 아이콘은 3D 와 따로 화면 해상도 그대로 그려서, 3D 해상도가 내려가도 늘 또렷하게 (누르기는 아래 3D 화면이 받는다)
+const uiScene = new THREE.Scene();
+const uiRenderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+uiRenderer.setPixelRatio(Math.min(devicePixelRatio, 3));
+uiRenderer.outputColorSpace = renderer.outputColorSpace;
+uiRenderer.setClearColor(0x000000, 0);
+uiRenderer.domElement.className = "uilayer";
+renderer.domElement.after(uiRenderer.domElement);
+uiRenderer.toneMapping = renderer.toneMapping; uiRenderer.toneMappingExposure = renderer.toneMappingExposure; // 글씨 색이 전과 같게
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(STY.pal.bg);
@@ -1229,7 +1241,7 @@ function makeLabel(text) {
     g.fillText(text, x0 + 46, 37);
     tex.needsUpdate = true;
   };
-  scene.add(spr);
+  uiScene.add(spr);
   return { spr, draw };
 }
 // 3D 로 바꾸지 않은 사람: 2D 그림을 세워 둔다 (카메라 쪽으로 돌고, 걸을 때 살짝 들썩인다)
@@ -1538,7 +1550,7 @@ function makeBubble() {
   tex.colorSpace = THREE.SRGBColorSpace;
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true, sizeAttenuation: false }));
   spr.renderOrder = 11;
-  scene.add(spr);
+  uiScene.add(spr);
   const b = { spr, text: "" };
   b.fit = () => { // 캔버스 1px = 이름표와 같은 화면 크기
     const f = labelF(), k = (0.1 / 256) * f;
@@ -2143,8 +2155,18 @@ function applyBg(pick) {
   for (const b of bgMenu.children) b.classList.toggle("on", b.dataset.bg === pick);
 }
 function randomBg() { const pool = BG.kinds.filter((k) => k.id !== "none" && k.id !== BG.id); BG.set(pool[(Math.random() * pool.length) | 0].id); }
+// 화면 바깥 여백(아이폰 주소창 아래 등)과 상태 막대 색을 배경에 맞춘다 — [맨 위, 맨 아래] (장면 그림을 읽으면 멈칫할 수 있어 정해 둔 색)
+const EDGE_OF = { none: ["#eef1f4", "#eef1f4"], sky: ["#eff5ff", "#8dbbea"], sea: ["#b1d3e5", "#5fc3d7"], forest: ["#cbe0bb", "#96c864"] };
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+let edgeFor = null;
 function bgTick(dt) {
   if (!BG) return;
+  if (BG.id !== edgeFor) {
+    edgeFor = BG.id;
+    const [top, bottom] = EDGE_OF[edgeFor] || EDGE_OF.none;
+    document.documentElement.style.backgroundColor = document.body.style.backgroundColor = bottom;
+    themeMeta?.setAttribute("content", top);
+  }
   BG.tick(dt);
   if (bgState.pick === "random" && (bgState.next -= dt) <= 0) { bgState.next = 300; randomBg(); }
 }
@@ -2213,10 +2235,22 @@ window.__tour = TOUR; // 점검용
 
 // ───────────── 휴대폰: 사원 목록 접고 펴기 ─────────────
 const appEl = document.getElementById("app");
+// 아이폰 홈 화면 앱(설치 앱): 화면 높이를 상태 막대만큼 짧게 알려 줘서 아래가 비고 단추가 떠 있던 것 — 기기가 아는 실제 화면 높이로 맞춘다
+const APP_FULL = () => { const land = innerWidth > innerHeight; return land ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height); };
+if (navigator.standalone && /iPhone|iPod/.test(navigator.userAgent)) { // 아이패드는 창 나누기로 실제로 작을 수 있어 빼 둔다
+  const fitApp = () => {
+    appEl.style.height = ""; appEl.style.bottom = "";
+    const full = APP_FULL();
+    if (appEl.getBoundingClientRect().height < full - 1) { appEl.style.bottom = "auto"; appEl.style.height = `${full}px`; }
+  };
+  fitApp();
+  addEventListener("resize", fitApp);
+  addEventListener("orientationchange", () => setTimeout(fitApp, 350));
+}
 if (matchMedia("(pointer: coarse)").matches) document.getElementById("howto").textContent = "한 손가락으로 돌려 보기 · 두 손가락으로 확대 · 사람을 누르면 그 사람 카드";
 // 아이폰: 키보드가 올라와도 화면 크기가 안 바뀌어서, 보이는 높이와의 차이(--kb)만큼 아래 시트·카드를 올린다 (안드로이드는 resizes-content 로 저절로)
 if (window.visualViewport) {
-  const vv = window.visualViewport, fitKb = () => { const kb = Math.max(0, innerHeight - vv.height - vv.offsetTop); document.documentElement.style.setProperty("--kb", kb > 80 ? `${Math.round(kb)}px` : "0px"); };
+  const vv = window.visualViewport, fitKb = () => { const kb = Math.max(0, document.getElementById("app").getBoundingClientRect().height - vv.height - vv.offsetTop); document.documentElement.style.setProperty("--kb", kb > 80 ? `${Math.round(kb)}px` : "0px"); };
   vv.addEventListener("resize", fitKb);
   vv.addEventListener("scroll", fitKb);
 }
@@ -2382,7 +2416,7 @@ function talkDots(a, b, time) {
     if (on && !m.dots) {
       m.dots = new THREE.Sprite(new THREE.SpriteMaterial({ map: DOTS_TEX, depthTest: false, transparent: true, sizeAttenuation: false }));
       m.dots.renderOrder = 11;
-      scene.add(m.dots);
+      uiScene.add(m.dots);
     }
     if (m.dots) m.dots.visible = on;
   }
@@ -2466,7 +2500,7 @@ function fart() {
   const word = new THREE.Sprite(new THREE.SpriteMaterial({ map: FART.word, transparent: true, depthWrite: false, depthTest: false, sizeAttenuation: false }));
   word.renderOrder = 12;
   word.position.copy(at).addScaledVector(back, 0.25 * k).add(new THREE.Vector3(0, 0.25 * k, 0));
-  scene.add(word);
+  uiScene.add(word);
   FART.puffs.push({ spr: word, vel: new THREE.Vector3(0, 0.22 * k, 0), age: 0, life: 2.0, s0: 0.11 * SCR, word: true }); // 화면 폭의 약 1/9
   if (frustum.containsPoint(at)) fartSound();
   if (DEMO) { // 구경용: 근처 사람이 한마디
@@ -2482,7 +2516,7 @@ function fartTick(dt) {
     p.age += dt;
     if (p.age < 0) continue;
     const t = p.age / p.life;
-    if (t >= 1) { scene.remove(p.spr); p.spr.material.dispose(); FART.puffs.splice(i, 1); continue; }
+    if (t >= 1) { p.spr.removeFromParent(); p.spr.material.dispose(); FART.puffs.splice(i, 1); continue; }
     p.spr.position.addScaledVector(p.vel, dt);
     if (p.word) { // 툭 튀어나왔다가 떠오르며 사라진다
       const pop = t < 0.15 ? 0.6 + 0.7 * Math.sin((t / 0.15) * Math.PI * 0.5) * 1.15 : 1.0 + 0.05 * Math.sin(t * 20);
@@ -2527,7 +2561,7 @@ function iconTex(text, bg, pill = false, color = "#d6336c") {
 function badgeSprite(emoji, bg) {
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: iconTex(emoji, bg).tex, depthTest: false, transparent: true, sizeAttenuation: false }));
   spr.renderOrder = 12;
-  scene.add(spr);
+  uiScene.add(spr);
   return spr;
 }
 // 머리 위 아이콘 줄: 생일 🎂 · 회의/집중 · 새 글 📷 · 오늘 받은 칭찬 ❤N — 누르면 그 사람 카드
@@ -2837,6 +2871,7 @@ function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   if (!w || !h) return;
   renderer.setSize(w, h);
+  uiRenderer.setSize(w, h);
   const a = w / h;
   camera.aspect = a;
   // 좁은 화면(휴대폰 세로 등): 옆이 잘리지 않게 시야를 넓힌다 (가로 시야는 PC 와 비슷하게)
@@ -2861,7 +2896,7 @@ function adaptQuality(fps) {
   if (document.hidden) return;
   if (fps < 42) {
     fastSec = 0;
-    if (dpr > 1) { dpr = Math.max(1, +(dpr - 0.15).toFixed(2)); renderer.setPixelRatio(dpr); resize(); } // 화면 해상도 밑으로는 안 내린다 (계단·지글거림)
+    if (dpr > DPR_MIN) { dpr = Math.max(DPR_MIN, +(dpr - 0.15).toFixed(2)); renderer.setPixelRatio(dpr); resize(); } // 정해 둔 밑으로는 안 내린다 (계단·지글거림·뿌연 글씨)
     else if (shadowEvery < 8) shadowEvery *= 2;
     return;
   }
@@ -2961,20 +2996,11 @@ window.__chaos = CHAOS; // 점검용
 const clock = new THREE.Clock();
 if (WHO) select(WHO);
 renderer.shadowMap.needsUpdate = true;
-// 화면 바깥 여백(아이폰 주소창 아래·홈 막대 둘레)과 상태 막대 색을 장면 맨 아래·맨 위 색으로 — 1초에 한 번 1점씩만 읽는다
-const EDGE = { t: 0, px: new Uint8Array(4), bottom: "", top: "" }, themeMeta = document.querySelector('meta[name="theme-color"]');
-function edgeColors() {
-  const gl = renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
-  const at = (y) => { gl.readPixels(w >> 1, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, EDGE.px); return `rgb(${EDGE.px[0]},${EDGE.px[1]},${EDGE.px[2]})`; };
-  const b = at(0), t = at(h - 1);
-  if (b !== EDGE.bottom) { EDGE.bottom = b; document.documentElement.style.backgroundColor = b; document.body.style.backgroundColor = b; }
-  if (t !== EDGE.top) { EDGE.top = t; themeMeta?.setAttribute("content", t); }
-}
 function frameLoop() { // 위젯 창으로 옮기면 그 창의 그리기 주기가 부른다
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
   step(dt);
   renderer.render(scene, camera);
-  if ((EDGE.t += raw) > 1 && !pipWin) { EDGE.t = 0; edgeColors(); } // 그린 바로 뒤라 화면 그림이 남아 있다
+  uiRenderer.render(uiScene, camera); // 글씨 층 (화면 해상도 그대로)
   atlasLive = true;
   pf++; pacc += raw;
   if (pacc > 1) {
@@ -2987,9 +3013,9 @@ function frameLoop() { // 위젯 창으로 옮기면 그 창의 그리기 주기
 renderer.setAnimationLoop(frameLoop);
 requestAnimationFrame(() => requestAnimationFrame(introDone)); // 첫 그림이 그려진 뒤에 시작 화면을 걷는다
 // 점검용: 시간 빨리 돌리기 (미리보기 창이 뒤에 있으면 초당 1~2프레임이라)
-window.__sim = (sec) => { for (let t = 0; t < sec; t += 1 / 30) step(1 / 30); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); atlasLive = true; };
+window.__sim = (sec) => { for (let t = 0; t < sec; t += 1 / 30) step(1 / 30); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); uiRenderer.render(uiScene, camera); atlasLive = true; };
 window.__crew = crew;
-window.__view = { camera, controls, flyTo, THREE, renderer, scene, render: () => renderer.render(scene, camera) };
+window.__view = { camera, controls, flyTo, THREE, renderer, scene, uiScene, uiRenderer, render: () => { renderer.render(scene, camera); uiRenderer.render(uiScene, camera); } };
 </script>
 </body>
 </html>
