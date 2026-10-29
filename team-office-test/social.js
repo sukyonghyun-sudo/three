@@ -139,6 +139,8 @@ window.Social = function Social(ctx) {
   .sx-st-rank em{display:block;height:12px;background:#2a78d6;border-radius:0 4px 4px 0;font-style:normal;min-width:2px}
   .sx-st-rank b{text-align:right;font-weight:600;color:#1c1c1e;font-variant-numeric:tabular-nums}
   .sx-st-note{font-size:11.5px;color:#8e8e93;line-height:1.55;margin-top:14px}
+  .sx-st-who{max-height:300px;overflow:auto}
+  .sx-st-who li.today b::after{content:"오늘";margin-left:6px;font-size:10.5px;font-weight:700;color:#1f8f43;background:#e3f6e8;border-radius:6px;padding:1px 6px;vertical-align:1px}
   .sx-badge{min-width:20px;height:20px;border-radius:10px;background:#e5484d;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;flex:none}
   .sx-chat{background:#f6f1e9}
   .sx-msgs{display:flex;flex-direction:column;gap:6px}
@@ -707,7 +709,8 @@ window.Social = function Social(ctx) {
     if (!sb) return;
     const sent = uses; uses = {};
     try {
-      const { data, error } = await sb.rpc("office_visit", { p_vid: visitId(), p_device: device(), p_login: !!ctx.me(), p_open: open, p_uses: sent });
+      const me = ctx.me();
+      const { data, error } = await sb.rpc("office_visit", { p_vid: visitId(), p_device: device(), p_login: !!me, p_open: open, p_uses: sent, p_char: me?.char ?? null, p_pin: me?.pin ?? null });
       if (error || data !== "ok") throw error || new Error(data);
     } catch (e) { for (const k in sent) uses[k] = (uses[k] || 0) + sent[k]; if (!missing(e)) console.warn("방문 기록", e); } // 못 보냈으면 다음에 같이
   }
@@ -725,7 +728,7 @@ window.Social = function Social(ctx) {
   function openStats() { clearInterval(dmTimer); view = { kind: "stats", reload: () => renderStats() }; show(); renderStats(); }
   async function renderStats() {
     const my = ++seq;
-    card.replaceChildren(header(el("div", "em", "📊"), "방문 통계", `${STATS_ADMIN} 님만 볼 수 있어요 · 이름·대화 내용은 남기지 않아요`));
+    card.replaceChildren(header(el("div", "em", "📊"), "방문 통계", `${STATS_ADMIN} 님만 볼 수 있어요 · 대화 내용은 남기지 않아요`));
     const body = el("div", "sx-body");
     card.append(body);
     if (!gate(body, "방문 통계", false)) return;
@@ -748,6 +751,22 @@ window.Social = function Social(ctx) {
     tiles.append(tile(num(t.people), "오늘 들어온 사람", `로그인 ${num(t.login)}명`), tile(num(t.opens), "오늘 연 횟수"), tile(num(d.now), "지금 보는 중", "최근 5분"),
       tile(t.people ? `${Math.round((+t.minutes || 0) / t.people)}분` : "0분", "한 사람이 머문 시간", "오늘 평균"));
     body.append(tiles);
+    // 누가 들어왔나: 로그인한 사람 (최근 들어온 순) + 이 기간에 안 들어온 사람
+    const ppl = d.people || [], DEV = { pc: "PC", phone: "휴대폰", app: "앱" };
+    const lastWhen = (iso) => { const dd = Math.round((new Date(new Date().toDateString()) - new Date(new Date(iso).toDateString())) / 864e5); return dd <= 0 ? shortWhen(iso) : dd === 1 ? "어제" : `${dd}일 전`; };
+    const who = el("ul", "sx-list sx-inbox sx-st-who");
+    who.replaceChildren(...(ppl.length ? ppl.map((x) => {
+      const li = el("li"), c = el("div", "c"), tm = el("time", null, lastWhen(x.last_at));
+      tm.dateTime = x.last_at; tm.title = when(x.last_at);
+      c.append(el("b", null, x.char), el("span", null, `${statsDays}일 중 ${x.days}일 · ${num(x.opens)}번 열기 · ${num(x.minutes)}분 · ${DEV[x.device] || "PC"}`));
+      li.append(face(x.char), c, tm);
+      if (x.today) li.classList.add("today");
+      li.onclick = () => openPerson(x.char);
+      return li;
+    }) : [el("li", "sx-empty", "아직 로그인해서 들어온 사람이 없어요")]));
+    const absent = ctx.names.filter((n) => !ppl.some((x) => x.char === n));
+    body.append(el("h4", "sx-h", `누가 들어왔나 — 최근 ${statsDays}일 · ${ppl.length}명 (로그인한 사람만)`), who);
+    if (absent.length) body.append(el("p", "sx-st-note", `이 기간에 로그인해서 들어오지 않은 사람 ${absent.length}명: ${absent.join(", ")}`));
     // 날마다 들어온 사람 (막대 하나 = 하루)
     const days = d.days || [], maxD = Math.max(1, ...days.map((x) => +x.people || 0)), todayKey = days.at(-1)?.day;
     const cols = el("div", "sx-st-cols"), xs = el("div", "sx-st-x"), every = days.length > 16 ? 5 : days.length > 8 ? 2 : 1;
@@ -788,7 +807,7 @@ window.Social = function Social(ctx) {
     for (const [k, n] of us) { const row = el("div"), bar = el("em"); bar.style.width = `${(n / maxU) * 100}%`; row.append(el("span", null, USE_NAME[k]), el("div"), el("b", null, num(n))); row.children[1].append(bar); rank.append(row); }
     const box4 = el("div", "sx-st-box"); box4.style.paddingBottom = "12px"; box4.append(us.length ? rank : el("div", "sx-empty", "아직 기록이 없어요"));
     body.append(el("h4", "sx-h", `많이 쓴 기능 — 최근 ${statsDays}일 횟수`), box4);
-    body.append(el("p", "sx-st-note", "같은 브라우저는 하루에 한 사람으로 세요(기기를 바꾸면 따로 세짐). 이름은 남기지 않고, 1:1 대화는 보낸 횟수만 세요 — 내용은 잠겨 있어 아무도 몰라요."));
+    body.append(el("p", "sx-st-note", "같은 브라우저는 하루에 한 번으로 세요(기기를 바꾸면 따로 세짐). 이름은 로그인한 사람만 — 비밀번호가 맞을 때만 남겨요. 1:1 대화는 보낸 횟수만 세고, 내용은 잠겨 있어 아무도 몰라요."));
   }
   function renderFeedView() {
     const my = ++seq;
@@ -998,7 +1017,7 @@ window.Social = function Social(ctx) {
     hud.dm.append(hud.badge);
     hud.dm.type = "button";
     hud.dm.onclick = () => { listen(); openInbox(); };
-    hud.stats = el("button", "sx-hb");
+    hud.stats = el("button", "sx-hb statsbtn");
     hud.stats.innerHTML = '<span class="ico">📊</span><span class="lbl"> 통계</span>';
     hud.stats.title = "방문 통계 (석용현만)"; hud.stats.setAttribute("aria-label", "방문 통계");
     hud.stats.type = "button"; hud.stats.hidden = true;

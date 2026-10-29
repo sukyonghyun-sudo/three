@@ -73,7 +73,7 @@
   // 방문 기록 (이름 없이): 테스트 판은 지난 3주 가짜 방문을 넣어 둔다 — 평일 14~21명, 주말 2~5명
   const kstDay = (ms = Date.now()) => new Date(ms + 9 * 3600e3).toISOString().slice(0, 10);
   const kstHour = () => new Date(Date.now() + 9 * 3600e3).getUTCHours();
-  if (!db.office_visits) {
+  if (!db.office_visits || !db.office_visits.some((v) => "char" in v)) { // 이름 없이 넣어 뒀던 예전 기록이면 새로
     const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1)), pick = (w) => { let r = Math.random() * w.reduce((a, x) => a + x[1], 0); for (const [v, n] of w) if ((r -= n) < 0) return v; return w[0][0]; };
     const HW = [[8, 2], [9, 9], [10, 7], [11, 4], [12, 3], [13, 6], [14, 4], [15, 3], [16, 3], [17, 5], [18, 3], [19, 1], [21, 1]];
     db.office_visits = [];
@@ -83,7 +83,8 @@
       for (let i = 0; i < people; i++) {
         const opens = rnd(1, weekend ? 1 : 4), hours = Array.from({ length: opens }, () => pick(HW)).filter((h) => back > 0 || h <= kstHour());
         const u = { feed: rnd(0, 4), like: rnd(0, 5), comment: rnd(0, 2), dm: rnd(0, 4), heart: rnd(0, 1), alerts: rnd(0, 2), post: Math.random() < 0.15 ? 1 : 0, note: Math.random() < 0.2 ? 1 : 0, snack: Math.random() < 0.06 ? 1 : 0, bg: Math.random() < 0.1 ? 1 : 0 };
-        db.office_visits.push({ day, vid: "seed" + back + "x" + i, device: pick([["pc", 6], ["phone", 3], ["app", 1]]), logged_in: Math.random() < 0.8, opens: hours.length || 1,
+        const who = Math.random() < 0.8 ? NAMES[(i * 7 + back * 3) % NAMES.length] : null; // 로그인한 사람은 이름 (날마다 다른 사람들)
+        db.office_visits.push({ day, vid: "seed" + back + "x" + i, device: pick([["pc", 6], ["phone", 3], ["app", 1]]), logged_in: !!who, char: who, opens: hours.length || 1,
           minutes: rnd(3, weekend ? 20 : 140), hours: hours.length ? hours : [Math.min(kstHour(), 9)], uses: Object.fromEntries(Object.entries(u).filter(([, n]) => n)), last_at: new Date(ms - 3600e3).toISOString() });
       }
     }
@@ -130,11 +131,12 @@
   const R = {
     office_claim: ({ p_char, p_pin }) => (/^[0-9a-f]{64}$/.test(String(p_pin || "")) ? "ok" : "bad_input"),
     office_change_pin: ({ p_char, p_pin, p_new }) => { const v = verify(p_char, p_pin); if (v !== "ok") return v; return /^[0-9a-f]{64}$/.test(String(p_new || "")) ? "ok" : "bad_input"; },
-    office_visit: ({ p_vid, p_device, p_login, p_open, p_uses }) => {
+    office_visit: ({ p_vid, p_device, p_login, p_open, p_uses, p_char, p_pin }) => {
       if (!/^[0-9a-z]{8,40}$/.test(String(p_vid || ""))) return "bad_input";
       const day = kstDay(), h = kstHour();
       let v = db.office_visits.find((x) => x.day === day && x.vid === p_vid);
-      if (!v) { v = { day, vid: p_vid, device: "pc", logged_in: false, opens: 0, minutes: 0, hours: [], uses: {}, last_at: now() }; db.office_visits.push(v); }
+      if (!v) { v = { day, vid: p_vid, device: "pc", logged_in: false, char: null, opens: 0, minutes: 0, hours: [], uses: {}, last_at: now() }; db.office_visits.push(v); }
+      if (p_char && verify(p_char, p_pin) === "ok") { v.char = p_char; v.logged_in = true; }
       else if (!p_open && Date.parse(v.last_at) < Date.now() - 50000) v.minutes++;
       v.device = ["pc", "phone", "app"].includes(p_device) ? p_device : "pc"; v.logged_in ||= !!p_login;
       if (p_open) { v.opens++; if (v.hours.length < 48) v.hours.push(h); }
@@ -155,6 +157,12 @@
         days, hours: rows.reduce((o, x) => (x.hours.forEach((h) => add(o, h)), o), {}), devices: rows.reduce((o, x) => add(o, x.device), {}),
         uses: rows.reduce((o, x) => (Object.entries(x.uses).forEach(([k, c]) => add(o, k, c)), o), {}),
         minutes: rows.reduce((a, x) => a + x.minutes, 0), visits: rows.length,
+        people: [...rows.filter((x) => x.char).reduce((m, x) => {
+          const o = m.get(x.char) || { char: x.char, last_at: x.last_at, days: new Set(), opens: 0, minutes: 0, today: false, device: x.device };
+          if (x.last_at > o.last_at) { o.last_at = x.last_at; o.device = x.device; }
+          o.days.add(x.day); o.opens += x.opens; o.minutes += x.minutes; o.today ||= x.day === today;
+          return m.set(x.char, o);
+        }, new Map()).values()].map((o) => ({ ...o, days: o.days.size })).sort((a, b) => (a.last_at < b.last_at ? 1 : -1)),
       };
     },
     office_key_get: async ({ p_char, p_pin }) => {
