@@ -2,17 +2,27 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>메이플W 사업유닛 사무실</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="app/icon-192.png">
+<link rel="apple-touch-icon" href="app/apple-touch-icon.png">
+<meta name="theme-color" content="#f2f2f7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="우리팀">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<title>우리팀</title>
 <style>
 :root{--bg:#ece5da;--panel:#fffdf9;--ink:#23252a;--muted:#70737a;--line:#e5ded3;--work:#2f9e62;--move:#d08a1e;--away:#a3a7ad}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
   font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;overflow:hidden}
-#app{display:grid;grid-template-columns:minmax(0,1fr) 300px;height:100%;height:100dvh}
+#app{display:grid;grid-template-columns:minmax(0,1fr) 300px;position:fixed;inset:0} /* 높이를 계산하지 않고 화면 네 끝에 붙인다 — 아이폰 설치 앱·주소창·홈 막대 때문에 100vh/100dvh 가 모자라 아래가 하얗게 비던 것 */
+html,body{overscroll-behavior:none}
 #stage{position:relative;min-width:0;overflow:hidden}
 #stage canvas{display:block;cursor:grab}
 #stage canvas:active{cursor:grabbing}
+#stage canvas.uilayer{position:absolute;left:0;top:0;pointer-events:none;cursor:default}
 .hud{position:absolute;left:16px;top:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .hud h1{margin:0;font-size:18px;font-weight:700}
 .counts{display:flex;gap:6px;pointer-events:none}
@@ -52,12 +62,18 @@ button{font:inherit}
 #list img{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:50% 40%;background:#efe1d6;flex:none}
 .who{flex:1;min-width:0}
 .who b{display:block;font-size:13px}
-.who span{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-top:2px}
+.who span{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-top:2px;min-width:0}
+.who em{flex:none}
+.who small{display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#1f8f43;font-weight:600} /* 직접 쓴 상태 메시지: 상태 아래 한 줄 */
+.who small:empty{display:none}
 #list .btn{padding:5px 10px;font-size:12px;min-width:52px}
 #list li{flex-wrap:wrap}
 #list .acts,#list .more{display:flex;gap:4px;flex-basis:100%;padding-left:46px}
 #list .acts[hidden],#list .more[hidden]{display:none}
-#list .acts .btn,#list .more .btn{padding:4px 9px;min-width:0}
+#list .acts .btn,#list .more .btn{padding:4px 9px;min-width:0;white-space:nowrap}
+#list .acts{flex-wrap:nowrap} /* 출근·퇴근·상태 메시지는 한 줄로 */
+#list .side{flex:none;display:flex;gap:4px}
+#list .side .btn{padding:4px 10px;min-width:0;white-space:nowrap}
 #list .btn.on{background:var(--work);border-color:var(--work);color:#fff}
 #list .more input{flex:1;width:0;min-width:0;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--panel);color:var(--ink)}
 #panel.edit #list .acts,#panel.edit #list .more{display:none}
@@ -87,53 +103,265 @@ button{font:inherit}
 /* 내 캐릭터 */
 
 #intro{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:radial-gradient(120% 90% at 50% 38%,#fffaf2 0%,var(--bg) 70%);transition:opacity .9s ease,visibility .9s}
+  background:radial-gradient(120% 90% at 50% 38%,#ffffff 0%,#eef1f4 72%);transition:opacity .9s ease,visibility .9s}
 #intro.done{opacity:0;visibility:hidden}
 #intro .ttl{text-align:center;transform:translateY(-4vh);animation:ttlIn .9s ease both}
+#intro .ilogo{display:block;width:96px;height:96px;margin:0 auto 18px;border-radius:22px;box-shadow:0 10px 30px rgba(40,150,120,.22)}
 #intro h1{margin:0;font-size:clamp(34px,6vw,68px);font-weight:800;letter-spacing:-.02em;color:var(--ink)}
 #intro p{margin:10px 0 0;font-size:clamp(14px,1.6vw,18px);color:var(--muted);letter-spacing:.3em}
 #intro .lwrap{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%);width:min(520px,72vw);text-align:center}
-#intro .lbar{height:6px;border-radius:6px;background:#e2dacd;overflow:hidden}
-#intro .lbar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#f6a43a,#ec7a1c);transition:width .35s ease}
+#intro .lbar{height:6px;border-radius:6px;background:#e5e5ea;overflow:hidden}
+#intro .lbar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#6fdcb4,#2fb38a);transition:width .35s ease}
 #intro #lmsg{display:block;margin-top:10px;font-size:12px;color:var(--muted)}
 @keyframes ttlIn{from{opacity:0;transform:translateY(-1vh)}to{opacity:1;transform:translateY(-4vh)}}
 #app{transition:opacity .9s ease}
 body.loading #app{opacity:0}
 .listbtn,.pclose{display:none}
+.bgmenu{position:absolute;right:12px;bottom:54px;z-index:9;background:rgba(255,253,249,.97);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.bgmenu[hidden]{display:none}
+.bgmenu button{border:0;background:none;border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;text-align:left;cursor:pointer;color:var(--ink);white-space:nowrap}
+.bgmenu button:hover{background:#f3eee6}
+.bgmenu button.on{background:var(--ink);color:#fff}
+/* 배경: 시점 막대와 성질이 달라 따로 단추 (메뉴는 단추 바로 위로 열림) */
+.bgwrap{position:relative;flex:none;display:flex;margin-right:4px}
+.camwrap{position:relative;display:flex;min-width:0}
+.camsbtn,.morebtn{display:none}
+.camsbtn{align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:0 12px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink);white-space:nowrap}
+.camsbtn::after{content:"";width:6px;height:6px;border:solid currentColor;border-width:0 1.6px 1.6px 0;transform:translateY(-2px) rotate(45deg);opacity:.55;margin-left:2px}
+.camwrap.open .camsbtn::after{transform:translateY(2px) rotate(-135deg)}
+/* 세로 휴대폰 위쪽 「⋯」 메뉴 */
+.hudmore{position:absolute;z-index:9;right:calc(10px + env(safe-area-inset-right));top:calc(54px + env(safe-area-inset-top));min-width:200px;background:rgba(249,249,251,.94);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:2px}
+.hudmore[hidden]{display:none}
+.hudmore button{display:flex;align-items:center;gap:10px;border:0;background:none;border-radius:9px;padding:10px 12px;font:inherit;font-size:14px;font-weight:500;color:var(--ink);text-align:left;cursor:pointer;min-height:42px}
+.hudmore button:active{background:rgba(118,118,128,.14)}
+.hudmore .sw{margin-left:auto;width:34px;height:20px;border-radius:20px;background:#e5e5ea;position:relative;flex:none;transition:background .2s}
+.hudmore .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.28);transition:transform .2s}
+.hudmore .sw.on{background:var(--work,#34c759)}
+.hudmore .sw.on::after{transform:translateX(14px)}
+@media (max-width:600px){ /* 세로 휴대폰: 위쪽은 한 줄 — 자주 쓰는 것만, 나머지는 「⋯」 */
+  .hud .morebtn{order:99}
+  .hud{flex-wrap:nowrap}
+  .hud .cx-toggle,.hud .cx-gear,.hud .installbtn,.hud .statsbtn{display:none!important}
+  .hud .counts .chip:nth-child(n+2){display:none}
+  .hud .morebtn{display:inline-flex;justify-content:center;margin-left:auto}
+  .hud .testme>span{display:none}
+  .hud .testme select{max-width:76px}
+}
+.bgwrap .bgmenu{right:auto;left:0;bottom:calc(100% + 8px)}
+.bgbtn{display:inline-flex;align-items:center;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:0 11px;font-size:12px;cursor:pointer;color:var(--ink);white-space:nowrap}
+.testnote{background:#fff4d6;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.55;margin-bottom:10px;color:#6b4f10}
+.testme{display:inline-flex;align-items:center;gap:2px;background:#fff4d6;border:1px solid #efd28a;border-radius:10px;padding:3px 4px 3px 9px;font-size:12px;color:#6b4f10}
+.testme select{font:inherit;font-size:12px;font-weight:700;border:0;background:none;color:inherit;cursor:pointer}
+.testnote details{margin-top:4px}
+.testnote summary{cursor:pointer;color:var(--blue,#007aff);font-weight:600;list-style:none}
+.testnote summary::-webkit-details-marker{display:none}
+.testnote button{border:0;background:none;color:#2f6fe4;font:inherit;font-size:12px;padding:0;cursor:pointer;text-decoration:underline}
+.pipph{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted);font-size:14px;line-height:1.6}
+body.pip{margin:0;height:100vh;overflow:hidden;background:var(--bg)}
+body.pip #stage{width:100vw;height:100vh}
+body.pip .hud button,body.pip .listbtn,body.pip .bgwrap,body.pip .pinbtn{display:none}
+.pinbtn{position:absolute;right:12px;top:12px;z-index:6}
+.hud{max-width:calc(100% - 170px)}
 /* 휴대폰·좁은 창: 사무실을 화면 가득, 사람 목록은 버튼으로 접고 편다 (세로: 아래에서 올라옴 · 가로: 오른쪽에서 나옴) */
 @media (max-width:820px),(max-height:520px){
-  #app{grid-template-columns:minmax(0,1fr);position:relative}
+  #app{grid-template-columns:minmax(0,1fr)}
   #panel{position:absolute;z-index:8;left:0;right:0;bottom:0;height:min(62%,560px);border:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;
     box-shadow:0 -8px 28px rgba(0,0,0,.16);transform:translateY(104%);visibility:hidden;transition:transform .3s ease,visibility 0s .3s}
   #app.list-open #panel{transform:none;visibility:visible;transition:transform .3s ease}
-  #panel header{position:relative;padding:12px 14px 10px}
-  .pclose{display:block;position:absolute;right:10px;top:8px;padding:5px 11px;font-size:12px}
+  #panel header{position:relative;padding:44px 14px 10px}
+  #panel header::before{content:"";position:absolute;left:50%;top:8px;width:36px;height:5px;margin-left:-18px;border-radius:3px;background:rgba(60,60,67,.25)}
+  .pclose{display:block;position:absolute;right:12px;top:10px;padding:5px 12px;font-size:12.5px}
   .listbtn{display:inline-flex;align-items:center;flex:none;border:1px solid var(--line);background:rgba(255,253,249,.95);border-radius:10px;padding:6px 11px;font-size:12px;cursor:pointer;color:var(--ink)}
   #app.aq-wide .listbtn{display:none}
-  .hud{left:10px;right:10px;top:10px;gap:6px 8px;pointer-events:none}
+  .hud{left:calc(10px + env(safe-area-inset-left));right:calc(10px + env(safe-area-inset-right));top:calc(10px + env(safe-area-inset-top));gap:6px 8px;pointer-events:none}
   .hud>*{pointer-events:auto}
-  .hud h1{font-size:15px}
+  .hud h1{display:none}
+  .hud .lbl{display:none} /* 휴대폰: 위쪽 단추·칩은 아이콘·숫자만 */
+  .hud{max-width:none}
+  .testme select{max-width:84px}
   .chip{padding:3px 8px;font-size:11px}
-  .view{left:10px;right:10px;bottom:10px;pointer-events:none}
+  .view{left:calc(10px + env(safe-area-inset-left));right:calc(10px + env(safe-area-inset-right));bottom:calc(10px + env(safe-area-inset-bottom));pointer-events:none}
+  /* 시점 막대: 「🎥 지금 시점」 하나로 접고, 누르면 위로 세로 목록 */
+  .camwrap{margin-left:auto}
+  .camsbtn{display:inline-flex}
+  .camwrap .cams{display:none}
+  .camwrap.open .cams{display:flex;position:absolute;right:0;bottom:calc(100% + 8px);flex-direction:column;gap:2px;padding:6px;min-width:150px;overflow:visible;z-index:9}
+  .camwrap.open .cams button{text-align:left;padding:9px 12px;font-size:13.5px}
+  #panel{padding-bottom:env(safe-area-inset-bottom);bottom:var(--kb,0px)} /* --kb: 아이폰 키보드 높이 (입력칸이 가리지 않게) */
   .view>*{pointer-events:auto}
   .cams{min-width:0;margin-left:auto;overflow-x:auto;scrollbar-width:none}
   .cams::-webkit-scrollbar{display:none}
   .cams button{flex:none;padding:5px 9px}
 }
 @media (max-width:820px) and (orientation:landscape),(max-height:520px) and (orientation:landscape){
-  #panel{left:auto;top:0;height:auto;width:min(320px,52%);border-top:0;border-left:1px solid var(--line);border-radius:16px 0 0 16px;
+  #panel{left:auto;top:0;height:auto;width:calc(min(320px,52%) + env(safe-area-inset-right));padding-right:env(safe-area-inset-right);padding-bottom:0;border-top:0;border-left:1px solid var(--line);border-radius:16px 0 0 16px;
     box-shadow:-8px 0 28px rgba(0,0,0,.16);transform:translateX(104%)}
 }
+.iohelp{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.3);display:flex;align-items:flex-end;justify-content:center;padding:0 10px calc(10px + env(safe-area-inset-bottom))}
+.iohelp[hidden]{display:none}
+.iocard{background:#fff;border-radius:16px;padding:18px 18px 14px;width:min(420px,100%);box-shadow:0 20px 50px rgba(0,0,0,.25);font-size:14px;line-height:1.55}
+.iocard>b{font-size:16px}
+.iocard ol{margin:10px 0 14px;padding-left:20px}
+.iocard li{margin:6px 0}
+.ioshare{display:inline-flex;align-items:center;gap:4px;color:#007aff;font-weight:600}
+.ioshare i{display:inline-block;width:12px;height:14px;border:2px solid #007aff;border-top:0;border-radius:0 0 3px 3px;position:relative;margin-top:4px}
+.ioshare i::before{content:"";position:absolute;left:3px;top:-8px;width:2px;height:11px;background:#007aff}
+.ioshare i::after{content:"";position:absolute;left:1px;top:-9px;width:6px;height:6px;border-left:2px solid #007aff;border-top:2px solid #007aff;transform:rotate(45deg)}
+.iocard .btn{width:100%;height:42px}
+/* 키보드로 움직일 때만 파란 테두리 (마우스·손가락엔 안 보임) */
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid #007aff;outline-offset:2px}
+/* ───── 아이폰 느낌 (10-28): 떠 있는 단추는 반투명 유리 알약, 목록·창은 흰 카드 + 머리카락 선, 파란 글자 단추 ───── */
+html,body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+:root{--bg:#eef1f4;--ink:#1c1c1e;--muted:#8e8e93;--line:rgba(60,60,67,.16);--work:#34c759;--move:#ff9f0a;--away:#aeaeb2;--blue:#007aff;--glass:rgba(255,255,255,.74)}
+html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme,html body .pinbtn{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  border:.5px solid rgba(0,0,0,.08);box-shadow:0 1px 1px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.08);border-radius:999px;color:var(--ink);font-weight:600;font-size:13px;padding:7px 13px;line-height:1.2}
+html body .chip{padding:6px 11px;font-size:12.5px}
+html body .sx-hb:active,html body .cx-btn:active,html body .listbtn:active,html body .btn:active,html body .cams button:active{transform:scale(.96)}
+html body .sx-hb:hover,html body .cx-btn:hover,html body .listbtn:hover{background:rgba(255,255,255,.9)}
+html body .cx-btn.dark{background:var(--ink);color:#fff}
+html body .cx-gear{padding:7px 10px;margin-left:-4px}
+html body .cx-toggle b{font-size:0;width:34px;height:20px;border-radius:20px;background:#e5e5ea;position:relative;display:inline-block;vertical-align:-5px;margin-left:8px;padding:0;transition:background .2s}
+html body .cx-toggle b::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.28);transition:transform .2s}
+html body .cx-toggle.on b{background:var(--work)}
+html body .cx-toggle.on b::after{transform:translateX(14px)}
+html body .cams{background:rgba(255,255,255,.62);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:.5px solid rgba(0,0,0,.08);border-radius:12px;padding:3px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+html body .cams button{border-radius:9px;padding:6px 11px;font-size:12.5px;font-weight:600;color:#3a3a3c}
+html body .cams button:hover{background:rgba(255,255,255,.55)}
+html body .cams button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+html body .bgmenu{background:rgba(249,249,251,.9);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.18)}
+html body .bgmenu button{border-radius:9px;font-weight:500}
+html body .bgmenu button.on{background:var(--blue);color:#fff}
+html body .btn{border:0;background:rgba(118,118,128,.12);color:var(--blue);border-radius:999px;font-weight:600;padding:7px 14px}
+html body .btn:hover:not(:disabled){background:rgba(118,118,128,.2)}
+html body .btn.dark{background:var(--blue);color:#fff}
+html body .btn.dark:hover:not(:disabled){background:#0a6fe0}
+html body .btn:disabled{color:#c7c7cc;background:rgba(118,118,128,.07)}
+html body #list .btn{padding:5px 11px}
+html body #list .acts{gap:6px;margin-top:8px}
+html body #list .more{gap:6px;margin-top:8px}
+html body .hud{gap:8px}
+html body #list .btn.on{background:var(--work);color:#fff}
+html body #panel{background:#f2f2f7;border-left:.5px solid rgba(60,60,67,.22)}
+html body #panel header{border-bottom:0;padding-bottom:6px}
+html body #panel h2{font-size:20px;font-weight:700;letter-spacing:-.02em}
+html body #list{background:#fff;margin:4px 12px 10px;border-radius:12px;padding:0}
+html body #list li{border-radius:0;padding:10px 12px;border-bottom:.5px solid rgba(60,60,67,.13)}
+html body #list li:last-child{border-bottom:0}
+html body #list li:hover,html body #list li.sel{background:#f7f7fa}
+html body #list .more input{border:0;background:rgba(118,118,128,.12);border-radius:999px;padding:6px 12px}
+html body .testnote{background:#fff;border-radius:12px;color:#3a3a3c;border:.5px solid rgba(60,60,67,.13)}
+html body .testnote button{color:var(--blue);text-decoration:none;font-weight:600}
+html body .hint{border-top:0;color:var(--muted)}
+html body .testme{gap:7px;padding-left:12px;padding-right:8px}
+html body .testme>span{color:var(--muted)}
+html body .testme select{color:var(--ink)}
+html body .sx-wrap{background:rgba(0,0,0,.28)}
+html body .sx-card{background:#f2f2f7;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.28)}
+html body .sx-head{background:#fff;border-bottom:.5px solid rgba(60,60,67,.18)}
+html body .sx-x{width:30px;height:30px;border-radius:50%;background:rgba(118,118,128,.12);font-size:20px;line-height:30px;color:#8e8e93;padding:0;text-align:center;flex:none}
+html body .sx-tabs{background:rgba(118,118,128,.12);border-radius:9px;margin:10px 16px 0;padding:2px;border-bottom:0;gap:2px}
+html body .sx-tabs button{flex:1;border-radius:7px;padding:6px 8px;border-bottom:0;margin:0;color:var(--ink);font-weight:600;font-size:13px}
+html body .sx-tabs button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+html body .sx-acts .btn.heart{color:#ff2d55}
+html body .sx-acts .btn.heart.on{background:#ffe3ea}
+html body .sx-note .c,html body .sx-post,html body .sx-snack,html body .sx-person,html body .sx-inbox li,html body .sx-opt,html body .sx-gate,html body .sx-chip{background:#fff;border:0}
+html body .sx-post{border-radius:14px}
+html body .sx-opt.on{box-shadow:0 0 0 2px var(--work) inset}
+html body .sx-chip.on{background:var(--blue);color:#fff}
+html body .sx-compose textarea,html body .sx-compose input[type=text],html body .sx-compose select{border:0;background:#fff;border-radius:10px}
+html body .sx-chat{background:#fff}
+html body .sx-m{background:#e9e9eb;color:#000;border-radius:18px;box-shadow:none}
+html body .sx-m.me{background:var(--blue);color:#fff;border-radius:18px}
+html body .sx-foot{background:#f9f9f9;border-top:.5px solid rgba(60,60,67,.18)}
+html body .sx-foot textarea{border:.5px solid rgba(60,60,67,.25);border-radius:18px;background:#fff;padding:8px 13px}
+html body .sx-bday{background:#fff4dc}
+html body .sx-body{padding:16px 16px 20px}
+html body .sx-h{margin:22px 0 10px;font-size:12.5px;font-weight:600;color:#6c6c70}
+html body .sx-h:first-child{margin-top:2px}
+html body .sx-hint{font-size:12px;line-height:1.55;margin-top:10px;color:var(--muted)}
+html body .sx-chips{gap:8px}
+html body .sx-chip{padding:8px 14px;font-weight:600}
+html body .sx-compose{gap:10px}
+html body .sx-row{gap:8px}
+html body .sx-compose select{height:36px;padding:0 10px}
+html body .sx-compose .btn,html body .sx-row .btn{height:36px;padding:0 16px}
+html body .sx-msg{margin-top:10px;font-size:12.5px}
+html body .sx-acts{gap:8px;padding:12px 16px 2px}
+html body .sx-list{gap:12px}
+html body .sx-gate{padding:12px 14px;line-height:1.6}
+html body .sx-gate .btn{margin-top:10px}
+html body .cx-menu{background:rgba(249,249,251,.94);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(0,0,0,.08);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+html body .cx-grid button{border:0;background:#fff;border-radius:12px}
+html body .cx-x{position:absolute;right:10px;top:10px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(118,118,128,.12);font-size:20px;line-height:30px;color:#8e8e93;cursor:pointer;padding:0}
+/* 위쪽 줄: 칩·단추를 모두 같은 높이로 (10-29 — 어항 모드 단추만 스위치 때문에 두꺼웠음) */
+html body .hud .chip,html body .hud .sx-hb,html body .hud .cx-btn,html body .hud .testme,html body .pinbtn{box-sizing:border-box;height:32px;min-height:0;display:inline-flex;align-items:center;padding-top:0;padding-bottom:0}
+html body .hud .cx-gear{width:32px;padding:0;justify-content:center}
+html body .pinbtn{position:absolute;right:12px;top:12px;z-index:6} /* social.js 의 .sx-hb{position:relative} 가 덮어써 화면 밖으로 밀려나던 것 */
+html body .cx-toggle b{width:30px;height:18px;margin-left:8px;vertical-align:middle}
+html body .cx-toggle b::after{width:14px;height:14px}
+html body .cx-toggle.on b::after{transform:translateX(12px)}
+/* 아래 줄: 사원 목록 · 배경 단추는 시점 막대와 같은 높이 */
+html body .view{align-items:stretch}
+html body .bgbtn,html body .camsbtn{background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border:.5px solid rgba(0,0,0,.08);box-shadow:0 6px 18px rgba(0,0,0,.08);border-radius:12px;font-weight:600;font-size:12.5px;padding:0 13px;color:var(--ink)}
+html body .bgbtn:hover,html body .camsbtn:hover{background:rgba(255,255,255,.9)}
+html body .bgbtn.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14),0 6px 18px rgba(0,0,0,.08)}
+html body .view .listbtn{border-radius:12px;padding-top:0;padding-bottom:0}
+html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 */
+@media (max-width:600px){html body .hud .morebtn{display:inline-flex;justify-content:center;width:36px;padding:0;font-size:18px;font-weight:700;letter-spacing:.05em}}
+/* 사용 안내 (처음 온 사람에게 한 번 · ❔ 로 다시) */
+.guide{position:fixed;inset:0;z-index:46;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;padding:20px;animation:gdIn .3s ease}
+@keyframes gdIn{from{opacity:0}to{opacity:1}}
+.guide .gcard{width:min(760px,100%);max-height:100%;overflow:auto;border-radius:22px;padding:28px 28px 22px;word-break:keep-all;
+  background:radial-gradient(120% 70% at 0% 0%,#e3f4ee 0%,rgba(227,244,238,0) 60%),radial-gradient(90% 60% at 100% 100%,#e6eef9 0%,rgba(230,238,249,0) 60%),#f5f7f9;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.guide header{display:flex;align-items:center;gap:16px}
+.guide header img{width:64px;height:64px;border-radius:15px;box-shadow:0 8px 20px rgba(31,157,85,.22)}
+.guide h2{margin:0;font-size:28px;font-weight:800;letter-spacing:-.03em}
+.guide header p{margin:3px 0 0;font-size:14px;color:#5f6368}
+.guide .rule{margin-top:18px;background:#fff;border-radius:18px;padding:16px 18px;border:2px solid #3fbf73;display:flex;gap:14px;align-items:center}
+.guide .rule .em{font-size:36px;line-height:1}
+.guide .rule b{display:block;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.guide .rule span{display:block;font-size:14.5px;color:#5f6368;margin-top:4px;line-height:1.5}
+.guide .rule strong{color:#d1372f}
+.guide .steps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.guide .st{background:#fff;border-radius:16px;padding:14px 14px;display:flex;gap:12px;align-items:flex-start}
+.guide .st .ic{flex:none;position:relative;width:42px;height:42px;border-radius:12px;background:#f1f3f6;display:flex;align-items:center;justify-content:center;font-size:22px}
+.guide .st .ic i{position:absolute;left:-6px;top:-6px;width:20px;height:20px;border-radius:50%;background:#1c1c1e;color:#fff;font-style:normal;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.guide .st b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.01em}
+.guide .st span{display:block;font-size:13.5px;color:#5f6368;margin-top:3px;line-height:1.5}
+.guide .st em{font-style:normal;font-weight:700;color:#1c1c1e;background:#f1f3f6;border-radius:6px;padding:0 5px}
+.guide .app{margin-top:12px;background:#1c1c1e;color:#fff;border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.guide .app .ic{font-size:24px}
+.guide .app b{display:block;font-size:15px;font-weight:800}
+.guide .app span{display:block;font-size:13px;color:rgba(255,255,255,.75);margin-top:2px;line-height:1.45}
+.guide .foot{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:12px;font-size:12px;color:#8e8e93}
+.guide .go{display:block;width:100%;height:48px;margin-top:16px;border:0;border-radius:14px;background:#34c759;color:#fff;font:inherit;font-size:17px;font-weight:800;cursor:pointer}
+.guide .go:active{transform:scale(.98)}
+@media (max-width:600px){.guide{padding:0;align-items:flex-end}.guide .gcard{border-radius:20px 20px 0 0;padding:22px 16px calc(16px + env(safe-area-inset-bottom));max-height:94%}.guide .steps{grid-template-columns:1fr}.guide h2{font-size:24px}}
+@media (max-height:520px){.guide .gcard{max-height:100%}.guide .steps{grid-template-columns:1fr 1fr 1fr}}
+.hint .guidebtn{border:0;background:none;padding:0;font:inherit;font-size:inherit;color:var(--blue,#007aff);font-weight:600;cursor:pointer}
+/* 휴대폰: 입력칸 글자를 16px 로 — 아이폰은 16px 보다 작은 칸을 누르면 화면을 저절로 확대해서 창이 화면 밖으로 밀려났음 */
+@media (pointer:coarse){input,textarea,select{font-size:16px!important}}
+[hidden]{display:none!important} /* 숨긴 것은 어떤 단추 모양 규칙보다 우선 */
+/* 손가락 기기: 누르는 곳을 넉넉히 (아이폰 권장 44pt 에 가깝게) */
+@media (pointer:coarse){html body .sx-hb,html body .cx-btn,html body .listbtn,html body .chip,html body .testme{min-height:36px;display:inline-flex;align-items:center}
+  html body .hud .chip,html body .hud .sx-hb,html body .hud .cx-btn,html body .hud .testme,html body .pinbtn{height:36px}html body .hud .cx-gear{width:36px}html body .bgbtn,html body .camsbtn{min-height:36px}
+  html body .cams button{min-height:34px}html body #list .btn{min-height:32px}html body .sx-x{width:34px;height:34px;line-height:34px}
+  html body .sx-likebtn,html body .sx-del{min-height:32px}html body .sx-tabs button{min-height:34px}}
+@media (max-width:820px),(max-height:520px){html body .sx-card{border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom)}html body .chip,html body .sx-hb,html body .cx-btn,html body .listbtn,html body .testme{padding:6px 10px;font-size:12.5px}}
 </style>
-<script>window.__AQUARIUM = true; window.__LIVE = {"url": "https://jpornxccjdnflhiwpqse.supabase.co", "key": "sb_publishable_U-GSIll6EsRzltq_pF_RDg_uhrkwoRK"};</script>
+<script>window.__AQUARIUM = true; window.__PWA = true; window.__LIVE = {"url": "https://jpornxccjdnflhiwpqse.supabase.co", "key": "sb_publishable_U-GSIll6EsRzltq_pF_RDg_uhrkwoRK"};</script>
 <script src="models3d/charlib.js"></script>
 <!-- 저장한 고정석 (자리 지정 → 저장. 서버로 열었을 때 이 파일에 써진다) -->
 <script src="seats.js"></script>
 <script src="screens.js"></script>
 <!-- 어항 모드(?aquarium): 가끔 갑자기 벌어지는 이벤트 26가지 -->
 <script src="chaos.js"></script>
-<!-- 사람 카드(방명록 · 육아일기) · 간식 신청: 실시간 판에서 읽고 쓴다 -->
+<!-- 사람 카드(방명록 · SNS 피드 · 하트 · 내 상태) · 1:1 대화 · 간식 신청: 실시간 판에서 읽고 쓴다 -->
+<!-- 1:1 대화 잠금: 비밀번호에서 열쇠를 만들어 브라우저 안에서만 잠그고 연다 (저장소 주인도 못 읽게) -->
+<script src="dmcrypt.js"></script>
 <script src="social.js"></script>
+<!-- 사무실 밖 배경 (기본 · 하늘 · 바다 · 숲): 각자 고르거나 랜덤 -->
+<script src="bg.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -142,7 +370,7 @@ body.loading #app{opacity:0}
 <body class="loading">
 <!-- 시작 화면: 다 읽을 때까지 타이틀 + 로딩바, 끝나면 서서히 사라지며 사무실이 나온다 -->
 <div id="intro">
-  <div class="ttl"><h1>메이플W 사업유닛</h1><p>팀 사무실</p></div>
+  <div class="ttl"><img class="ilogo" src="app/icon-192.png" alt="" onerror="this.remove()"><h1>우리팀</h1><p>팀 사무실</p></div>
   <div class="lwrap"><div class="lbar"><i id="lfill"></i></div><span id="lmsg">불러오는 중</span></div>
 </div>
 <div id="app">
@@ -175,7 +403,7 @@ body.loading #app{opacity:0}
       </div>
     </header>
     <ul id="list"></ul>
-    <div class="hint">드래그로 돌려 보기 · 휠로 확대 · 이름을 누르면 그 사람을 따라갑니다<br>원효인 님 책상 피규어: 「Chibi Friren :3」 CubeModeller · CC BY 4.0</div>
+    <div class="hint"><button type="button" class="guidebtn" id="guideBtn">❔ 사용 안내</button> · <span id="howto">드래그로 돌려 보기 · 휠로 확대 · 사람을 누르면 그 사람 카드</span><br>원효인 님 책상 피규어: 「Chibi Friren :3」 CubeModeller · CC BY 4.0</div>
   </aside>
 </div>
 <script type="module">
@@ -259,9 +487,12 @@ const COLS = [
 const ALL_DESKS = COLS.flatMap((c) => [...c.upper, ...c.lower]).filter((n) => n != null).sort((a, b) => a - b);
 // 컴퓨터를 치운 책상 (10-27 사용자 지정): 76·77·78 = 간식 책상, 104 = 빈 책상 — 사람 자리로는 쓰지 않는다
 const NO_PC = new Set([76, 77, 78, 104]), SNACK_DESKS = new Set([76, 77, 78]);
-// 육아일기를 쓰는 사람 (머리 위 아이콘 · 사람 카드의 탭) · 간식 목록을 비울 수 있는 사람 (10-28)
-const DIARY = { 홍수연: { icon: "👶", title: "육아일기" } };
+// 글 탭에 따로 이름을 붙일 사람 (없으면 모두 「📷 일상」) · 간식 목록을 비울 수 있는 사람 (10-28)
+const DIARY = {}; // 따로 이름 붙인 글 탭 (예: { 이름: { icon: "👶", title: "육아일기" } }) — 10-28 사용자: 육아일기 없이 모두 같은 SNS(📷 일상)로
 const SNACK_ADMIN = "석용현";
+// 내 상태 (본인이 사람 카드 「⚙️ 내 상태」에서 고른다): 회의·집중은 머리 위 아이콘, 재택·휴가는 출근해 있어도 사무실 자리를 비운다
+const MODES = { meeting: ["📅", "회의 중"], focus: ["🎧", "집중하는 중"], home: ["🏠", "재택 근무 중"], vacation: ["🌴", "휴가 중"] };
+const AWAY_MODES = new Set(["home", "vacation"]);
 const ALL_SEATS = ALL_DESKS.filter((n) => !NO_PC.has(n));
 
 // ── 고정석: 「자리 지정」에서 바꾸고 저장한 자리 → 없으면 기본 배치(SEAT_OF, 나머지는 FREE 차례로)
@@ -308,8 +539,10 @@ const stage = document.getElementById("stage");
 
 // ───────────── 장면 ─────────────
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-// 화면 해상도: 처음엔 최대 1.5배, 버벅이면 매 프레임 속도를 보고 자동으로 낮춘다 (아래 adaptQuality)
-const DPR_MAX = Math.min(devicePixelRatio, 1.5);
+// 화면 해상도: PC 는 최대 1.5배, 휴대폰은 이름·말풍선 글씨가 뿌옇지 않게 최대 2배(아이폰 화면은 3배).
+// 버벅이면 매 프레임 속도를 보고 낮추되(아래 adaptQuality) 휴대폰은 1.5배 밑으로는 안 내린다 — 대신 그림자를 덜 자주
+const PHONE = matchMedia("(pointer: coarse)").matches;
+const DPR_MAX = Math.min(devicePixelRatio, PHONE ? 2 : 1.5), DPR_MIN = Math.min(DPR_MAX, PHONE ? 1.5 : 1);
 let dpr = DPR_MAX;
 renderer.setPixelRatio(dpr);
 renderer.shadowMap.enabled = true;
@@ -319,6 +552,15 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = STY.light.tone;
 renderer.toneMappingExposure = STY.light.exposure;
 stage.prepend(renderer.domElement);
+// 글씨 층: 이름표·말풍선·머리 위 아이콘은 3D 와 따로 화면 해상도 그대로 그려서, 3D 해상도가 내려가도 늘 또렷하게 (누르기는 아래 3D 화면이 받는다)
+const uiScene = new THREE.Scene();
+const uiRenderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+uiRenderer.setPixelRatio(Math.min(devicePixelRatio, 3));
+uiRenderer.outputColorSpace = renderer.outputColorSpace;
+uiRenderer.setClearColor(0x000000, 0);
+uiRenderer.domElement.className = "uilayer";
+renderer.domElement.after(uiRenderer.domElement);
+uiRenderer.toneMapping = renderer.toneMapping; uiRenderer.toneMappingExposure = renderer.toneMappingExposure; // 글씨 색이 전과 같게
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(STY.pal.bg);
@@ -385,10 +627,50 @@ const loadTick = () => {
   lfill.style.width = `${(LOAD.done / LOAD.total) * 90}%`;
   lmsg.textContent = `캐릭터 불러오는 중 ${Math.max(0, LOAD.done - 1)} / ${NAMES.length}`;
 };
+// ───────────── 사용 안내: 처음 온 사람(아직 「나예요」 전)에게 시작 화면이 끝나면 한 번 — 테스트 판은 이 브라우저에서 처음 한 번 ─────────────
+const GUIDE_KEY = "teamOfficeGuideSeen";
+let guideEl = null;
+function openGuide() {
+  if (guideEl) return;
+  guideEl = document.createElement("div");
+  guideEl.className = "guide";
+  guideEl.setAttribute("role", "dialog"); guideEl.setAttribute("aria-label", "우리팀 사용 안내");
+  const st = (n, ic, t, d) => `<div class="st"><div class="ic">${ic}<i>${n}</i></div><div><b>${t}</b><span>${d}</span></div></div>`;
+  guideEl.innerHTML = `<div class="gcard">
+    <header><img src="app/icon-192.png" alt="" onerror="this.remove()"><div><h2>우리팀 사용 안내</h2><p>처음 오신 분을 위한 1분 가이드</p></div></header>
+    <div class="rule"><div class="em">☕</div><div><b>여기는 잡담만 하는 곳이에요</b><span>업무 얘기는 <strong>메일·메신저로!</strong> 여기서는 점심 메뉴, 주말 이야기, 간식처럼 가볍고 즐거운 수다만 나눠요.</span></div></div>
+    <div class="steps">
+      ${st(1, "🙋", "처음 한 번 등록", "사원 목록의 내 이름에서 <em>나예요</em> → 비밀번호(8자 이상) 정하기")}
+      ${st(2, "🟢", "출근 · 퇴근", "내 이름 줄의 <em>출근</em> <em>퇴근</em>을 누르면 사무실에 내 캐릭터가 앉아요")}
+      ${st(3, "✏️", "상태 메시지", "<em>상태 메시지</em>로 머리 위에 한마디 — 초록 말풍선으로 떠요")}
+      ${st(4, "👆", "사람 누르기", "방명록 남기기, 칭찬 하트(한 사람에게 하루 한 번)")}
+      ${st(5, "📷", "피드", "일상 사진·글 올리기, 좋아요·댓글 — 반응은 🔔 알림으로")}
+      ${st(6, "💬", "1:1 대화", "두 사람만 열 수 있게 잠겨 있어요 (관리자도 못 봐요)")}
+    </div>
+    <div class="app"><div class="ic">📲</div><div><b>휴대폰에 앱처럼 깔기</b><span>안드로이드: 「앱 설치」(휴대폰은 위쪽 ⋯ 안) · 아이폰: Safari 공유 → 홈 화면에 추가</span></div></div>
+    <div class="foot"><span>· 비밀번호를 잊으면 지난 1:1 대화는 아무도 못 열어요</span><span>· 회사 기밀·개인정보는 올리지 않기</span><span>· 서로 기분 좋게!</span></div>
+    <button type="button" class="go">시작하기</button>
+  </div>`;
+  const close = () => { guideEl?.remove(); guideEl = null; try { localStorage.setItem(GUIDE_KEY, "1"); } catch {} removeEventListener("keydown", onKey, true); };
+  const onKey = (e) => { if (e.key === "Escape") { e.stopImmediatePropagation(); close(); } };
+  guideEl.querySelector(".go").onclick = close;
+  guideEl.onclick = (e) => { if (e.target === guideEl) close(); };
+  addEventListener("keydown", onKey, true);
+  document.body.append(guideEl);
+  setTimeout(() => guideEl?.querySelector(".go").focus({ preventScroll: true }), 50);
+}
+function maybeGuide() {
+  let seen = false;
+  try { seen = !!localStorage.getItem(GUIDE_KEY); } catch {}
+  if (LIVE && !seen && (window.__TEST || !MY.char)) openGuide();
+}
+document.getElementById("guideBtn").onclick = openGuide;
+window.__openGuide = openGuide;
 function introDone() {
   lfill.style.width = "100%";
   lmsg.textContent = "다 됐어요";
   setTimeout(() => { document.getElementById("intro").classList.add("done"); document.body.classList.remove("loading"); }, 350);
+  setTimeout(maybeGuide, 1100); // 시작 화면이 사라진 뒤
 }
 addEventListener("unhandledrejection", (e) => { lmsg.textContent = `불러오다 멈췄어요 — 새로고침해 보세요 (${e.reason?.message ?? e.reason})`; });
 const clips = await loadClips("models3d/clips.json");
@@ -400,6 +682,32 @@ const loadOne = async (name) => {
   return loadCharacter(url, clips, { height: H, shadow: true, style: { roughness: STY.charRough, flat: false, baked: STY.charBaked } });
 };
 const models = await Promise.all(NAMES.map((n) => loadOne(n).then((c) => { loadTick(); return c; })));
+// 임산부: 배를 살짝 나오게 — 모델은 그대로 두고, 불러온 뒤 배 앞쪽 점만 앞으로 부풀린다 (뼈대를 따라 앉고 걸을 때도 같이 움직임)
+const BELLY = { 홍수연: 1 };
+function addBelly(c, k = 1) {
+  c.root.traverse((o) => {
+    if (!o.isSkinnedMesh) return;
+    const sk = o.skeleton, bone = (n) => { const i = sk.bones.findIndex((b) => b.name === n); return i < 0 ? null : new THREE.Vector3().setFromMatrixPosition(sk.boneInverses[i].clone().invert()); };
+    const hips = bone("Hips"), sp = bone("Spine01") || bone("Spine");
+    if (!hips || !sp) return;
+    const g = o.geometry, P = g.attributes.position, N = g.attributes.normal;
+    const torso = sp.y - hips.y, yc = hips.y + torso * 0.45, zc = hips.z, xc = hips.x, sy = torso * 0.62, sx = torso * 0.8;
+    let zf = -Infinity; // 배 가운데 줄에서 가장 앞에 있는 점 = 지금 배 앞면
+    for (let i = 0; i < P.count; i++) if (Math.abs(P.getX(i) - xc) < sx * 0.3 && Math.abs(P.getY(i) - yc) < sy * 0.3) zf = Math.max(zf, P.getZ(i));
+    if (!(zf > zc)) return;
+    const A = (zf - zc) * 1.15 * k, n = new THREE.Vector3();
+    for (let i = 0; i < P.count; i++) {
+      const x = P.getX(i) - xc, y = P.getY(i) - yc, z = P.getZ(i);
+      const front = THREE.MathUtils.clamp((z - zc) / (zf - zc), 0, 1), d = A * Math.exp(-((x / sx) ** 2) - (y / sy) ** 2) * front * front;
+      if (d < 1e-4) continue;
+      P.setZ(i, z + d);
+      if (N) { n.set(N.getX(i) + d * (2 * x) / (sx * sx), N.getY(i) + d * (2 * y) / (sy * sy), N.getZ(i)).normalize(); N.setXYZ(i, n.x, n.y, n.z); } // 둥글게 빛 받게
+    }
+    P.needsUpdate = true; if (N) N.needsUpdate = true;
+    g.computeBoundingBox(); g.computeBoundingSphere();
+  });
+}
+models.forEach((c, i) => { if (c && BELLY[NAMES[i]]) addBelly(c, BELLY[NAMES[i]]); });
 lmsg.textContent = "사무실 꾸미는 중";
 
 const wp = new THREE.Vector3();
@@ -491,30 +799,12 @@ mesh(box(0.05, DOOR.h, DOOR.w + 0.01, 0.008), DOORM, doorPivot, [0, DOOR.h / 2 +
 mesh(box(0.04, 0.03, 0.18), M("#b8bcc0", { metalness: 0.7, roughness: 0.3 }), doorPivot, [0.05, DOOR.h * 0.47, DOOR.w - 0.16]);
 
 // 위쪽 유리벽
-function frostTexture() {
-  const c = document.createElement("canvas");
-  c.width = 2048;
-  c.height = 160;
-  const g = c.getContext("2d");
-  g.fillStyle = "rgba(255,255,255,.38)";
-  g.fillRect(0, 0, 2048, 160);
-  g.fillStyle = "rgba(255,255,255,.85)";
-  for (let i = 0; i < 9; i++) {
-    const x = 120 + i * 225 + ((i * 53) % 40), s = 0.8 + ((i * 37) % 5) * 0.08;
-    g.beginPath(); g.ellipse(x, 150 - 62 * s, 42 * s, 36 * s, 0, 0, Math.PI * 2); g.fill();
-    g.beginPath(); g.ellipse(x, 160, 52 * s, 40 * s, 0, Math.PI, 0); g.fill();
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
 {
   const z = mz(20), frame = M("#2a2c30");
   mesh(new THREE.BoxGeometry(RW, 0.05, 0.08), frame, office, [RCX, WALL_H - 0.02, z]);
   mesh(new THREE.BoxGeometry(RW, 0.06, 0.08), frame, office, [RCX, 0.03, z]);
   for (let x = ROOM.x0; x <= ROOM.x1 + 0.01; x += RW / 8) mesh(new THREE.BoxGeometry(0.05, WALL_H, 0.08), frame, office, [x, WALL_H / 2, z]);
   mesh(new THREE.PlaneGeometry(RW, WALL_H - 0.08), new THREE.MeshStandardMaterial({ color: "#dff0fa", transparent: true, opacity: 0.2, roughness: 0.05, depthWrite: false }), office, [RCX, WALL_H / 2, z], false);
-  mesh(new THREE.PlaneGeometry(RW, 0.85 * WALL_H / 2.8), new THREE.MeshStandardMaterial({ map: frostTexture(), transparent: true, depthWrite: false, roughness: 0.6 }), office, [RCX, WALL_H * 0.41, z + 0.012], false);
 }
 
 // E1·E2 기둥
@@ -950,7 +1240,7 @@ function makeLabel(text) {
     g.fillText(text, x0 + 46, 37);
     tex.needsUpdate = true;
   };
-  scene.add(spr);
+  uiScene.add(spr);
   return { spr, draw };
 }
 // 3D 로 바꾸지 않은 사람: 2D 그림을 세워 둔다 (카메라 쪽으로 돌고, 걸을 때 살짝 들썩인다)
@@ -1003,6 +1293,8 @@ class Person {
   }
   get status() { return this.state === "away" ? "away" : this.state === "work" ? "work" : "move"; }
   get statusText() {
+    const md = PERSONAL.get(this.name)?.mode;
+    if (MODES[md] && (AWAY_MODES.has(md) ? this.state === "away" : this.state === "work" || this.state === "workLeave")) return MODES[md][1];
     if (this.state === "away") return isLunch() && wantIn(this) ? STATUS_TEXT.lunch : this.everLeft ? STATUS_TEXT.gone : STATUS_TEXT.away;
     if (isLunch() && ["workLeave", "slideOut", "standUp", "pushChair", "leave"].includes(this.state)) return STATUS_TEXT.toLunch;
     if (this.state === "work" || this.state === "workLeave") return STATUS_TEXT.work;
@@ -1231,16 +1523,18 @@ const IN_CLAUDE = !!window.claude?.use;
 const AQUARIUM = !!window.__AQUARIUM || new URLSearchParams(location.search).has("aquarium");
 // 실시간 모드(window.__LIVE = { url, key } — live_config.js / build_artifact.py): 진짜 출퇴근 — 알아서 출퇴근 흉내는 끈다
 const LIVE = window.__LIVE?.url && window.__LIVE?.key ? window.__LIVE : null;
+const TEST_FIRST = !!window.__TEST && new URLSearchParams(location.search).has("first"); // 첫 이용자 체험 판(?first): 로그인 전 · 내 캐릭터 미등록 · 테스트 도우미 없음
 const DEMO = (!!window.__DEMO || AQUARIUM) && !LIVE;
 const DEMO_IN = new Map(); // 이름 → 지금 출근해 있을지 (처음엔 셋 빼고 모두)
 const PERSONAL = new Map(); // 캐릭터 이름 → { on(출근), bubble, leaf }
+const AUTO = new Map(); // 자동으로 나온 말(혼잣말·반응): 이름 → { text, until } — 직접 쓴 상태 메시지(PERSONAL.bubble)와 따로, 몇 초 뒤 사라진다
 const ME = { shared: false, pending: IN_CLAUDE || !!LIVE, db: null, uid: null, owner: false, name: null, owners: new Map(), busy: false };
 let LOCAL = { people: {} };
 try { LOCAL = { ...LOCAL, ...JSON.parse(localStorage.getItem(MINE_KEY)) }; } catch {}
 const saveLocal = () => { try { localStorage.setItem(MINE_KEY, JSON.stringify(LOCAL)); } catch {} };
 // 출근해 있어야 하나: 누른 대로. 아무도 안 누른 캐릭터는 — 파일로 열면(시험) 출근, claude.ai 에선 출근 전
-const wantIn = (m) => DEMO ? DEMO_IN.get(m.name) ?? true : LIVE ? !!PERSONAL.get(m.name)?.on : PERSONAL.get(m.name)?.on ?? !(ME.shared || ME.pending);
-const canCtl = (m) => LIVE ? !ME.pending && MY.char === m.name : !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
+const wantIn = (m) => DEMO ? DEMO_IN.get(m.name) ?? true : LIVE ? !!PERSONAL.get(m.name)?.on && !AWAY_MODES.has(PERSONAL.get(m.name)?.mode) : PERSONAL.get(m.name)?.on ?? !(ME.shared || ME.pending);
+const canCtl = (m) => LIVE ? !ME.pending && ((!!window.__TEST && !TEST_FIRST) || MY.char === m.name) : !DEMO && !ME.pending && (!ME.shared || ME.name === m.name);
 if (DEMO) for (const n of [...NAMES].sort(() => Math.random() - 0.5).slice(0, 3)) DEMO_IN.set(n, false);
 
 // 말풍선: 이름표 바로 위, 이름표처럼 화면에서 늘 같은 크기 (이름표 크기 설정을 따른다)
@@ -1255,20 +1549,21 @@ function makeBubble() {
   tex.colorSpace = THREE.SRGBColorSpace;
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true, sizeAttenuation: false }));
   spr.renderOrder = 11;
-  scene.add(spr);
+  uiScene.add(spr);
   const b = { spr, text: "" };
   b.fit = () => { // 캔버스 1px = 이름표와 같은 화면 크기
     const f = labelF(), k = (0.1 / 256) * f;
     spr.scale.set(CW * k, CH * k, 1);
     spr.center.set(0.5, -(0.0281 * f * 0.42) / (CH * k)); // 아래 끝(꼬리)이 이름표 위에 닿게
   };
-  b.set = (text) => {
-    b.text = text;
+  b.set = (text, kind = "user") => {
+    b.text = text; b.kind = kind;
+    const auto = kind === "auto";
     const g = c.getContext("2d");
     g.clearRect(0, 0, CW, CH); // 예전 말풍선 지우기
     tex.needsUpdate = true;
     if (!text) { spr.visible = false; return; }
-    g.font = "600 28px Pretendard, 'Malgun Gothic', sans-serif";
+    g.font = auto ? "italic 500 27px Pretendard, 'Malgun Gothic', sans-serif" : "600 28px Pretendard, 'Malgun Gothic', sans-serif";
     // 띄어쓰기 단위로 줄바꿈 (한 낱말이 너무 길면 글자 단위), 두 줄까지 — 넘치면 끝에 …
     const MAXW = 540, fits = (t) => g.measureText(t).width <= MAXW, lines = [];
     let cur = "";
@@ -1283,8 +1578,22 @@ function makeBubble() {
       while (!fits(lines[1] + "…") && lines[1].length) lines[1] = lines[1].slice(0, -1);
       lines[1] += "…";
     }
-    const w = Math.min(CW - 20, Math.max(110, Math.max(...lines.map((l) => g.measureText(l).width)) + 64)), hb = 22 + lines.length * 36;
+    const w = Math.min(CW - 20, Math.max(auto ? 96 : 110, Math.max(...lines.map((l) => g.measureText(l).width)) + (auto ? 52 : 64))), hb = (auto ? 16 : 22) + lines.length * 36;
     const x0 = (CW - w) / 2, y0 = CH - 26 - hb, cx = CW / 2; // 아래(꼬리) 쪽에 붙여 그린다 — 한 줄이면 위가 빈다
+    if (auto) { // 자동으로 나온 말: 옅은 회색 생각 구름 (알약 + 작은 동그라미 둘, 꼬리 없음)
+      const r = Math.min(hb / 2, 28);
+      g.save(); g.shadowColor = "rgba(20,24,32,.18)"; g.shadowBlur = 6; g.shadowOffsetY = 2;
+      g.fillStyle = "rgba(243,244,247,.88)";
+      g.beginPath(); g.roundRect(x0, y0, w, hb, r); g.fill();
+      g.beginPath(); g.arc(cx - 6, y0 + hb + 9, 7, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(cx + 3, y0 + hb + 20, 4, 0, Math.PI * 2); g.fill();
+      g.restore();
+      g.strokeStyle = "rgba(35,37,42,.10)"; g.lineWidth = 1.5; g.beginPath(); g.roundRect(x0, y0, w, hb, r); g.stroke();
+      g.fillStyle = "#6b6f76"; g.textAlign = "center"; g.textBaseline = "middle";
+      lines.forEach((l, i) => g.fillText(l, cx, y0 + 8 + 18 + i * 36));
+      b.fit();
+      return;
+    }
     const shape = () => {
       g.beginPath(); g.roundRect(x0, y0, w, hb, 24);
       g.moveTo(cx - 15, y0 + hb - 2); g.quadraticCurveTo(cx - 2, y0 + hb + 6, cx + 1, y0 + hb + 20); g.quadraticCurveTo(cx + 6, y0 + hb + 6, cx + 16, y0 + hb - 2);
@@ -1303,7 +1612,7 @@ function makeBubble() {
     rim.addColorStop(0, "rgba(120,130,150,0)"); rim.addColorStop(1, "rgba(120,130,150,.22)");
     g.fillStyle = rim; g.fillRect(x0, y0 + hb * 0.55, w, hb * 0.45 + 22);
     g.restore();
-    g.strokeStyle = "rgba(35,37,42,.18)"; g.lineWidth = 2; shape(); g.stroke();
+    g.strokeStyle = "#34c759"; g.lineWidth = 4; shape(); g.stroke(); // 직접 쓴 상태 메시지: 초록 테두리
     g.fillStyle = body; g.fillRect(cx - 13, y0 + hb - 3, 27, 6); g.fillStyle = rim; g.fillRect(cx - 13, y0 + hb - 3, 27, 6); // 꼬리와 몸 사이 선 지우기
     g.fillStyle = "#23252a"; g.textAlign = "center"; g.textBaseline = "middle";
     lines.forEach((l, i) => g.fillText(l, cx, y0 + 11 + 18 + i * 36));
@@ -1325,9 +1634,9 @@ function refreshLeaves() {
 }
 function renderMine() { // 캐릭터마다 말풍선·잎사귀를 장면에, 버튼을 목록에
   for (const m of crew) {
-    const t = PERSONAL.get(m.name)?.bubble || "";
+    const a = AUTO.get(m.name), t = a ? a.text : PERSONAL.get(m.name)?.bubble || "", kind = a ? "auto" : "user";
     if (t && !m.bubble) m.bubble = makeBubble();
-    if (m.bubble && m.bubble.text !== t) m.bubble.set(t);
+    if (m.bubble && (m.bubble.text !== t || m.bubble.kind !== kind)) m.bubble.set(t, kind);
   }
   refreshLeaves();
   renderRowActs();
@@ -1352,21 +1661,25 @@ const CHATTER = ["국밥 먹고 싶다~", "오늘 점심 뭐 먹지?", "커피 �
   "점심 맛있었다~", "제출 마감 언제였지?", "아이스 아메리카노 한 잔", "오늘 야근각인가", "간식 책상 털러 가야지", "다들 수고 많으세요!"];
 let chatTimer = 5;
 function sayFor(m, text, sec) {
-  PERSONAL.set(m.name, { ...PERSONAL.get(m.name), bubble: text, until: simTime + sec });
+  AUTO.set(m.name, { text, until: simTime + sec });
   renderMine();
 }
-function chatTick(dt) {
+window.__sayFor = sayFor; // 점검용
+function autoTick() {
   let gone = false;
-  for (const [n, p] of PERSONAL) if (p.until && p.until < simTime) { PERSONAL.delete(n); gone = true; }
+  for (const [n, a] of AUTO) if (a.until < simTime) { AUTO.delete(n); gone = true; }
   if (gone) renderMine();
+}
+function chatTick(dt) {
   if ((chatTimer -= dt) > 0) return;
   chatTimer = 5 + Math.random() * 8;
-  const talking = [...PERSONAL.values()].filter((p) => p.bubble).length;
-  const ws = crew.filter((m) => m.state === "work" && !PERSONAL.get(m.name)?.bubble);
+  const talking = AUTO.size + [...PERSONAL.values()].filter((p) => p.bubble).length;
+  const ws = crew.filter((m) => m.state === "work" && !AUTO.has(m.name) && !PERSONAL.get(m.name)?.bubble);
   if (talking >= 2 || !ws.length) return;
   sayFor(ws[(Math.random() * ws.length) | 0], CHATTER[(Math.random() * CHATTER.length) | 0], 6 + Math.random() * 4);
 }
 function attendTick(dt) {
+  autoTick();
   if (DEMO) { demoTick(dt); chatTick(dt); }
   if ((attendTimer -= dt) > 0 || editing) return;
   attendTimer = 0.4;
@@ -1468,16 +1781,63 @@ function onRowAct(m, act, r, el) {
   }
 }
 // ───────────── 실시간 모드 (Supabase: window.__LIVE = { url, key }) ─────────────
-// 누구나 링크로 들어와서 처음 한 번 내 이름 줄의 「나예요」 + 4자리 비밀번호. 그 뒤로 출근·퇴근·상태 메시지는 그 사람만 (비밀번호는 서버 함수가 확인).
+// 누구나 링크로 들어와서 처음 한 번 내 이름 줄의 「나예요」 + 비밀번호(8자 이상). 그 뒤로 출근·퇴근·상태 메시지는 그 사람만 (서버 함수가 확인).
+// 비밀번호는 서버로 보내지 않는다: 브라우저가 비밀번호에서 「확인값」(서버가 확인)과 「대화 열쇠 잠금」을 따로 만들어(dmcrypt.js) 앞의 것만 보낸다.
+// 같은 비밀번호로 1:1 대화 열쇠도 잠그므로, 저장소 주인도 대화 내용을 못 읽는다. 예전 숫자 4자리로 정한 사람은 로그인할 때 새 비밀번호로 바꾼다.
 // 다른 PC 에서는 「로그인」으로 비밀번호만. 표: office_people (supabase_setup.sql)
 const LIVE_KEY = "teamOfficeLive";
 let MY = { char: null, pin: null };
-try { MY = { ...MY, ...JSON.parse(localStorage.getItem(LIVE_KEY)) }; } catch {}
-const saveMy = () => { try { localStorage.setItem(LIVE_KEY, JSON.stringify(MY)); } catch {} };
+const MY_STORE = window.__TEST && !TEST_FIRST ? sessionStorage : localStorage; // 테스트 판: 탭마다 다른 사람으로 로그인 (두 탭으로 서로 대화해 보기)
+const MY_KEY = LIVE_KEY + (TEST_FIRST ? "First" : "");
+try { MY = { ...MY, ...JSON.parse(MY_STORE.getItem(MY_KEY)) }; } catch {}
+const saveMy = () => { try { MY_STORE.setItem(MY_KEY, JSON.stringify(MY)); } catch {} };
+if (window.__TEST && !TEST_FIRST && !MY.char) { MY = { char: "석용현", pin: "0000" }; saveMy(); } // 테스트 판: 처음부터 로그인된 채로
+const PW_CHANGED = (!window.__TEST || TEST_FIRST) && !!MY.pin && !/^[0-9a-f]{64}$/.test(MY.pin); // 예전 숫자 4자리로 로그인돼 있던 기기
+if (PW_CHANGED) { MY = { char: null, pin: null }; saveMy(); }
+// 대화 열쇠: 서버에 잠가 둔 것을 비밀번호로 풀어 이 기기에 두고, 없으면 새로 만들어 잠가서 올린다
+async function setupDmKey(char, auth, wrap) {
+  try {
+    const { data, error } = await SB.rpc("office_key_get", { p_char: char, p_pin: auth });
+    if (error) throw error;
+    if (data?.status !== "ok") return false;
+    let key, pub = data.pub;
+    if (data.priv && pub) key = await DMCrypt.unwrap(wrap, data.priv);
+    else {
+      const k = await DMCrypt.newPair(wrap);
+      const r = await SB.rpc("office_key_set", { p_char: char, p_pin: auth, p_pub: k.pub, p_priv: k.priv });
+      if (r.error || r.data !== "ok") return false;
+      key = k.key; pub = k.pub;
+    }
+    await DMCrypt.keep(char, key, pub);
+    return true;
+  } catch (e) { console.warn("대화 열쇠를 준비하지 못했어요", e); return false; }
+}
+async function myPub(char) { try { const { data } = await SB.from("office_pubkeys").select("char,pub").eq("char", char); return data?.[0]?.pub || null; } catch { return null; } }
+const DM_KEYS = { // social.js 가 쓰는 것: 이 기기의 내 대화 열쇠 / 없을 때 비밀번호로 한 번 풀기
+  async mine() {
+    if (!MY.char || !SB) return null;
+    let s = await DMCrypt.saved(MY.char);
+    const pub = await myPub(MY.char);
+    if (s && pub && s.pub !== pub) s = null; // 다른 기기에서 열쇠를 새로 만들었으면 이 기기 것은 낡음
+    if (!s && window.__TEST && !TEST_FIRST) { const { wrap } = await DMCrypt.fromPassword(MY.char, window.__TEST_PW); await setupDmKey(MY.char, MY.pin, wrap); s = await DMCrypt.saved(MY.char); }
+    return s || null;
+  },
+  async unlock(pw) {
+    if (!MY.char) return "no_char";
+    const { auth, wrap } = await DMCrypt.fromPassword(MY.char, pw);
+    if (auth !== MY.pin) return "bad_pin";
+    return (await setupDmKey(MY.char, auth, wrap)) ? "ok" : "fail";
+  },
+};
+function testAs(name) { // 테스트 판: 누구로든 바로 바꿔 쓰고 대화해 보기
+  MY = { char: name, pin: "0000" }; saveMy(); bubbleOpen = null;
+  if (window.__testSel) window.__testSel.value = name;
+  meSay(`🧪 지금 나: ${name}`); renderMine();
+}
 let SB = null, pinOpen = null; // pinOpen: { m, mode: "claim" | "login" }
 window.__personal = PERSONAL; // 점검용
 function liveApply(rowsIn) { // 서버의 표 → 캐릭터마다 출근·상태 메시지
-  for (const r of rowsIn) PERSONAL.set(r.char, { on: !!r.on_duty, bubble: String(r.msg || "").slice(0, 40) });
+  for (const r of rowsIn) PERSONAL.set(r.char, { on: !!r.on_duty, bubble: String(r.msg || "").slice(0, 40), mode: r.mode || "", birthday: r.birthday || "" });
 }
 async function liveInit() {
   renderMine();
@@ -1493,6 +1853,7 @@ async function liveInit() {
     const { data, error } = await SB.from("office_people").select("*");
     if (error) throw error;
     PERSONAL.clear(); liveApply(data);
+    if (PW_CHANGED) meSay("비밀번호가 8자 이상으로 바뀌었어요 — 내 이름 줄의 「로그인」에서 예전 숫자 4자리를 넣으면 새 비밀번호를 정할 수 있어요", true);
     if (MY.char && !PERSONAL.has(MY.char)) { MY = { char: null, pin: null }; saveMy(); } // 주인이 지웠으면 다시 고르기
     ME.pending = false;
     placeAttendance(); renderMine();
@@ -1512,7 +1873,7 @@ async function liveCall(fn, args, okText) {
   try {
     const { data, error } = await SB.rpc(fn, args);
     if (error) throw error;
-    const msg = { bad_pin: "비밀번호가 달라요", locked: "여러 번 틀려서 10분 동안 잠겼어요", taken: "이미 다른 분이 고른 캐릭터예요", no_char: "아직 연결 안 된 캐릭터예요", bad_input: "비밀번호는 숫자 4자리예요" }[data];
+    const msg = { bad_pin: "비밀번호가 달라요", locked: "여러 번 틀려서 10분 동안 잠겼어요", taken: "이미 다른 분이 고른 캐릭터예요", no_char: "아직 연결 안 된 캐릭터예요", bad_input: "비밀번호는 8자 이상이에요" }[data];
     if (data === "ok") { if (okText) meSay(okText); } else meSay(msg || String(data), true);
     return data;
   } catch (e) {
@@ -1522,22 +1883,32 @@ async function liveCall(fn, args, okText) {
 function renderLiveRows() {
   const nobody = !ME.pending && ![...PERSONAL.values()].some((p) => p.on);
   meNote.textContent = ME.pending ? "출퇴근 정보를 불러오는 중…"
-    : !MY.char ? "처음 한 번, 내 이름 줄의 「나예요」를 누르고 숫자 4자리 비밀번호를 정해 주세요. 다른 PC 에선 「로그인」"
+    : !MY.char ? "처음 한 번, 내 이름 줄의 「나예요」를 누르고 비밀번호(8자 이상)를 정해 주세요. 이 비밀번호로 1:1 대화도 잠겨요 — 잊으면 지난 대화는 아무도 못 열어요. 다른 기기에선 「로그인」"
     : nobody ? "아직 출근한 사람이 없어요" : "";
   meNote.hidden = !meNote.textContent;
   for (const r of rows) {
     const m = r.m, p = PERSONAL.get(m.name) || {};
-    let html = "";
-    if (canCtl(m)) html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
-      `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button><button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`;
-    else if (!ME.pending && !MY.char) html = PERSONAL.has(m.name) ? `<button class="btn" data-act="login">로그인</button>` : `<button class="btn" data-act="claim">나예요</button>`;
+    let html = "", side = "";
+    if (canCtl(m)) {
+      html = `<button class="btn" data-act="in">출근</button><button class="btn" data-act="out">퇴근</button>` +
+        `<button class="btn${p.bubble ? " on" : ""}" data-act="bubble">상태 메시지</button>`;
+      side = window.__TEST && !TEST_FIRST ? `<button class="btn${MY.char === m.name ? " on" : ""}" data-act="as" title="테스트: 이 사람으로 쓰고 대화해 보기">${MY.char === m.name ? "지금 나" : "이 사람으로"}</button>`
+        : `<button class="btn" data-act="logout" title="이 PC 에서 내 캐릭터 연결 풀기">로그아웃</button>`;
+    } else if (!ME.pending && !MY.char) html = PERSONAL.has(m.name) ? `<button class="btn" data-act="login">로그인</button>` : `<button class="btn" data-act="claim">나예요</button>`;
     if (r.acts.innerHTML !== html) r.acts.innerHTML = html;
     r.acts.hidden = !html;
+    if (r.side.innerHTML !== side) r.side.innerHTML = side;
+    r.side.hidden = !side;
     const open = bubbleOpen === m && canCtl(m);
     if (open && r.more.hidden && document.activeElement !== r.input) r.input.value = p.bubble || "";
     r.more.hidden = !open;
     const po = pinOpen?.m === m && !MY.char;
-    if (po && r.pin.hidden) { r.pinIn.value = ""; r.pinOk.textContent = pinOpen.mode === "claim" ? "정하고 출근" : "로그인"; }
+    if (po && (r.pin.hidden || r.pin.dataset.mode !== pinOpen.mode)) {
+      r.pin.dataset.mode = pinOpen.mode; r.pinIn.value = "";
+      r.pinOk.textContent = { claim: "정하고 출근", login: "로그인", upgrade: "새 비밀번호로" }[pinOpen.mode];
+      r.pinIn.placeholder = pinOpen.mode === "login" ? "비밀번호" : "새 비밀번호 (8자 이상)";
+      r.pinIn.autocomplete = pinOpen.mode === "login" ? "current-password" : "new-password";
+    }
     r.pin.hidden = !po;
   }
   changed();
@@ -1545,21 +1916,34 @@ function renderLiveRows() {
 async function onLiveAct(m, act, r) {
   if (act === "claim" || act === "login") { pinOpen = pinOpen?.m === m ? null : { m, mode: act }; renderLiveRows(); if (pinOpen) r.pinIn.focus(); return; }
   if (act === "pinok") {
-    const pin = r.pinIn.value.trim();
-    if (!/^\d{4}$/.test(pin)) { meSay("비밀번호는 숫자 4자리예요", true); return; }
-    const claim = pinOpen?.mode === "claim";
-    const res = await liveCall(claim ? "office_claim" : "office_login", { p_char: m.name, p_pin: pin }, claim ? `${m.name} — 이제 내 캐릭터예요. 출근했어요` : `${m.name} 님으로 들어왔어요`);
-    if (res === "ok") { MY = { char: m.name, pin }; saveMy(); pinOpen = null; renderMine(); }
+    const pw = r.pinIn.value, mode = pinOpen?.mode;
+    if (mode === "login" && /^\d{4}$/.test(pw)) { // 예전 숫자 4자리: 맞으면 새 비밀번호 정하기로
+      if ((await liveCall("office_login", { p_char: m.name, p_pin: pw })) === "ok") {
+        pinOpen = { m, mode: "upgrade", old: pw }; renderLiveRows(); r.pinIn.focus();
+        meSay("확인했어요 — 이제 새 비밀번호(8자 이상)를 정해 주세요. 이 비밀번호로 1:1 대화도 잠겨요");
+      }
+      return;
+    }
+    if (pw.length < DMCrypt.MIN) { meSay(`비밀번호는 ${DMCrypt.MIN}자 이상이에요`, true); return; }
+    meSay("확인하는 중…");
+    const { auth, wrap } = await DMCrypt.fromPassword(m.name, pw); // 비밀번호 자체는 서버로 안 보낸다
+    const res = mode === "upgrade" ? await liveCall("office_change_pin", { p_char: m.name, p_pin: pinOpen.old, p_new: auth }, "새 비밀번호로 바꿨어요")
+      : await liveCall(mode === "claim" ? "office_claim" : "office_login", { p_char: m.name, p_pin: auth }, mode === "claim" ? `${m.name} — 이제 내 캐릭터예요. 출근했어요` : `${m.name} 님으로 들어왔어요`);
+    if (res !== "ok") return;
+    MY = { char: m.name, pin: auth }; saveMy(); pinOpen = null; renderMine();
+    setupDmKey(m.name, auth, wrap).then(() => window.__social?.sync());
     return;
   }
   if (!canCtl(m)) return;
-  const set = async (args, ok) => { const res = await liveCall("office_set", { p_char: MY.char, p_pin: MY.pin, ...args }, ok); if (res === "bad_pin" || res === "no_char") { MY = { char: null, pin: null }; saveMy(); renderMine(); } };
+  const who = window.__TEST && !TEST_FIRST ? { p_char: m.name, p_pin: "0000" } : { p_char: MY.char, p_pin: MY.pin }; // 테스트 판: 누른 줄의 사람으로
+  const set = async (args, ok) => { const res = await liveCall("office_set", { ...who, ...args }, ok); if (res === "bad_pin" || res === "no_char") { MY = { char: null, pin: null }; saveMy(); renderMine(); } };
   if (act === "in") set({ p_on: true }, "출근했어요");
   else if (act === "out") set({ p_on: false }, "퇴근했어요");
   else if (act === "bubble") { bubbleOpen = bubbleOpen === m ? null : m; renderLiveRows(); if (bubbleOpen) r.input.focus(); }
   else if (act === "say") set({ p_msg: r.input.value.trim().slice(0, 40) }, "상태 메시지를 띄웠어요");
   else if (act === "clear") { r.input.value = ""; set({ p_msg: "" }, "상태 메시지를 지웠어요"); }
-  else if (act === "logout") { MY = { char: null, pin: null }; saveMy(); bubbleOpen = null; meSay("이 PC 에서 로그아웃했어요"); renderMine(); }
+  else if (act === "as") testAs(m.name);
+  else if (act === "logout") { DMCrypt.forget(MY.char); MY = { char: null, pin: null }; saveMy(); bubbleOpen = null; meSay("이 PC 에서 로그아웃했어요"); renderMine(); }
 }
 // claude.ai 에서 열렸으면 함께 쓰는 저장소로 (파일로 열면 window.claude 가 없다)
 (async () => {
@@ -1601,18 +1985,18 @@ let selected = null;
 let editing = false, editSel = null; // 자리 지정 중인지, 자리 바꿀 사람
 const rows = crew.map((m) => {
   const li = document.createElement("li");
-  li.innerHTML = `<img alt=""><div class="who"><b></b><span><i class="dot"></i><em></em></span></div><select title="자리"></select>` +
+  li.innerHTML = `<img alt=""><div class="who"><b></b><span><i class="dot"></i><em></em></span><small></small></div><div class="side" hidden></div><select title="자리"></select>` +
     `<div class="acts" hidden></div><div class="more" hidden><input maxlength="40" placeholder="말풍선에 쓸 말 (40자)"><button class="btn dark" data-act="say">띄우기</button><button class="btn" data-act="clear">지우기</button></div>` +
-    `<div class="more pin" hidden><input type="password" inputmode="numeric" maxlength="4" placeholder="비밀번호 숫자 4자리"><button class="btn dark" data-act="pinok">확인</button></div>`;
+    `<div class="more pin" hidden><input type="password" maxlength="64" placeholder="비밀번호"><button class="btn dark" data-act="pinok">확인</button></div>`;
   li.querySelector("img").src = `faces/${FILE_ID[m.name]}.jpg`;
   li.querySelector("b").textContent = m.name;
-  const row = { m, li, dot: li.querySelector(".dot"), text: li.querySelector("em"), sel: li.querySelector("select"),
-    acts: li.querySelector(".acts"), more: li.querySelector(".more"), input: li.querySelector("input"),
+  const row = { m, li, dot: li.querySelector(".dot"), text: li.querySelector("em"), msg: li.querySelector(".who small"), sel: li.querySelector("select"),
+    acts: li.querySelector(".acts"), side: li.querySelector(".side"), more: li.querySelector(".more"), input: li.querySelector("input"),
     pin: li.querySelector(".pin"), pinIn: li.querySelector(".pin input"), pinOk: li.querySelector('.pin [data-act="pinok"]') };
   li.onclick = (e) => {
     const a = e.target.closest("[data-act]");
     if (a) return onRowAct(m, a.dataset.act, row, a);
-    if (!e.target.closest(".acts,.more,select")) { if (editing) pickForSeat(m); else { select(m); window.__social?.openPerson(m.name); } }
+    if (!e.target.closest(".acts,.side,.more,select")) { if (editing) pickForSeat(m); else { select(m); window.__social?.openPerson(m.name); } }
   };
   row.input.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) onRowAct(m, "say", row); };
   row.pinIn.onkeydown = (e) => { if (e.key === "Enter") onRowAct(m, "pinok", row); };
@@ -1629,6 +2013,8 @@ function changed() {
     n[st]++;
     r.dot.className = "dot " + st;
     r.text.textContent = r.m.statusText; // 자리 번호는 안 보여 준다
+    const said = PERSONAL.get(r.m.name)?.bubble || "";
+    r.msg.textContent = said ? `“${said}”` : ""; // 직접 쓴 상태 메시지 (머리 위 초록 테두리 말풍선과 같은 글)
     const w = wantIn(r.m), bi = r.acts.querySelector('[data-act="in"]'), bo = r.acts.querySelector('[data-act="out"]');
     if (bi) { bi.disabled = w; bo.disabled = !w; } // 이미 출근(퇴근)이면 그 버튼은 눌러 둔 상태
     r.li.classList.toggle("sel", (editing ? editSel : selected) === r.m);
@@ -1638,10 +2024,10 @@ function changed() {
     }
   }
   document.getElementById("counts").innerHTML =
-    `<span class="chip"><i class="dot work"></i>근무 중 ${n.work}</span>` +
-    (n.move ? `<span class="chip"><i class="dot move"></i>이동 중 ${n.move}</span>` : "") +
-    `<span class="chip"><i class="dot"></i>자리에 없음 ${n.away}</span>` +
-    (isLunch() ? `<span class="chip">🍚 점심시간 12:00~13:00</span>` : "");
+    `<span class="chip" title="근무 중"><i class="dot work"></i><span class="lbl">근무 중 </span>${n.work}</span>` +
+    (n.move ? `<span class="chip" title="이동 중"><i class="dot move"></i><span class="lbl">이동 중 </span>${n.move}</span>` : "") +
+    `<span class="chip" title="자리에 없음"><i class="dot"></i><span class="lbl">자리에 없음 </span>${n.away}</span>` +
+    (isLunch() ? `<span class="chip">🍚<span class="lbl"> 점심시간 12:00~13:00</span></span>` : "");
 }
 changed();
 if (LIVE) queueMicrotask(liveInit); // 실시간 모드: Supabase 에서 출퇴근·상태 메시지
@@ -1657,9 +2043,19 @@ const CAMS = [
   ["간식 책상", new THREE.Vector3(-1.95, DH, 2.36), new THREE.Vector3(1.3, 3.6, 5.2)],
 ];
 const camBar = document.getElementById("cams");
-camBar.innerHTML = `<button data-tour>둘러보기</button>` + CAMS.map(([t], i) => `<button data-i="${i}">${t}</button>`).join("");
+// 휴대폰: 시점 막대를 「🎥 지금 시점」 단추 하나로 접고, 누르면 위로 목록 (PC 는 막대 그대로)
+const camWrap = document.createElement("div"), camsBtn = document.createElement("button");
+camWrap.className = "camwrap"; camsBtn.className = "camsbtn"; camsBtn.type = "button"; camsBtn.setAttribute("aria-haspopup", "true");
+camBar.before(camWrap); camWrap.append(camsBtn, camBar);
+const camOpen = (on) => { camWrap.classList.toggle("open", on); camsBtn.setAttribute("aria-expanded", String(on)); };
+const camLabel = () => { camsBtn.innerHTML = `<span class="ico">🎥</span><span>${camBar.querySelector("button.on")?.textContent || "시점"}</span>`; };
+camsBtn.onclick = () => camOpen(!camWrap.classList.contains("open"));
+addEventListener("pointerdown", (e) => { if (camWrap.classList.contains("open") && !camWrap.contains(e.target)) camOpen(false); }, true);
+new MutationObserver(camLabel).observe(camBar, { subtree: true, attributes: true, attributeFilter: ["class"], childList: true });
+camBar.innerHTML = `<button data-tour>자동 둘러보기</button>` + CAMS.map(([t], i) => `<button data-i="${i}">${t}</button>`).join("");
 const tourBtn = camBar.querySelector("[data-tour]");
 camBar.onclick = (e) => {
+  if (e.target.closest("button")) camOpen(false);
   if (e.target.closest("[data-tour]")) { if (TOUR.active) stopTour(); else startTour(); return; }
   const c = CAMS[e.target.dataset.i];
   if (!c) return;
@@ -1670,7 +2066,7 @@ camBar.onclick = (e) => {
 
 // ───────────── 둘러보기: 띄워 두면 카메라가 알아서 사무실을 비춘다 ─────────────
 // 손대지 않고 15초(처음 열면 8초)가 지나면 시작: 크게 돌기 · 누군가 가까이 · 위에서 · 통로 따라 · 구석에서 를 번갈아 천천히.
-// 화면·목록을 만지거나 시점 버튼을 누르면 바로 멈춘다. 「둘러보기」 버튼으로 바로 시작/멈춤. 어항 이벤트 중엔 이벤트 화면 그대로
+// 화면·목록을 만지거나 시점 버튼을 누르면 바로 멈춘다. 「자동 둘러보기」 버튼으로 바로 시작/멈춤. 어항 이벤트 중엔 이벤트 화면 그대로
 const TOUR = { on: true, idle: 7, active: false, shot: null, t: 0, n: 0, evt: false };
 const TOUR_WAIT = 15;
 const SHOTS = ["orbit", "person", "overhead", "person", "aisle", "corner", "person"];
@@ -1732,7 +2128,7 @@ function shotGoal(sh, t) { // 이 장면에서 t 초 때 카메라 자리(tourPo
 }
 function tourTick(dt) {
   if (!TOUR.active) {
-    if (window.__social?.open) TOUR.idle = 0; // 사람 카드를 읽는 동안은 가만히
+    if (window.__social?.open || guideEl) TOUR.idle = 0; // 사람 카드·사용 안내를 읽는 동안은 가만히
     else if (TOUR.on && !editing && (TOUR.idle += dt) >= TOUR_WAIT) startTour();
     return;
   }
@@ -1745,6 +2141,92 @@ function tourTick(dt) {
   camera.position.lerp(tourPos, k);
   controls.target.lerp(tourAt, k);
 }
+// ───────────── 사무실 밖 배경: 각자 고르기 또는 랜덤(5분마다) — 이 브라우저에 기억 (bg.js) ─────────────
+const BG_KEY = "teamOfficeBg";
+const BG = window.OfficeBg ? window.OfficeBg({ THREE, scene, renderer, camera, center: new THREE.Vector3(RCX, 0, 0), size: { w: RW, d: RD }, baseBg: STY.pal.bg }) : null;
+const bgState = { pick: window.__TEST ? "random" : "none", next: 0 };
+try { bgState.pick = localStorage.getItem(BG_KEY) || bgState.pick; } catch {}
+function applyBg(pick) {
+  if (!BG) return;
+  bgState.pick = pick;
+  try { localStorage.setItem(BG_KEY, pick); } catch {}
+  if (pick === "random") { randomBg(); bgState.next = 300; } else BG.set(BG.kinds.some((k) => k.id === pick) ? pick : "none");
+  for (const b of bgMenu.children) b.classList.toggle("on", b.dataset.bg === pick);
+}
+function randomBg() { const pool = BG.kinds.filter((k) => k.id !== "none" && k.id !== BG.id); BG.set(pool[(Math.random() * pool.length) | 0].id); }
+// 화면 바깥 여백(아이폰 주소창 아래 등)과 상태 막대 색을 배경에 맞춘다 — [맨 위, 맨 아래] (장면 그림을 읽으면 멈칫할 수 있어 정해 둔 색)
+const EDGE_OF = { none: ["#eef1f4", "#eef1f4"], sky: ["#eff5ff", "#8dbbea"], sea: ["#b1d3e5", "#5fc3d7"], forest: ["#cbe0bb", "#96c864"] };
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+let edgeFor = null;
+function bgTick(dt) {
+  if (!BG) return;
+  if (BG.id !== edgeFor) {
+    edgeFor = BG.id;
+    const [top, bottom] = EDGE_OF[edgeFor] || EDGE_OF.none;
+    document.documentElement.style.backgroundColor = document.body.style.backgroundColor = bottom;
+    themeMeta?.setAttribute("content", top);
+  }
+  BG.tick(dt);
+  if (bgState.pick === "random" && (bgState.next -= dt) <= 0) { bgState.next = 300; randomBg(); }
+}
+const bgMenu = document.createElement("div");
+bgMenu.className = "bgmenu";
+bgMenu.hidden = true;
+if (BG) {
+  bgMenu.innerHTML = BG.kinds.map((k) => `<button data-bg="${k.id}">${k.emoji} ${k.label}</button>`).join("") + `<button data-bg="random">🎲 랜덤 (5분마다 바뀜)</button>`;
+  // 시점 막대(카메라)와 성질이 달라 따로 단추: 시점 막대 왼쪽, 메뉴는 단추 바로 위로 (🖼 은 일부 PC 글꼴에서 한자처럼 보여서 🌅)
+  const bw = document.createElement("div"), bb = document.createElement("button");
+  bw.className = "bgwrap";
+  bb.className = "bgbtn"; bb.type = "button";
+  bb.innerHTML = '<span class="ico">🌅</span><span class="lbl"> 배경</span>';
+  bb.title = "사무실 밖 배경 고르기"; bb.setAttribute("aria-label", "배경"); bb.setAttribute("aria-haspopup", "true");
+  bw.append(bb, bgMenu);
+  camWrap.before(bw);
+  const bgOpen = (on) => { bgMenu.hidden = !on; bb.classList.toggle("on", on); bb.setAttribute("aria-expanded", String(on)); };
+  bb.onclick = () => bgOpen(bgMenu.hidden);
+  addEventListener("pointerdown", (e) => { if (!bgMenu.hidden && !bw.contains(e.target)) bgOpen(false); }, true); // 바깥을 누르면 닫기
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !bgMenu.hidden) bgOpen(false); });
+  bgMenu.onclick = (e) => { const b = e.target.closest("[data-bg]"); if (b) { applyBg(b.dataset.bg); bgOpen(false); window.__social?.track?.("bg"); } };
+  applyBg(bgState.pick);
+}
+
+// ───────────── 위젯: 다른 창 위에 늘 떠 있는 작은 창 (PC Chrome·Edge 의 문서 PIP — 모서리를 끌어 크기 조절, 닫으면 제자리로) ─────────────
+let pipWin = null;
+if ("documentPictureInPicture" in window && !matchMedia("(pointer: coarse)").matches) {
+  const pb = document.createElement("button");
+  pb.className = "sx-hb pinbtn";
+  pb.textContent = "📌 위에 띄우기";
+  pb.title = "다른 창 위에 늘 떠 있는 작은 창으로 (모서리를 끌어 크기 조절)";
+  stage.append(pb); // 오른쪽 위 구석
+  pb.onclick = async () => {
+    if (pipWin) return pipWin.close();
+    try { pipWin = await window.documentPictureInPicture.requestWindow({ width: 560, height: 360 }); } catch (e) { console.error(e); return; }
+    const d = pipWin.document, ph = document.createElement("div");
+    for (const n of document.querySelectorAll("style")) d.head.append(n.cloneNode(true));
+    d.title = "팀 사무실";
+    d.body.className = "pip";
+    ph.className = "pipph";
+    ph.textContent = "📌 사무실이 다른 창 위에 떠 있는 작은 창에 나와 있어요 — 그 창을 닫으면 여기로 돌아와요";
+    stage.replaceWith(ph);
+    d.body.append(stage);
+    for (const ev of ["pointerdown", "wheel", "keydown"]) pipWin.addEventListener(ev, tourHands, { capture: true, passive: true });
+    pipWin.addEventListener("resize", resize);
+    for (const ev of ["focus", "blur"]) pipWin.addEventListener(ev, () => setTimeout(syncSound, 0)); // 위에 띄운 작은 창도 활성화돼 있을 때만
+    renderer.setAnimationLoop(null); // 원래 창을 내려도 멈추지 않게 위젯 창의 그리기 주기로
+    const win = pipWin, loop = () => { if (pipWin !== win) return; frameLoop(); win.requestAnimationFrame(loop); };
+    win.requestAnimationFrame(loop);
+    pb.classList.add("on");
+    win.addEventListener("pagehide", () => {
+      pipWin = null;
+      ph.replaceWith(stage);
+      renderer.setAnimationLoop(frameLoop);
+      pb.classList.remove("on");
+      resize();
+    });
+    resize();
+  };
+}
+
 // 사람이 만지면 멈춘다 (둘러보기 버튼 빼고)
 const tourHands = (e) => { if (e.target?.closest?.("[data-tour]")) return; TOUR.idle = 0; if (TOUR.active) stopTour(); };
 for (const ev of ["pointerdown", "wheel", "keydown", "touchstart"]) addEventListener(ev, tourHands, { capture: true, passive: true });
@@ -1752,18 +2234,124 @@ window.__tour = TOUR; // 점검용
 
 // ───────────── 휴대폰: 사원 목록 접고 펴기 ─────────────
 const appEl = document.getElementById("app");
-const setList = (open) => { appEl.classList.toggle("list-open", open); document.getElementById("listBtn").textContent = open ? "👥 목록 접기" : "👥 사원 목록"; };
+// 아이폰 홈 화면 앱: 상태 막대를 투명하게(black-translucent) 두면 아이폰이 앱 화면을 「전체 − 상태 막대」 높이로 위에 붙여 아래 띠가 비고,
+// 코드로는 못 채운다 → 상태 막대를 보통(default)으로 둔다 (build_artifact.py · 설치를 다시 해야 반영)
+if (matchMedia("(pointer: coarse)").matches) document.getElementById("howto").textContent = "한 손가락으로 돌려 보기 · 두 손가락으로 확대 · 사람을 누르면 그 사람 카드";
+// 아이폰: 키보드가 올라와도 화면 크기가 안 바뀌어서, 보이는 높이와의 차이(--kb)만큼 아래 시트·카드를 올린다 (안드로이드는 resizes-content 로 저절로)
+if (window.visualViewport) {
+  const vv = window.visualViewport, fitKb = () => { const kb = Math.max(0, document.getElementById("app").getBoundingClientRect().height - vv.height - vv.offsetTop); document.documentElement.style.setProperty("--kb", kb > 80 ? `${Math.round(kb)}px` : "0px"); };
+  vv.addEventListener("resize", fitKb);
+  vv.addEventListener("scroll", fitKb);
+}
+let listPushed = false, listBack = false, listPushLater = false; // 휴대폰: 목록을 열면 기록을 하나 넣어 뒤로가기로 접는다 (social.js 의 카드와 같은 방식)
+const setList = (open, fromBack = false) => {
+  appEl.classList.toggle("list-open", open);
+  document.getElementById("listBtn").textContent = open ? "👥 목록 접기" : "👥 사원 목록";
+  if (open && !listPushed && matchMedia("(max-width:820px),(max-height:520px)").matches) {
+    if (listBack) listPushLater = true; else { history.pushState({ listSheet: 1 }, ""); listPushed = true; }
+  }
+  if (!open) { listPushLater = false; if (listPushed) { listPushed = false; if (!fromBack) { listBack = true; history.back(); } } }
+};
+addEventListener("popstate", (e) => {
+  if (listBack) { listBack = false; if (listPushLater && appEl.classList.contains("list-open")) { listPushLater = false; history.pushState({ listSheet: 1 }, ""); listPushed = true; } return; }
+  if (listPushed && !e.state?.listSheet && appEl.classList.contains("list-open")) setList(false, true);
+});
 document.getElementById("listBtn").onclick = () => setList(!appEl.classList.contains("list-open"));
 document.getElementById("listClose").onclick = () => setList(false);
 
-// ───────────── 사람 카드(방명록 · 육아일기) · 간식 신청 (social.js) ─────────────
+// ───────────── 앱으로 설치 (웹앱, 스토어 없이): 안드로이드·PC 크롬은 설치 창, 아이폰은 「공유 → 홈 화면에 추가」 안내 ─────────────
+if (window.__PWA && "serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch((e) => console.warn("sw", e));
+{
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const ib = document.createElement("button");
+  ib.className = "sx-hb installbtn";
+  ib.type = "button";
+  ib.innerHTML = '<span class="ico">📲</span><span class="lbl"> 앱 설치</span>';
+  ib.title = "홈 화면에 앱으로 설치 (스토어 없이)";
+  ib.setAttribute("aria-label", "앱으로 설치");
+  ib.hidden = true;
+  let evt = null;
+  if (window.__PWA && !standalone) {
+    addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); evt = e; ib.hidden = false; });
+    addEventListener("appinstalled", () => { ib.hidden = true; evt = null; });
+    if (isIOS) ib.hidden = false;
+  }
+  const help = document.createElement("div");
+  help.className = "iohelp";
+  help.hidden = true;
+  help.innerHTML = `<div class="iocard"><b>홈 화면에 앱으로 설치</b>
+    <ol><li><b>Safari</b>로 이 페이지를 열고, 아래(또는 위) <span class="ioshare">공유 <i></i></span> 단추를 눌러요</li>
+    <li>목록에서 <b>「홈 화면에 추가」</b>를 눌러요</li><li>오른쪽 위 <b>「추가」</b> — 홈 화면의 아이콘으로 앱처럼 열려요</li></ol>
+    <button type="button" class="btn dark">알겠어요</button></div>`;
+  document.body.append(help);
+  help.onclick = (e) => { if (e.target === help || e.target.closest("button")) help.hidden = true; };
+  ib.onclick = async () => {
+    if (evt) { evt.prompt(); const r = await evt.userChoice.catch(() => null); if (r?.outcome === "accepted") ib.hidden = true; evt = null; return; }
+    help.hidden = false;
+  };
+  document.querySelector(".hud").append(ib);
+}
+
+// ───────────── 사람 카드(방명록 · SNS 피드) · 간식 신청 (social.js) ─────────────
 window.__social = window.Social ? window.Social({
   live: !!LIVE, sb: () => (LIVE ? SB : null), me: () => (LIVE && MY.char && MY.pin ? { char: MY.char, pin: MY.pin } : null),
   face: (n) => rows.find((r) => r.m.name === n)?.li.querySelector("img").src || "",
   status: (n) => { const m = crew.find((c) => c.name === n); return { text: m ? m.statusText : "", msg: PERSONAL.get(n)?.bubble || "" }; },
-  diary: DIARY, snackAdmin: SNACK_ADMIN,
+  diary: DIARY, snackAdmin: SNACK_ADMIN, modes: MODES, names: crew.map((m) => m.name), hud: document.querySelector(".hud"),
+  people: (n) => PERSONAL.get(n) || {},
+  patchPerson: (n, patch) => { PERSONAL.set(n, { ...(PERSONAL.get(n) || {}), ...patch }); renderMine(); },
+  test: !!window.__TEST && !TEST_FIRST, switchTo: (n) => testAs(n), dmKeys: DM_KEYS,
   openList: () => { setList(true); meSay("내 이름 줄에서 「나예요」(처음 한 번) 또는 「로그인」을 눌러 주세요"); },
 }) : null;
+if (TEST_FIRST) { // 첫 이용자 체험 판 안내 (목록 맨 위)
+  const n = document.createElement("div");
+  n.className = "testnote";
+  n.innerHTML = "🧪 <b>첫 이용자 체험 판</b> · 이 브라우저에만 저장 <button type=button data-reset>처음 상태로</button><details><summary>사용법</summary>처음 온 사람처럼 시작해요. 사원 목록의 「석용현」 줄에서 「나예요」를 누르고 비밀번호(8자 이상)를 정해 보세요. 다른 사람들은 이미 등록된 상태예요. <a href='./'>모두 로그인된 테스트 판으로</a></details>";
+  n.querySelector("[data-reset]").onclick = () => { try { localStorage.removeItem("teamOfficeTestDbFirst"); localStorage.removeItem("teamOfficeLiveFirst"); localStorage.removeItem(GUIDE_KEY); sessionStorage.clear(); indexedDB.deleteDatabase("teamOfficeKeysTest"); } catch {} setTimeout(() => location.reload(), 150); };
+  document.querySelector("#panel header").prepend(n);
+} else if (window.__TEST) { // 테스트 판 안내 (목록 맨 위)
+  const n = document.createElement("div");
+  n.className = "testnote";
+  n.innerHTML = "🧪 <b>테스트 판</b> · 이 브라우저에만 저장 <button type=button data-reset>처음 상태로</button><details><summary>사용법</summary>모두 로그인된 상태예요. 위쪽 「🧪 나」나 줄마다 「이 사람으로」를 누르면 그 사람이 돼서 글·하트·대화를 해 볼 수 있어요. 대화방의 「상대로 답장」으로 양쪽을 번갈아 써 보세요.</details>";
+  n.querySelector("[data-reset]").onclick = () => { try { localStorage.removeItem("teamOfficeTestDb"); localStorage.removeItem(GUIDE_KEY); sessionStorage.clear(); indexedDB.deleteDatabase("teamOfficeKeysTest"); } catch {} setTimeout(() => location.reload(), 150); };
+  document.querySelector("#panel header").prepend(n);
+  const lab = document.createElement("label"), sel = document.createElement("select");
+  lab.className = "testme"; lab.title = "테스트: 누구로 쓸지";
+  sel.innerHTML = crew.map((m) => `<option>${m.name}</option>`).join("");
+  sel.value = MY.char; sel.onchange = () => testAs(sel.value);
+  lab.append(Object.assign(document.createElement("span"), { textContent: "🧪 나" }), sel); // 글자와 이름 사이는 CSS gap (띄어쓰기는 단추 안에서 지워짐)
+  document.querySelector(".hud").append(lab);
+  window.__testSel = sel;
+}
+// ───────────── 세로 휴대폰 위쪽 「⋯」: 한 줄에 못 넣은 것 (어항 모드 · 설정 · 통계 · 앱 설치) — 진짜 단추를 대신 눌러 준다 ─────────────
+{
+  const hud = document.querySelector(".hud"), mb = document.createElement("button"), menu = document.createElement("div");
+  mb.className = "sx-hb morebtn"; mb.type = "button"; mb.textContent = "⋯"; mb.title = "더보기";
+  mb.setAttribute("aria-label", "더보기"); mb.setAttribute("aria-haspopup", "true");
+  menu.className = "hudmore"; menu.hidden = true;
+  hud.append(mb); stage.append(menu);
+  const open = (on) => { menu.hidden = !on; mb.setAttribute("aria-expanded", String(on)); if (on) fill(); };
+  function fill() {
+    const q = (c) => hud.querySelector(c), tog = q(".cx-toggle"), gear = q(".cx-gear"), st = q(".statsbtn"), ins = q(".installbtn"), items = [];
+    const item = (icon, label, target, sw) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.innerHTML = `<span>${icon}</span><span>${label}</span>` + (sw == null ? "" : `<i class="sw${sw ? " on" : ""}"></i>`);
+      b.onclick = () => { if (sw == null) open(false); target.click(); if (sw != null) setTimeout(fill, 0); }; // 켜고 끄기는 메뉴를 열어 둔 채
+      return b;
+    };
+    if (tog) items.push(item("🐠", "어항 모드", tog, tog.getAttribute("aria-pressed") === "true"));
+    if (gear) items.push(item("⚙", "어항 모드 설정", gear));
+    if (st && !st.hidden) items.push(item("📊", "방문 통계", st));
+    if (ins && !ins.hidden) items.push(item("📲", "앱 설치", ins));
+    items.push(item("❔", "사용 안내", document.getElementById("guideBtn")));
+    menu.replaceChildren(...items);
+  }
+  mb.onclick = () => open(menu.hidden);
+  addEventListener("pointerdown", (e) => { if (!menu.hidden && !menu.contains(e.target) && e.target !== mb) open(false); }, true);
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !menu.hidden) open(false); });
+}
 controls.addEventListener("start", () => { for (const b of camBar.children) b.classList.remove("on"); }); // 직접 돌리면 표시 끔
 
 
@@ -1817,7 +2405,7 @@ function talkDots(a, b, time) {
     if (on && !m.dots) {
       m.dots = new THREE.Sprite(new THREE.SpriteMaterial({ map: DOTS_TEX, depthTest: false, transparent: true, sizeAttenuation: false }));
       m.dots.renderOrder = 11;
-      scene.add(m.dots);
+      uiScene.add(m.dots);
     }
     if (m.dots) m.dots.visible = on;
   }
@@ -1857,7 +2445,13 @@ FART.word = (() => { // 「뿌웅~」 글씨 (틀 없이)
   return t;
 })();
 let audioCtx = null;
-addEventListener("pointerdown", () => { try { audioCtx ??= new AudioContext(); audioCtx.resume(); } catch {} });
+addEventListener("pointerdown", () => { try { audioCtx ??= new AudioContext(); syncSound(); } catch {} });
+// 소리는 이 창이 활성화돼 있을 때만 — 작업표시줄로 내려가 있거나 다른 창을 보고 있으면 멈춘다 (방귀·어항 이벤트 소리 모두 audioCtx 가 켜져 있을 때만 남)
+function soundOn() { return !document.hidden && (document.hasFocus() || !!pipWin?.document.hasFocus()); }
+function syncSound() { if (audioCtx) (soundOn() ? audioCtx.resume() : audioCtx.suspend()).catch(() => {}); }
+for (const ev of ["focus", "blur"]) addEventListener(ev, syncSound);
+document.addEventListener("visibilitychange", syncSound);
+window.__audio = () => audioCtx; // 점검용
 function fartSound() { // 부르르 떨리는 낮은 소리를 즉석에서 만든다 (소리 파일 없음)
   if (!audioCtx || audioCtx.state !== "running") return;
   const t0 = audioCtx.currentTime, end = t0 + 0.75 + Math.random() * 0.3;
@@ -1895,7 +2489,7 @@ function fart() {
   const word = new THREE.Sprite(new THREE.SpriteMaterial({ map: FART.word, transparent: true, depthWrite: false, depthTest: false, sizeAttenuation: false }));
   word.renderOrder = 12;
   word.position.copy(at).addScaledVector(back, 0.25 * k).add(new THREE.Vector3(0, 0.25 * k, 0));
-  scene.add(word);
+  uiScene.add(word);
   FART.puffs.push({ spr: word, vel: new THREE.Vector3(0, 0.22 * k, 0), age: 0, life: 2.0, s0: 0.11 * SCR, word: true }); // 화면 폭의 약 1/9
   if (frustum.containsPoint(at)) fartSound();
   if (DEMO) { // 구경용: 근처 사람이 한마디
@@ -1911,7 +2505,7 @@ function fartTick(dt) {
     p.age += dt;
     if (p.age < 0) continue;
     const t = p.age / p.life;
-    if (t >= 1) { scene.remove(p.spr); p.spr.material.dispose(); FART.puffs.splice(i, 1); continue; }
+    if (t >= 1) { p.spr.removeFromParent(); p.spr.material.dispose(); FART.puffs.splice(i, 1); continue; }
     p.spr.position.addScaledVector(p.vel, dt);
     if (p.word) { // 툭 튀어나왔다가 떠오르며 사라진다
       const pop = t < 0.15 ? 0.6 + 0.7 * Math.sin((t / 0.15) * Math.PI * 0.5) * 1.15 : 1.0 + 0.05 * Math.sin(t * 20);
@@ -1929,50 +2523,80 @@ function fartTick(dt) {
 }
 window.__fart = fart; // 점검용
 
-// ───────────── 아이콘: 육아일기 쓰는 사람 머리 위 · 간식 책상 위 (누르면 육아일기 · 간식 신청) ─────────────
-function badgeSprite(emoji, bg) {
-  const c = document.createElement("canvas");
-  c.width = c.height = 128;
+// ───────────── 아이콘: 사람 머리 위(생일·상태·새 글·하트) · 간식 책상 위 (누르면 그 사람 카드 · 간식 신청) ─────────────
+// 아이콘 그림: 동그라미(이모지) 또는 알약(❤3 같은 글자) — 같은 그림은 한 번만 그린다
+const ICON_TEX = new Map();
+function iconTex(text, bg, pill = false, color = "#d6336c") {
+  const key = `${text}|${bg}|${pill}|${color}`;
+  if (ICON_TEX.has(key)) return ICON_TEX.get(key);
+  const font = pill ? "bold 50px Pretendard, 'Malgun Gothic', 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif" : "62px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif";
+  const c = document.createElement("canvas"), m0 = c.getContext("2d");
+  m0.font = font;
+  const W = pill ? Math.max(128, Math.ceil(m0.measureText(text).width) + 66) : 128; // 알약은 글 길이만큼
+  c.width = W; c.height = 128;
   const g = c.getContext("2d");
-  g.fillStyle = "rgba(0,0,0,.16)"; g.beginPath(); g.arc(64, 69, 54, 0, 7); g.fill(); // 살짝 그림자
-  g.fillStyle = bg; g.beginPath(); g.arc(64, 63, 54, 0, 7); g.fill();
+  g.fillStyle = "rgba(0,0,0,.16)"; g.beginPath(); g.roundRect(10, 15, W - 20, 108, 54); g.fill(); // 살짝 그림자
+  g.fillStyle = bg; g.beginPath(); g.roundRect(10, 9, W - 20, 108, 54); g.fill();
   g.strokeStyle = "#fff"; g.lineWidth = 7; g.stroke();
-  g.font = "62px 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-  g.fillText(emoji, 64, 67);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true, sizeAttenuation: false }));
+  g.font = font;
+  g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = color;
+  g.fillText(text, W / 2, 66);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const v = { tex, aspect: W / 128 };
+  ICON_TEX.set(key, v);
+  return v;
+}
+function badgeSprite(emoji, bg) {
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: iconTex(emoji, bg).tex, depthTest: false, transparent: true, sizeAttenuation: false }));
   spr.renderOrder = 12;
-  scene.add(spr);
+  uiScene.add(spr);
   return spr;
 }
-const BADGES = [];
-for (const m of crew) if (DIARY[m.name]) {
-  m.badge = badgeSprite(DIARY[m.name].icon, "#ffe1ea");
-  m.badge.userData.open = () => window.__social?.openPerson(m.name, "diary");
-  BADGES.push(m.badge);
+// 머리 위 아이콘 줄: 생일 🎂 · 회의/집중 · 새 글 📷 · 오늘 받은 칭찬 ❤N — 누르면 그 사람 카드
+function iconList(m) {
+  const p = PERSONAL.get(m.name) || {}, out = [];
+  if (window.__social?.isBday(m.name)) out.push(["🎂", "#fff0d2", "notes"]);
+  if (MODES[p.mode] && !AWAY_MODES.has(p.mode)) out.push([`${MODES[p.mode][0]} ${MODES[p.mode][1].replace("하는 중", "")}`, "#e6eeff", "notes", true, "#2f4f9e"]); // 「📅 회의 중」처럼 글자도 (아이콘만으론 알기 어려워서)
+  const fresh = window.__social?.feedNew(m.name); // 안 본 새 글
+  if (DIARY[m.name]) out.push(fresh ? [`${DIARY[m.name].icon} 새 글`, "#ffe1ea", "diary", true, "#d6336c"] : [DIARY[m.name].icon, "#ffe1ea", "diary"]);
+  else if (fresh) out.push(["📷 새 글", "#e3eeff", "diary", true, "#1f5fbf"]);
+  const h = window.__social?.heartCount(m.name) || 0;
+  if (h) out.push([`❤${h > 99 ? "99+" : h}`, "#ffffff", "notes", true]);
+  return out;
 }
+for (const m of crew) m.icons = [];
 const snackSeats = [...SNACK_DESKS].map((n) => SEAT_BY_NO[n]).filter(Boolean);
 const snackBadge = snackSeats.length ? badgeSprite("🍪", "#fff0d2") : null;
 if (snackBadge) {
   snackBadge.position.copy(snackSeats.reduce((a, st) => a.add(st.desk), new THREE.Vector3()).multiplyScalar(1 / snackSeats.length)).setY(DH + 0.7 * H);
   snackBadge.userData.open = () => window.__social?.openSnacks();
-  BADGES.push(snackBadge);
 }
-function badgeTick() { // 이름표(말풍선이 있으면 그 위) 바로 위에서 살짝 둥실
+// 아이콘 크기: 가까이선 화면 크기 그대로, 줌아웃하면 사무실과 같이 작아진다 (멀리서 아이콘만 커 보이지 않게, 10-28)
+const ICON_WORLD = 0.2, SNACK_WORLD = 0.32;
+function badgeTick() { // 이름표(말풍선이 있으면 그 위) 바로 위에 가로로 나란히, 살짝 둥실
   const f = labelF(), bob = Math.sin(simTime * 2.4) * 0.003;
   for (const m of crew) {
-    if (!m.badge) continue;
-    m.badge.visible = m.root.visible;
-    if (!m.badge.visible) continue;
-    const sz = 0.042 * f;
-    m.badge.scale.set(sz, sz, 1);
-    m.badge.position.copy(m.label.spr.position);
-    m.badge.center.set(0.5, -((m.bubble?.spr.visible ? 0.059 : 0.016) * f + bob * f) / sz);
+    const list = m.root.visible ? iconList(m) : [];
+    while (m.icons.length < list.length) m.icons.push(badgeSprite("👶", "#fff"));
+    m.icons.forEach((s, i) => { s.visible = i < list.length; });
+    if (!list.length) continue;
+    const sz = Math.min(0.036 * f, ICON_WORLD / camera.position.distanceTo(m.label.spr.position)), gap = sz * 0.12, ws = list.map((it) => sz * iconTex(it[0], it[1], !!it[3], it[4]).aspect);
+    let x = -(ws.reduce((a, b) => a + b, 0) + gap * (list.length - 1)) / 2;
+    const dy = (m.bubble?.spr.visible ? 0.059 : 0.016) * f + sz / 2 + bob * f;
+    list.forEach(([text, bg, tab, pill, color], i) => {
+      const s = m.icons[i], t = iconTex(text, bg, !!pill, color), w = ws[i];
+      if (s.material.map !== t.tex) { s.material.map = t.tex; s.material.needsUpdate = true; }
+      s.scale.set(w, sz, 1);
+      s.position.copy(m.label.spr.position);
+      s.center.set(0.5 - (x + w / 2) / w, 0.5 - dy / sz);
+      s.userData.open = () => window.__social?.openPerson(m.name, tab);
+      x += w + gap;
+    });
   }
-  if (snackBadge) { const sz = 0.05 * SCR; snackBadge.scale.set(sz, sz, 1); snackBadge.center.set(0.5, 0.5 - (bob * SCR) / sz); }
+  if (snackBadge) { const sz = Math.min(0.05 * SCR, SNACK_WORLD / camera.position.distanceTo(snackBadge.position)); snackBadge.scale.set(sz, sz, 1); snackBadge.center.set(0.5, 0.5 - (bob * Math.min(SCR, sz / 0.05)) / sz); }
 }
-const badgeHit = () => ray.intersectObjects(BADGES.filter((b) => b.visible))[0];
+const badgeHit = () => ray.intersectObjects([snackBadge, ...crew.flatMap((m) => m.icons)].filter((b) => b && b.visible))[0];
 
 // ───────────── 선택 · 카메라 ─────────────
 const ring = new THREE.Mesh(new THREE.RingGeometry(0.3 * H / 1.25, 0.37 * H / 1.25, 40), new THREE.MeshBasicMaterial({ color: "#2f9e62", transparent: true, opacity: 0.85 }));
@@ -1997,14 +2621,34 @@ function pointerRay(e) {
   ray.setFromCamera(mouse, camera);
 }
 const personHit = () => ray.intersectObjects(crew.filter((m) => m.root.visible).map((m) => m.root), true).find((h) => h.object.userData.pid != null);
+// 두 번 빠르게 누르면(PC 는 더블클릭) 누른 곳으로 다가간다 — 이미 가까우면 조금 더 (책상 높이 평면에서 누른 곳, 방 안으로)
+const zoomPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -H * 0.4), zoomAt = new THREE.Vector3();
+let lastTap = null;
+function zoomTo(e) {
+  pointerRay(e);
+  if (!ray.ray.intersectPlane(zoomPlane, zoomAt)) return;
+  zoomAt.x = THREE.MathUtils.clamp(zoomAt.x, ROOM.x0 + 0.5, ROOM.x1 - 0.5); zoomAt.z = THREE.MathUtils.clamp(zoomAt.z, ROOM.z0 + 0.5, ROOM.z1 - 0.5);
+  const dir = camera.position.clone().sub(controls.target), d = Math.max(controls.minDistance + 0.4, dir.length() * 0.5);
+  selected = null; changed();
+  for (const b of camBar.children) b.classList.remove("on");
+  if (TOUR.active) stopTour();
+  flyTo(zoomAt, zoomAt.clone().add(dir.normalize().multiplyScalar(d)));
+}
+renderer.domElement.addEventListener("dblclick", (e) => { if (e.pointerType !== "touch" && !editing && !pipWin) zoomTo(e); });
 renderer.domElement.addEventListener("pointerup", (e) => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  if (appEl.classList.contains("list-open") && matchMedia("(max-width:820px),(max-height:520px)").matches) return setList(false); // 휴대폰: 목록이 열려 있으면 사무실을 눌러 접기
   pointerRay(e);
   if (editing) { const hit = personHit(); return seatClick(hit ? crew[hit.object.userData.pid] : null); }
-  const bh = badgeHit(); // 아이콘 먼저 (육아일기 · 간식 신청)
-  if (bh) return bh.object.userData.open();
+  if (e.pointerType !== "mouse") { // 손가락: 같은 곳을 0.32초 안에 두 번 → 다가가기
+    const now = performance.now();
+    if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) { lastTap = null; return zoomTo(e); }
+    lastTap = { t: now, x: e.clientX, y: e.clientY };
+  }
+  const bh = badgeHit(); // 아이콘 먼저 (새 글 · 간식 신청 · 하트 …)
+  if (bh) return pipWin ? null : bh.object.userData.open();
   const hit = personHit();
-  if (hit) { const m = crew[hit.object.userData.pid]; select(m); window.__social?.openPerson(m.name); } // 사람을 누르면 그 사람 카드(방명록)
+  if (hit) { const m = crew[hit.object.userData.pid]; select(m); if (!pipWin) window.__social?.openPerson(m.name); } // 사람을 누르면 그 사람 카드(방명록). 위젯 창에선 따라가기만
 });
 renderer.domElement.addEventListener("pointermove", (e) => {
   pointerRay(e);
@@ -2216,6 +2860,7 @@ function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   if (!w || !h) return;
   renderer.setSize(w, h);
+  uiRenderer.setSize(w, h);
   const a = w / h;
   camera.aspect = a;
   // 좁은 화면(휴대폰 세로 등): 옆이 잘리지 않게 시야를 넓힌다 (가로 시야는 PC 와 비슷하게)
@@ -2235,13 +2880,23 @@ let frame = 0, simTime = 0, vidT = 0;
 const perf = document.getElementById("perf");
 let pf = 0, pacc = 0, fastSec = 0;
 // 버벅이면 해상도를 낮추고(최소 1배 = 화면 그대로), 한동안 여유가 있으면 조금씩 되돌린다
+let shadowEvery = 2; // 그림자를 다시 그리는 간격(프레임) — 해상도를 더 못 내리는 느린 기기면 늘린다 (휴대폰)
 function adaptQuality(fps) {
   if (document.hidden) return;
-  if (fps < 42 && dpr > 1) { dpr = Math.max(1, +(dpr - 0.15).toFixed(2)); fastSec = 0; } // 화면 해상도 밑으로는 안 내린다 (계단·지글거림)
-  else if (fps > 57 && dpr < DPR_MAX) { if (++fastSec < 4) return; dpr = Math.min(DPR_MAX, +(dpr + 0.1).toFixed(2)); fastSec = 0; }
-  else { fastSec = 0; return; }
-  renderer.setPixelRatio(dpr);
-  resize();
+  if (fps < 42) {
+    fastSec = 0;
+    if (dpr > DPR_MIN) { dpr = Math.max(DPR_MIN, +(dpr - 0.15).toFixed(2)); renderer.setPixelRatio(dpr); resize(); } // 정해 둔 밑으로는 안 내린다 (계단·지글거림·뿌연 글씨)
+    else if (shadowEvery < 8) shadowEvery *= 2;
+    return;
+  }
+  if (fps > 57) {
+    if (++fastSec < 4) return;
+    fastSec = 0;
+    if (shadowEvery > 2) shadowEvery /= 2; // 여유가 생기면 그림자부터 되돌리고, 그다음 해상도
+    else if (dpr < DPR_MAX) { dpr = Math.min(DPR_MAX, +(dpr + 0.1).toFixed(2)); renderer.setPixelRatio(dpr); resize(); }
+    return;
+  }
+  fastSec = 0;
 }
 // 영상 화면은 초당 8번만 새로 그린다
 function videoTick(dt) {
@@ -2296,9 +2951,10 @@ function step(dt) {
     }
   }
   badgeTick();
+  bgTick(dt);
   videoTick(dt);
   syncChairs();
-  if (frame % 2 === 0) renderer.shadowMap.needsUpdate = true;
+  if (frame % shadowEvery === 0) renderer.shadowMap.needsUpdate = true;
   const near = crew.some((m) => m.root.visible && m.root.position.distanceTo(DOOR_IN) < 2.2 && Math.abs(m.root.position.z - DOOR.z) < 1.2);
   // 문: 목표 각도에 거의 닿으면 딱 맞춘다 (0 에 끝없이 다가가며 미세하게 움직이면 문틈이 깜박인다)
   const dDoor = (near ? 1.35 : 0) - doorPivot.rotation.y;
@@ -2329,10 +2985,11 @@ window.__chaos = CHAOS; // 점검용
 const clock = new THREE.Clock();
 if (WHO) select(WHO);
 renderer.shadowMap.needsUpdate = true;
-renderer.setAnimationLoop(() => {
+function frameLoop() { // 위젯 창으로 옮기면 그 창의 그리기 주기가 부른다
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
   step(dt);
   renderer.render(scene, camera);
+  uiRenderer.render(uiScene, camera); // 글씨 층 (화면 해상도 그대로)
   atlasLive = true;
   pf++; pacc += raw;
   if (pacc > 1) {
@@ -2341,12 +2998,13 @@ renderer.setAnimationLoop(() => {
     perf.textContent = `${Math.round(fps)} fps · 해상도 ${dpr.toFixed(2)} · 그리기 ${renderer.info.render.calls} · 삼각형 ${(renderer.info.render.triangles / 1000).toFixed(0)}k`;
     pf = 0; pacc = 0;
   }
-});
+}
+renderer.setAnimationLoop(frameLoop);
 requestAnimationFrame(() => requestAnimationFrame(introDone)); // 첫 그림이 그려진 뒤에 시작 화면을 걷는다
 // 점검용: 시간 빨리 돌리기 (미리보기 창이 뒤에 있으면 초당 1~2프레임이라)
-window.__sim = (sec) => { for (let t = 0; t < sec; t += 1 / 30) step(1 / 30); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); atlasLive = true; };
+window.__sim = (sec) => { for (let t = 0; t < sec; t += 1 / 30) step(1 / 30); renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); uiRenderer.render(uiScene, camera); atlasLive = true; };
 window.__crew = crew;
-window.__view = { camera, controls, flyTo, THREE, renderer, scene, render: () => renderer.render(scene, camera) };
+window.__view = { camera, controls, flyTo, THREE, renderer, scene, uiScene, uiRenderer, render: () => { renderer.render(scene, camera); uiRenderer.render(uiScene, camera); } };
 </script>
 </body>
 </html>

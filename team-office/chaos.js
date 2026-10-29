@@ -112,8 +112,17 @@ window.Chaos = function (ctx) {
   // 일반 물체 (상자·공 등) — 끝나면 지운다
   const PROPS = [];
   function prop(obj) { ROOT.add(obj); PROPS.push(obj); return obj; }
+  // 이벤트 조명은 미리 만들어 둔 4개를 빌려 쓴다 — 조명 수가 바뀌면 화면 전체 재질을 다시 준비하느라 1~2초 멈춘다 (10-28 측정)
+  const LIGHT_POOL = Array.from({ length: 4 }, () => { const l = new THREE.PointLight(0xffffff, 0, 1, 2); ROOT.add(l); return l; });
   const LIGHTS = [];
-  function light(l) { ROOT.add(l); LIGHTS.push(l); return l; }
+  function light(want) { // want: 원하는 조명(색·세기·거리·감쇠만 옮긴다). 다 쓰고 있으면 화면에 안 붙는 그대로 돌려준다
+    const l = LIGHT_POOL.find((p) => !LIGHTS.includes(p));
+    if (!l) return want;
+    l.color.copy(want.color); l.intensity = want.intensity; l.distance = want.distance; l.decay = want.decay;
+    l.position.copy(want.position);
+    LIGHTS.push(l);
+    return l;
+  }
 
   // ───────── 소리 (즉석 합성 — 페이지를 한 번 누른 뒤에만 난다) ─────────
   function ac() { const a = ctx.audio(); return a && a.state === "running" ? a : null; }
@@ -151,8 +160,11 @@ window.Chaos = function (ctx) {
   .cx-row{display:flex;gap:6px;margin-top:10px}
   .cx-btn{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:6px 11px;font:inherit;font-size:12px;cursor:pointer;color:var(--ink)}
   .cx-btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .cx-stop{position:absolute;right:12px;top:14px;z-index:7}
-  @media (max-width:820px),(max-height:520px){.cx-menu{left:10px;width:calc(100% - 20px);top:auto;bottom:54px;max-height:calc(100% - 110px)}.cx-stop{top:auto;bottom:54px;right:10px}.cx-banner{top:auto;bottom:56px;min-width:0;width:max-content;max-width:calc(100% - 20px);padding:8px 16px 10px}.cx-banner b{font-size:17px}}`;
+  .cx-stop{position:absolute;right:12px;top:56px;z-index:7}
+  .cx-toggle b{font-size:10px;margin-left:6px;padding:1px 6px;border-radius:6px;background:#b9b4ab;color:#fff;letter-spacing:.03em}
+  .cx-toggle.on b{background:var(--work,#2f9e62)}
+  .cx-gear{padding:6px 9px;margin-left:-6px}
+  @media (max-width:820px),(max-height:520px){.cx-menu{left:calc(10px + env(safe-area-inset-left));width:calc(100% - 20px - env(safe-area-inset-left) - env(safe-area-inset-right));top:auto;bottom:calc(54px + env(safe-area-inset-bottom));max-height:calc(100% - 110px - env(safe-area-inset-bottom) - env(safe-area-inset-top))}.cx-stop{top:auto;bottom:calc(128px + env(safe-area-inset-bottom));right:calc(10px + env(safe-area-inset-right))}.cx-banner{top:auto;bottom:calc(56px + env(safe-area-inset-bottom));min-width:0;width:max-content;max-width:calc(100% - 20px);padding:8px 16px 10px}.cx-banner b{font-size:17px}}`;
   document.head.append(css);
   const banner = document.createElement("div"); banner.className = "cx-banner"; banner.hidden = true; stage.append(banner);
   const flashEl = document.createElement("div"); flashEl.className = "cx-flash"; stage.append(flashEl);
@@ -320,6 +332,7 @@ window.Chaos = function (ctx) {
     cur = sc; curT = 0;
     ctx.setPaused(true);
     banner.hidden = false;
+    banner.style.top = matchMedia("(max-width:820px),(max-height:520px)").matches ? "" : `${Math.max(58, ctx.hud.offsetTop + ctx.hud.offsetHeight + 12)}px`; // PC: 위쪽 단추 줄 바로 아래 (두 줄이 돼도 안 겹치게)
     banner.innerHTML = `<b>${sc.emoji} ${sc.name}</b><span>${sc.desc}</span><i></i>`;
     banner.style.animation = "none"; void banner.offsetWidth; banner.style.animation = "";
     if (sc.cam) ctx.flyTo(sc.cam[0], sc.cam[1]);
@@ -341,7 +354,7 @@ window.Chaos = function (ctx) {
     for (const q of PARTS.splice(0)) { ROOT.remove(q.s); q.s.material.dispose(); }
     for (const d of DECALS.splice(0)) { ROOT.remove(d.m); d.m.geometry.dispose(); d.m.material.dispose(); }
     for (const o of PROPS.splice(0)) { ROOT.remove(o); o.traverse?.((c) => { c.geometry?.dispose?.(); }); }
-    for (const l of LIGHTS.splice(0)) ROOT.remove(l);
+    for (const l of LIGHTS.splice(0)) l.intensity = 0; // 돌려놓기 (떼지 않는다)
     for (const st of P.values()) {
       const m = st.m;
       clearTint(m);
@@ -353,7 +366,7 @@ window.Chaos = function (ctx) {
     }
     P.clear();
     for (const ch of ctx.chairs()) { if (ch.userData.cxHome) { ch.position.copy(ch.userData.cxHome.p); ch.rotation.copy(ch.userData.cxHome.r); delete ch.userData.cxHome; } }
-    lightGoal = { ...(dayBase() || {}), speed: 1.2 }; // 조명은 한 번에 말고 천천히 원래(그 시각의 밝기)대로
+    lightGoal = { ...((pref.on && dayBase()) || {}), speed: 1.2 }; // 조명은 한 번에 말고 천천히 원래(그 시각의 밝기)대로
     vignette("transparent", 0);
     shakeAmp = 0; camera.position.sub(shakeOff); shakeOff.set(0, 0, 0);
     ctx.office.position.set(0, 0, 0);
@@ -580,7 +593,7 @@ window.Chaos = function (ctx) {
             flyArc(m, inRoom(m.root.position.x + away.x, m.root.position.z + away.z), rnd(1.5, 2.5), rnd(0.9, 1.3));
             if (Math.random() < 0.6) shout(m, pick(["으아악!", "날아간다~", "쾅!?"]), "#ffe066", "#6a2a00");
           }
-          ROOT.remove(r.pl); s.rocks.splice(i, 1);
+          r.pl.intensity = 0; LIGHTS.splice(LIGHTS.indexOf(r.pl) >>> 0, 1); s.rocks.splice(i, 1); // 빌린 조명 돌려놓기
         }
       }
       if (t > 3 && !s.run) { s.run = true; present().forEach((m) => { if (!P.has(m) && Math.random() < 0.5) runPath(m, [m.seat.approach.clone(), V(m.seat.aisleX, 0, m.seat.approach.z), V(m.seat.aisleX, 0, MAIN_Z + rnd(-0.3, 0.3))], rnd(2, 2.8)); }); }
@@ -1216,7 +1229,7 @@ window.Chaos = function (ctx) {
   // 사람들은 알아서 지내고(구경용과 같음), 가끔 갑자기 이벤트가 벌어진다. 실제 시각에 따라 낮·저녁·밤, 손대지 않으면 카메라가 천천히 둘러본다
   const CATS = ["힐링", "따뜻한 이야기", "즐거움", "재난"];
   const PREF_KEY = "teamOfficeAquarium";
-  const pref = { cats: { 힐링: true, "따뜻한 이야기": true, 즐거움: true, 재난: true }, freq: "보통", autoEvt: true, tour: true, wide: !ctx.live }; // 실시간 모드면 목록(출퇴근 버튼)을 보이게
+  const pref = { on: true, cats: { 힐링: true, "따뜻한 이야기": true, 즐거움: true, 재난: true }, freq: "보통", autoEvt: true, tour: true, wide: !ctx.live }; // 실시간 모드면 목록(출퇴근 버튼)을 보이게
   try { Object.assign(pref, JSON.parse(localStorage.getItem(PREF_KEY)) || {}); } catch {}
   const savePref = () => { try { localStorage.setItem(PREF_KEY, JSON.stringify(pref)); } catch {} };
   const FREQ = { 자주: [40, 90], 보통: [110, 220], 가끔: [240, 420] };
@@ -1242,17 +1255,27 @@ window.Chaos = function (ctx) {
   applyTour();
 
   // ───────── 메뉴 ─────────
-  const btn = document.createElement("button");
-  btn.className = "cx-btn"; btn.textContent = "🐠 어항 모드";
-  ctx.hud.append(btn);
+  // 🐠 어항 ON/OFF (누르면 바로 켜고 끄기) + ⚙ (설정·골라 보기). OFF 면 갑자기 일어나는 일·시각별 조명이 멈춘다
+  const btn = document.createElement("button"), gear = document.createElement("button");
+  btn.className = "cx-btn cx-toggle"; btn.type = gear.type = "button";
+  gear.className = "cx-btn cx-gear"; gear.textContent = "⚙"; gear.title = "어항 모드 설정 · 골라서 보기"; gear.setAttribute("aria-label", "어항 모드 설정");
+  ctx.hud.append(btn, gear);
+  function applyOn() {
+    btn.innerHTML = `<span class="ico">🐠</span><span class="lbl"> 어항 모드</span><b>${pref.on ? "ON" : "OFF"}</b>`;
+    btn.classList.toggle("on", !!pref.on);
+    btn.title = pref.on ? "어항 모드 끄기 (갑자기 일어나는 일 멈춤)" : "어항 모드 켜기";
+    btn.setAttribute("aria-pressed", String(!!pref.on)); btn.setAttribute("aria-label", "어항 모드");
+    if (!pref.on && cur) { endScenario(true); ui.stop.hidden = true; }
+    nextEvt = rnd(20, 40); dayTimer = 0;
+  }
   const menu = document.createElement("div");
   menu.className = "cx-menu"; menu.hidden = true;
   const sect = (cat) => `<h4 style="margin:10px 0 6px;font-size:12px;color:var(--muted)">${cat}</h4><div class="cx-grid">${S.map((s, i) => (s.cat === cat ? `<button data-i="${i}" title="${s.desc}"><em>${s.emoji}</em>${s.name}</button>` : "")).join("")}</div>`;
-  menu.innerHTML = `<h3>🐠 어항 모드</h3><p>켜 두면 사람들이 알아서 지내다가, 가끔 갑자기 아래 일들이 벌어져요. 골라서 바로 볼 수도 있어요. 소리는 화면을 한 번 누른 뒤부터 나요.</p>
+  menu.innerHTML = `<button class="cx-x" data-close title="닫기">×</button><h3>🐠 어항 모드</h3><p>켜 두면 사람들이 알아서 지내다가, 가끔 갑자기 아래 일들이 벌어져요. 골라서 바로 볼 수도 있어요. 소리는 화면을 한 번 누른 뒤부터 나요.</p>
     <div class="cx-row" style="flex-wrap:wrap;align-items:center;font-size:12px">
-      <label><input type="checkbox" data-pref="autoEvt"> 갑자기 일어나기</label>
+      <span>얼마나 자주</span>
       <select data-freq style="font:inherit;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:3px 6px"><option>자주</option><option>보통</option><option>가끔</option></select>
-      <label><input type="checkbox" data-pref="tour"> 손 안 대면 천천히 둘러보기</label>
+      <label><input type="checkbox" data-pref="tour"> 손 안 대면 자동 둘러보기</label>
       <label><input type="checkbox" data-pref="wide"> 사람 목록 숨기고 크게 보기</label>
     </div>
     <div class="cx-row" style="flex-wrap:wrap;font-size:12px">${CATS.map((c) => `<label><input type="checkbox" data-cat="${c}"> ${c}</label>`).join("")}</div>
@@ -1282,7 +1305,10 @@ window.Chaos = function (ctx) {
   stopBtn.className = "cx-btn dark cx-stop"; stopBtn.textContent = "■ 그만 보기"; stopBtn.hidden = true;
   stage.append(stopBtn);
   ui.stop = stopBtn;
-  btn.onclick = () => { menu.hidden = !menu.hidden; syncMenu(); };
+  btn.onclick = () => { pref.on = !pref.on; savePref(); applyOn(); };
+  gear.onclick = () => { menu.hidden = !menu.hidden; syncMenu(); };
+  addEventListener("pointerdown", (e) => { if (!menu.hidden && !menu.contains(e.target) && e.target !== gear) menu.hidden = true; }, true); // 바깥을 누르면 닫기
+  applyOn();
   menu.onclick = (e) => {
     const b = e.target.closest("button"); if (!b) return;
     if (b.dataset.i) { menu.hidden = true; beginScenario(S[+b.dataset.i]); }
@@ -1294,10 +1320,10 @@ window.Chaos = function (ctx) {
   const C = {
     get active() { return !!cur; },
     tick(dt) {
-      if (!cur && pref.autoEvt && (nextEvt -= dt) <= 0) { nextEvt = rnd(...FREQ[pref.freq]); const sc = pickEvent(); if (sc) beginScenario(sc); }
+      if (!cur && pref.on && pref.autoEvt && (nextEvt -= dt) <= 0) { nextEvt = rnd(...FREQ[pref.freq]); const sc = pickEvent(); if (sc) beginScenario(sc); }
       tick(dt);
       if (cur) tickDebris(dt);
-      if (!cur && (dayTimer -= dt) <= 0) { dayTimer = 5; const b = dayBase(); lightGoal = b ? { ...b, speed: 0.3 } : { speed: 0.3 }; }
+      if (!cur && (dayTimer -= dt) <= 0) { dayTimer = 5; const b = pref.on ? dayBase() : null; lightGoal = b ? { ...b, speed: 0.3 } : { speed: 0.3 }; }
       if (!cur) tickLight(dt);
     },
     list: S.map((s) => s.id),
