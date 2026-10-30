@@ -167,7 +167,11 @@ body.pip{margin:0;height:100vh;overflow:hidden;background:var(--bg)}
 body.pip #stage{width:100vw;height:100vh}
 body.pip .hud button,body.pip .listbtn,body.pip .bgwrap,body.pip .pinbtn{display:none}
 /* 위에 띄운 작은 창: 사무실과 근무 수만 (단추 모양 규칙보다 우선) · 글씨는 3D 화면에 같이 그린다 */
-html body.pip .hud>:not(.counts),html body.pip .view,html body.pip .pinbtn,html body.pip canvas.uilayer,html body.pip .sx-toast,html body.pip .cx-banner{display:none!important}
+html body.pip .hud>:not(.counts),html body.pip .view,html body.pip .pinbtn,html body.pip canvas.uilayer,html body.pip .sx-toast,html body.pip .cx-banner,html body.pip .lunchbar{display:none!important}
+/* 점심시간(12:00~12:59): 모두 자리를 비우니 화면 위쪽 가운데에 알림 (누르는 것 아님) */
+.lunchbar{position:absolute;left:50%;top:calc(60px + env(safe-area-inset-top));transform:translateX(-50%);z-index:5;pointer-events:none;display:flex;align-items:center;gap:10px;padding:9px 18px 9px 14px;border-radius:999px;background:rgba(255,255,255,.82);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:0 8px 24px rgba(0,0,0,.12);border:.5px solid rgba(0,0,0,.08);white-space:nowrap;max-width:calc(100% - 24px)}
+.lunchbar[hidden]{display:none}.lunchbar .em{font-size:22px;line-height:1}.lunchbar b{font-size:15px;font-weight:800;color:#1c1c1e;letter-spacing:-.01em}.lunchbar span{font-size:12.5px;color:#6c6c70}
+@media (max-width:600px){.lunchbar{top:calc(158px + env(safe-area-inset-top));padding:8px 14px 8px 12px}.lunchbar b{font-size:14px}.lunchbar span{font-size:12px}}
 .pinbtn{position:absolute;right:12px;top:12px;z-index:6}
 .hud{max-width:calc(100% - 170px)}
 /* 휴대폰·좁은 창: 사무실을 화면 가득, 사람 목록은 버튼으로 접고 편다 (세로: 아래에서 올라옴 · 가로: 오른쪽에서 나옴) */
@@ -1697,7 +1701,20 @@ function chatTick(dt) {
   if (talking >= 2 || !ws.length) return;
   sayFor(ws[(Math.random() * ws.length) | 0], CHATTER[(Math.random() * CHATTER.length) | 0], 6 + Math.random() * 4);
 }
+const lunchBar = document.createElement("div");
+lunchBar.className = "lunchbar";
+lunchBar.hidden = true;
+lunchBar.setAttribute("role", "status");
+stage.append(lunchBar);
+function drawLunchBar() { // 점심시간이면 「🍚 점심시간 · 1시에 돌아와요 · N분 남음」
+  const on = isLunch();
+  lunchBar.hidden = !on;
+  if (!on) return;
+  const left = Math.max(1, 60 - new Date().getMinutes()), html = `<span class="em">🍚</span><b>점심시간</b><span>모두 밥 먹으러 갔어요 · 1시에 돌아와요${window.__lunch ? "" : ` · ${left}분 남음`}</span>`;
+  if (lunchBar.innerHTML !== html) lunchBar.innerHTML = html;
+}
 function attendTick(dt) {
+  drawLunchBar();
   autoTick();
   if (DEMO) { demoTick(dt); chatTick(dt); }
   if ((attendTimer -= dt) > 0 || editing) return;
@@ -2045,8 +2062,7 @@ function changed() {
   document.getElementById("counts").innerHTML =
     `<span class="chip" title="근무 중"><i class="dot work"></i><span class="lbl">근무 중 </span>${n.work}</span>` +
     (n.move ? `<span class="chip" title="이동 중"><i class="dot move"></i><span class="lbl">이동 중 </span>${n.move}</span>` : "") +
-    `<span class="chip" title="자리에 없음"><i class="dot"></i><span class="lbl">자리에 없음 </span>${n.away}</span>` +
-    (isLunch() ? `<span class="chip">🍚<span class="lbl"> 점심시간 12:00~13:00</span></span>` : "");
+    `<span class="chip" title="자리에 없음"><i class="dot"></i><span class="lbl">자리에 없음 </span>${n.away}</span>`; // 점심시간은 화면 위쪽 가운데 알림으로 (lunchBar)
 }
 changed();
 if (LIVE) queueMicrotask(liveInit); // 실시간 모드: Supabase 에서 출퇴근·상태 메시지
@@ -3043,7 +3059,8 @@ function step(dt) {
 const catSeat = crew.find((m) => m.name === "한아린")?.seat;
 const WALKING = new Set(["enter", "leave", "tripGo", "tripBack"]); // 걷는 중 (고양이가 알아채는 사람)
 const CATS = window.OfficeCats && catSeat ? window.OfficeCats({ THREE, scene, uiScene, camera, seat: catSeat, aisleX: catSeat.aisleX, H, audio: () => audioCtx, scr: () => SCR,
-  people: () => crew.filter((m) => m.root.visible && WALKING.has(m.state)).map((m) => ({ pos: m.root.position, moving: true, name: m.name })) }) : null;
+  people: () => crew.filter((m) => m.root.visible && WALKING.has(m.state)).map((m) => ({ pos: m.root.position, moving: true, name: m.name })),
+  scary: () => LEE?.pos() }) : null; // LEE 가 가까이 오면 도망
 const WX = window.OfficeWeather ? window.OfficeWeather({ THREE, scene, ROOM, renderer, camera, stage, hud: document.querySelector(".hud"), audio: () => audioCtx }) : null;
 const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, ROOM, DOOR, weather: () => WX?.now?.() }) : null;
 // 출입문 오른쪽 벽 액자: TV 와 유리벽 사이 가운데, 윗선은 문틀·TV 윗선과 같게 (그림 파일 frame_art.jpg 가 없으면 아무것도 안 걸린다)
@@ -3079,7 +3096,7 @@ const LEE = window.OfficeLee ? window.OfficeLee({
   stops: () => crew.filter((m) => m.seat).map((m) => ({ name: m.name, seat: m.seat })).sort((a, b) => a.seat.no - b.seat.no),
   person: (n) => { const m = crew.find((c) => c.name === n); return m ? { here: m.state === "work" } : null; },
   say: (n, text, sec) => { const m = crew.find((c) => c.name === n); if (m?.state === "work") sayFor(m, text, sec); },
-  sb: () => SB, me: () => MY, live: !!LIVE, onChange: () => leeUi(),
+  sb: () => SB, me: () => MY, live: !!LIVE, onChange: () => leeUi(), lunch: () => isLunch(),
 }) : null;
 function leeUi() {
   if (!leeBox) return;

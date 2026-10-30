@@ -132,7 +132,7 @@ window.OfficeCats = function (ctx) {
   // 하는 일 고르기: 걷기 · 앉기 · 식빵 · 그루밍 · 벌러덩 · 쫓기
   function next(c) {
     const other = cats.find((o) => o !== c), r = Math.random();
-    c.target = null; c.rollTo = 0; c.chase = null; c.guest = null;
+    c.target = null; c.rollTo = 0; c.chase = null; c.guest = null; c.fleeFrom = null;
     if (r < 0.34) { c.state = "walk"; c.t = rnd(2, 5); const [x, z] = inside(rnd(X0, X1), rnd(Z0, Z1)); c.target = new THREE.Vector3(x, 0, z); c.speed = 0.22; }
     else if (r < 0.52) { c.state = "sit"; c.t = rnd(3, 6); c.tailSide = Math.random() < 0.5 ? -1 : 1; }
     else if (r < 0.64) { c.state = "loaf"; c.t = rnd(4, 8); }
@@ -147,12 +147,17 @@ window.OfficeCats = function (ctx) {
     for (const c of cats) {
       const other = cats.find((o) => o !== c);
       if ((c.t -= dt) <= 0) next(c);
+      // LEE(저승사자)가 가까이 오면 하던 걸 멈추고 냅다 도망
+      const sc = ctx.scary?.();
+      if (sc && c.state !== "flee" && Math.hypot(sc.x - c.root.position.x, sc.z - c.root.position.z) < 1.4 * k) {
+        c.state = "flee"; c.fleeFrom = sc; c.t = rnd(2.5, 3.5); c.speed = 0.6; c.target = null; c.rollTo = 0; c.chase = null; c.guest = null; c.hop = 1;
+      }
       // 움직일 곳
       let goal = null;
       if (c.state === "walk") goal = c.target;
       else if (c.state === "chase") goal = c.chase.root.position;
       else if (c.state === "greet" || c.state === "follow") goal = c.guest; // 찾아온 사람 · 지나가는 사람에게
-      else if (c.state === "flee") { tmp.copy(c.root.position).sub(other.root.position).setY(0).normalize().multiplyScalar(0.5).add(c.root.position); const [x, z] = inside(tmp.x, tmp.z); goal = tmp.set(x, 0, z); }
+      else if (c.state === "flee") { tmp.copy(c.root.position).sub(c.fleeFrom || other.root.position).setY(0).normalize().multiplyScalar(0.5).add(c.root.position); const [x, z] = inside(tmp.x, tmp.z); goal = tmp.set(x, 0, z); }
       let moving = false;
       if (goal) {
         const dx = goal.x - c.root.position.x, dz = goal.z - c.root.position.z, d = Math.hypot(dx, dz);

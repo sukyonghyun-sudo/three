@@ -7,6 +7,7 @@
     angry: ["이게 지금 일하는 겁니까?", "또 딴짓이군요…", "이 속도면 명부 맨 위입니다", "회의 때 했던 말, 벌써 잊었나요?"],
     point: ["거기! 지금 뭐 하는 거죠?", "당신, 다음 차례입니다", "그 탭… 닫으세요"],
     empty: ["자리를 비웠군요… 적어 둡니다", "어디 갔죠, 이 사람?", "빈자리… 명부에 표시해 둡니다"],
+    lunch: ["점심시간이군요… 1시 정각입니다", "밥은 먹고 해야죠. 1시까지만", "다들 어디 갔나… 아, 점심", "빈 사무실도 지켜봅니다"],
     reply: ["네! 열심히 하고 있습니다!", "(움찔)", "헉… 업무 맞습니다", "죄송합니다…", "지금 막 하려던 참이었어요", "(조용히 창 닫는 중)"],
     enter: "다들… 일은 잘하고 있나요?",
     leave: "수고하세요…",
@@ -45,9 +46,9 @@
         const cum = [0];
         for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
         const roll = r(), kind = roll < 0.55 ? "watch" : roll < 0.8 ? "angry" : "point";
-        const named = r() < 0.5, line = pick(r, LINES[kind]), reply = pick(r, LINES.reply), empty = pick(r, LINES.empty), off = r() * 11;
+        const named = r() < 0.5, line = pick(r, LINES[kind]), reply = pick(r, LINES.reply), empty = pick(r, LINES.empty), off = r() * 11, lunchLine = pick(r, LINES.lunch);
         const walk = cum[cum.length - 1] / SPEED;
-        legs.push({ t0: t, walk, pts, cum, aisle: s.aisleX, name, face: s.desk.clone(), kind, named, line, reply, empty, off, stop: STOP[kind] });
+        legs.push({ t0: t, walk, pts, cum, aisle: s.aisleX, name, face: s.desk.clone(), kind, named, line, reply, empty, lunchLine, off, stop: STOP[kind] });
         t += walk + STOP[kind];
         from = b; aisle = s.aisleX;
       };
@@ -87,7 +88,7 @@
       if (lt < L.walk) { const a = along(L, lt * SPEED); return { ...a, anim: "walk", fade: 1, say: L === plan.legs[0] && t < APPEAR + 2.8 ? LINES.enter : "", leg: L }; }
       const st = lt - L.walk, who = ctx.person(L.name), here = !!who?.here;
       const kind = here ? L.kind : "empty";
-      const text = !here ? L.empty : L.named ? `${L.name} 님, ${L.line}` : L.line;
+      const text = !here ? (ctx.lunch?.() ? L.lunchLine : L.empty) : L.named ? `${L.name} 님, ${L.line}` : L.line;
       return { p: L.pts[L.pts.length - 1].clone(), dir: Math.atan2(L.face.x - L.pts[L.pts.length - 1].x, L.face.z - L.pts[L.pts.length - 1].z), anim: ANIM[kind], animOff: kind === "angry" ? L.off : 0, fade: 1,
         say: st > 0.6 && st < 0.6 + LINE_SEC ? text : "", reply: here && st > 0.8 + LINE_SEC ? L : null, leg: L, stopped: true, stopT: st };
     }
