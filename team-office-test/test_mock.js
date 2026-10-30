@@ -139,12 +139,24 @@
     db = load() || db;
     for (const r of db.office_people) notify("office_people", { eventType: "UPDATE", new: { ...r } });
     for (const t of ["office_notes", "office_snacks", "office_hearts", "office_diary_comments", "office_diary_likes"]) notify(t);
+    for (const r of db.office_flags || []) notify("office_flags", { eventType: "UPDATE", new: { ...r } });
   });
   // 테스트: 비밀번호는 아무 숫자 4자리
   const pinOk = (p) => /^(\d{4}|[0-9a-f]{64})$/.test(String(p || "")); // 테스트 판: 아무 숫자 4자리 또는 브라우저가 만든 확인값
   const verify = (c, p) => (!db.office_people.some((r) => r.char === c) ? "no_char" : db.pins[c] ? (p === db.pins[c] ? "ok" : "bad_pin") : pinOk(p) ? "ok" : "bad_pin");
   const nid = () => db.nextId++;
   const R = {
+    office_flag_set: ({ p_char, p_pin, p_key, p_on }) => { // LEE 순찰: 석용현만 · 켠 시각(이 기기 시계)을 함께 저장
+      if (p_key !== "lee") return "bad_input";
+      if (p_char !== "석용현") return "not_admin";
+      const v = verify(p_char, p_pin);
+      if (v !== "ok") return v;
+      db.office_flags = db.office_flags || [];
+      const old = db.office_flags.find((r) => r.key === p_key), t = Date.now();
+      const row = { key: p_key, val: { on: !!p_on, at: t, since: p_on ? t : old?.val?.since || t }, by_char: p_char, updated_at: now() };
+      db.office_flags = db.office_flags.filter((r) => r.key !== p_key).concat(row);
+      save(); notify("office_flags", { eventType: "UPDATE", new: { ...row } }); return "ok";
+    },
     office_claim: ({ p_char, p_pin }) => {
       if (!/^[0-9a-f]{64}$/.test(String(p_pin || ""))) return "bad_input";
       if (!FIRST) return "ok";

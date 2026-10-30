@@ -377,6 +377,8 @@ html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 
 <script src="weather.js"></script>
 <!-- 오늘의 뉴스 TV: 출입문 오른쪽 벽걸이 (게임·AI·IT·연예·만화/애니 제목) -->
 <script src="tv.js"></script>
+<!-- LEE 순찰: 석용현이 ⚙ 설정에서 켜면 모두의 화면에 같은 순간 (흑백 저승사자) -->
+<script src="lee.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -1613,23 +1615,25 @@ function makeBubble() {
       g.beginPath(); g.roundRect(x0, y0, w, hb, 24);
       g.moveTo(cx - 15, y0 + hb - 2); g.quadraticCurveTo(cx - 2, y0 + hb + 6, cx + 1, y0 + hb + 20); g.quadraticCurveTo(cx + 6, y0 + hb + 6, cx + 16, y0 + hb - 2);
     };
+    const lee = kind === "lee"; // LEE(흑백 저승사자): 검은 말풍선 · 흰 글씨 · 테두리 없음
     const body = g.createLinearGradient(0, y0, 0, y0 + hb + 20);
-    body.addColorStop(0, "#ffffff"); body.addColorStop(0.55, "#f6f7f9"); body.addColorStop(1, "#dfe3e9");
+    if (lee) { body.addColorStop(0, "#3a3c41"); body.addColorStop(1, "#141518"); }
+    else { body.addColorStop(0, "#ffffff"); body.addColorStop(0.55, "#f6f7f9"); body.addColorStop(1, "#dfe3e9"); }
     g.save();
     g.shadowColor = "rgba(20,24,32,.35)"; g.shadowBlur = 8; g.shadowOffsetY = 4;
     g.fillStyle = body; shape(); g.fill();
     g.restore();
     g.save(); shape(); g.clip();
     const shine = g.createLinearGradient(0, y0, 0, y0 + hb * 0.5);
-    shine.addColorStop(0, "rgba(255,255,255,.95)"); shine.addColorStop(1, "rgba(255,255,255,0)");
+    shine.addColorStop(0, lee ? "rgba(255,255,255,.14)" : "rgba(255,255,255,.95)"); shine.addColorStop(1, "rgba(255,255,255,0)");
     g.fillStyle = shine; g.beginPath(); g.roundRect(x0 + 8, y0 + 3, w - 16, hb * 0.45, 18); g.fill();
     const rim = g.createLinearGradient(0, y0 + hb * 0.55, 0, y0 + hb);
     rim.addColorStop(0, "rgba(120,130,150,0)"); rim.addColorStop(1, "rgba(120,130,150,.22)");
     g.fillStyle = rim; g.fillRect(x0, y0 + hb * 0.55, w, hb * 0.45 + 22);
     g.restore();
-    g.strokeStyle = "#34c759"; g.lineWidth = 4; shape(); g.stroke(); // 직접 쓴 상태 메시지: 초록 테두리
+    if (!lee) { g.strokeStyle = "#34c759"; g.lineWidth = 4; shape(); g.stroke(); } // 직접 쓴 상태 메시지: 초록 테두리
     g.fillStyle = body; g.fillRect(cx - 13, y0 + hb - 3, 27, 6); g.fillStyle = rim; g.fillRect(cx - 13, y0 + hb - 3, 27, 6); // 꼬리와 몸 사이 선 지우기
-    g.fillStyle = "#23252a"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillStyle = lee ? "#f2f2f4" : "#23252a"; g.textAlign = "center"; g.textBaseline = "middle";
     lines.forEach((l, i) => g.fillText(l, cx, y0 + 11 + 18 + i * 36));
     b.fit();
   };
@@ -2971,6 +2975,7 @@ function step(dt) {
   CATS?.tick(dt);
   WX?.tick(dt);
   TV?.tick(dt);
+  LEE?.tick(dt);
   pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
   frustum.setFromProjectionMatrix(pm);
   for (const m of crew) {
@@ -3067,6 +3072,49 @@ const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
   tour: TOUR, scr: () => SCR,
 }) : null;
 window.__chaos = CHAOS; // 점검용
+// LEE 순찰: 석용현만 ⚙ 설정에서 켜고 끈다 → 서버에 저장 → 지금 보고 있는 모두의 화면에 같은 순간 (lee.js)
+let leeBox = null, leeBtn = null, leeMsg = null;
+const LEE = window.OfficeLee ? window.OfficeLee({
+  THREE, scene, MAIN_Z, H, doorIn: DOOR_IN, modelUrl: "models3d/lee/lee.glb", loadGLB, makeLabel, makeBubble, labelF,
+  stops: () => crew.filter((m) => m.seat).map((m) => ({ name: m.name, seat: m.seat })).sort((a, b) => a.seat.no - b.seat.no),
+  person: (n) => { const m = crew.find((c) => c.name === n); return m ? { here: m.state === "work" } : null; },
+  say: (n, text, sec) => { const m = crew.find((c) => c.name === n); if (m?.state === "work") sayFor(m, text, sec); },
+  sb: () => SB, me: () => MY, live: !!LIVE, onChange: () => leeUi(),
+}) : null;
+function leeUi() {
+  if (!leeBox) return;
+  leeBox.hidden = !(MY.char === SNACK_ADMIN && (!!MY.pin || !!window.__TEST));
+  const on = LEE.isOn();
+  leeBtn.textContent = on ? "끄기" : "켜기";
+  leeBtn.classList.toggle("on", on);
+}
+if (LEE && document.querySelector(".cx-menu")) {
+  const css = document.createElement("style");
+  css.textContent = `.lee-box{display:flex;align-items:center;gap:12px;background:#1c1c1e;color:#fff;border-radius:12px;padding:10px 12px;margin:0 0 10px}
+  .lee-box[hidden]{display:none}.lee-box b{display:block;font-size:13.5px}.lee-box span{display:block;font-size:11.5px;color:#aeaeb2;margin-top:2px;line-height:1.4}
+  .lee-box em{display:block;font-style:normal;font-size:11.5px;color:#ffd60a;margin-top:3px}.lee-box em:empty{display:none}
+  html body .lee-box .cx-btn{margin-left:auto;flex:none;background:#fff;color:#1c1c1e;border:0}html body .lee-box .cx-btn.on{background:#ff453a;color:#fff}`;
+  document.head.append(css);
+  leeBox = document.createElement("div");
+  leeBox.className = "lee-box";
+  leeBox.hidden = true;
+  leeBox.innerHTML = `<div><b>👁 LEE 순찰</b><span>켜면 지금 보고 있는 모두의 화면에 바로 나타나 사무실을 돌며 감시해요 · 석용현만</span><em></em></div><button type="button" class="cx-btn"></button>`;
+  leeBtn = leeBox.querySelector("button");
+  leeMsg = leeBox.querySelector("em");
+  document.querySelector(".cx-menu > p").after(leeBox);
+  leeBtn.onclick = async () => {
+    const on = !LEE.isOn();
+    leeBtn.disabled = true;
+    leeMsg.textContent = on ? "켜는 중…" : "끄는 중…";
+    const r = await LEE.setOn(on);
+    leeBtn.disabled = false;
+    leeMsg.textContent = r === "ok" ? (on ? "켰어요 — 모두의 화면에 나타나요" : "껐어요 — 문으로 걸어 나가요")
+      : { not_ready: "실제 저장소에 LEE 표가 아직 없어요 (SQL 실행 필요)", not_admin: "석용현만 켤 수 있어요", bad_pin: "다시 로그인해 주세요", locked: "여러 번 틀려서 10분 동안 잠겼어요", no_login: "로그인한 뒤에 켤 수 있어요" }[r] || "못 바꿨어요 — 다시 해 보세요";
+    leeUi();
+  };
+  setInterval(leeUi, 1500); // 로그인·로그아웃을 따라 보이고 숨긴다
+  leeUi();
+}
 const clock = new THREE.Clock();
 if (WHO) select(WHO);
 renderer.shadowMap.needsUpdate = true;
