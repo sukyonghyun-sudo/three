@@ -164,8 +164,7 @@
     const crawlTex = new THREE.CanvasTexture(cc);
     crawlTex.colorSpace = THREE.SRGBColorSpace;
     crawlTex.wrapS = THREE.RepeatWrapping;
-    crawlTex.generateMipmaps = false;
-    crawlTex.minFilter = THREE.LinearFilter;
+    crawlTex.anisotropy = tex.anisotropy; // 위 화면과 같은 거름 (밉맵을 끄면 자막만 각지고 뚜렷해 보였음)
     const grp = new THREE.Group();
     grp.name = "newsTV";
     const body = new THREE.Mesh(new THREE.BoxGeometry(sw + 0.06, sh + 0.06, bz), new THREE.MeshStandardMaterial({ color: "#16181c", roughness: 0.35, metalness: 0.3 }));
