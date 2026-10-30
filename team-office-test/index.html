@@ -383,6 +383,7 @@ html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 
 <script src="tv.js"></script>
 <!-- LEE 순찰: 석용현이 ⚙ 설정에서 켜면 모두의 화면에 같은 순간 (흑백 저승사자) -->
 <script src="lee.js"></script>
+<script src="mom.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -3097,6 +3098,9 @@ const CATS = window.OfficeCats && catSeat ? window.OfficeCats({ THREE, scene, ui
   scary: () => LEE?.pos() }) : null; // LEE 가 가까이 오면 도망
 const WX = window.OfficeWeather ? window.OfficeWeather({ THREE, scene, ROOM, renderer, camera, stage, hud: document.querySelector(".hud"), audio: () => audioCtx }) : null;
 const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, ROOM, DOOR, weather: () => WX?.now?.() }) : null;
+// 아기 수첩: 홍수연(임산부) 화면에만 아기 얼굴 단추 — 말풍선으로 이번 주 정보·국가 지원 (mom.js, 예정일은 이 기기에만)
+const MOM = window.OfficeMom ? window.OfficeMom({ who: "홍수연", me: () => MY, test: !!window.__TEST, stage }) : null;
+window.__mom = MOM;
 // 출입문 오른쪽 벽 액자: TV 와 유리벽 사이 가운데, 윗선은 문틀·TV 윗선과 같게 (그림 파일 frame_art.jpg 가 없으면 아무것도 안 걸린다)
 {
   const fw = 0.63, fh = 0.815, fd = 0.035, iw = 0.56, ih = 0.745, topY = DOOR.h + 0.07; // 그림 3:4
