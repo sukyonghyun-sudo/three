@@ -168,9 +168,15 @@
     const grp = new THREE.Group();
     grp.name = "newsTV";
     const body = new THREE.Mesh(new THREE.BoxGeometry(sw + 0.06, sh + 0.06, bz), new THREE.MeshStandardMaterial({ color: "#16181c", roughness: 0.35, metalness: 0.3 }));
-    const screen = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }));
+    // 화면 글씨: 줄여 보일 때 한 단계 덜 줄인 그림을 써서 조금 더 선명하게 (밉맵을 끄면 획이 끊기고 움직일 때 반짝임)
+    const sharp = (m) => {
+      m.onBeforeCompile = (s) => { s.fragmentShader = s.fragmentShader.replace("#include <map_fragment>", THREE.ShaderChunk.map_fragment.replace("texture2D( map, vMapUv )", "texture2D( map, vMapUv, -1.0 )")); };
+      m.customProgramCacheKey = () => "tvSharp";
+      return m;
+    };
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), sharp(new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })));
     screen.position.z = bz / 2 + 0.002;
-    const crawl = new THREE.Mesh(new THREE.PlaneGeometry(crawlW * k, CRAWL_H * k), new THREE.MeshBasicMaterial({ map: crawlTex, toneMapped: false }));
+    const crawl = new THREE.Mesh(new THREE.PlaneGeometry(crawlW * k, CRAWL_H * k), sharp(new THREE.MeshBasicMaterial({ map: crawlTex, toneMapped: false })));
     crawl.position.set((CRAWL_X + crawlW / 2 - W / 2) * k, -(H / 2 - CRAWL_H / 2) * k, bz / 2 + 0.003);
     const led = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.008, 0.004), new THREE.MeshBasicMaterial({ color: "#3aff9a" }));
     led.position.set(sw / 2 - 0.05, -sh / 2 - 0.018, bz / 2 + 0.001);
