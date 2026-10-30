@@ -382,6 +382,7 @@ html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 
 <script src="tv.js"></script>
 <!-- LEE 순찰: 석용현이 ⚙ 설정에서 켜면 모두의 화면에 같은 순간 (흑백 저승사자) -->
 <script src="lee.js"></script>
+<script src="mom.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -702,32 +703,66 @@ const loadOne = async (name) => {
   return loadCharacter(url, clips, { height: H, shadow: true, style: { roughness: STY.charRough, flat: false, baked: STY.charBaked } });
 };
 const models = await Promise.all(NAMES.map((n) => loadOne(n).then((c) => { loadTick(); return c; })));
-// 임산부: 배를 살짝 나오게 — 모델은 그대로 두고, 불러온 뒤 배 앞쪽 점만 앞으로 부풀린다 (뼈대를 따라 앉고 걸을 때도 같이 움직임)
-const BELLY = { 홍수연: 1 };
-function addBelly(c, k = 1) {
+// 몸집 바꾸기 — 모델은 그대로 두고, 불러온 뒤 점을 옮긴다 (뼈대를 따라 앉고 걸을 때도 같이 움직임)
+// FAT 통통하게: r = 뼈 줄기에서 바깥으로 (몸통·허벅지 많이, 머리 조금) · n = 겉면을 바깥으로 (키 대비 — 팔다리·목처럼 가는 곳도 통통해 보이게)
+// BELLY 임산부: 배 가운데(몸 안쪽 한 점)에서 공처럼 둥글게 부풀린다 (앞으로만 밀면 뾰족해진다). 크기 = 살찌우기 전 배 두께 × 값
+const FAT = { 홍수연: { r: 0.65, n: 0.016 } };
+const BELLY = { 홍수연: 0.85 };
+const FAT_R = (n) => /^(Hips|Spine\d*)$/.test(n) ? 1 : /UpLeg$/.test(n) ? 0.95 : /^(Left|Right)Arm$/.test(n) ? 0.85 : /Shoulder$/.test(n) || n === "neck" ? 0.7
+  : /^(Left|Right)Leg$/.test(n) || /ForeArm$/.test(n) ? 0.5 : n === "Head" ? 0.22 : 0.12;
+const FAT_N = (n) => n === "Head" ? 0.45 : /(Hand|Foot|ToeBase|head_end|headfront)$/.test(n) ? 0.3 : 1;
+function shapeBody(c, fat, belly) {
   c.root.traverse((o) => {
     if (!o.isSkinnedMesh) return;
-    const sk = o.skeleton, bone = (n) => { const i = sk.bones.findIndex((b) => b.name === n); return i < 0 ? null : new THREE.Vector3().setFromMatrixPosition(sk.boneInverses[i].clone().invert()); };
+    const B = o.skeleton.bones, at = B.map((b, i) => new THREE.Vector3().setFromMatrixPosition(o.skeleton.boneInverses[i].clone().invert()));
+    const bone = (n) => at[B.findIndex((b) => b.name === n)];
     const hips = bone("Hips"), sp = bone("Spine01") || bone("Spine");
-    if (!hips || !sp) return;
-    const g = o.geometry, P = g.attributes.position, N = g.attributes.normal;
-    const torso = sp.y - hips.y, yc = hips.y + torso * 0.45, zc = hips.z, xc = hips.x, sy = torso * 0.62, sx = torso * 0.8;
-    let zf = -Infinity; // 배 가운데 줄에서 가장 앞에 있는 점 = 지금 배 앞면
-    for (let i = 0; i < P.count; i++) if (Math.abs(P.getX(i) - xc) < sx * 0.3 && Math.abs(P.getY(i) - yc) < sy * 0.3) zf = Math.max(zf, P.getZ(i));
-    if (!(zf > zc)) return;
-    const A = (zf - zc) * 1.15 * k, n = new THREE.Vector3();
-    for (let i = 0; i < P.count; i++) {
-      const x = P.getX(i) - xc, y = P.getY(i) - yc, z = P.getZ(i);
-      const front = THREE.MathUtils.clamp((z - zc) / (zf - zc), 0, 1), d = A * Math.exp(-((x / sx) ** 2) - (y / sy) ** 2) * front * front;
-      if (d < 1e-4) continue;
-      P.setZ(i, z + d);
-      if (N) { n.set(N.getX(i) + d * (2 * x) / (sx * sx), N.getY(i) + d * (2 * y) / (sy * sy), N.getZ(i)).normalize(); N.setXYZ(i, n.x, n.y, n.z); } // 둥글게 빛 받게
+    const g = o.geometry, P = g.attributes.position, N = g.attributes.normal, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight;
+    const v = new THREE.Vector3(), d = new THREE.Vector3(), n = new THREE.Vector3();
+    const T = hips && sp ? sp.y - hips.y : 0;
+    const front = (yc, sx, sy) => { let zf = -Infinity; for (let i = 0; i < P.count; i++) if (Math.abs(P.getX(i) - hips.x) < sx * 0.3 && Math.abs(P.getY(i) - yc) < sy * 0.3) zf = Math.max(zf, P.getZ(i)); return zf; };
+    const depth = T > 0 ? front(hips.y + T * 0.45, T * 0.8, T * 0.62) - hips.z : 0; // 배 가운데 줄 앞면까지 (살찌우기 전에 잰다 — 통통해져도 배는 그만큼만)
+    if (fat) {
+      const axis = B.map((b, i) => { // 등뼈 줄기는 위로 이어지는 뼈 쪽 (Hips→Spine02→Spine01→Spine→neck→Head→head_end)
+        const kids = b.children.filter((x) => x.isBone), ch = kids.find((x) => /^(Spine\d*|neck|Head|head_end)$/.test(x.name)) || (kids.length === 1 ? kids[0] : null), j = ch ? B.indexOf(ch) : -1;
+        return j < 0 ? null : at[j].clone().sub(at[i]).normalize();
+      });
+      const r = B.map((b) => FAT_R(b.name) * fat.r), pf = B.map((b) => FAT_N(b.name));
+      g.computeBoundingBox();
+      const puff = fat.n * (g.boundingBox.max.y - g.boundingBox.min.y);
+      // 같은 자리 점(텍스처 이음매)은 같은 방향으로 밀어야 틈이 안 벌어진다 → 자리마다 평균 방향
+      const key = (i) => P.getX(i).toFixed(5) + "," + P.getY(i).toFixed(5) + "," + P.getZ(i).toFixed(5), avg = new Map(), keys = new Array(P.count);
+      for (let i = 0; i < P.count; i++) { const k = (keys[i] = key(i)); if (!avg.has(k)) avg.set(k, new THREE.Vector3()); avg.get(k).add(n.fromBufferAttribute(N, i)); }
+      for (const a of avg.values()) a.normalize();
+      for (let i = 0; i < P.count; i++) {
+        v.fromBufferAttribute(P, i); n.set(0, 0, 0);
+        let p = 0;
+        for (let j = 0; j < 4; j++) {
+          const w = SW.getComponent(i, j); if (!w) continue;
+          const bi = SI.getComponent(i, j); d.subVectors(v, at[bi]);
+          if (axis[bi]) d.addScaledVector(axis[bi], -d.dot(axis[bi])); // 뼈 방향 성분은 빼고 (길어지지 않게)
+          n.addScaledVector(d, w * r[bi]); p += w * pf[bi];
+        }
+        n.addScaledVector(avg.get(keys[i]), p * puff);
+        P.setXYZ(i, v.x + n.x, v.y + n.y, v.z + n.z);
+      }
+    }
+    if (belly && depth > 0) {
+      const yc = hips.y + T * 0.2, sx = T * 0.8, sy = T * 0.85, zf = front(yc, sx, sy), ctr = new THREE.Vector3(hips.x, yc, hips.z), A = depth * belly;
+      if (zf > hips.z) for (let i = 0; i < P.count; i++) {
+        v.fromBufferAttribute(P, i);
+        const x = v.x - hips.x, y = v.y - yc, w = Math.exp(-((x / sx) ** 2) - (y / sy) ** 2) * THREE.MathUtils.smoothstep((v.z - hips.z) / (zf - hips.z), -0.3, 0.6);
+        if (w < 1e-3) continue;
+        d.subVectors(v, ctr).normalize();
+        v.addScaledVector(d, A * w); P.setXYZ(i, v.x, v.y, v.z);
+        if (N) { n.fromBufferAttribute(N, i).lerp(d, Math.min(1, w * 0.8)).normalize(); N.setXYZ(i, n.x, n.y, n.z); } // 둥글게 빛 받게
+      }
     }
     P.needsUpdate = true; if (N) N.needsUpdate = true;
     g.computeBoundingBox(); g.computeBoundingSphere();
   });
 }
-models.forEach((c, i) => { if (c && BELLY[NAMES[i]]) addBelly(c, BELLY[NAMES[i]]); });
+models.forEach((c, i) => { const n = NAMES[i]; if (c && (FAT[n] || BELLY[n])) shapeBody(c, FAT[n], BELLY[n]); });
 lmsg.textContent = "사무실 꾸미는 중";
 
 const wp = new THREE.Vector3();
@@ -3062,6 +3097,9 @@ const CATS = window.OfficeCats && catSeat ? window.OfficeCats({ THREE, scene, ui
   scary: () => LEE?.pos() }) : null; // LEE 가 가까이 오면 도망
 const WX = window.OfficeWeather ? window.OfficeWeather({ THREE, scene, ROOM, renderer, camera, stage, hud: document.querySelector(".hud"), audio: () => audioCtx }) : null;
 const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, ROOM, DOOR, weather: () => WX?.now?.() }) : null;
+// 아기 수첩: 홍수연(임산부) 화면에만 아기 얼굴 단추 — 말풍선으로 이번 주 정보·국가 지원 (mom.js, 예정일은 이 기기에만)
+const MOM = window.OfficeMom ? window.OfficeMom({ who: "홍수연", me: () => MY, test: !!window.__TEST, stage }) : null;
+window.__mom = MOM;
 // 출입문 오른쪽 벽 액자: TV 와 유리벽 사이 가운데, 윗선은 문틀·TV 윗선과 같게 (그림 파일 frame_art.jpg 가 없으면 아무것도 안 걸린다)
 {
   const fw = 0.63, fh = 0.815, fd = 0.035, iw = 0.56, ih = 0.745, topY = DOOR.h + 0.07; // 그림 3:4
