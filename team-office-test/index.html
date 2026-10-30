@@ -3041,6 +3041,22 @@ const CATS = window.OfficeCats && catSeat ? window.OfficeCats({ THREE, scene, ui
   people: () => crew.filter((m) => m.root.visible && WALKING.has(m.state)).map((m) => ({ pos: m.root.position, moving: true, name: m.name })) }) : null;
 const WX = window.OfficeWeather ? window.OfficeWeather({ THREE, scene, ROOM, renderer, camera, stage, hud: document.querySelector(".hud"), audio: () => audioCtx }) : null;
 const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, ROOM, DOOR, weather: () => WX?.now?.() }) : null;
+// 출입문 오른쪽 벽 액자: TV 와 유리벽 사이 가운데, 윗선은 문틀·TV 윗선과 같게 (그림 파일 frame_art.jpg 가 없으면 아무것도 안 걸린다)
+{
+  const fw = 0.63, fh = 0.815, fd = 0.035, iw = 0.56, ih = 0.745, topY = DOOR.h + 0.07; // 그림 3:4
+  const tvEdge = TV ? new THREE.Box3().setFromObject(TV.group).min.z : DOOR.z - 2.8;
+  new THREE.TextureLoader().load("frame_art.jpg", (t) => {
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    const g = new THREE.Group();
+    mesh(box(fw, fh, fd, 0.006), M("#2b2d31", { roughness: 0.5 }), g, [0, 0, 0]);
+    mesh(new THREE.PlaneGeometry(iw, ih), new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 }), g, [0, 0, fd / 2 + 0.001], false);
+    g.position.set(ROOM.x0 + fd / 2 + 0.004, topY - fh / 2, (tvEdge + mz(20)) / 2);
+    g.rotation.y = Math.PI / 2;
+    scene.add(g);
+    window.__frame = g; // 점검용
+  }, undefined, () => {});
+}
 const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
   THREE, scene, camera, controls, renderer, office, crew, H, DH, PH, WALL_H, ROOM, DOOR_IN, DOOR_OUT, MAIN_Z, RCX,
   lights: { hemi, sun, fill }, stage, hud: document.querySelector(".hud"), flyTo,

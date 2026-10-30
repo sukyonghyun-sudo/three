@@ -185,8 +185,10 @@
     grp.traverse((o) => { o.matrixAutoUpdate = false; });
     const box = new THREE.Box3().setFromObject(grp), frustum = new THREE.Frustum(), pv = new THREE.Matrix4();
 
-    // ── 뉴스 받기 (20분마다 새로 모이니 10분마다 확인) ──
+    // ── 뉴스 받기 (20분마다 새로 모이니 10분마다 확인 · 못 받으면 30초 → 1분 → … 5분 간격으로 다시) ──
+    let retryMs = 30e3, retryT = 0;
     async function load() {
+      clearTimeout(retryT);
       try {
         const r = await fetch(NEWS_URL, { cache: "no-cache" });
         if (!r.ok) throw new Error(r.status);
@@ -196,9 +198,12 @@
         news = d;
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch {}
         if (changed) { idx = 0; pageT = 0; drawCrawl(); dirty = true; if (!wrapEl.hidden) renderList(); }
+        retryMs = 30e3;
       } catch (e) {
         console.warn("news", e);
         if (!items().length) { news = false; dirty = true; }
+        retryT = setTimeout(load, retryMs);
+        retryMs = Math.min(retryMs * 2, 5 * 60e3);
       }
     }
     if (document.fonts?.ready) document.fonts.ready.then(() => { fontsOk = true; drawCrawl(); dirty = true; });
