@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "4,24,44 * * * *"
   workflow_dispatch:
+  push: # 뉴스 모으기 코드를 고쳐 올리면 바로 한 번 (로그인 없이 돌려 보기)
+    branches: [main]
+    paths: [".github/team-news/**", ".github/workflows/team-news.yml"]
 permissions:
   contents: write
 concurrency:
