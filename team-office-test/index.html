@@ -3045,7 +3045,8 @@ const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, R
 {
   const fw = 0.63, fh = 0.815, fd = 0.035, iw = 0.56, ih = 0.745, topY = DOOR.h + 0.07; // 그림 3:4
   const tvEdge = TV ? new THREE.Box3().setFromObject(TV.group).min.z : DOOR.z - 2.8;
-  new THREE.TextureLoader().load("frame_art.jpg", (t) => {
+  let tries = 0;
+  const load = () => new THREE.TextureLoader().load("frame_art.jpg", (t) => {
     t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = 8;
     const g = new THREE.Group();
@@ -3055,7 +3056,8 @@ const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, R
     g.rotation.y = Math.PI / 2;
     scene.add(g);
     window.__frame = g; // 점검용
-  }, undefined, () => {});
+  }, undefined, () => { if (++tries < 5) setTimeout(load, 30e3 * tries); }); // 못 받으면 (막 올린 직후 등) 30초 · 1분 … 뒤 다시
+  load();
 }
 const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
   THREE, scene, camera, controls, renderer, office, crew, H, DH, PH, WALL_H, ROOM, DOOR_IN, DOOR_OUT, MAIN_Z, RCX,
