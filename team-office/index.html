@@ -3072,7 +3072,7 @@ const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, R
     t.anisotropy = 8;
     const g = new THREE.Group();
     mesh(box(fw, fh, fd, 0.006), M("#2b2d31", { roughness: 0.5 }), g, [0, 0, 0]);
-    mesh(new THREE.PlaneGeometry(iw, ih), new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 }), g, [0, 0, fd / 2 + 0.001], false);
+    mesh(new THREE.PlaneGeometry(iw, ih), new THREE.MeshStandardMaterial({ map: t, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }), g, [0, 0, fd / 2 + 0.006], false); // 틀 앞면과 6mm (멀리서 번쩍이지 않게)
     g.position.set(ROOM.x0 + fd / 2 + 0.004, topY - fh / 2, (tvEdge + mz(20)) / 2);
     g.rotation.y = Math.PI / 2;
     scene.add(g);
@@ -3089,34 +3089,49 @@ const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
 }) : null;
 window.__chaos = CHAOS; // 점검용
 // LEE 순찰: 석용현만 ⚙ 설정에서 켜고 끈다 → 서버에 저장 → 지금 보고 있는 모두의 화면에 같은 순간 (lee.js)
-let leeBox = null, leeBtn = null, leeMsg = null;
+let leeBox = null, leeBtn = null, leeMsg = null, leeEvery = null, leeDur = null, leeNext = null;
 const LEE = window.OfficeLee ? window.OfficeLee({
-  THREE, scene, MAIN_Z, H, doorIn: DOOR_IN, modelUrl: "models3d/lee/lee.glb", loadGLB, makeLabel, makeBubble, labelF,
+  THREE, scene, MAIN_Z, H, doorIn: DOOR_IN, modelUrl: "models3d/lee/lee.glb", loadGLB, loadBin: (u) => new GLTFLoader().loadAsync(u), renderer, camera, makeLabel, makeBubble, labelF,
   stops: () => crew.filter((m) => m.seat).map((m) => ({ name: m.name, seat: m.seat })).sort((a, b) => a.seat.no - b.seat.no),
   person: (n) => { const m = crew.find((c) => c.name === n); return m ? { here: m.state === "work" } : null; },
   say: (n, text, sec) => { const m = crew.find((c) => c.name === n); if (m?.state === "work") sayFor(m, text, sec); },
   sb: () => SB, me: () => MY, live: !!LIVE, onChange: () => leeUi(), lunch: () => isLunch(),
 }) : null;
+const LEE_ERR = { not_ready: "실제 저장소에 LEE 표가 아직 없어요 (SQL 실행 필요)", need_sql: "저절로 나타나기는 SQL(LEE순찰_자동)을 한 번 더 실행해야 써요", not_admin: "석용현만 바꿀 수 있어요", bad_pin: "다시 로그인해 주세요", locked: "여러 번 틀려서 10분 동안 잠겼어요", no_login: "로그인한 뒤에 바꿀 수 있어요" };
+const leeWhen = (t) => { const d = new Date(t), today = new Date().toDateString() === d.toDateString(), h = d.getHours(); return `${today ? "" : `${["일", "월", "화", "수", "목", "금", "토"][d.getDay()]}요일 `}${h < 12 ? "오전" : "오후"} ${h % 12 || 12}:${String(d.getMinutes()).padStart(2, "0")}`; };
 function leeUi() {
   if (!leeBox) return;
   leeBox.hidden = !(MY.char === SNACK_ADMIN && (!!MY.pin || !!window.__TEST));
-  const on = LEE.isOn();
-  leeBtn.textContent = on ? "끄기" : "켜기";
+  const f = LEE.flag(), on = f.on;
+  leeBtn.textContent = on ? "끄기" : "지금 켜기";
   leeBtn.classList.toggle("on", on);
+  for (const [sel, v] of [[leeEvery, f.every], [leeDur, f.dur]]) if (document.activeElement !== sel && !sel.disabled) sel.value = String(v);
+  leeDur.disabled = !(f.every > 0);
+  const nv = LEE.nextVisit();
+  leeNext.textContent = on ? "지금 순찰 중 (직접 켬) — 끌 때까지" : LEE.active() ? "지금 순찰 중 (저절로)" : nv ? `다음 순찰: ${leeWhen(nv.start)}쯤 · ${f.dur}분` : "평일 9~18시 중 아무 때나 · 모두의 화면에 같은 시각";
 }
 if (LEE && document.querySelector(".cx-menu")) {
   const css = document.createElement("style");
-  css.textContent = `.lee-box{display:flex;align-items:center;gap:12px;background:#1c1c1e;color:#fff;border-radius:12px;padding:10px 12px;margin:0 0 10px}
-  .lee-box[hidden]{display:none}.lee-box b{display:block;font-size:13.5px}.lee-box span{display:block;font-size:11.5px;color:#aeaeb2;margin-top:2px;line-height:1.4}
-  .lee-box em{display:block;font-style:normal;font-size:11.5px;color:#ffd60a;margin-top:3px}.lee-box em:empty{display:none}
+  css.textContent = `.lee-box{background:#1c1c1e;color:#fff;border-radius:12px;padding:10px 12px;margin:0 0 10px}.lee-box[hidden]{display:none}
+  .lee-top{display:flex;align-items:center;gap:12px}.lee-box b{display:block;font-size:13.5px}.lee-box span{display:block;font-size:11.5px;color:#aeaeb2;margin-top:2px;line-height:1.4}
+  .lee-auto{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px;padding-top:10px;border-top:.5px solid rgba(255,255,255,.14);font-size:12px;color:#d1d1d6}
+  .lee-auto label{display:inline-flex;align-items:center;gap:6px}
+  .lee-auto select{font:inherit;font-size:12.5px;font-weight:600;color:#fff;background:rgba(255,255,255,.12);border:0;border-radius:8px;padding:5px 8px}.lee-auto select:disabled{opacity:.45}
+  .lee-auto select option{color:#1c1c1e}
+  .lee-box small{display:block;width:100%;font-size:11.5px;color:#8e8e93}
+  .lee-box em{display:block;font-style:normal;font-size:11.5px;color:#ffd60a;margin-top:6px}.lee-box em:empty{display:none}
   html body .lee-box .cx-btn{margin-left:auto;flex:none;background:#fff;color:#1c1c1e;border:0}html body .lee-box .cx-btn.on{background:#ff453a;color:#fff}`;
   document.head.append(css);
   leeBox = document.createElement("div");
   leeBox.className = "lee-box";
   leeBox.hidden = true;
-  leeBox.innerHTML = `<div><b>👁 LEE 순찰</b><span>켜면 지금 보고 있는 모두의 화면에 바로 나타나 사무실을 돌며 감시해요 · 석용현만</span><em></em></div><button type="button" class="cx-btn"></button>`;
+  leeBox.innerHTML = `<div class="lee-top"><div><b>👁 LEE 순찰</b><span>나타나면 지금 보고 있는 모두의 화면에 같은 순간 나와 사무실을 돌며 감시해요 · 석용현만</span></div><button type="button" class="cx-btn"></button></div>
+    <div class="lee-auto"><label>저절로 <select data-every><option value="0">안 함</option><option value="1">1시간마다</option><option value="2">2시간마다</option><option value="3">3시간마다</option><option value="9">하루 한 번</option></select></label>
+    <label>한 번에 <select data-dur><option value="5">5분</option><option value="10">10분</option><option value="20">20분</option></select></label><small></small></div><em></em>`;
   leeBtn = leeBox.querySelector("button");
   leeMsg = leeBox.querySelector("em");
+  const leeEveryEl = leeBox.querySelector("[data-every]"), leeDurEl = leeBox.querySelector("[data-dur]");
+  leeEvery = leeEveryEl; leeDur = leeDurEl; leeNext = leeBox.querySelector("small");
   document.querySelector(".cx-menu > p").after(leeBox);
   leeBtn.onclick = async () => {
     const on = !LEE.isOn();
@@ -3124,11 +3139,21 @@ if (LEE && document.querySelector(".cx-menu")) {
     leeMsg.textContent = on ? "켜는 중…" : "끄는 중…";
     const r = await LEE.setOn(on);
     leeBtn.disabled = false;
-    leeMsg.textContent = r === "ok" ? (on ? "켰어요 — 모두의 화면에 나타나요" : "껐어요 — 문으로 걸어 나가요")
-      : { not_ready: "실제 저장소에 LEE 표가 아직 없어요 (SQL 실행 필요)", not_admin: "석용현만 켤 수 있어요", bad_pin: "다시 로그인해 주세요", locked: "여러 번 틀려서 10분 동안 잠겼어요", no_login: "로그인한 뒤에 켤 수 있어요" }[r] || "못 바꿨어요 — 다시 해 보세요";
+    leeMsg.textContent = r === "ok" ? (on ? "켰어요 — 모두의 화면에 나타나요" : "껐어요 — 문으로 걸어 나가요") : LEE_ERR[r] || "못 바꿨어요 — 다시 해 보세요";
     leeUi();
   };
-  setInterval(leeUi, 1500); // 로그인·로그아웃을 따라 보이고 숨긴다
+  const saveAuto = async () => {
+    const every = +leeEvery.value, dur = +leeDur.value;
+    leeEvery.disabled = leeDur.disabled = true;
+    leeMsg.textContent = "저장하는 중…";
+    const r = await LEE.setAuto(every, dur);
+    leeEvery.disabled = false;
+    leeMsg.textContent = r === "ok" ? (every > 0 ? "저장했어요 — 정해진 시각에 모두의 화면에 나타나요" : "저절로 나타나기를 껐어요") : LEE_ERR[r] || "못 바꿨어요 — 다시 해 보세요";
+    leeUi();
+  };
+  leeEvery.onchange = saveAuto;
+  leeDur.onchange = saveAuto;
+  setInterval(leeUi, 1500); // 로그인·로그아웃·다음 순찰 시각을 따라
   leeUi();
 }
 const clock = new THREE.Clock();

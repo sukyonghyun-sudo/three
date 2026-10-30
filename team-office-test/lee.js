@@ -24,7 +24,7 @@
     const { THREE, scene, MAIN_Z } = ctx;
     const v = (x, z) => new THREE.Vector3(x, 0, z);
     const DOOR_IN = ctx.doorIn.clone();
-    let flag = { on: false, at: 0, since: 0 }, plan = null, exit = null;
+    let flag = { on: false, at: 0, since: 0, every: 0, dur: 10 }, plan = null, exitCache = null, offExit = null;
     let model = null, loading = null, mixer = null, acts = {}, cur = null, label = null, bubble = null, shown = "", replied = -1, lh = 1;
 
     // ── 길: 자리(의자 뒤에 서서 모니터를 들여다봄) ↔ 통로 ↔ 큰 통로(MAIN_Z) ──
@@ -96,7 +96,9 @@
     // ── 모델 ──
     function ensureModel() {
       if (model || loading) return loading;
-      loading = ctx.loadGLB(ctx.modelUrl).then((gl) => {
+      // 웹(https)에선 .glb 를 그대로 받는다 (글자로 바꾼 묶음을 푸는 일 없이) · 파일로 열면 묶음
+      const get = ctx.loadBin && location.protocol !== "file:" ? ctx.loadBin(ctx.modelUrl) : ctx.loadGLB(ctx.modelUrl);
+      loading = get.then(async (gl) => {
         const root = gl.scene;
         root.updateMatrixWorld(true);
         const b = new THREE.Box3();
@@ -104,14 +106,19 @@
         lh = ctx.H * 1.16; // 사무실 사람보다 조금 크게 (문보다는 낮게)
         root.scale.setScalar(lh / Math.max(1e-6, b.max.y - b.min.y));
         root.traverse((c) => { if (c.isMesh) { c.frustumCulled = false; c.castShadow = false; c.material.transparent = true; c.material.depthWrite = true; } });
-        mixer = new THREE.AnimationMixer(root);
-        for (const clip of gl.animations) acts[clip.name] = mixer.clipAction(clip);
-        model = new THREE.Group();
-        model.add(root);
+        const mx = new THREE.AnimationMixer(root);
+        for (const clip of gl.animations) acts[clip.name] = mx.clipAction(clip);
+        const g = new THREE.Group();
+        g.add(root);
         // 발밑 옅은 그림자 (사무실 그림자는 두 프레임에 한 번이라 움직이는 LEE 는 따로)
         const sh = new THREE.Mesh(new THREE.CircleGeometry(0.26, 24), new THREE.MeshBasicMaterial({ color: "#000", transparent: true, opacity: 0.22, depthWrite: false }));
-        sh.rotation.x = -Math.PI / 2; sh.position.y = 0.012; sh.renderOrder = 1;
-        model.add(sh);
+        sh.rotation.x = -Math.PI / 2; sh.position.y = 0.025; sh.renderOrder = 1; // 바닥과 2.5cm (멀리서 바닥과 번갈아 번쩍이지 않게)
+        Object.assign(sh.material, { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
+        g.add(sh);
+        // 그래픽 준비(셰이더)를 화면을 멈추지 않고 뒤에서 끝낸 뒤에 장면에 넣는다 (처음 그릴 때 0.4~1초씩 멈칫하던 것)
+        if (ctx.renderer?.compileAsync) { try { g.updateMatrixWorld(true); await ctx.renderer.compileAsync(g, ctx.camera, scene); } catch (e) { console.warn("LEE compile", e); } }
+        mixer = mx;
+        model = g;
         model.visible = false;
         scene.add(model);
         label = ctx.makeLabel("LEE");
@@ -134,21 +141,60 @@
       model.traverse((c) => { if (c.isMesh && c.material) { if (c.material.map) c.material.opacity = k; else c.material.opacity = 0.22 * k; } });
     }
 
-    // ── 켜짐·꺼짐 받기 (실시간) ──
+    // ── 저절로 순찰: 평일 9~18시를 every 시간씩 나눠, 칸마다 (날짜·칸 번호로 정한) 아무 시각에 dur 분 — 모두 같은 시각 ──
+    const DAY0 = 9, DAY1 = 18, memo = new Map();
+    const hash = (str) => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+    function visitsOn(day, every, dur) { // day: 그날 0시
+      const key = `${day.getTime()}|${every}|${dur}`;
+      if (memo.has(key)) return memo.get(key);
+      const out = [], wd = day.getDay();
+      if (every > 0 && wd !== 0 && wd !== 6) {
+        const span = Math.min(every, DAY1 - DAY0);
+        for (let h = DAY0, k = 0; h < DAY1; h += span, k++) {
+          const block = Math.min(span, DAY1 - h) * 60, slack = Math.max(0, block - dur), start = new Date(day);
+          start.setHours(h, 0, 0, 0);
+          const t = start.getTime() + Math.floor(rng(hash(`${day.toDateString()}|${every}|${k}`))() * slack) * 60e3;
+          out.push({ start: t, end: t + dur * 60e3 });
+        }
+      }
+      if (memo.size > 20) memo.clear();
+      memo.set(key, out);
+      return out;
+    }
+    const dayOf = (t, plus = 0) => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + plus); return d; };
+    function visitNear(now) { // 지금 걸친 순찰, 아니면 오늘 가장 최근에 끝난 순찰
+      if (!(flag.every > 0)) return null;
+      let best = null;
+      for (const v of visitsOn(dayOf(now), flag.every, flag.dur)) if (v.start <= now) best = v;
+      return best;
+    }
+    function nextVisit(now = Date.now()) {
+      if (!(flag.every > 0)) return null;
+      for (let i = 0; i < 8; i++) { const v = visitsOn(dayOf(now, i), flag.every, flag.dur).find((x) => x.start > now); if (v) return v; }
+      return null;
+    }
+    // 지금 LEE 가 있어야 하나: 직접 켬 > 저절로 순찰 중 > 순찰이 막 끝남(문으로) > 방금 직접 끔(문으로)
+    function current(now) {
+      if (flag.on) return { since: flag.since };
+      const v = visitNear(now);
+      if (v && now < v.end) return { since: v.start };
+      if (v && now - v.end < 60e3) return { since: v.start, exitAt: v.end };
+      if (offExit && now - offExit.at < 60e3) return { since: offExit.since, exitAt: offExit.at };
+      return null;
+    }
+    function exitState(e, now) {
+      const t = (now - e.t0) / 1000;
+      if (t > e.walk + FADE_OUT) return null;
+      if (t < e.walk) { const a = along(e, t * SPEED); return { ...a, anim: "walk", fade: 1, say: t < 3 ? LINES.leave : "" }; }
+      return { p: e.pts[e.pts.length - 1].clone(), dir: -Math.PI / 2, anim: "idle", fade: 1 - ease(Math.min(1, (t - e.walk) / FADE_OUT)), say: "" };
+    }
+
+    // ── 켜짐·꺼짐·저절로 설정 받기 (실시간) ──
     function apply(val) {
-      const nv = { on: !!val?.on, at: +val?.at || 0, since: +val?.since || +val?.at || 0 };
       const was = flag;
-      flag = nv;
-      if (nv.on) {
-        exit = null;
-        if (!plan || plan.since !== nv.since) { plan = makePlan(nv.since); plan.since = nv.since; replied = -1; }
-        ensureModel();
-      } else if (nv.since && Date.now() - nv.at < 60e3) { // 방금 껐다: 그 자리에서 문으로 걸어가 사라진다 (막 들어온 사람도 같은 장면)
-        if (!plan || plan.since !== nv.since) { plan = makePlan(nv.since); plan.since = nv.since; }
-        const st = stateAt((nv.at - nv.since) / 1000);
-        exit = { ...exitFrom(st), t0: nv.at };
-        ensureModel();
-      } else exit = null;
+      flag = { on: !!val?.on, at: +val?.at || 0, since: +val?.since || +val?.at || 0, every: +val?.every || 0, dur: +val?.dur || 10 };
+      if (was.on && !flag.on) offExit = { since: was.since, at: flag.at || Date.now() }; // 방금 직접 껐다: 그 자리에서 문으로
+      if (current(Date.now())) ensureModel();
       ctx.onChange?.(flag, was);
     }
     const sb = () => ctx.sb?.();
@@ -169,25 +215,48 @@
       document.addEventListener("visibilitychange", () => { if (!document.hidden) fetchFlag(); }); // 백그라운드에서 놓쳤을 수 있으니 돌아오면 한 번
     }
     connect();
-    async function setOn(on) {
-      if (!ctx.live) { const val = { on, at: Date.now(), since: on ? Date.now() : flag.since }; try { localStorage.setItem(KEY, JSON.stringify(val)); } catch {} apply(val); return "ok"; }
+    async function save(on, every, dur) {
+      if (!ctx.live) {
+        const t = Date.now(), val = { on, at: t, since: on ? (flag.on ? flag.since : t) : flag.since, every, dur };
+        try { localStorage.setItem(KEY, JSON.stringify(val)); } catch {}
+        apply(val);
+        return "ok";
+      }
       const me = ctx.me(), s = sb();
       if (!s || !me?.char || !me?.pin) return "no_login";
-      try { const { data, error } = await s.rpc("office_flag_set", { p_char: me.char, p_pin: me.pin, p_key: "lee", p_on: on }); if (error) throw error; if (data === "ok") await fetchFlag(); return data; }
-      catch (e) { console.warn(e); return /office_flag_set|function/i.test(String(e?.message || e)) ? "not_ready" : "error"; }
+      const base = { p_char: me.char, p_pin: me.pin, p_key: "lee", p_on: on };
+      try {
+        let { data, error } = await s.rpc("office_flag_set", { ...base, p_every: every, p_dur: dur });
+        if (error && /PGRST202|office_flag_set/.test(JSON.stringify(error)) && !(every > 0)) ({ data, error } = await s.rpc("office_flag_set", base)); // 예전 SQL(켜고 끄기만)
+        if (error) throw error;
+        if (data === "ok") await fetchFlag();
+        return data;
+      } catch (e) { console.warn(e); return /PGRST202|office_flag_set|function/.test(JSON.stringify(e?.message || e)) ? (every > 0 ? "need_sql" : "not_ready") : "error"; }
     }
+    const setOn = (on) => save(on, flag.every, flag.dur);
+    const setAuto = (every, dur) => save(flag.on, every, dur);
 
     // ── 매 프레임 ──
-    let yaw = 0;
+    let yaw = 0, chk = 0;
     function tick(dt) {
-      if (!model) return;
+      const now = Date.now();
+      if (!model) { // 모델은 있어야 할 때(또는 저절로 순찰 30초 전)만 받는다
+        if ((chk -= dt) > 0) return;
+        chk = 1;
+        const nv = current(now) ? null : nextVisit(now);
+        if (current(now) || (nv && nv.start - now < 30e3)) ensureModel();
+        return;
+      }
+      const c = current(now);
       let st = null;
-      if (flag.on) st = stateAt((Date.now() - flag.since) / 1000);
-      else if (exit) {
-        const t = (Date.now() - exit.t0) / 1000;
-        if (t > exit.walk + FADE_OUT) { exit = null; }
-        else if (t < exit.walk) { const a = along(exit, t * SPEED); st = { ...a, anim: "walk", fade: 1, say: t < 3 ? LINES.leave : "" }; }
-        else st = { p: exit.pts[exit.pts.length - 1].clone(), dir: -Math.PI / 2, anim: "idle", fade: 1 - ease(Math.min(1, (t - exit.walk) / FADE_OUT)), say: "" };
+      if (c) {
+        if (!plan || plan.since !== c.since) { plan = makePlan(c.since); plan.since = c.since; replied = -1; exitCache = null; }
+        if (!c.exitAt) st = stateAt((now - c.since) / 1000);
+        else {
+          const key = `${c.since}:${c.exitAt}`;
+          if (!exitCache || exitCache.key !== key) exitCache = { key, ...exitFrom(stateAt((c.exitAt - c.since) / 1000)), t0: c.exitAt };
+          st = exitState(exitCache, now);
+        }
       }
       const vis = !!st;
       model.visible = vis; label.spr.visible = vis && st.fade > 0.5;
@@ -208,7 +277,7 @@
       if (st.reply && replied !== st.leg.t0) { replied = st.leg.t0; ctx.say(st.leg.name, st.leg.reply, 3); } // 들킨 사람의 한마디
     }
     const near = (p, r = 2.2) => !!model?.visible && Math.hypot(p.x - model.position.x, p.z - model.position.z) < r;
-    const api = { tick, setOn, isOn: () => flag.on, flag: () => flag, near, pos: () => (model?.visible ? model.position : null), ready: () => !!model, state: (t) => (plan ? stateAt(t) : null) };
+    const api = { tick, setOn, setAuto, nextVisit, active: () => !!current(Date.now()), isOn: () => flag.on, flag: () => flag, near, pos: () => (model?.visible ? model.position : null), ready: () => !!model, state: (t) => (plan ? stateAt(t) : null) };
     window.__lee = api; // 점검용
     return api;
   };

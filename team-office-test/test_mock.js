@@ -146,14 +146,15 @@
   const verify = (c, p) => (!db.office_people.some((r) => r.char === c) ? "no_char" : db.pins[c] ? (p === db.pins[c] ? "ok" : "bad_pin") : pinOk(p) ? "ok" : "bad_pin");
   const nid = () => db.nextId++;
   const R = {
-    office_flag_set: ({ p_char, p_pin, p_key, p_on }) => { // LEE 순찰: 석용현만 · 켠 시각(이 기기 시계)을 함께 저장
+    office_flag_set: ({ p_char, p_pin, p_key, p_on, p_every = 0, p_dur = 10 }) => { // LEE 순찰: 석용현만 · 켠 시각(이 기기 시계)·저절로 설정을 함께 저장
       if (p_key !== "lee") return "bad_input";
       if (p_char !== "석용현") return "not_admin";
       const v = verify(p_char, p_pin);
       if (v !== "ok") return v;
       db.office_flags = db.office_flags || [];
       const old = db.office_flags.find((r) => r.key === p_key), t = Date.now();
-      const row = { key: p_key, val: { on: !!p_on, at: t, since: p_on ? t : old?.val?.since || t }, by_char: p_char, updated_at: now() };
+      const since = p_on && old?.val?.on ? old.val.since : p_on ? t : old?.val?.since || t;
+      const row = { key: p_key, val: { on: !!p_on, at: t, since, every: Math.max(0, Math.min(+p_every || 0, 24)), dur: Math.max(1, Math.min(+p_dur || 10, 60)) }, by_char: p_char, updated_at: now() };
       db.office_flags = db.office_flags.filter((r) => r.key !== p_key).concat(row);
       save(); notify("office_flags", { eventType: "UPDATE", new: { ...row } }); return "ok";
     },
