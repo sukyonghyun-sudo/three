@@ -796,6 +796,11 @@ function renderSend() {
   document.querySelectorAll(".destBtn").forEach((b) => (b.disabled = !all.length));
   $("resendAll").hidden = !(unsent.length && unsent.length < all.length);
   $("sendErr").hidden = true; $("markSent").hidden = true;
+  // mail quietly drops attachments over ~25 MB; a full resend is ~120 MB
+  const sendMb = (resend ? all : unsent).reduce((a, t) => a + t.blob.size, 0) / 1048576;
+  $("sendFine").textContent = sendMb > 20
+    ? `파일이 ${Math.round(sendMb)}MB라 메일로는 안 갈 수 있어요. Teams·Slack·OneDrive 중 하나로 보내 주세요.`
+    : "휴대폰의 공유 창이 열려요. Teams·Slack·OneDrive·메일 중에서 받는 사람이나 채널을 고르면 끝이에요.";
 }
 async function buildZips(takes) {
   const d = new Date(), p = (n) => String(n).padStart(2, "0");
@@ -833,20 +838,16 @@ async function doSend(everything = false) {
   try {
     const files = await buildZips(unsent);
     const title = "MSW 목소리 녹음실", text = `${S.state?.name || ""} 녹음 ${unsent.length}문장${everything ? " (전부 다시 보냄)" : ""}`;
-    // Some phones refuse to share .zip (Android Chrome only shares media/text types): fall back to the
-    // wav files themselves plus the manifest as text, which the studio also accepts.
-    const loose = () => [...unsent.map((t) => new File([t.blob], `${t.id}.wav`, { type: "audio/wav" })),
-      new File([JSON.stringify({ app: "voicebooth", script: VERSION, name: S.state?.name || "", takes: unsent.map((t) => ({ id: t.id, text: LINES.find((l) => l.id === t.id).text })) })],
-               "manifest.json.txt", { type: "text/plain" })];
-    for (const set of [files, loose()]) {
-      if (!(navigator.canShare && navigator.canShare({ files: set }))) continue;
-      try { await navigator.share({ files: set, title, text }); await markSent(unsent); return; }
+    // Only ever the one zip. (Sharing loose wav files was the fallback for phones that refuse .zip, but a chat
+    // app may attach only some of many files — the 10-29 loss — so those phones save the zip instead.)
+    if (navigator.canShare && navigator.canShare({ files })) {
+      try { await navigator.share({ files, title, text }); await markSent(unsent); return; }
       catch (e) { if (e && e.name === "AbortError") { renderSend(); return; } }
     }
-    // no share sheet (most desktops): download, then let the person confirm
+    // no share sheet for this file (desktops, some Android phones): save it, then let the person confirm
     files.forEach((f) => { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); });
     pendingSend = unsent;
-    $("sendFine").textContent = "파일을 내려받았어요. Teams·Slack·OneDrive에 올린 뒤 아래를 눌러 주세요.";
+    $("sendFine").textContent = `「${files[0].name}」 파일 하나를 저장했어요. Teams나 Slack 대화에서 이 파일을 첨부해 보낸 뒤 아래를 눌러 주세요.`;
     $("markSent").hidden = false; $("sendLabel").textContent = "다시 내려받기"; $("sendBtn").disabled = false;
   } catch (e) {
     $("sendErr").textContent = "보낼 파일을 만들지 못했어요. 다시 눌러 주세요."; $("sendErr").hidden = false; renderSend();
@@ -855,7 +856,7 @@ async function doSend(everything = false) {
 $("sendBtn").onclick = () => doSend();
 document.querySelectorAll(".destBtn").forEach((b) => (b.onclick = () => doSend()));
 $("resendAll").onclick = () => doSend(true);
-$("markSent").onclick = async () => { if (pendingSend) await markSent(pendingSend); pendingSend = null; $("sendFine").textContent = "휴대폰의 공유 창이 열려요. Teams·Slack·OneDrive·메일 중에서 받는 사람이나 채널을 고르면 끝이에요."; };
+$("markSent").onclick = async () => { if (pendingSend) await markSent(pendingSend); pendingSend = null; };   // markSent re-renders the hint
 
 // ---------------------------------------------------------------- boot
 (async () => {
@@ -906,7 +907,12 @@ async function selftest() {
     const big = await buildZips(many); log(`320 lines -> ${big.length} file(s) ${big[0].name}`);
     // after everything is sent the big button resends all of it
     await markSent([...S.takes.values()]); show("sSend"); renderSend();
-    log(`all sent: button "${$("sendLabel").textContent}" enabled=${!$("sendBtn").disabled} · entry "${$("unsentInfo").textContent}"`);
+    log(`all sent: button "${$("sendLabel").textContent}" enabled=${!$("sendBtn").disabled} · hint "${$("sendFine").textContent.slice(0, 30)}"`);
+    // a full resend is big: the hint must steer away from mail
+    const real = [...S.takes.values()]; LINES.slice(0, 540).forEach((l) => S.takes.set(l.id, { ...real[0], id: l.id, blob: new Blob([new Uint8Array(230000)]) }));
+    renderSend(); log(`540 lines hint "${$("sendFine").textContent}"`);
+    S.takes.clear(); real.forEach((t) => S.takes.set(t.id, t));
+    if (typeof doSend !== "function" || /loose\(/.test(doSend.toString())) throw new Error("loose-file fallback is back");
     out.ok = true;
   } catch (e) { out.ok = false; out.error = String(e && e.stack || e); }
   const pre = document.createElement("pre"); pre.id = "selftest"; pre.textContent = JSON.stringify(out); document.body.append(pre);
