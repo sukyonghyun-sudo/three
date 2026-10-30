@@ -84,10 +84,10 @@ window.OfficeMom = function (ctx) {
       d: "보건소에 임산부로 등록하면 엽산제(임신 12주까지)와 철분제(16주부터)를 받아요. 주는 양과 받는 방법(택배 등)은 보건소마다 달라요.",
       how: "사는 곳 보건소에 임산부 등록 (「맘편한 임신」으로도 돼요)", url: GOV, site: "정부24",
       tip: (wk) => wk <= 12 ? "보건소에 등록하면 엽산제를 무료로 받아요" : "16주부터는 보건소에서 철분제를 무료로 받아요" },
-    { id: "ktx", g: 0, em: "🚄", t: "맘편한 KTX", amt: "특실을 일반실 값에", w: [[4, 40]],
-      d: "KTX 특실을 일반실 값으로 타요 (보호자 1명도 같이). 신청한 날부터 출산 예정일 뒤 1년까지 써요.",
-      how: "정부24 「맘편한 임신」 또는 코레일 멤버십에서 임산부 등록", url: "https://www.letskorail.com", site: "코레일",
-      tip: "KTX 탈 일 있으면 「맘편한 KTX」 — 특실을 일반실 값으로 타요" },
+    { id: "ktx", g: 0, em: "🚄", t: "맘편한 KTX", amt: "일반실 40% 할인 · 특실은 일반실 값", w: [[4, 40]],
+      d: "KTX 일반실(일반열차 포함)은 운임 40% 할인, 특실은 일반실 값으로 타요. 같이 타는 보호자 1명도 똑같이 받아요 (보호자 혼자는 안 돼요). 등록한 날부터 출산 예정일 뒤 1년까지.",
+      how: "먼저 임산부 등록 — 정부24 「맘편한 임신」 또는 역 창구 (코레일 멤버십 회원)", url: "https://www.letskorail.com", site: "코레일",
+      tip: "기차 탈 일 있으면 「맘편한 KTX」 — 일반실 40% 할인, 특실은 일반실 값이에요" },
     { id: "short", g: 1, em: "⏰", t: "임신기 근로시간 단축", amt: "하루 2시간 · 월급 그대로", w: [[4, 12], [31, 40]],
       d: "임신 12주까지, 그리고 32주부터는 하루 2시간 덜 일해도 월급이 줄지 않아요. 의사가 고위험 임신이라고 하면 임신 기간 내내 쓸 수 있어요.",
       how: "시작하기 3일 전까지 회사에 서면으로 신청 (의사 진단서 첨부)", url: MOEL, site: "고용노동부",
@@ -236,14 +236,23 @@ window.OfficeMom = function (ctx) {
   .mom-set p{font-size:12px;line-height:1.55;color:var(--muted);margin:6px 0 0}
   .mom-set .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
   .mom-set .row button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 12px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink)}
-  .mom-set .ok{font-size:12px;color:#ff5c8a;margin-top:8px;min-height:1em}`;
+  .mom-set .ok{font-size:12px;color:#ff5c8a;margin-top:8px;min-height:1em}
+  .mom-btn .dot{position:absolute;right:1px;top:1px;width:13px;height:13px;border-radius:50%;background:#ff3b30;border:2px solid #fff}
+  .mom-btn .dot[hidden]{display:none}
+  .mom-card .sx-tabs i{font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:#ff3b30;border-radius:999px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+  .mom-news{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .mom-news a{display:block;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:9px 12px;background:#fff}
+  .mom-news a:hover{border-color:#ffb0c4}
+  .mom-news b{display:block;font-size:13.5px;font-weight:600;line-height:1.45;word-break:keep-all}
+  .mom-news span{display:block;font-size:11.5px;color:var(--muted);margin-top:4px}
+  .mom-news .new b::before{content:"새";display:inline-block;font-size:10px;font-weight:800;color:#fff;background:#ff6f96;border-radius:5px;padding:1px 5px;margin-right:6px;vertical-align:2px}`;
   document.head.append(css);
 
   const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
   // ───────── 단추 · 말풍선 ─────────
-  const btn = el("button", "mom-btn", FACE + '<span class="wk"></span>');
+  const btn = el("button", "mom-btn", FACE + '<span class="wk"></span><span class="dot" hidden></span>');
   btn.type = "button"; btn.title = "아기 수첩"; btn.setAttribute("aria-label", "아기 수첩");
   btn.hidden = true;
   const bub = el("div", "mom-bub");
@@ -286,6 +295,35 @@ window.OfficeMom = function (ctx) {
     save(); say(m);
   }
 
+  // ───────── 새 소식: 임신·출산 지원 기사 제목 (GitHub 자동 작업이 20분마다 모으는 mom_news.json — fetch_mom.py) ─────────
+  const NEWS_URL = "https://raw.githubusercontent.com/sukyonghyun-sudo/three/team-news/mom_news.json", NEWS_KEY = "teamOfficeMomNews";
+  let news = (() => { try { return JSON.parse(localStorage.getItem(NEWS_KEY)); } catch { return null; } })(), newsWait = 30e3, newsT = 0, newsOn = false;
+  const items = () => news?.items || [];
+  const unread = () => items().filter((x) => x.ts > (S.newsSeen || 0));
+  const ago = (ts) => { const m = Math.floor((Date.now() / 1000 - ts) / 60); return m < 1 ? "방금" : m < 60 ? `${m}분 전` : m < 1440 ? `${Math.floor(m / 60)}시간 전` : `${Math.floor(m / 1440)}일 전`; };
+  async function loadNews() {
+    clearTimeout(newsT);
+    try {
+      const r = await fetch(NEWS_URL, { cache: "no-cache" });
+      if (!r.ok) throw new Error(r.status);
+      const j = await r.json();
+      if (!Array.isArray(j.items)) throw new Error("bad");
+      news = j; newsWait = 30e3;
+      try { localStorage.setItem(NEWS_KEY, JSON.stringify(j)); } catch {}
+      if (!wrap.hidden && tab === "news") render();
+      newsT = setTimeout(loadNews, 20 * 60e3);
+    } catch { newsT = setTimeout(loadNews, newsWait); newsWait = Math.min(newsWait * 2, 300e3); } // 막 올라온 직후 등: 30초 → 5분까지 늘려 가며 다시
+  }
+  // 아직 안 알려 준 새 기사가 있으면 아기가 한 번에 알려 준다 (여러 개면 「N개」)
+  function newsTalk() {
+    const fresh = items().filter((x) => x.ts > (S.newsSaid || 0));
+    if (!fresh.length) return false;
+    const top = fresh[0];
+    S.newsSaid = Math.max(...items().map((x) => x.ts)); save();
+    say({ who: fresh.length > 1 ? `새 소식 ${fresh.length}개` : "새 소식", text: `${top.t} — ${top.s}`, go: { tab: "news" } });
+    return true;
+  }
+
   // ───────── 자세히 보는 창 ─────────
   const wrap = el("div", "sx-wrap");
   wrap.hidden = true;
@@ -314,13 +352,15 @@ window.OfficeMom = function (ctx) {
     x.type = "button"; x.title = "닫기"; x.setAttribute("aria-label", "닫기"); x.onclick = () => close();
     head.append(em, t, x);
     const tabs = el("div", "sx-tabs");
-    for (const [k, label] of [["week", "이번 주"], ["sup", "국가 지원"], ["set", "설정"]]) {
-      const b = el("button", k === tab ? "on" : "", label);
+    const fresh = unread().length;
+    for (const [k, label] of [["week", "이번 주"], ["news", "새 소식"], ["sup", "국가 지원"], ["set", "설정"]]) {
+      const b = el("button", k === tab ? "on" : "", esc(label) + (k === "news" && fresh && tab !== "news" ? `<i>${fresh}</i>` : ""));
       b.type = "button"; b.onclick = () => { tab = k; render(); };
       tabs.append(b);
     }
     const body = el("div", "sx-body");
     if (tab === "week") weekTab(body, n);
+    else if (tab === "news") newsTab(body);
     else if (tab === "sup") supTab(body, n);
     else setTab(body);
     card.replaceChildren(head, tabs, body);
@@ -357,6 +397,22 @@ window.OfficeMom = function (ctx) {
     if (todo.children.length) body.append(el("div", "mom-sec", "이번 주 챙길 것"), todo);
     body.append(el("div", "mom-sos", "🚑 이럴 땐 바로 병원에 연락해요 — 피가 비칠 때 · 배가 심하게 아플 때 · 양수가 샐 때 · 태동이 갑자기 줄 때"));
     body.append(el("div", "mom-foot", "아기 크기는 평균이에요 — 아기마다 달라요. 19주까지는 머리~엉덩이, 20주부터는 머리~발 길이. 검사 시기는 병원마다 조금씩 달라요."));
+  }
+  function newsTab(body) {
+    const list = items(), seen = S.newsSeen || 0;
+    if (!list.length) body.append(el("div", "sx-empty", news ? "최근 7일 동안 새 소식이 없어요" : "새 소식을 불러오는 중이에요…"));
+    else {
+      const ul = el("ul", "mom-news");
+      for (const x of list) {
+        const li = el("li", x.ts > seen ? "new" : ""), a = el("a");
+        a.href = x.u; a.target = "_blank"; a.rel = "noopener";
+        a.append(el("b", null, esc(x.t)), el("span", null, `${esc(x.s)} · ${ago(x.ts)} ↗`));
+        li.append(a); ul.append(li);
+      }
+      body.append(ul);
+      S.newsSeen = Math.max(seen, ...list.map((x) => x.ts)); S.newsSaid = Math.max(S.newsSaid || 0, S.newsSeen); save(); btn.querySelector(".dot").hidden = true;
+    }
+    body.append(el("div", "mom-foot", `임신·출산·육아 지원 기사 제목만 20분마다 모아요 (최근 7일${news?.at ? ` · ${ago(news.at)} 모음` : ""}). 연예인 소식·사건사고·한 지역 소식은 뺐어요. 기사는 공식 발표와 다를 수 있으니 확정 내용은 「국가 지원」 칸과 공식 사이트에서 확인해요.`));
   }
   function supTab(body, n) {
     const wk = n ? n.wk : -1;
@@ -403,10 +459,14 @@ window.OfficeMom = function (ctx) {
     if (!on) { shownFor = null; return; }
     const n = now();
     btn.querySelector(".wk").textContent = n && n.wk <= 42 ? `${n.wk}주` : "";
+    btn.querySelector(".dot").hidden = !unread().length;
+    if (!newsOn) { newsOn = true; loadNews(); } // 홍수연 화면에서만 받는다
     if (shownFor !== me.char) { shownFor = me.char; lastTalk = Date.now(); setTimeout(() => { if (!btn.hidden) talk(); }, 5000); return; } // 들어오면 5초 뒤 한마디
-    if (S.every > 0 && !document.hidden && wrap.hidden && bub.hidden && Date.now() - lastTalk > S.every * 60e3) { lastTalk = Date.now(); talk(); }
+    const free = S.every > 0 && !document.hidden && wrap.hidden && bub.hidden;
+    if (free && Date.now() - lastTalk > 90e3 && newsTalk()) { lastTalk = Date.now(); return; } // 새 기사는 나오면 바로 (말풍선끼리는 1분 반 띄움)
+    if (free && Date.now() - lastTalk > S.every * 60e3) { lastTalk = Date.now(); talk(); }
   }
   setInterval(tick, 1500);
   tick();
-  return { open, close, talk, state: () => ({ ...S, now: now(), visible: !btn.hidden }) };
+  return { open, close, talk, newsTalk, state: () => ({ ...S, now: now(), visible: !btn.hidden, news: items().length }) };
 };
