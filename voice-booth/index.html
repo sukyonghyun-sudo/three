@@ -302,6 +302,7 @@ h1.big { font: 600 29px/1.24 var(--ui); letter-spacing: -0.8px; text-wrap: balan
       <p class="err" id="sendErr" hidden></p>
       <button class="primary" id="sendBtn" type="button"><svg class="ico"><use href="#i-share"/></svg><span id="sendLabel">보내기</span></button>
       <button class="link" id="markSent" type="button" hidden>파일을 받았어요 · 보냄으로 표시</button>
+      <button class="link" id="resendAll" type="button" hidden>이미 보낸 녹음까지 전부 다시 보내기</button>
     </div>
   </section>
 
@@ -527,7 +528,7 @@ function renderResume() {
   const warn = [...S.takes.values()].filter((t) => t.qc?.warn).length;
   $("redoCount").textContent = String(warn); $("goRedo").hidden = !warn;
   const unsent = [...S.takes.values()].filter((t) => !t.sentAt);
-  $("unsentInfo").textContent = unsent.length ? `${unsent.length}문장 · ${fmtMin(totalSec(unsent))}` : "모두 보냈어요";
+  $("unsentInfo").textContent = unsent.length ? `${unsent.length}문장 · ${fmtMin(totalSec(unsent))}` : S.takes.size ? "모두 보냈어요 · 다시 보낼 수 있어요" : "모두 보냈어요";
   const next = firstOpenIdx(lastIdx);
   $("continueBtn").innerHTML = ""; $("continueBtn").append(`${next + 1}번째 문장부터 이어서 녹음 `); $("continueBtn").insertAdjacentHTML("beforeend", '<svg class="ico"><use href="#i-next"/></svg>');
   $("continueBtn").onclick = async () => { S.idx = next; await ensureMic(); openRecord(); };
@@ -765,7 +766,9 @@ function renderPicker() {
 }
 
 // ---------------------------------------------------------------- send
-const BATCH = 150;   // lines per zip; a share can carry several zips
+// one zip per send: Teams on phones attached only the last of several shared files (10-29: two sends lost
+// their first 150 lines each), so never split
+const BATCH = Infinity;
 function openSend() { show("sSend"); renderSend(); }
 $("sendBack").onclick = () => (S.takes.size || S.state ? openRecord() : show("sWelcome"));
 function renderSend() {
@@ -786,9 +789,12 @@ function renderSend() {
   r.querySelector("b").textContent = unsent.length ? `이번에 보낼 녹음 · ${unsent.length}문장` : "새로 보낼 녹음이 없어요";
   r.querySelector("small").textContent = unsent.length ? `${fmtMin(totalSec(unsent))} · ${mb.toFixed(mb < 10 ? 1 : 0)}MB` : "";
   box.append(r);
-  $("sendLabel").textContent = unsent.length ? `${unsent.length}문장 보내기` : "보낼 녹음이 없어요";
-  $("sendBtn").disabled = !unsent.length;
-  document.querySelectorAll(".destBtn").forEach((b) => (b.disabled = !unsent.length));
+  // nothing new left: the big button resends everything (a lost file can be sent again any time)
+  const resend = !unsent.length && all.length > 0;
+  $("sendLabel").textContent = unsent.length ? `${unsent.length}문장 보내기` : resend ? `녹음 전부 다시 보내기 · ${all.length}문장` : "보낼 녹음이 없어요";
+  $("sendBtn").disabled = !all.length;
+  document.querySelectorAll(".destBtn").forEach((b) => (b.disabled = !all.length));
+  $("resendAll").hidden = !(unsent.length && unsent.length < all.length);
   $("sendErr").hidden = true; $("markSent").hidden = true;
 }
 async function buildZips(takes) {
@@ -818,13 +824,15 @@ async function markSent(takes) {
   renderSend();
 }
 let pendingSend = null;
-async function doSend() {
-  const unsent = [...S.takes.values()].filter((t) => !t.sentAt).sort((a, b) => a.id.localeCompare(b.id));
+async function doSend(everything = false) {
+  const all = [...S.takes.values()].sort((a, b) => a.id.localeCompare(b.id));
+  let unsent = all.filter((t) => !t.sentAt);
+  if (everything || !unsent.length) { everything = true; unsent = all; }   // resend: the studio skips lines it already has
   if (!unsent.length) return;
-  $("sendBtn").disabled = true; $("sendLabel").textContent = "묶는 중…"; $("sendErr").hidden = true;
+  $("sendBtn").disabled = true; $("sendLabel").textContent = "묶는 중…"; $("sendErr").hidden = true; $("resendAll").hidden = true;
   try {
     const files = await buildZips(unsent);
-    const title = "MSW 목소리 녹음실", text = `${S.state?.name || ""} 녹음 ${unsent.length}문장`;
+    const title = "MSW 목소리 녹음실", text = `${S.state?.name || ""} 녹음 ${unsent.length}문장${everything ? " (전부 다시 보냄)" : ""}`;
     // Some phones refuse to share .zip (Android Chrome only shares media/text types): fall back to the
     // wav files themselves plus the manifest as text, which the studio also accepts.
     const loose = () => [...unsent.map((t) => new File([t.blob], `${t.id}.wav`, { type: "audio/wav" })),
@@ -844,8 +852,9 @@ async function doSend() {
     $("sendErr").textContent = "보낼 파일을 만들지 못했어요. 다시 눌러 주세요."; $("sendErr").hidden = false; renderSend();
   }
 }
-$("sendBtn").onclick = doSend;
-document.querySelectorAll(".destBtn").forEach((b) => (b.onclick = doSend));
+$("sendBtn").onclick = () => doSend();
+document.querySelectorAll(".destBtn").forEach((b) => (b.onclick = () => doSend()));
+$("resendAll").onclick = () => doSend(true);
 $("markSent").onclick = async () => { if (pendingSend) await markSent(pendingSend); pendingSend = null; $("sendFine").textContent = "휴대폰의 공유 창이 열려요. Teams·Slack·OneDrive·메일 중에서 받는 사람이나 채널을 고르면 끝이에요."; };
 
 // ---------------------------------------------------------------- boot
@@ -892,6 +901,12 @@ async function selftest() {
     const z = await JSZip.loadAsync(zips[0]); log("zip " + zips[0].name + " " + Object.keys(z.files).length + " files " + zips[0].size + "B");
     const m = JSON.parse(await z.file("manifest.json").async("string")); log("manifest takes " + m.takes.length + " sr " + m.sample_rate);
     const w = await z.file(`${m.takes[0].id}.wav`).async("uint8array"); log("wav header " + String.fromCharCode(...w.slice(0, 4)) + " rate " + new DataView(w.buffer).getUint32(24, true));
+    // many lines must still go out as one file (Teams kept only the last of several)
+    const one = [...S.takes.values()][0], many = LINES.slice(0, 320).map((l) => ({ ...one, id: l.id }));
+    const big = await buildZips(many); log(`320 lines -> ${big.length} file(s) ${big[0].name}`);
+    // after everything is sent the big button resends all of it
+    await markSent([...S.takes.values()]); show("sSend"); renderSend();
+    log(`all sent: button "${$("sendLabel").textContent}" enabled=${!$("sendBtn").disabled} · entry "${$("unsentInfo").textContent}"`);
     out.ok = true;
   } catch (e) { out.ok = false; out.error = String(e && e.stack || e); }
   const pre = document.createElement("pre"); pre.id = "selftest"; pre.textContent = JSON.stringify(out); document.body.append(pre);
