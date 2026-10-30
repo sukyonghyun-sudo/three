@@ -1,5 +1,5 @@
 name: team-news
-# 우리팀 뉴스 TV: 20분마다 다섯 분야 뉴스 제목을 모아 team-news 가지에 news.json 하나로 올린다 (기록 없이 덮어씀)
+# 오늘의 뉴스 TV: 20분마다 다섯 분야 뉴스 제목을 모아 team-news 가지에 news.json 하나로 올린다 (기록 없이 덮어씀)
 # 페이지는 https://raw.githubusercontent.com/sukyonghyun-sudo/three/team-news/news.json 을 읽는다
 on:
   schedule:

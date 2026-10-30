@@ -206,5 +206,6 @@ window.OfficeWeather = function (ctx) {
   fetchNow();
   setInterval(() => { if (!document.hidden) fetchNow(); }, 30 * 60 * 1000);
   window.__weather = { state, set: (k) => { state.forced = k || null; apply(); }, pref, sound: () => !!rainSnd, thunder: () => { thunderT = 0; } }; // 점검용
-  return { tick, state, set: (k) => { state.forced = k || null; apply(); } };
+  const now = () => { const k = state.forced || state.kind; return k && state.temp != null ? { icon: KIND[k][0], temp: state.temp } : null; }; // 뉴스 TV 위쪽 날씨
+  return { tick, state, now, set: (k) => { state.forced = k || null; apply(); } };
 };

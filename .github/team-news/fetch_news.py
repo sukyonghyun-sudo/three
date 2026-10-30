@@ -1,4 +1,4 @@
-"""우리팀 뉴스 TV — 다섯 분야(게임·AI·IT·연예·만화/애니) 뉴스 제목을 모아 news.json 하나로
+"""오늘의 뉴스 TV — 다섯 분야(게임·AI·IT·연예·만화/애니) 뉴스 제목을 모아 news.json 하나로
 GitHub 자동 작업(.github/workflows/team-news.yml)이 20분마다 돌려 team-news 가지에 올린다. 페이지는 그 파일만 읽는다.
 기사 본문·사진은 안 가져온다 — 제목·언론사·링크·시각만.
 usage: python fetch_news.py <out.json>"""
