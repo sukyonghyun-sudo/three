@@ -374,6 +374,8 @@ html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 
 <script src="cats.js"></script>
 <!-- 실시간 날씨 (판교 사옥): 비·눈은 바깥에만, 흐림·안개 분위기, 천둥번개, 빗소리 -->
 <script src="weather.js"></script>
+<!-- 오늘의 뉴스 TV: 출입문 오른쪽 벽걸이 (게임·AI·IT·연예·만화/애니 제목) -->
+<script src="tv.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -2701,11 +2703,12 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   const bh = badgeHit(); // 아이콘 먼저 (새 글 · 간식 신청 · 하트 …)
   if (bh) return pipWin ? null : bh.object.userData.open();
   const hit = personHit();
-  if (hit) { const m = crew[hit.object.userData.pid]; select(m); if (!pipWin) window.__social?.openPerson(m.name); } // 사람을 누르면 그 사람 카드(방명록). 위젯 창에선 따라가기만
+  if (hit) { const m = crew[hit.object.userData.pid]; select(m); if (!pipWin) window.__social?.openPerson(m.name); return; } // 사람을 누르면 그 사람 카드(방명록). 위젯 창에선 따라가기만
+  if (!pipWin && TV?.hit(ray)) TV.open(); // 벽 TV 를 누르면 뉴스 목록
 });
 renderer.domElement.addEventListener("pointermove", (e) => {
   pointerRay(e);
-  if (!editing) { renderer.domElement.style.cursor = badgeHit() || CATS?.hit(ray) ? "pointer" : ""; return; }
+  if (!editing) { renderer.domElement.style.cursor = badgeHit() || CATS?.hit(ray) || TV?.hit(ray) ? "pointer" : ""; return; }
   const no = seatUnderRay();
   if (no !== hoverSeat) { hoverSeat = no; updateMarks(); }
 });
@@ -2966,6 +2969,7 @@ function step(dt) {
   CHAOS?.tick(dt);
   CATS?.tick(dt);
   WX?.tick(dt);
+  TV?.tick(dt);
   pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
   frustum.setFromProjectionMatrix(pm);
   for (const m of crew) {
@@ -3035,6 +3039,23 @@ const WALKING = new Set(["enter", "leave", "tripGo", "tripBack"]); // 걷는 중
 const CATS = window.OfficeCats && catSeat ? window.OfficeCats({ THREE, scene, uiScene, camera, seat: catSeat, aisleX: catSeat.aisleX, H, audio: () => audioCtx, scr: () => SCR,
   people: () => crew.filter((m) => m.root.visible && WALKING.has(m.state)).map((m) => ({ pos: m.root.position, moving: true, name: m.name })) }) : null;
 const WX = window.OfficeWeather ? window.OfficeWeather({ THREE, scene, ROOM, renderer, camera, stage, hud: document.querySelector(".hud"), audio: () => audioCtx }) : null;
+const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, ROOM, DOOR, weather: () => WX?.now?.() }) : null;
+// 출입문 오른쪽 벽 액자: TV 와 유리벽 사이 가운데, 윗선은 문틀·TV 윗선과 같게 (그림 파일 frame_art.jpg 가 없으면 아무것도 안 걸린다)
+{
+  const fw = 0.63, fh = 0.815, fd = 0.035, iw = 0.56, ih = 0.745, topY = DOOR.h + 0.07; // 그림 3:4
+  const tvEdge = TV ? new THREE.Box3().setFromObject(TV.group).min.z : DOOR.z - 2.8;
+  new THREE.TextureLoader().load("frame_art.jpg", (t) => {
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    const g = new THREE.Group();
+    mesh(box(fw, fh, fd, 0.006), M("#2b2d31", { roughness: 0.5 }), g, [0, 0, 0]);
+    mesh(new THREE.PlaneGeometry(iw, ih), new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 }), g, [0, 0, fd / 2 + 0.001], false);
+    g.position.set(ROOM.x0 + fd / 2 + 0.004, topY - fh / 2, (tvEdge + mz(20)) / 2);
+    g.rotation.y = Math.PI / 2;
+    scene.add(g);
+    window.__frame = g; // 점검용
+  }, undefined, () => {});
+}
 const CHAOS = AQUARIUM && window.Chaos ? window.Chaos({
   THREE, scene, camera, controls, renderer, office, crew, H, DH, PH, WALL_H, ROOM, DOOR_IN, DOOR_OUT, MAIN_Z, RCX,
   lights: { hemi, sun, fill }, stage, hud: document.querySelector(".hud"), flyTo,
