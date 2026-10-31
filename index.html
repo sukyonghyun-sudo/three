@@ -149,6 +149,10 @@ body.cinema #tags,body.cinema .chatbar{display:none}
   margin-bottom:6px;box-shadow:0 2px 10px rgba(0,0,0,.3);position:relative;text-align:center;word-break:keep-all;overflow-wrap:anywhere}
 .ntag.talk .bub{display:block}
 .ntag .bub::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#FFF8E6}
+.stats{position:fixed;left:18px;top:calc(env(safe-area-inset-top,0px) + 76px);z-index:5;font-size:12px;color:#fff;background:rgba(10,20,40,.45);
+  padding:3px 10px;border-radius:999px;pointer-events:none;text-shadow:0 1px 6px rgba(0,0,0,.4)}
+.stats[hidden]{display:none}
+body.cinema .stats{display:none}
 </style>
 </head>
 <body>
@@ -183,6 +187,7 @@ body.cinema #tags,body.cinema .chatbar{display:none}
   <button id="sendBtn">보내기</button>
 </div>
 <div id="tags" aria-hidden="true"></div>
+<div class="stats" id="statsEl" hidden></div>
 
 <div class="gate" id="gate" role="dialog" aria-label="입장">
   <div class="ar" lang="ar">اللّٰهُ أَكْبَر</div>
@@ -1648,13 +1653,13 @@ function stopSound(){
 }
 sndBtn.onclick=()=>{ if(isOn()||(wantPlay&&mode==='')) stopSound(); else startSound(); };
 document.getElementById('enterBtn').onclick=()=>{
-  startSound();
+  startSound(); netWatch();
   gate.classList.add('out'); setTimeout(()=>gate.style.display='none',800);
   camEase=reduceMotion?.03:.62; goal.t.set(0,5,-2); goal.r=66; goal.th=.6; goal.ph=1.12; lastInput=performance.now();
   setTimeout(()=>{ camEase=.08; focused=false; lastInput=performance.now(); },7000);
 };
 document.getElementById('enterWalk').onclick=()=>{
-  startSound(); gate.classList.add('out'); setTimeout(()=>gate.style.display='none',800); startIntro();
+  startSound(); netWatch(); gate.classList.add('out'); setTimeout(()=>gate.style.display='none',800); startIntro();
 };
 const tray=document.getElementById('tray'), tabs=[...document.querySelectorAll('.tab')];
 let openTab=null;
@@ -1673,7 +1678,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 /* ---------- together: other visitors walk with you (peer to peer, no server) ---------- */
-const NET={room:null,send:null,sendChat:null,status:'off',name:'',peers:new Map(),last:0,lastChat:0,forceSend:false};
+const NET={room:null,send:null,sendChat:null,status:'off',name:'',peers:new Map(),ids:new Map(),last:0,lastChat:0,forceSend:false,uo:0};
 try{ NET.name=localStorage.getItem('mosque-name')||''; }catch(e){}
 if(!NET.name) NET.name='\uc21c\ub840\uc790 '+(1000+Math.floor(Math.random()*9000));
 const tagsEl=document.getElementById('tags'), chatBtn=document.getElementById('chatBtn'), onlineEl=document.getElementById('onlineEl');
@@ -1681,7 +1686,9 @@ const chatbar=document.getElementById('chatbar'), nameIn=document.getElementById
 nameIn.value=NET.name;
 function mkTag(){ const d=document.createElement('div'); d.className='ntag'; d.innerHTML='<div class="bub"></div><div class="nm"></div>'; tagsEl.appendChild(d); return d; }
 const selfTag={el:mkTag(),bubT:0};
-function updOnline(){ if(NET.status!=='on') return; let n=1; NET.peers.forEach(R=>{ if(R.vis) n++; }); onlineEl.textContent='\ud568\uaed8 '+n+'\uba85'; }
+function updOnline(){ if(NET.status!=='on') return; const now=performance.now(); let n=1, w=PL.on?1:0;
+  NET.ids.forEach((v,id)=>{ if(now-v.t>15000){ NET.ids.delete(id); return; } n++; if(v.w) w++; });
+  onlineEl.textContent='\uc811\uc18d '+n+'\uba85'; }
 function slotFor(id){
   if(NET.peers.has(id)) return NET.peers.get(id);
   const R=REMOTES.find(r=>!r.peer); if(!R) return null;
@@ -1691,7 +1698,7 @@ function slotFor(id){
 const num=(v,a,b)=>{ v=+v; return isFinite(v)?Math.max(a,Math.min(b,v)):0; };
 async function initNet(){
   if(NET.status!=='off') return; NET.status='connecting';
-  onlineEl.hidden=false; onlineEl.textContent='\uc5f0\uacb0 \uc911\u2026';
+  onlineEl.textContent='\uc5f0\uacb0 \uc911\u2026';
   const urls=['https://cdn.jsdelivr.net/npm/trystero@0.20.0/nostr/+esm','https://esm.sh/trystero@0.20.0/nostr',
               'https://cdn.jsdelivr.net/npm/trystero@0.20.0/torrent/+esm','https://esm.sh/trystero@0.20.0/torrent'];
   let mod=null;
@@ -1701,22 +1708,24 @@ async function initNet(){
     const room=mod.joinRoom({appId:'cyber-mosque-sukyonghyun-v1'},'main');
     const [sendMv,getMv]=room.makeAction('mv'), [sendCh,getCh]=room.makeAction('ch');
     NET.room=room; NET.send=sendMv; NET.sendChat=sendCh; NET.status='on';
-    room.onPeerJoin(id=>{ slotFor(id); NET.forceSend=true; updOnline(); });
-    room.onPeerLeave(id=>{ const R=NET.peers.get(id); if(R){ R.peer=null; R.vis=false; if(R.el) R.el.style.display='none'; NET.peers.delete(id); } updOnline(); });
+    room.onPeerJoin(id=>{ NET.ids.set(id,{t:performance.now(),w:0}); NET.forceSend=true; updOnline(); });
+    room.onPeerLeave(id=>{ NET.ids.delete(id); const R=NET.peers.get(id); if(R){ R.peer=null; R.vis=false; if(R.el) R.el.style.display='none'; NET.peers.delete(id); } updOnline(); });
     getMv((d,id)=>{
-      const R=slotFor(id); if(!R||!d) return; R.seen=performance.now();
-      const was=R.vis; R.vis=!!d.v; if(was!==R.vis) updOnline(); if(!d.v) return;
+      if(!d) return; NET.ids.set(id,{t:performance.now(),w:d.v?1:0});
+      if(!d.v){ const R0=NET.peers.get(id); if(R0) R0.vis=false; updOnline(); return; }
+      const R=slotFor(id); if(!R){ updOnline(); return; } R.seen=performance.now(); R.vis=true; updOnline();
       R.tx=num(d.x,-80,80); R.ty=num(d.y,0,3); R.tz=num(d.z,-80,80); R.tr=num(d.r,-7,7); R.m=num(d.m,0,5);
       if(Array.isArray(d.p)&&d.p.length===KEYS.length) R.tpose=d.p.map(v=>num(v,-4,4));
       const nm=String(d.n||'').slice(0,12); if(R.el) R.el.querySelector('.nm').textContent=nm;
       if(R.first){ R.first=false; R.F.root.position.set(R.tx,R.ty,R.tz); R.F.root.rotation.y=R.tr; }
     });
     getCh((d,id)=>{ const R=slotFor(id); if(!R||!d||!R.el) return; R.el.querySelector('.bub').textContent=String(d.t||'').slice(0,80); R.bubT=performance.now()+7000; });
-    onlineEl.textContent='\ud568\uaed8 1\uba85';
+    updOnline();
   }catch(e){ NET.status='fail'; onlineEl.textContent='\ud63c\uc790 \ubaa8\ub4dc'; }
 }
 function netTick(){
   if(NET.status!=='on') return; const now=performance.now();
+  if(now-NET.uo>1000){ NET.uo=now; updOnline(); }
   if(PL.on && !intro.on){
     if(now-NET.last>100||NET.forceSend){ NET.last=now; NET.forceSend=false;
       try{ NET.send({v:1,x:+PL.x.toFixed(2),y:+PL.y.toFixed(2),z:+PL.z.toFixed(2),r:+PL.ry.toFixed(2),m:+(PL.spd||0).toFixed(2),p:KEYS.map(q=>+(pp[q]||0).toFixed(3)),n:NET.name}); }catch(e){} }
@@ -1742,6 +1751,22 @@ function updRemotes(dt){
       F.hip.position.y=.92-Math.abs(Math.cos(R.ph))*.025;
     }
   });
+}
+const STATS_DB='';   // paste your Firebase Realtime Database URL here, e.g. 'https://xxxx-default-rtdb.firebaseio.com'
+const statsEl=document.getElementById('statsEl');
+async function initStats(){
+  if(!STATS_DB) return;
+  const base=STATS_DB.replace(/\/+$/,''), day=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
+  let sd=null, se=null; try{ sd=localStorage.getItem('mosque-day'); se=localStorage.getItem('mosque-ever'); }catch(e){}
+  const inc=JSON.stringify({'.sv':{increment:1}});
+  const show=async()=>{ try{
+    const [a,b]=await Promise.all([fetch(base+'/visits/days/'+day+'.json').then(r=>r.json()),fetch(base+'/visits/total.json').then(r=>r.json())]);
+    statsEl.textContent='\uc624\ub298 '+(+a||0)+'\uba85 \u00b7 \ub204\uc801 '+(+b||0)+'\uba85'; statsEl.hidden=false; }catch(e){} };
+  try{
+    if(sd!==day){ await fetch(base+'/visits/days/'+day+'.json',{method:'PUT',body:inc}); try{ localStorage.setItem('mosque-day',day); }catch(e){} }
+    if(!se){ await fetch(base+'/visits/total.json',{method:'PUT',body:inc}); try{ localStorage.setItem('mosque-ever','1'); }catch(e){} }
+  }catch(e){}
+  show(); setInterval(show,60000);
 }
 const _pv=new THREE.Vector3();
 function placeTag(el,x,y,z){
@@ -1773,6 +1798,7 @@ msgIn.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); s
 nameIn.addEventListener('change',()=>{ NET.name=(nameIn.value.trim()||NET.name).slice(0,10); nameIn.value=NET.name; try{ localStorage.setItem('mosque-name',NET.name); }catch(e){} NET.forceSend=true; });
 chatBtn.onclick=()=>{ chatbar.hidden=!chatbar.hidden; chatBtn.setAttribute('aria-pressed',!chatbar.hidden); if(!chatbar.hidden) setTimeout(()=>msgIn.focus(),50); };
 function netOn(){ chatBtn.hidden=false; onlineEl.hidden=false; initNet(); NET.forceSend=true; }
+function netWatch(){ onlineEl.hidden=false; initNet(); }
 function netOff(){ chatBtn.hidden=true; chatbar.hidden=true; NET.forceSend=true; }
 
 /* ---------- init ---------- */
@@ -1787,6 +1813,7 @@ function resize(){
 }
 window.addEventListener('resize',resize); resize();
 
+initNet(); initStats();
 const clock=new THREE.Clock();
 function frame(){
   const dt=Math.min(clock.getDelta(),.05);
