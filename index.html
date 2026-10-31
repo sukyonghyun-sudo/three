@@ -133,6 +133,22 @@ body.cinema .lb{height:11vh}
 body.cinema #skipIntro{display:block}
 body.cinema .dock,body.cinema .ctrls,body.cinema .title,body.cinema .joy,body.cinema .acts2{opacity:0;pointer-events:none}
 .dock,.ctrls,.title{transition:opacity .6s}
+.online{cursor:default;color:var(--gold)}
+.chatbar{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 54px);z-index:11;display:flex;gap:6px;max-width:560px;margin:0 auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.chatbar[hidden]{display:none}
+.chatbar input{min-width:0;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:16px;padding:7px 9px;border-radius:10px}
+#nameIn{flex:0 0 74px} #msgIn{flex:1}
+.chatbar button{border:0;background:var(--chip-on);color:var(--chip-on-text);font:inherit;font-size:14px;padding:0 12px;border-radius:10px;cursor:pointer}
+#tags{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+body.cinema #tags,body.cinema .chatbar{display:none}
+.ntag{position:absolute;left:0;top:0;display:none;flex-direction:column;align-items:center;will-change:transform}
+.ntag .nm{font-size:11px;color:#fff;background:rgba(10,20,40,.55);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.ntag .nm:empty{display:none}
+.ntag .bub{display:none;max-width:58vw;font-size:13.5px;line-height:1.4;color:#16264A;background:#FFF8E6;padding:6px 11px;border-radius:12px;
+  margin-bottom:6px;box-shadow:0 2px 10px rgba(0,0,0,.3);position:relative;text-align:center;word-break:keep-all;overflow-wrap:anywhere}
+.ntag.talk .bub{display:block}
+.ntag .bub::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#FFF8E6}
 </style>
 </head>
 <body>
@@ -157,8 +173,16 @@ body.cinema .dock,body.cinema .ctrls,body.cinema .title,body.cinema .joy,body.ci
 <div class="title"><span class="ar" lang="ar">اللّٰهُ أَكْبَر</span><span class="ko">신은 위대하다</span></div>
 
 <div class="ctrls">
+  <span class="ctrl online" id="onlineEl" hidden></span>
+  <button class="ctrl" id="chatBtn" aria-pressed="false" hidden>채팅</button>
   <button class="ctrl" id="sndBtn" aria-pressed="false">소리 켜기</button>
 </div>
+<div class="chatbar" id="chatbar" hidden>
+  <input id="nameIn" maxlength="10" placeholder="이름" aria-label="이름">
+  <input id="msgIn" maxlength="80" placeholder="말풍선으로 할 말" enterkeyhint="send" aria-label="메시지">
+  <button id="sendBtn">보내기</button>
+</div>
+<div id="tags" aria-hidden="true"></div>
 
 <div class="gate" id="gate" role="dialog" aria-label="입장">
   <div class="ar" lang="ar">اللّٰهُ أَكْبَر</div>
@@ -1115,7 +1139,7 @@ joyEl.addEventListener('pointerdown',e=>{ jp=e.pointerId; joyEl.setPointerCaptur
 joyEl.addEventListener('pointermove',e=>{ if(e.pointerId===jp) moveJoy(e); });
 function endJoy(e){ if(e.pointerId===jp){ jp=null; joy.x=0; joy.y=0; knob.style.transform='translate(-50%,-50%)'; } }
 joyEl.addEventListener('pointerup',endJoy); joyEl.addEventListener('pointercancel',endJoy);
-window.addEventListener('keydown',e=>{ if(!PL.on) return; keys[e.code]=true;
+window.addEventListener('keydown',e=>{ if(!PL.on) return; if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')) return; keys[e.code]=true;
   if(e.code==='Space'){ act('praise'); e.preventDefault(); }
   if(e.code==='KeyG'){ act('greet'); }
   if(e.code.indexOf('Arrow')===0) e.preventDefault(); });
@@ -1169,7 +1193,7 @@ function updatePlayer(dt){
   if(keys.KeyW||keys.ArrowUp) iy+=1; if(keys.KeyS||keys.ArrowDown) iy-=1;
   const mag=Math.min(1,Math.hypot(ix,iy));
   if(mag>.28 && PL.state!=='idle') endAction();
-  let moving=false, mag2=mag, k=1-Math.exp(-dt*9), src=POSE.stand;
+  let moving=false, mag2=mag, k=1-Math.exp(-dt*9), src=POSE.stand; PL.spd=0;
   if(mag>.12 && PL.state==='idle'){
     const th=ctl.th, fx=-Math.sin(th), fz=-Math.cos(th), rx=Math.cos(th), rz=-Math.sin(th);
     let dx=fx*iy+rx*ix, dz=fz*iy+rz*ix; const L=Math.hypot(dx,dz)||1; dx/=L; dz/=L;
@@ -1180,7 +1204,7 @@ function updatePlayer(dt){
     if(!collides(PL.x,nz) && surfH(PL.x,nz)-h1<=MAXSTEP) PL.z=nz;
     { const qx=PL.x, qz=PL.z+5, qr=Math.hypot(qx,qz); if(qr>80){ PL.x=qx*80/qr; PL.z=qz*80/qr-5; } }
     PL.ry+=wrapA(Math.atan2(-dx,-dz)-PL.ry)*Math.min(1,dt*10);
-    PL.ph+=st*4.8; moving=true;
+    PL.ph+=st*4.8; moving=true; PL.spd=st/Math.max(dt,1e-4);
   }
   if(PL.state==='sit') src=POSE.jalsa;
   else if(PL.state==='dua'){ PL.t+=dt; src=POSE.dua; if(PL.t>3.6) endAction(); }
@@ -1307,7 +1331,7 @@ function endIntro(){
 }
 document.getElementById('skipIntro').onclick=()=>{ if(intro.on) endIntro(); };
 function finishIntroToWalk(){
-  joyEl.hidden=false; actsEl.hidden=false;
+  joyEl.hidden=false; actsEl.hidden=false; netOn();
   goal.r=5; ctl.r=5.6; goal.th=0; ctl.th=0; goal.ph=1.3; ctl.ph=1.3;
   goal.t.set(PL.x,PL.y+1.15,PL.z); ctl.t.copy(goal.t);
   phMin=.55; phMax=1.5; focused=true; camEase=.05; lastInput=performance.now();
@@ -1319,7 +1343,7 @@ function startWalk(spawn){
   if(spawn==='gate'){ PL.x=4; PL.z=38; } else { PL.x=0; PL.z=12; }
   PL.ry=0; PL.y=surfH(PL.x,PL.z); Object.assign(pp,POSE.stand,{hd:0});
   player.root.scale.setScalar(player.base);
-  joyEl.hidden=false; actsEl.hidden=false;
+  joyEl.hidden=false; actsEl.hidden=false; netOn();
   if(openTab) setTab(openTab);
   goal.t.set(PL.x,1.15,PL.z); ctl.t.copy(goal.t); goal.r=5; ctl.r=5.5; goal.th=0; ctl.th=0; goal.ph=1.3; ctl.ph=1.3;
   phMin=.55; phMax=1.5; focused=true; camEase=.05; lastInput=performance.now();
@@ -1327,7 +1351,7 @@ function startWalk(spawn){
   toast('\uc67c\ucabd \uc870\uc774\uc2a4\ud2f1\uc73c\ub85c \uac77\uace0, \ud654\uba74\uc744 \ub4dc\ub798\uadf8\ud574 \ub458\ub7ec\ubd10\uc694');
 }
 function stopWalk(){
-  endAction(); PL.on=false; player.root.scale.setScalar(0);
+  endAction(); PL.on=false; player.root.scale.setScalar(0); netOff();
   joyEl.hidden=true; actsEl.hidden=true; joy.x=0; joy.y=0;
   phMin=.2; phMax=1.52; camEase=.08; goPlace('all');
   document.querySelector('.tab[data-tab="walk"]').setAttribute('aria-selected','false');
@@ -1379,6 +1403,9 @@ worshippers.slice(1).forEach((F,i)=>{ const m=new THREE.Mesh(new THREE.PlaneGeom
 placeStatic(person({woman:true,scarf:0xE6DCCB,seed:91}),13.6,0,8.2,-Math.PI/2,'read');
 
 
+const REMOTES=[];
+for(let i=0;i<16;i++){ const F=person({woman:i%4===3,seed:300+i*7}); F.root.scale.setScalar(0);
+  REMOTES.push({F,peer:null,vis:false,first:true,tx:0,ty:0,tz:0,tr:0,m:0,ph:0,pose:Object.assign({},POSE.stand,{hd:0}),tpose:null,el:null,bubT:0,seen:0}); }
 // build one instanced mesh per body part
 const IM=[];
 Object.keys(PG).forEach(k=>{ const items=PI_[k]; if(!items.length) return;
@@ -1645,6 +1672,109 @@ document.addEventListener('visibilitychange',()=>{
   else if(resumeAfter){ resumeAfter=false; if(mode==='wa'&&ac) ac.resume(); else rec.play().catch(()=>{}); }
 });
 
+/* ---------- together: other visitors walk with you (peer to peer, no server) ---------- */
+const NET={room:null,send:null,sendChat:null,status:'off',name:'',peers:new Map(),last:0,lastChat:0,forceSend:false};
+try{ NET.name=localStorage.getItem('mosque-name')||''; }catch(e){}
+if(!NET.name) NET.name='\uc21c\ub840\uc790 '+(1000+Math.floor(Math.random()*9000));
+const tagsEl=document.getElementById('tags'), chatBtn=document.getElementById('chatBtn'), onlineEl=document.getElementById('onlineEl');
+const chatbar=document.getElementById('chatbar'), nameIn=document.getElementById('nameIn'), msgIn=document.getElementById('msgIn');
+nameIn.value=NET.name;
+function mkTag(){ const d=document.createElement('div'); d.className='ntag'; d.innerHTML='<div class="bub"></div><div class="nm"></div>'; tagsEl.appendChild(d); return d; }
+const selfTag={el:mkTag(),bubT:0};
+function updOnline(){ if(NET.status!=='on') return; let n=1; NET.peers.forEach(R=>{ if(R.vis) n++; }); onlineEl.textContent='\ud568\uaed8 '+n+'\uba85'; }
+function slotFor(id){
+  if(NET.peers.has(id)) return NET.peers.get(id);
+  const R=REMOTES.find(r=>!r.peer); if(!R) return null;
+  R.peer=id; R.vis=false; R.first=true; R.tpose=null; R.bubT=0; R.seen=performance.now();
+  if(!R.el) R.el=mkTag(); R.el.querySelector('.nm').textContent=''; NET.peers.set(id,R); return R;
+}
+const num=(v,a,b)=>{ v=+v; return isFinite(v)?Math.max(a,Math.min(b,v)):0; };
+async function initNet(){
+  if(NET.status!=='off') return; NET.status='connecting';
+  onlineEl.hidden=false; onlineEl.textContent='\uc5f0\uacb0 \uc911\u2026';
+  const urls=['https://cdn.jsdelivr.net/npm/trystero@0.20.0/nostr/+esm','https://esm.sh/trystero@0.20.0/nostr',
+              'https://cdn.jsdelivr.net/npm/trystero@0.20.0/torrent/+esm','https://esm.sh/trystero@0.20.0/torrent'];
+  let mod=null;
+  for(const u of urls){ try{ const m=await import(u); if(m&&m.joinRoom){ mod=m; break; } }catch(e){} }
+  if(!mod){ NET.status='fail'; onlineEl.textContent='\ud63c\uc790 \ubaa8\ub4dc'; return; }
+  try{
+    const room=mod.joinRoom({appId:'cyber-mosque-sukyonghyun-v1'},'main');
+    const [sendMv,getMv]=room.makeAction('mv'), [sendCh,getCh]=room.makeAction('ch');
+    NET.room=room; NET.send=sendMv; NET.sendChat=sendCh; NET.status='on';
+    room.onPeerJoin(id=>{ slotFor(id); NET.forceSend=true; updOnline(); });
+    room.onPeerLeave(id=>{ const R=NET.peers.get(id); if(R){ R.peer=null; R.vis=false; if(R.el) R.el.style.display='none'; NET.peers.delete(id); } updOnline(); });
+    getMv((d,id)=>{
+      const R=slotFor(id); if(!R||!d) return; R.seen=performance.now();
+      const was=R.vis; R.vis=!!d.v; if(was!==R.vis) updOnline(); if(!d.v) return;
+      R.tx=num(d.x,-80,80); R.ty=num(d.y,0,3); R.tz=num(d.z,-80,80); R.tr=num(d.r,-7,7); R.m=num(d.m,0,5);
+      if(Array.isArray(d.p)&&d.p.length===KEYS.length) R.tpose=d.p.map(v=>num(v,-4,4));
+      const nm=String(d.n||'').slice(0,12); if(R.el) R.el.querySelector('.nm').textContent=nm;
+      if(R.first){ R.first=false; R.F.root.position.set(R.tx,R.ty,R.tz); R.F.root.rotation.y=R.tr; }
+    });
+    getCh((d,id)=>{ const R=slotFor(id); if(!R||!d||!R.el) return; R.el.querySelector('.bub').textContent=String(d.t||'').slice(0,80); R.bubT=performance.now()+7000; });
+    onlineEl.textContent='\ud568\uaed8 1\uba85';
+  }catch(e){ NET.status='fail'; onlineEl.textContent='\ud63c\uc790 \ubaa8\ub4dc'; }
+}
+function netTick(){
+  if(NET.status!=='on') return; const now=performance.now();
+  if(PL.on && !intro.on){
+    if(now-NET.last>100||NET.forceSend){ NET.last=now; NET.forceSend=false;
+      try{ NET.send({v:1,x:+PL.x.toFixed(2),y:+PL.y.toFixed(2),z:+PL.z.toFixed(2),r:+PL.ry.toFixed(2),m:+(PL.spd||0).toFixed(2),p:KEYS.map(q=>+(pp[q]||0).toFixed(3)),n:NET.name}); }catch(e){} }
+  } else if(now-NET.last>2000||NET.forceSend){ NET.last=now; NET.forceSend=false; try{ NET.send({v:0}); }catch(e){} }
+  NET.peers.forEach(R=>{ if(R.vis && now-R.seen>15000){ R.vis=false; updOnline(); } });
+}
+function updRemotes(dt){
+  const k=Math.min(1,dt*10), kp=Math.min(1,dt*12);
+  REMOTES.forEach(R=>{
+    if(!R.peer||!R.vis){ R.F.root.scale.setScalar(0); return; }
+    R.F.root.scale.setScalar(R.F.base);
+    const p=R.F.root.position; p.x+=(R.tx-p.x)*k; p.y+=(R.ty-p.y)*k; p.z+=(R.tz-p.z)*k;
+    if(Math.hypot(R.tx-p.x,R.tz-p.z)>6) p.set(R.tx,R.ty,R.tz);
+    R.F.root.rotation.y+=wrapA(R.tr-R.F.root.rotation.y)*k;
+    if(R.tpose) KEYS.forEach((q,i)=>{ R.pose[q]+=(R.tpose[i]-(R.pose[q]||0))*kp; });
+    applyPose(R.F,R.pose);
+    if(R.m>.2){
+      R.ph+=R.m*dt*4.8; const sw=Math.sin(R.ph)*.45, F=R.F;
+      F.thighs[0].rotation.x=sw; F.thighs[1].rotation.x=-sw;
+      F.knees[0].rotation.x=-Math.max(0,sw)*.9; F.knees[1].rotation.x=-Math.max(0,-sw)*.9;
+      F.feet.forEach(f=>f.rotation.x=0); F.skirt.rotation.x=0;
+      F.arms[0].sh.rotation.x=-sw*.55; F.arms[1].sh.rotation.x=sw*.55; F.arms.forEach(a=>a.el.rotation.x=.25);
+      F.hip.position.y=.92-Math.abs(Math.cos(R.ph))*.025;
+    }
+  });
+}
+const _pv=new THREE.Vector3();
+function placeTag(el,x,y,z){
+  _pv.set(x,y,z).project(camera);
+  if(_pv.z>1||Math.abs(_pv.x)>1.15||Math.abs(_pv.y)>1.15){ el.style.display='none'; return; }
+  el.style.display='flex';
+  el.style.transform='translate('+((_pv.x*.5+.5)*innerWidth).toFixed(1)+'px,'+((-_pv.y*.5+.5)*innerHeight).toFixed(1)+'px) translate(-50%,-100%)';
+}
+function updTags(){
+  const now=performance.now();
+  REMOTES.forEach(R=>{ if(!R.el) return;
+    if(!R.peer||!R.vis||intro.on){ R.el.style.display='none'; return; }
+    const p=R.F.root.position; if(camera.position.distanceTo(p)>45){ R.el.style.display='none'; return; }
+    placeTag(R.el,p.x,p.y+2.0,p.z); R.el.classList.toggle('talk',now<R.bubT); });
+  if(PL.on&&!intro.on&&now<selfTag.bubT){ placeTag(selfTag.el,PL.x,PL.y+2.0,PL.z); selfTag.el.classList.add('talk'); selfTag.el.querySelector('.nm').textContent=NET.name; }
+  else selfTag.el.style.display='none';
+}
+function sendChat(){
+  const t=msgIn.value.trim(); if(!t) return;
+  const now=performance.now(); if(now-NET.lastChat<1200) return; NET.lastChat=now;
+  NET.name=(nameIn.value.trim()||NET.name).slice(0,10); nameIn.value=NET.name;
+  try{ localStorage.setItem('mosque-name',NET.name); }catch(e){}
+  msgIn.value=''; selfTag.el.querySelector('.bub').textContent=t.slice(0,80); selfTag.bubT=now+7000;
+  if(NET.sendChat){ try{ NET.sendChat({t:t.slice(0,80),n:NET.name}); }catch(e){} }
+  NET.forceSend=true;
+}
+document.getElementById('sendBtn').onclick=sendChat;
+msgIn.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); sendChat(); } });
+nameIn.addEventListener('change',()=>{ NET.name=(nameIn.value.trim()||NET.name).slice(0,10); nameIn.value=NET.name; try{ localStorage.setItem('mosque-name',NET.name); }catch(e){} NET.forceSend=true; });
+chatBtn.onclick=()=>{ chatbar.hidden=!chatbar.hidden; chatBtn.setAttribute('aria-pressed',!chatbar.hidden); if(!chatbar.hidden) setTimeout(()=>msgIn.focus(),50); };
+function netOn(){ chatBtn.hidden=false; onlineEl.hidden=false; initNet(); NET.forceSend=true; }
+function netOff(){ chatBtn.hidden=true; chatbar.hidden=true; NET.forceSend=true; }
+
 /* ---------- init ---------- */
 Object.assign(cur,snapshot(TIMES[3])); applyTime();
 document.querySelector('#times .chip[data-id="maghrib"]').setAttribute('aria-pressed','true');
@@ -1667,7 +1797,7 @@ function frame(){
     applyTime();
   }
   if(intro.on) updateIntro(dt);
-  updatePlayer(dt); updateWorship(dt); updDust(clock.elapsedTime);
+  updatePlayer(dt); updRemotes(dt); netTick(); updateWorship(dt); updDust(clock.elapsedTime);
   envTimer+=dt; if(envDirty && envTimer>.35){ updateEnv(); envTimer=0; }
   if(!reduceMotion && !focused && ptrs.size===0 && performance.now()-lastInput>4000) goal.th+=dt*0.05;
   const f=1-Math.pow(camEase,dt);
@@ -1680,6 +1810,7 @@ function frame(){
     camera.lookAt(ctl.t);
   }
   renderer.render(scene,camera);
+  updTags();
 }
 let errShown=false;
 function tick(){
