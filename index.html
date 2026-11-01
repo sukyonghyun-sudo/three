@@ -84,7 +84,7 @@ button.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   border-top:1px solid var(--line);border-radius:18px 18px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
 .tray{padding:12px 0 8px;border-bottom:1px solid var(--line)}
 .tray[hidden],.tray [hidden]{display:none!important}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr)}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1.55fr}
 .tab{border:0;background:transparent;color:var(--ink-soft);font:inherit;font-size:13px;height:52px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative}
 .tab .ic{font-size:15px;line-height:1}
@@ -486,6 +486,13 @@ body.cinema .shop-prompt,body.photo .shop-prompt,body.photo .shop,body.trayopen 
 .bm .swatch[aria-pressed="true"]{background:#E9E2CF;color:#151515}
 .bm-prompt{background:linear-gradient(160deg,#3B4136,#1C1F1A);color:#E9E2CF;border-color:rgba(180,170,140,.5)}
 body.cinema .bm-prompt,body.photo .bm{display:none!important}
+.don-go{display:block;box-sizing:border-box;width:100%;text-align:center;margin:12px 0 4px;padding:11px 14px;border-radius:999px;border:0;background:var(--goldgrad);color:#1A1406;font:inherit;font-weight:700;font-size:14px;text-decoration:none;cursor:pointer}
+.tab,.tab .tl{white-space:nowrap}
+.tab{padding-left:2px;padding-right:2px}
+@media (max-width:360px){ .tab{font-size:11.5px;letter-spacing:0} .tab .tl i{margin:0 2px} }
+.don-go[hidden]{display:none}
+.don-sub{display:block;margin:8px auto 0;border:1px solid var(--gold-lo);background:transparent;color:var(--gold-hi);font:inherit;font-size:12.5px;padding:7px 16px;border-radius:999px;cursor:pointer}
+body.cinema .don-prompt,body.photo .don{display:none!important}
 #cap{bottom:calc(var(--sb) + 1.6vh);font-size:16px;font-weight:600;color:#FFF8EA;letter-spacing:.03em;
   text-shadow:0 1px 2px rgba(0,0,0,.9),0 2px 14px rgba(0,0,0,.85);min-height:2.9em;display:flex;align-items:center;justify-content:center}
 @media (max-height:500px){
@@ -583,6 +590,7 @@ body.cinema .bm-prompt,body.photo .bm{display:none!important}
     <p id="infoText">화면을 드래그해서 둘러보고, 아래에서 고르면 그곳으로 이동해요.</p>
   </div>
   <div class="row" id="places" data-tab="places"></div>
+  <div class="row" id="places2" data-tab="places"></div>
   <div class="tray-hint" id="trayHint" data-tab="places"></div>
   <div class="row" id="times" data-tab="times" hidden></div>
   <div class="acts" data-tab="pray" hidden>
@@ -595,6 +603,7 @@ body.cinema .bm-prompt,body.photo .bm{display:none!important}
   <button class="tab" data-tab="places" aria-selected="false"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20V12a7 7 0 0 1 14 0v8"/><path d="M12 5V2.5M10.6 3.2a1.6 1.6 0 1 0 2.8 0"/><path d="M3 20h18M9 20v-4a3 3 0 0 1 6 0v4"/></svg></span>장소</button>
   <button class="tab" data-tab="times" aria-selected="false"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15.5 4.5a8 8 0 1 0 4 10.5 6.5 6.5 0 0 1-4-10.5z"/><path d="M18 3.5l.6 1.3 1.4.2-1 1 .2 1.4-1.2-.7-1.2.7.2-1.4-1-1 1.4-.2z"/></svg></span>시간대 빛</button>
   <button class="tab" data-tab="pray" aria-selected="false"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 21V11.5C5 7.4 8 4.4 12 3c4 1.4 7 4.4 7 8.5V21"/><path d="M9 21v-7.2C9 11.8 10.2 10.4 12 9.6c1.8.8 3 2.2 3 4.2V21M3 21h18"/></svg></span>회중</button>
+  <button class="tab" data-tab="donate" aria-selected="false" aria-label="기부함"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="5.4" r="2.6"/><path d="M12 4.3v2.2"/><path d="M5.5 11.5h13v8.5h-13z"/><path d="M9.5 15.2h5M4 20h16"/></svg></span><span class="tl"><b>기부</b></span></button>
   <button class="tab" data-tab="walk" aria-selected="false"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="2.4"/><path d="M9.6 4.6c.6-1.3 4.2-1.3 4.8 0"/><path d="M8 21l1.2-8.5L7 14M16 21l-1.2-8.5L17 14M9.2 12.5c.4-2.6 5.2-2.6 5.6 0"/></svg></span><span class="tl"><b class="m-walk">걷기</b><i aria-hidden="true">⇄</i><b class="m-view">관람</b></span></button>
  </nav>
 </div>
@@ -629,6 +638,18 @@ body.cinema .bm-prompt,body.photo .bm{display:none!important}
 <div id="photoFlash" aria-hidden="true"></div>
 <button class="shop-prompt" id="shopPrompt" hidden>수크 가게 둘러보기</button>
 <button class="shop-prompt bm-prompt" id="bmPrompt" hidden>수상한 가게 엿보기</button>
+<button class="shop-prompt don-prompt" id="donPrompt" hidden>기부함 (사다카)</button>
+<div class="shop don" id="don" hidden role="dialog" aria-label="기부함">
+  <div class="shop-card">
+    <div class="shop-h"><span class="ar" lang="ar">صدقة</span><b>기부함</b><button id="donClose">닫기</button></div>
+    <div class="shop-note" style="font-size:13px;opacity:1;color:var(--ink)">사다카는 정해진 액수 없이 마음 가는 만큼 베푸는 자발적 기부예요. 이슬람에서는 미소 한 번도 사다카라고 가르쳐요.</div>
+    <div class="shop-t" id="donTo"></div>
+    <a class="don-go" id="donGo" target="_blank" rel="noopener noreferrer" hidden>기부하러 가기</a>
+    <button class="don-go" id="donCoin" hidden>동전 한 닢 넣기</button>
+    <div class="shop-note" id="donNote"></div>
+    <button class="don-sub" id="donGoto">기부함 앞으로 가기</button>
+  </div>
+</div>
 <div class="shop bm" id="bm" hidden role="dialog" aria-label="골목 가게">
   <div class="shop-card">
     <div class="shop-h"><b>골목 가게</b><button id="bmClose">닫기</button></div>
@@ -1700,6 +1721,52 @@ function datePalm(x,z,h,lean,seed,ang,flen){
   }
   suv(5.8,57,-Math.PI/2,0xF2F0EA,true); suv(-5.9,63.5,-Math.PI/2+.08,0xC9B48E,false); suv(52.8,46.5,.735,0x4A4E54,true); suv(-24.8,6,Math.PI/2,0xB8BCC0,false);
 }
+// ===== what a living mosque has: shoe racks, Quran shelves, chairs for the elderly, adhan speakers, a water cooler, a donation box =====
+{ const r=rnd(7070), steelM=std({color:0xC9CDD2,metalness:.8,roughness:.28}), greyM=std({color:0xD9DADC,roughness:.5}), darkM=std({color:0x2A2B2E,roughness:.6});
+  const shoeMs=[0x1E1B18,0x5A3A22,0xEDEBE6,0x2F3B52,0x7A4A2A].map(c=>std({color:c,roughness:.6}));
+  const shoe=(x,y,z,m,ry,par)=>{ const s=add(sph(.06,10,8),m,x,y+.035,z,par); s.scale.set(.75,.55,2.0); s.rotation.y=ry||0; };
+  [-8.4,-2.8,2.8,8.4].forEach(cx=>{ const z=-5.29;
+    [-1,1].forEach(s=>box(.04,1.1,.42,M.wood,cx+s*.76,.59,z)); box(1.56,.03,.42,M.wood,cx,1.13,z); box(1.56,1.08,.02,M.woodDark,cx,.6,z-.2);
+    [.1,.45,.8].forEach(y=>{ box(1.5,.025,.4,M.wood,cx,y+.035,z); for(let k=0;k<3;k++){ if(r()<.2) continue; const m=shoeMs[Math.floor(r()*shoeMs.length)], sx=cx-.5+k*.5;
+      shoe(sx-.07,y+.05,z+.02,m,(r()-.5)*.2); shoe(sx+.07,y+.05,z+.02,m,(r()-.5)*.2); } });
+    if(cx===-2.8||cx===8.4){ add(cyl(.17,.14,.16,14),M.wood,cx+.35,1.23,z); for(let k=0;k<5;k++) add(new THREE.SphereGeometry(.07,10,6,0,Math.PI*2,0,Math.PI*.5),greyM,cx+.27+(k%3)*.08,1.29+(k>2?.04:0),z-.06+(k%2)*.1); }
+    for(let k=0;k<2;k++){ if(r()<.4) continue; const sx=cx+(r()-.5)*1.2, sz=-4.75-r()*.3, m=shoeMs[Math.floor(r()*2)];
+      [-1,1].forEach(q=>{ const so=box(.1,.016,.26,m,sx+q*.075,.045,sz); so.rotation.y=(r()-.5)*.6; const st=add(new THREE.TorusGeometry(.045,.012,5,10,Math.PI),m,sx+q*.075,.05,sz-.02); st.rotation.y=Math.PI/2; }); } });
+  const bookMs=[0x1F5A40,0x6A1A26,0x1E2F5C,0x3A2A1C].map(c=>std({color:c,roughness:.7}));
+  [-8.4,-2.8,2.8,8.4].forEach(cx=>{ const z=-6.69;
+    [-1,1].forEach(s=>box(.04,1.9,.36,M.woodDark,cx+s*.78,.97,z)); box(1.6,.04,.38,M.woodDark,cx,1.93,z); box(1.6,1.9,.02,M.woodDark,cx,.97,z+.17);
+    [.06,.52,.98,1.44].forEach(y=>{ box(1.52,.03,.34,M.woodDark,cx,y+.02,z); let x=cx-.72;
+      while(x<cx+.7){ const w=.045+r()*.02, h=.27+r()*.06; box(w,h,.21,bookMs[Math.floor(r()*bookMs.length)],x+w/2,y+.035+h/2,z+.04); box(w+.002,.012,.212,M.gold,x+w/2,y+.035+h*.8,z+.04); x+=w+.004; } }); });
+  [-12.75,-11.95,11.95,12.75].forEach(cx=>{ const cz=-7.45;
+    [[-.2,-.2],[.2,-.2],[-.2,.2],[.2,.2]].forEach(([dx,dz])=>box(.035,.46,.035,M.woodDark,cx+dx,.27,cz+dz)); box(.46,.05,.46,M.carpet,cx,.5,cz);
+    box(.46,.5,.04,M.woodDark,cx,.78,cz+.22); [-1,1].forEach(s=>box(.04,.04,.42,M.woodDark,cx+s*.22,.72,cz)); });
+  const horn=new THREE.ConeGeometry(.17,.42,16,1,true);
+  [[-17.5,-20.5],[17.5,-20.5],[-15.8,15.8],[15.8,15.8]].forEach(([mx,mz])=>{ const R=1.32-(19.2-3.8)/22*.2;
+    for(let k=0;k<4;k++){ const a=k/4*Math.PI*2+Math.PI/4, dx=Math.cos(a), dz=Math.sin(a);
+      box(.06,.06,.3,greyM,mx+dx*(R+.12),19.2,mz+dz*(R+.12)).rotation.y=-a+Math.PI/2;
+      const h=add(horn,greyM,mx+dx*(R+.38),19.15,mz+dz*(R+.38)); h.quaternion.setFromUnitVectors(UP,V(-dx,.32,-dz).normalize()); } });
+  [-3.6,3.6].forEach(sx=>{ box(.32,.46,.2,darkM,sx,5.3,-19.38); box(.26,.36,.01,greyM,sx,5.3,-19.27); });
+  { const X=16.55, Z=-3.5; box(.46,1.0,.46,steelM,X,.53,Z); box(.5,.08,.5,steelM,X,1.07,Z); box(.38,.05,.3,darkM,X-.05,.66,Z);
+    [-.1,.1].forEach(dz=>{ const t=add(cyl(.018,.018,.08,8),M.gold,X-.27,.92,Z+dz); t.rotation.z=Math.PI/2; });
+    add(cyl(.2,.2,.42,16),std({color:0x8FB8D8,roughness:.1,metalness:.1,transparent:true,opacity:.7}),X,1.32,Z);
+    for(let k=0;k<6;k++) add(cyl(.035,.03,.09,10),greyM,X-.08,1.15+k*.006,Z-.32+(k>2?.0:.0)); }
+  { const X=3.4, Z=12.75; box(.42,.85,.42,M.woodDark,X,.46,Z); box(.48,.32,.48,M.wood,X,1.05,Z); box(.2,.015,.03,darkM,X,1.215,Z);
+    box(.3,.16,.01,M.gold,X,1.05,Z+.245); box(.5,.04,.5,M.gold,X,.9,Z); }
+}
+// ===== a gilded hanging sign and soft glow so the donation box can be spotted from across the courtyard =====
+{ const X=3.4, Z=12.75, [c,x]=cvs(512,170); const g=x.createLinearGradient(0,0,0,170); g.addColorStop(0,'#1B2E64'); g.addColorStop(1,'#0E1A3C'); x.fillStyle=g; x.fillRect(0,0,512,170);
+  x.strokeStyle='#D7B25C'; x.lineWidth=7; x.strokeRect(7,7,498,156); x.lineWidth=2; x.strokeRect(17,17,478,136);
+  x.fillStyle='#F6DE9A'; x.textAlign='center'; x.textBaseline='middle'; x.font='700 84px Amiri, "Noto Naskh Arabic", serif'; x.fillText('\u0635\u062f\u0642\u0629',140,92);
+  x.font='700 50px "Gowun Batang", serif'; x.fillText('\uae30\ubd80\ud568',370,88);
+  const tex=new THREE.CanvasTexture(c); tex.encoding=THREE.sRGBEncoding; tex.anisotropy=ANISO;
+  const sm=std({map:tex,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:.35,roughness:.5});
+  [0,Math.PI].forEach(ry=>{ const p=add(new THREE.PlaneGeometry(.95,.32),sm,X,2.2,Z+(ry?.012:-.012)); p.rotation.y=ry; });
+  box(.97,.34,.02,M.gold,X,2.2,Z);
+  add(cyl(.04,.05,2.62,8),M.gold,X,1.31,Z+.4); add(sph(.07,10,8),M.gold,X,2.65,Z+.4);
+  const arm=add(cyl(.025,.025,.42,6),M.gold,X,2.5,Z+.2); arm.rotation.x=Math.PI/2;
+  [-.4,.4].forEach(dx=>add(cyl(.006,.006,.2,4),M.gold,X+dx,2.4,Z));
+  const gl=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(glowCanvas()),color:0xFFD27A,transparent:true,opacity:.45,blending:THREE.AdditiveBlending,depthWrite:false}));
+  gl.position.set(X,2.2,Z); gl.scale.set(2.4,1.4,1); scene.add(gl); }
 /* ---------- sacred light ---------- */
 const glows=[], _sd=new THREE.Vector3();
 const gradeEl=document.getElementById('grade'), _g=new THREE.Color(), _gn=new THREE.Color(0x3A5AC8), uplights=[];
@@ -2165,7 +2232,7 @@ const AREAS=[[-18,18,-21.5,18.5,.04],[-2.8,2.8,20.5,48.5,.31],[-2.4,2.4,17.4,17.
 for(let i=0;i<7;i++) AREAS.push([2.98,4.22,-14.9-i*.6,-14.3-i*.6,.3*(i+1)]);   // minbar steps
 const MAXSTEP=.65;
 function surfH(x,z){ let h=0; for(let i=0;i<AREAS.length;i++){ const a=AREAS[i]; if(x>=a[0]&&x<=a[1]&&z>=a[2]&&z<=a[3]&&a[4]>h) h=a[4]; } return h; }
-RR(-16.8,-15.95,9.1,12.9); CC(-12,27,.95); [[5.8,57,-Math.PI/2],[-5.9,63.5,-Math.PI/2+.08],[52.8,46.5,.735],[-24.8,6,Math.PI/2]].forEach(([X,Z,th])=>[-1.55,0,1.55].forEach(k=>CC(X+k*Math.cos(th),Z-k*Math.sin(th),1.02))); RR(-14.62,-13.98,27.5,29.3); CC(OASIS[0],OASIS[1],6.4); OASIS_PALMS.forEach(q=>CC(q[0],q[1],.3)); [[1.35,0],[-1.35,0],[.85,-1.05],[-.85,-1.05]].forEach(d=>CC(46.5+d[0],56.6+d[1],.32)); CC(14.2,28,1.35); RR(42.5,50.5,49.6,54.8); CC(46.5,56.6,.7);
+RR(-16.8,-15.95,9.1,12.9); CC(-12,27,.95); [-8.4,-2.8,2.8,8.4].forEach(cx=>{ RR(cx-.8,cx+.8,-5.5,-5.06); RR(cx-.82,cx+.82,-6.9,-6.5); }); [-12.75,-11.95,11.95,12.75].forEach(cx=>CC(cx,-7.45,.3)); RR(16.3,16.8,-3.76,-3.24); CC(3.4,12.75,.32); CC(3.4,13.15,.1); [[5.8,57,-Math.PI/2],[-5.9,63.5,-Math.PI/2+.08],[52.8,46.5,.735],[-24.8,6,Math.PI/2]].forEach(([X,Z,th])=>[-1.55,0,1.55].forEach(k=>CC(X+k*Math.cos(th),Z-k*Math.sin(th),1.02))); RR(-14.62,-13.98,27.5,29.3); CC(OASIS[0],OASIS[1],6.4); OASIS_PALMS.forEach(q=>CC(q[0],q[1],.3)); [[1.35,0],[-1.35,0],[.85,-1.05],[-.85,-1.05]].forEach(d=>CC(46.5+d[0],56.6+d[1],.32)); CC(14.2,28,1.35); RR(42.5,50.5,49.6,54.8); CC(46.5,56.6,.7);
 const BOULDERS=genBoulders(); BOULDERS.forEach(b=>CC(b[0],b[1],b[2]*.95)); ACACIAS.forEach(a=>CC(a[0],a[1],.4)); RR(-20.32,-19.48,.82,3.18); CC(-18.9,2.0,.34); CC(-20.6,.6,.1); CC(-20.6,3.4,.1); RR(-18.62,-17.6,.28,.92); RR(-18.62,-17.6,2.98,3.62); RR(10.1,11.15,23.35,25.65); CC(11.35,24.5,.34); [[10.25,23.3],[10.25,25.7],[12.1,23.3],[12.1,25.7]].forEach(a=>CC(a[0],a[1],.1)); RR(12.3,12.6,23.75,24.15); [[-4.2,-2.2],[4.2,-2.2],[-4.2,10.5],[4.2,10.5]].forEach(b=>RR(b[0]-.85,b[0]+.85,b[1]-.29,b[1]+.29)); [[-15.4,1],[-15.4,6.5],[15.4,3.5],[15.4,10.4],[-12.6,-16.55],[-10.2,-16.55],[4.5,6.6],[5.6,6.6],[-3.7,19.2]].forEach(a=>CC(a[0],a[1],.34)); [[-7.6,19.9],[7.6,19.9],[-11.3,19.9],[11.3,19.9]].forEach(a=>CC(a[0],a[1],.55)); RR(-6.1,6.1,-13.9,-10.3); RR(-5.5,5.5,-9.0,-6.9);     // congregation
 function collides(x,z){
   for(let i=0;i<RECTS.length;i++){ const r=RECTS[i]; if(x>r[0]-PR&&x<r[1]+PR&&z>r[2]-PR&&z<r[3]+PR) return true; }
@@ -2416,7 +2483,7 @@ function endIntro(){
 }
 document.getElementById('skipIntro').onclick=()=>{ if(intro.on) endIntro(); };
 const WALK_SPOTS={all:[0,10.5,0],dome:[0,-.8,0],qubba:[-7.6,-12.4,0],minaret:[11,-3.4,-.36],mihrab:[-2.2,-15.8,0],
-  minbar:[5.2,-15.6,1.06],carpet:[-8,-11.4,0],salah:[6.6,-12.1,0],sahn:[0,10.5,0],fountain:[0,8.3,0],riwaq:[15.6,7,Math.PI/2],oasis:[-45,-50.2,0],camp:[46.5,59.6,0]};
+  minbar:[5.2,-15.6,1.06],carpet:[-8,-11.4,0],salah:[6.6,-12.1,0],sahn:[0,10.5,0],fountain:[0,8.3,0],riwaq:[15.6,7,Math.PI/2],oasis:[-45,-50.2,0],camp:[46.5,59.6,0],donate:[2.2,11.6,-2.33]};
 function setModeUI(){ trayInfo(); const t=document.querySelector('.tab[data-tab="walk"]'); if(!t) return;
   t.classList.toggle('walking',!!PL.on); t.setAttribute('aria-selected','false');
   t.setAttribute('aria-label',PL.on?'\uc9c0\uae08 \uac77\uae30 \ubaa8\ub4dc, \ub204\ub974\uba74 \uad00\ub78c \ubaa8\ub4dc':'\uc9c0\uae08 \uad00\ub78c \ubaa8\ub4dc, \ub204\ub974\uba74 \uac77\uae30 \ubaa8\ub4dc'); }
@@ -2777,7 +2844,9 @@ const PLACES=[
   {id:'oasis',ko:'오아시스',t:[-45,1,-58],r:24,th:.3,ph:1.15,title:'오아시스',ar:'واحة',
     text:'사막 한가운데 물이 솟는 곳이에요. 대추야자는 오아시스의 상징이고, 그 열매는 라마단에 해가 진 뒤 금식을 깰 때 가장 먼저 먹는 음식이기도 해요.'},
   {id:'camp',ko:'베두인 천막',t:[46.5,1,54.5],r:15,th:0,ph:1.25,title:'베두인 천막',ar:'خيمة',
-    text:'사막을 오가며 사는 베두인의 검은 염소털 천막이에요. 해가 지면 가족이 모닥불 가에 모여 앉아 아랍 커피(가흐와)와 대추야자를 나눠요.'}
+    text:'사막을 오가며 사는 베두인의 검은 염소털 천막이에요. 해가 지면 가족이 모닥불 가에 모여 앉아 아랍 커피(가흐와)와 대추야자를 나눠요.'},
+  {id:'donate',ko:'기부함',t:[3.4,1.2,12.75],r:6.5,th:Math.PI,ph:1.2,title:'기부함 (사다카)',ar:'صدقة',
+    text:'정문으로 들어와 중정 오른쪽, 우두 분수 앞에 있는 기부함이에요. 사다카는 정해진 액수 없이 마음 가는 만큼 베푸는 자발적 기부예요. 걷기 모드로 가까이 가면 기부 버튼이 나타나요.'}
 ];
 
 /* ---------- camera control ---------- */
@@ -2788,7 +2857,7 @@ function goPlace(id){
   const p=PLACES.find(x=>x.id===id); lastPlace=p;
   if(PL.on&&!intro.on&&WALK_SPOTS[id]){
     teleportTo(WALK_SPOTS[id]);
-    document.querySelectorAll('#places .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id));
+    document.querySelectorAll('#places .chip, #places2 .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id));
     showInfo(p.title,p.ar,p.text); if(openTab) setTab(openTab); return;
   }
   goal.t.set(...p.t); goal.r=p.r; goal.ph=p.ph; phMin=p.phMin||.2; phMax=p.phMax||1.52;
@@ -2798,7 +2867,7 @@ function goPlace(id){
   goal.th=th;
   if(reduceMotion){ ctl.t.copy(goal.t); ctl.r=goal.r; ctl.th=goal.th; ctl.ph=goal.ph; }
   focused=id!=='all'; lastInput=performance.now();
-  document.querySelectorAll('#places .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id));
+  document.querySelectorAll('#places .chip, #places2 .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id));
   showInfo(p.title,p.ar,p.text);
 }
 const ptrs=new Map(); let pinch=0;
@@ -2824,15 +2893,16 @@ canvas.addEventListener('wheel',e=>{e.preventDefault();goal.r=Math.min(110,Math.
 /* ---------- UI ---------- */
 const infoTitle=document.getElementById('infoTitle'), infoAr=document.getElementById('infoAr'), infoText=document.getElementById('infoText');
 function showInfo(t,a,x){infoTitle.textContent=t;infoAr.textContent=a||'';infoAr.lang='ar';infoText.textContent=x;}
-const timesEl=document.getElementById('times'), placesEl=document.getElementById('places');
+const timesEl=document.getElementById('times'), placesEl=document.getElementById('places'), places2El=document.getElementById('places2');
 TIMES.forEach(t=>{
   const b=document.createElement('button'); b.className='chip time'; b.dataset.id=t.id; b.setAttribute('aria-pressed','false');
   b.innerHTML='<span class="ar" lang="ar">'+t.ar+'</span><span class="ko">'+t.ko+'</span>';
   b.onclick=()=>setTime(t.id); timesEl.appendChild(b);
 });
-PLACES.forEach(p=>{
+const PLACE_ROW2=['donate','sahn','fountain','riwaq','oasis','camp'];
+PLACES.slice().sort((a,b)=>{ const ia=PLACE_ROW2.indexOf(a.id), ib=PLACE_ROW2.indexOf(b.id); return (ia<0&&ib<0)?0:(ia<0?-1:(ib<0?1:ia-ib)); }).forEach(p=>{
   const b=document.createElement('button'); b.className='chip'; b.dataset.id=p.id; b.setAttribute('aria-pressed',p.id==='all');
-  b.textContent=p.ko; b.onclick=()=>goPlace(p.id); placesEl.appendChild(b);
+  b.textContent=p.ko; b.onclick=()=>goPlace(p.id); (PLACE_ROW2.indexOf(p.id)<0?placesEl:places2El).appendChild(b);
 });
 
 const prayBtn=document.getElementById('prayBtn');
@@ -2955,6 +3025,7 @@ function trayInfo(){
   else if(openTab==='places'){ const p=lastPlace||PLACES[0]; showInfo(p.title,p.ar,p.text); }
 }
 function setTab(t){
+  if(t==='donate'){ if(intro.on) return; if(!donEl.hidden) donClose(); else donOpen(true); return; }
   if(t==='walk'){ if(intro.on) return; closePanels(); if(PL.on) stopWalk(); else startWalk('here'); return; }
   if(openTab!==t) closePanels('tab');
   openTab=(openTab===t)?null:t; tray.hidden=!openTab; document.body.classList.toggle('trayopen',!!openTab); trayInfo();
@@ -3172,6 +3243,7 @@ function drawMap(){
   c.strokeStyle='rgba(255,236,190,.85)'; c.lineWidth=1.5; c.beginPath(); c.arc(X(0),Y(-13),6*sc,0,Math.PI*2); c.stroke();
   c.fillStyle='rgba(215,178,92,1)'; c.fillRect(X(-2.3),Y(15.2),4.6*sc,2);
   [[-17.5,-20.5],[17.5,-20.5],[-15.8,15.8],[15.8,15.8]].forEach(([x,z])=>{ c.fillStyle='#F2EEE6'; c.beginPath(); c.arc(X(x),Y(z),2.4,0,Math.PI*2); c.fill(); });
+  c.fillStyle='#F6D57A'; c.strokeStyle='#3A2A08'; c.lineWidth=1.2; c.beginPath(); c.arc(X(3.4),Y(12.75),3.1,0,Math.PI*2); c.fill(); c.stroke();
   REMOTES.forEach(R=>{ if(!R.peer||!R.vis) return; const p=R.F.root.position; c.fillStyle='#9FE3FF'; c.beginPath(); c.arc(X(p.x),Y(p.z),3.4,0,Math.PI*2); c.fill(); });
   c.restore();
   c.save(); c.translate(cx,cy); c.rotate(-PL.ry); c.beginPath(); c.moveTo(0,-9); c.lineTo(6,7); c.lineTo(0,3.5); c.lineTo(-6,7); c.closePath();
@@ -3390,11 +3462,12 @@ function closePanels(keep){
   if(keep!=='tab'&&typeof openTab!=='undefined'&&openTab) setTab(openTab);
   if(keep!=='shop'&&!shopEl.hidden) shopClose();
   if(keep!=='bm'&&!bmEl.hidden) bmClose();
+  if(keep!=='don'&&!donEl.hidden) donClose();
   if(keep!=='act'&&keep!=='tasbih'&&PL.state==='tasbih') endAction();
 }
 window.addEventListener('keydown',e=>{ if(e.key!=='Escape') return;
   if(document.body.classList.contains('photo')){ photoOff(); return; }
-  if(!shopEl.hidden){ shopClose(); return; } if(!bmEl.hidden){ bmClose(); return; }
+  if(!shopEl.hidden){ shopClose(); return; } if(!bmEl.hidden){ bmClose(); return; } if(!donEl.hidden){ donClose(); return; }
   if(openTab){ setTab(openTab); return; } if(!chatbar.hidden){ chatBtn.onclick(); return; }
   if(PL.state==='tasbih') endAction(); });
 function updBM(){
@@ -3486,6 +3559,59 @@ function updFire(t){ const night=Math.min(1,cur.lamp*1.2+cur.stars*.3);
   const show=night>.5; family.forEach(F=>F.root.scale.setScalar(show?F._s:0));
 }
 
+/* ---------- ceiling fans in the galleries, and two mosque cats ---------- */
+const fans=[]; { const bodyM=new THREE.MeshStandardMaterial({color:0xD9C9A8,metalness:.5,roughness:.35}), bladeM=new THREE.MeshStandardMaterial({color:0x6B4A2A,roughness:.6});
+  [[-15.6,2],[-15.6,10],[15.6,2],[15.6,10]].forEach(([x,z])=>{ const rod=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.5,6),bodyM); rod.position.set(x,4.74,z); scene.add(rod);
+    const hub=new THREE.Group(); hub.position.set(x,4.42,z); scene.add(hub); hub.add(new THREE.Mesh(new THREE.CylinderGeometry(.11,.14,.14,16),bodyM));
+    for(let k=0;k<3;k++){ const b=new THREE.Mesh(new THREE.BoxGeometry(.62,.012,.13),bladeM); b.position.set(Math.cos(k*2.094)*.4,-.02,Math.sin(k*2.094)*.4); b.rotation.y=-k*2.094; b.rotation.x=.12; hub.add(b); }
+    fans.push(hub); }); }
+const cats=[]; { const mk=(col,belly)=>{ const m=new THREE.MeshStandardMaterial({color:col,roughness:.9}), w=new THREE.MeshStandardMaterial({color:belly,roughness:.9}), eyeM=new THREE.MeshStandardMaterial({color:0x9ACD5A,emissive:0x203010,roughness:.2}); return {m,w,eyeM}; };
+  function cat(x,z,ry,col,belly,sitting){ const {m,w,eyeM}=mk(col,belly), g=new THREE.Group(); g.position.set(x,.04,z); g.rotation.y=ry; scene.add(g);
+    const body=new THREE.Mesh(new THREE.SphereGeometry(.1,14,10),m); g.add(body);
+    if(sitting){ body.scale.set(1,1.35,1.05); body.position.set(0,.13,.02); const ch=new THREE.Mesh(new THREE.SphereGeometry(.06,10,8),w); ch.position.set(0,.15,-.07); g.add(ch);
+      [-1,1].forEach(s=>{ const l=new THREE.Mesh(new THREE.CylinderGeometry(.018,.016,.14,6),m); l.position.set(s*.04,.07,-.07); g.add(l); const p=new THREE.Mesh(new THREE.SphereGeometry(.022,8,6),w); p.scale.set(1,.6,1.3); p.position.set(s*.04,.012,-.08); g.add(p);
+        const hl=new THREE.Mesh(new THREE.SphereGeometry(.05,10,8),m); hl.scale.set(.8,.9,1.4); hl.position.set(s*.07,.05,.04); g.add(hl); }); }
+    else { body.scale.set(1.05,.75,2.1); body.position.set(0,.075,0); [-1,1].forEach(s=>{ const p=new THREE.Mesh(new THREE.SphereGeometry(.025,8,6),w); p.scale.set(1,.6,1.6); p.position.set(s*.045,.015,-.22); g.add(p); }); }
+    const head=new THREE.Group(); head.position.set(0,sitting?.31:.15,sitting?-.03:-.2); g.add(head);
+    const hd=new THREE.Mesh(new THREE.SphereGeometry(.065,14,10),m); hd.scale.set(1.08,.95,.95); head.add(hd);
+    const mz=new THREE.Mesh(new THREE.SphereGeometry(.03,10,8),w); mz.scale.set(1.2,.8,.8); mz.position.set(0,-.018,-.055); head.add(mz);
+    const nose=new THREE.Mesh(new THREE.SphereGeometry(.008,6,5),new THREE.MeshStandardMaterial({color:0xC97A82})); nose.position.set(0,-.008,-.08); head.add(nose);
+    [-1,1].forEach(s=>{ const e=new THREE.Mesh(new THREE.ConeGeometry(.026,.055,4),m); e.position.set(s*.04,.06,.0); e.rotation.z=-s*.25; head.add(e);
+      const ey=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),eyeM); ey.scale.set(1,.8,.5); ey.position.set(s*.026,.012,-.058); head.add(ey); });
+    const tail=[]; let par=g; const base=sitting?[0,.03,.1]:[0,.08,.2];
+    for(let k=0;k<4;k++){ const seg=new THREE.Group(); if(k===0) seg.position.set(base[0],base[1],base[2]); else seg.position.set(0,0,.07); par.add(seg);
+      const t=new THREE.Mesh(new THREE.CylinderGeometry(.017-k*.002,.019-k*.002,.08,6).rotateX(Math.PI/2).translate(0,0,.035),m); seg.add(t); tail.push(seg); par=seg; }
+    tail[0].rotation.x=sitting?.15:-.1; tail[0].rotation.y=sitting?.9:0;
+    g.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+    cats.push({g,head,tail,ph:Math.random()*6,sitting,look:0}); }
+  cat(10.3,10.4,2.4,0xD8893A,0xF2E2C8,false); cat(-2.05,-4.78,.2,0x222222,0xF4F1EA,true); }
+function updLife(t,dt){
+  fans.forEach((f,i)=>f.rotation.y+=dt*(4.2+i*.3));
+  cats.forEach((c,i)=>{ const p=c.g.position; let want=Math.sin(t*.3+c.ph)*.5;
+    if(PL.on){ const d=Math.hypot(PL.x-p.x,PL.z-p.z); if(d<4){ want=wrapA(Math.atan2(-(PL.x-p.x),-(PL.z-p.z))-c.g.rotation.y); want=Math.max(-1.1,Math.min(1.1,want)); } }
+    c.look+=(want-c.look)*Math.min(1,dt*2.5); c.head.rotation.y=c.look; c.head.rotation.z=Math.sin(t*.7+c.ph)*.06;
+    c.tail.forEach((s,k)=>{ if(k) { s.rotation.y=Math.sin(t*1.6+c.ph-k*.7)*(.25+k*.08); s.rotation.x=c.sitting?-.12:.05; } }); });
+}
+
+/* ---------- the donation box (sadaqah): opens a real payment page, set below ---------- */
+// ★ DONATE: fill in url (an https:// payment link) and to (who receives the money) to make the box real. Leave url empty to keep it symbolic.
+const DONATE={url:'',to:'',what:''};
+const donEl=document.getElementById('don'), donPrompt=document.getElementById('donPrompt'), donGo=document.getElementById('donGo'), donCoin=document.getElementById('donCoin'), donTo=document.getElementById('donTo'), donNote=document.getElementById('donNote');
+const DON_POS=[3.4,12.75];
+function donValid(u){ return typeof u==='string'&&/^https:\/\/[^\s"'<>]+$/i.test(u); }
+const donLive=donValid(DONATE.url)&&!!DONATE.to;
+donTo.textContent=donLive?('받는 곳: '+DONATE.to+(DONATE.what?(' · '+DONATE.what):'')):'지금은 상징적인 기부함이에요. 아직 실제 기부처가 연결되지 않았어요.';
+donNote.textContent=donLive?'결제는 외부 결제 페이지에서 이루어져요. 이 사이트는 결제 정보를 받거나 저장하지 않아요.':'동전을 넣으면 마음만 전해져요.';
+if(donLive){ donGo.href=DONATE.url; donGo.hidden=false; donCoin.hidden=true; } else { donGo.hidden=true; donCoin.hidden=false; }
+donGo.onclick=()=>{ toast('자자카 알라후 카이란 · 좋은 것으로 갚아 주시길'); };
+donCoin.onclick=()=>{ toast('동전 한 닢이 상자에 들어갔어요'); };
+let donRemote=false; const donTab=()=>document.querySelector('.tab[data-tab="donate"]');
+function donOpen(remote){ remote=(remote===true); if(!PL.on&&!remote) return; closePanels('don'); donRemote=remote; donEl.hidden=false; document.body.classList.add('shop-on'); const t=donTab(); if(t) t.setAttribute('aria-selected','true'); }
+function donClose(){ donEl.hidden=true; donRemote=false; if(shopEl.hidden&&bmEl.hidden) document.body.classList.remove('shop-on'); const t=donTab(); if(t) t.setAttribute('aria-selected','false'); }
+donPrompt.onclick=()=>donOpen(); document.getElementById('donGoto').onclick=()=>{ donClose(); goPlace('donate'); }; document.getElementById('donClose').onclick=donClose;
+function updDon(){ const d=Math.hypot(PL.x-DON_POS[0],PL.z-DON_POS[1]), near=PL.on&&!intro.on&&d<2.4;
+  donPrompt.hidden=!near||!donEl.hidden; if(!donEl.hidden&&!donRemote&&(!PL.on||d>4)) donClose(); }
+
 /* ---------- init ---------- */
 Object.assign(cur,snapshot(TIMES[3])); applyTime();
 document.querySelector('#times .chip[data-id="maghrib"]').setAttribute('aria-pressed','true');
@@ -3516,7 +3642,7 @@ function frame(){
   }
   if(intro.on) updateIntro(dt);
   if(autoTime&&!intro.on){ autoT+=dt; if(autoT>40){ autoT=0; const i=TIMES.findIndex(t=>t.id===curTimeId); setTime(TIMES[(i+1)%TIMES.length].id,9); } }
-  updatePlayer(dt); updRemotes(dt); netTick(); updateWorship(dt); updInteract(dt); updShop(); updBM(); updDust(clock.elapsedTime); updAmbient(dt); updSmoke(clock.elapsedTime); updJets(clock.elapsedTime); updWind(clock.elapsedTime); updStorm(dt,clock.elapsedTime); updFire(clock.elapsedTime); updClock(); updWaterSound(dt);
+  updatePlayer(dt); updRemotes(dt); netTick(); updateWorship(dt); updInteract(dt); updShop(); updBM(); updDon(); updDust(clock.elapsedTime); updAmbient(dt); updSmoke(clock.elapsedTime); updJets(clock.elapsedTime); updWind(clock.elapsedTime); updStorm(dt,clock.elapsedTime); updLife(clock.elapsedTime,dt); updFire(clock.elapsedTime); updClock(); updWaterSound(dt);
   envTimer+=dt; if(envDirty && envTimer>.35){ updateEnv(); envTimer=0; }
   if(!reduceMotion && !focused && ptrs.size===0 && performance.now()-lastInput>4000) goal.th+=dt*0.05;
   const f=1-Math.pow(camEase,dt);
