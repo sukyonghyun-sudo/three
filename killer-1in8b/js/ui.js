@@ -491,6 +491,12 @@ const UI = {
     });
   },
 
+  // ---- a line of the life: diary + main caption
+  flow(text, cls = '') {
+    this.diary(text, cls);
+    if (!$('#choices').classList.contains('ask')) this.hcap(text);
+  },
+
   // ---- diary
   diary(text, cls = '', date) {
     const S = G.S;
@@ -516,7 +522,7 @@ const UI = {
     // trim from the top until the entries fit (measure the entries, not scrollHeight: rotated lines overflow a few px)
     const fits = () => { const f = box.firstElementChild, l = box.lastElementChild; return !f || l.offsetTop + l.offsetHeight - f.offsetTop <= box.clientHeight; };
     if (box.clientHeight > 0) while (!fits() && box.children.length > 1) box.removeChild(box.firstChild);
-    $('#dyear').innerHTML = `${yearOf(S.t)}<small>${ageOf(S.t)}살</small>`;
+    $('#dyear').innerHTML = `${yearOf(S.t)}<small>${S.sex === 'm' ? '남' : '여'} · ${ageOf(S.t)}살</small>`;
     const tl = $('#tally');
     const n = S.victims.length;
     let h = '';
@@ -537,7 +543,7 @@ const UI = {
     const W = c.width, H = c.height, ctx = c.getContext('2d');
     ctx.clearRect(0, 0, W, H);
     const hist = (S.hist || []).slice(-40);
-    const pad = { l: 8, r: m ? 112 : 84, t: 14, b: 14 };
+    const pad = { l: 8, r: 8, t: m ? 34 : 26, b: 14 };
     const x0 = pad.l, x1 = W - pad.r, y0 = pad.t, y1 = H - pad.b;
     const X = i => x0 + (x1 - x0) * (hist.length <= 1 ? 1 : i / (hist.length - 1));
     const Y = v => y1 - (y1 - y0) * v / 100;
@@ -559,24 +565,29 @@ const UI = {
     // kills
     ctx.fillStyle = '#b01010';
     hist.forEach((h, i) => { if (h[3]) { ctx.beginPath(); ctx.moveTo(X(i) - 4, y1 + 2); ctx.lineTo(X(i) + 4, y1 + 10); ctx.moveTo(X(i) + 4, y1 + 2); ctx.lineTo(X(i) - 4, y1 + 10); ctx.strokeStyle = '#b01010'; ctx.lineWidth = 2; ctx.stroke(); } });
-    // labels at the right end
-    ctx.font = `700 ${m ? 20 : 17}px Gaegu, sans-serif`;
-    ctx.textBaseline = 'middle';
-    const last = hist[hist.length - 1] || [S.urge, S.police, S.susp, 0];
-    const lab = (txt, v, color, dy) => { ctx.fillStyle = color; ctx.fillText(txt, x1 + 6, clamp(Y(v) + dy, y0 + 6, y1 - 6)); };
-    const uY = Y(last[0]), pY = Y(last[1]);
-    const near = Math.abs(uY - pY) < 16;
-    lab('굶주림 ' + Math.round(last[0]), last[0], '#b01010', near && uY <= pY ? -8 : 0);
-    lab('수사망 ' + Math.round(last[1]), last[1], m ? '#cfcac0' : '#1b1d2e', near && pY < uY ? -8 : near ? 8 : 0);
-    ctx.fillStyle = m ? 'rgba(236,233,228,.7)' : 'rgba(27,29,46,.6)';
+    // legend: big numbers top-left
+    const last = [Math.round(S.urge), Math.round(S.police), Math.round(S.susp)];
+    ctx.textBaseline = 'alphabetic';
+    let x = x0;
+    const chip = (name, v, color) => {
+      ctx.fillStyle = color; ctx.fillRect(x, (m ? 14 : 10), m ? 14 : 11, 4);
+      x += m ? 20 : 16;
+      ctx.font = `700 ${m ? 22 : 17}px 'Nanum Myeongjo', serif`; ctx.fillText(name, x, m ? 24 : 19); x += ctx.measureText(name).width + 6;
+      ctx.font = `800 ${m ? 26 : 20}px 'Nanum Myeongjo', serif`; ctx.fillText(String(v), x, m ? 25 : 20); x += ctx.measureText(String(v)).width + (m ? 26 : 18);
+    };
+    chip('굶주림', last[0], '#c01818');
+    chip('수사망', last[1], m ? '#e6e1d6' : '#1b1d2e');
+    chip('의심', last[2], m ? 'rgba(236,233,228,.55)' : 'rgba(27,29,46,.5)');
+    ctx.fillStyle = m ? 'rgba(236,233,228,.5)' : 'rgba(27,29,46,.5)';
     ctx.font = `700 ${m ? 17 : 13}px Gaegu, sans-serif`;
-    ctx.fillText('100 = 미친다 / 잡힌다', x0 + 4, y0 - 2);
+    const note = '100 = 미친다 / 잡힌다';
+    ctx.fillText(note, x1 - ctx.measureText(note).width, m ? 24 : 19);
   },
 
   // ---- side panels
   status() {
     const S = G.S;
-    const parts = [`${D.CITY} ${S.district}`, `<b>${yearOf(S.t)}.${[3, 6, 9, 12][seasonOf(S.t)]}</b>`, `${ageOf(S.t)}세`];
+    const parts = [`${D.CITY} ${S.district}`, `<b>${yearOf(S.t)}.${[3, 6, 9, 12][seasonOf(S.t)]}</b>`, `<b class="sex">${S.sex === 'm' ? '남' : '여'}</b> ${ageOf(S.t)}세`];
     if (ageOf(S.t) < 17 && !S.over) parts.push('<i class="flow">시간이 흐른다</i>');
     if (ageOf(S.t) >= 17) {
       parts.push(`피해자 <i>${S.victims.length}</i>`);
@@ -584,7 +595,9 @@ const UI = {
       parts.push(`의심 <b>${Math.round(S.susp)}</b>`);
       parts.push(`수사망 <b class="${S.police > 70 ? 'hot' : ''}">${Math.round(S.police)}</b>`);
     }
-    $('#status').innerHTML = LAY.mode === 'm' ? `<span class="ln">${parts.slice(0, 3).join(' · ')}</span><span class="ln">${parts.slice(3).join(' · ')}</span>` : parts.join(' · ');
+    $('#status').innerHTML = LAY.mode === 'm'
+      ? `<span class="ln">${parts[1]} · ${parts[0]}</span><span class="ln chips"><em>${S.sex === 'm' ? '남자' : '여자'} ${ageOf(S.t)}세</em>${S.job ? `<em>${D.JOBS[S.job].t}</em>` : ''}${ageOf(S.t) >= 17 ? `<em class="r">피해자 ${S.victims.length}</em>` : ''}${S.love ? `<em>연인 ${S.love.name}</em>` : S.married ? `<em>배우자 ${S.married.name}</em>` : ''}</span>`
+      : parts.join(' · ');
     this.graph();
     const st = $('#status'); st.classList.remove('tick'); void st.offsetWidth; st.classList.add('tick');
     this.eyes(Math.min(10, Math.round(S.susp / 10)), S.police);

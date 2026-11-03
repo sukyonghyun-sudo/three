@@ -410,3 +410,34 @@ body.m:not(.inplay) #sys{top:auto;right:auto;bottom:14px;left:14px;background:rg
 .m #play.hunger #scene{animation:none;box-shadow:0 0 0 3px rgba(170,0,0,.6)}
 .m .decal.mult{display:none}
 .m #t-img img{animation:none}
+
+/* ── phone polish: header chips, card buttons, framed panels ── */
+.m #status{margin:12px 170px 0 18px;min-height:78px;font-size:22px}
+.m #status .ln:first-child{color:#d8d3c8;font-size:24px;letter-spacing:.04em}
+.m #status .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;white-space:normal}
+.m #status .chips em{font-style:normal;font-family:var(--serif);font-weight:700;font-size:20px;color:#e6e1d6;background:#1d1a18;border:1px solid #3a3430;padding:3px 10px 2px;border-radius:3px}
+.m #status .chips em.r{color:#ff6b6b;border-color:#6a1a1a;background:#2a0f0f}
+.m #speed{top:10px;right:10px;font-size:26px;background:#141110;border:1px solid #2e2925;border-radius:4px;padding:2px 4px}
+.m #speed span{padding:4px 12px}
+.m #sys{top:56px;right:10px;font-size:19px;gap:14px}
+.m #hcapbox{border-left:6px solid #7d0000;background:#0f0d0c;font-size:31px;min-height:110px}
+.m #gwrap{background:#0e0c0b;border:1px solid #2a2622;border-radius:4px;height:118px}
+.m #gwrap canvas{height:118px}
+.m #choices{margin:12px 14px 0}
+.m #choices .ctitle{font-family:var(--serif);font-weight:800;font-size:26px;color:#c9c3b6;letter-spacing:.06em;margin:0 0 8px 2px}
+.m .ch,.m #choices.many .ch,.m #choices.idle .ch{background:#151211;border:1px solid #2e2925;border-left:7px solid #4a3f38;border-radius:5px;margin-bottom:10px;padding:14px 16px 14px 0;min-height:84px;color:#ece7dc}
+.m .ch.red,.m #choices.idle .ch.red{border-left-color:#b01010;color:#ffb3b3;background:#1c0f0f}
+.m #choices.idle .ch:first-child{border-left-color:#b01010}
+.m .ch .d{width:52px;text-align:center;color:#8a837a;font-size:24px;padding-left:0}
+.m .ch .t{flex:0 0 calc(100% - 52px)}
+.m .ch .sub,.m #choices.many .ch .sub,.m .ch .r{margin-left:52px}
+.m .ch.picked{background:#3a0b0b;border-color:#b01010}
+.m .ch.dis{opacity:.4}
+.m #choices.idle .ch{font-size:31px;min-height:76px;color:#e2ddd2}
+.m #diary{border-radius:3px}
+.m #choices.many .ch{min-height:68px;padding:9px 14px 9px 0;margin-bottom:7px;font-size:30px}
+.m #choices.many .ch .sub{font-size:21px;margin-top:0}
+.m .ch .sub{flex:0 1 auto;max-width:calc(100% - 52px)}
+.m .ch .r{margin-left:14px;margin-top:2px}
+.m #choices.many .ch .sub + .r,.m .ch .sub + .r{margin-left:14px}
+.m .ch .t + .r{margin-left:52px}
