@@ -295,6 +295,7 @@ const UI = {
 
   async vcap(t) {
     const v = $('#vcap');
+    $('#hcapbox').dataset.tag = t || '';
     if (!t) { v.classList.remove('on'); return; }
     v.classList.add('on');
     await typeInto(v, t, 34);
@@ -305,7 +306,9 @@ const UI = {
     if (!t) { h.classList.remove('on'); h.textContent = ''; return; }
     h.classList.add('on');
     G.est = (G.est || 0) + t.length * 25;
+    h.classList.remove('wait', 'in'); void h.offsetWidth; h.classList.add('typing', 'in');
     await typeInto(h, t, 40);
+    h.classList.remove('typing');
   },
 
   sfx(text, big) {
@@ -419,11 +422,12 @@ const UI = {
       box.classList.add('ask');
       box.classList.toggle('many', opts.length + (o.title ? 1 : 0) > 4);
       const play = $('#play'); play.classList.add('ask'); play.classList.remove('tight');
-      if (o.title) box.appendChild(el('div', 'ctitle', o.title));
+      box.dataset.sig = '';
+      box.appendChild(el('div', 'ctitle', `<span class="go">▶</span> ${o.title || '고른다'}`));
       const rows = [];
       const pick = i => {
         if (opts[i].dis) return;
-        SND.play('ui', .8);
+        SND.play('ui', .8); buzz();
         document.removeEventListener('keydown', key);
         rows.forEach((r, j) => r.classList.add(j === i ? 'picked' : 'gone'));
         setTimeout(() => { box.innerHTML = ''; box.classList.remove('ask'); $('#play').classList.remove('ask', 'tight'); res(i); }, 420);
@@ -432,6 +436,7 @@ const UI = {
         const r = el('div', 'ch' + (op.dis ? ' dis' : '') + (op.red ? ' red' : ''));
         r.innerHTML = `<span class="d">${i + 1}</span><span class="t">${op.t}<svg class="ul" viewBox="0 0 420 22" preserveAspectRatio="none"><path d="M2 12 C 80 4, 160 18, 250 9 S 380 14, 418 6"/><path class="u2" d="M30 18 C 120 12, 220 20, 330 14"/></svg></span>` +
           (op.d ? `<span class="sub">${op.d}</span>` : '') + (op.risk ? riskHTML(op.risk) : '');
+        r.style.animationDelay = (i * .07) + 's';
         r.onclick = () => pick(i);
         r.onmouseenter = () => { if (!op.dis) SND.play('ui', .25); };
         box.appendChild(r);
@@ -458,28 +463,33 @@ const UI = {
   idle(opts) {
     const box = $('#choices');
     if (box.classList.contains('ask')) return;
+    const sig = JSON.stringify(opts.map(o => [o.k, o.t, o.d, !!o.dis]));
+    if (box.classList.contains('idle') && box.dataset.sig === sig && box.children.length) return;
+    box.dataset.sig = sig;
     box.innerHTML = '';
     box.classList.add('idle');
+    if (opts.length) box.appendChild(el('div', 'ctitle', '<span class="go">▶</span> 할 수 있는 일'));
     opts.forEach((op, i) => {
       const r = el('div', 'ch' + (op.dis ? ' dis' : '') + (op.red ? ' red' : ''));
       r.innerHTML = `<span class="d">—</span><span class="t">${op.t}</span>${op.d ? `<span class="sub">${op.d}</span>` : ''}`;
-      r.onclick = () => { if (!op.dis) { SND.play('ui', .8); G.request = op.k; box.innerHTML = ''; } };
+      r.style.animationDelay = (i * .06) + 's';
+      r.onclick = () => { if (!op.dis) { SND.play('ui', .8); buzz(); r.classList.add('picked'); G.request = op.k; setTimeout(() => { box.innerHTML = ''; box.dataset.sig = ''; }, 180); } };
       box.appendChild(r);
     });
   },
-  clearIdle() { const b = $('#choices'); if (b.classList.contains('idle')) { b.innerHTML = ''; b.classList.remove('idle'); } },
+  clearIdle() { const b = $('#choices'); if (b.classList.contains('idle')) { b.innerHTML = ''; b.classList.remove('idle'); b.dataset.sig = ''; } },
 
   // click / key / timeout to go on
   next(ms) {
     G.est = (G.est || 0) + (ms || 3000) * .8;
     if (G.auto) return sleep(20);
     return new Promise(res => {
-      const box = $('#nextcue');
-      box.classList.add('on');
+      const box = $('#nextcue'), cap = LAY.mode === 'm' ? $('#hcapbox') : $('#hcap');
+      box.classList.add('on'); cap.classList.add('wait');
       let done = false;
       const fin = () => {
         if (done) return; done = true;
-        box.classList.remove('on');
+        box.classList.remove('on'); cap.classList.remove('wait');
         $('#stage').removeEventListener('click', fin);
         document.removeEventListener('keydown', kd);
         res();
@@ -646,6 +656,8 @@ const UI = {
     $('#watcher').classList.toggle('on', police >= 80);
   },
 };
+
+function buzz() { try { navigator.vibrate && navigator.vibrate(12); } catch (e) {} }
 
 function riskHTML(r) {
   let h = '<span class="r">';

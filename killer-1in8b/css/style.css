@@ -447,3 +447,42 @@ body.m:not(.inplay) #sys{top:auto;right:auto;bottom:14px;left:14px;background:rg
 .ent{text-shadow:0 0 2px rgba(238,231,212,.95),0 0 5px rgba(238,231,212,.9),0 0 9px rgba(238,231,212,.7)}
 .m #diary .txt{left:52px;right:30px}
 .m #dlines{padding:4px 10px 2px}
+
+/* ═══ caption = manga narration box ═══ */
+#hcap:not(:empty){background:linear-gradient(#efe9dc,#e1dac8);color:#141110;border:4px solid #0b0a0a;box-shadow:0 0 0 3px #e8e2d3,0 0 0 6px #0b0a0a,0 14px 28px rgba(0,0,0,.6);
+  font-weight:800;padding:16px 28px 14px;transform:rotate(-.35deg)}
+#hcap.in,.m #hcapbox.in{animation:capIn .28s cubic-bezier(.2,1.3,.4,1)}
+@keyframes capIn{from{opacity:0;transform:translateY(10px) rotate(-1.2deg) scale(.98)}to{opacity:1;transform:rotate(-.35deg)}}
+#hcap.typing::after,.m #hcapbox.typing::after{content:"";display:inline-block;width:10px;height:1.05em;margin-left:4px;vertical-align:-.15em;background:#a30b0b;animation:curBlink .7s steps(2) infinite}
+@keyframes curBlink{50%{opacity:0}}
+#hcap.wait::after{content:"▼";display:inline-block;margin-left:12px;color:#a30b0b;font-size:.8em;animation:bob 1s infinite}
+.m #nextcue{display:none}
+
+.m #vcap{display:none !important}
+.m #hcapbox{display:block;position:relative;z-index:6;margin:-30px 18px 0;padding:24px 26px 22px;min-height:118px;
+  background:linear-gradient(#efe9dc,#e1dac8);color:#141110;font-family:var(--serif);font-weight:800;font-size:31px;line-height:1.55;
+  border:4px solid #0b0a0a;border-left-width:4px;box-shadow:0 0 0 3px #e8e2d3,0 0 0 6px #0b0a0a,0 16px 30px rgba(0,0,0,.7);transform:rotate(-.35deg)}
+.m #hcapbox:empty{display:none}
+.m #hcapbox[data-tag]:not([data-tag=""])::before{content:attr(data-tag);position:absolute;left:-8px;top:-34px;background:#0b0a0a;color:#efe9dc;font-size:22px;font-weight:800;
+  letter-spacing:.08em;padding:5px 16px 4px;transform:rotate(-2deg);border:2px solid #efe9dc;box-shadow:0 0 0 2px #0b0a0a}
+.m #hcapbox.wait::after{content:"▼  눌러서 계속";display:block;text-align:right;margin-top:8px;font-size:21px;font-weight:700;color:#8a1010;letter-spacing:.06em;animation:bob 1s infinite}
+.m #gwrap{margin-top:16px}
+
+/* ═══ choices: they come in, they breathe, they press ═══ */
+#choices .ctitle .go{color:#c01818;display:inline-block;animation:goBlink 1s infinite}
+@keyframes goBlink{0%,100%{opacity:1;transform:translateX(0)}50%{opacity:.35;transform:translateX(4px)}}
+#choices.ask .ch,#choices.idle .ch{animation:chIn .38s cubic-bezier(.2,1.2,.35,1) both}
+@keyframes chIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+#choices.ask .ch.picked{animation:chPick .42s both}
+@keyframes chPick{0%{transform:scale(.96)}40%{transform:scale(1.02);filter:brightness(1.4)}100%{transform:none}}
+.ch:active:not(.dis){transform:scale(.97)}
+
+.m .ch,.m #choices.many .ch,.m #choices.idle .ch{padding-right:54px;transition:transform .08s,background .15s,border-color .15s}
+.m .ch::after{content:"›";position:absolute;right:18px;top:50%;transform:translateY(-52%);font-size:50px;line-height:1;color:#7a2a2a;font-family:var(--serif)}
+.m .ch.dis::after{content:""}
+.m #choices.ask .ch:not(.dis){animation:chIn .38s cubic-bezier(.2,1.2,.35,1) both,chGlow 2.2s 1s ease-in-out infinite}
+@keyframes chGlow{0%,100%{box-shadow:0 0 0 0 rgba(192,24,24,0)}50%{box-shadow:0 0 0 3px rgba(192,24,24,.4),0 0 18px rgba(192,24,24,.25)}}
+.m .ch:active:not(.dis){transform:scale(.965);background:#3a0b0b;border-color:#c01818}
+.m .ch:active:not(.dis)::after{color:#ff5a5a}
+.m .ch.picked{background:#4a0d0d !important;border-color:#e02020 !important}
+.m #choices .ctitle{font-size:27px;color:#e6e1d6}
