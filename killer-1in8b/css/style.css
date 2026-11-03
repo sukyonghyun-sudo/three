@@ -441,3 +441,9 @@ body.m:not(.inplay) #sys{top:auto;right:auto;bottom:14px;left:14px;background:rg
 .m .ch .r{margin-left:14px;margin-top:2px}
 .m #choices.many .ch .sub + .r,.m .ch .sub + .r{margin-left:14px}
 .m .ch .t + .r{margin-left:52px}
+/* diary text stays readable over the bloody prints baked into the paper */
+#diary .txt{left:72px;right:46px}
+#dlines{background:radial-gradient(ellipse 62% 58% at 50% 55%,rgba(233,226,206,.86) 55%,rgba(233,226,206,.55) 78%,rgba(233,226,206,0) 100%);padding:4px 12px 2px;border-radius:6px}
+.ent{text-shadow:0 0 2px rgba(238,231,212,.95),0 0 5px rgba(238,231,212,.9),0 0 9px rgba(238,231,212,.7)}
+.m #diary .txt{left:52px;right:30px}
+.m #dlines{padding:4px 10px 2px}
