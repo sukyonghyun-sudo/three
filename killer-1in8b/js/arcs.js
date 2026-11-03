@@ -320,7 +320,7 @@ function arcCourtKind() {
 async function oldEnding() {
   const S = G.S, A = S.arc || {};
   const base = !S.victims.length ? 'none' : S.police >= 70 ? 'nocase' : 'unsolved';
-  if (base === 'none') return ending('none');
+  if (base === 'none') { const h = happyKind(S); return h ? epilogue(h) : ending('none'); }
   if (A.kid === 'heir') return epilogue('heir');
   if (A.scape === 2 || A.scape === 1) return epilogue('scapegoat');
   if (A.flee === 'new') return epilogue('newname');

@@ -16,6 +16,7 @@ function verdict(S) {
   const same = V.filter(v => v.sameDay).length;
   const young = n ? V.reduce((a, v) => (v.age < a.age ? v : a)) : null;
   const parent = S.sex === 'm' ? '아버지' : '어머니';
+  if (D.END[kind].happy) return happyVerdict(S, kind);
   const why = [];
   let t;
   if (!n) t = '아무것도 아니었던 사람';
@@ -52,12 +53,13 @@ function lifeStory(S) {
     out.push(`${ageOf(f.t)}살, 첫 번째. ${f.name}(${f.age}${f.job ? ', ' + f.job : ''}). ${f.found ? `${D.DUMP[f.dump] ? D.DUMP[f.dump].s : '어딘가'}에서 발견됐다.` : '끝내 발견되지 않았다.'}`);
   }
   const wed = (S.myLife || []).find(l => /결혼했다/.test(l[1]));
-  if (S.married) out.push(`${wed ? wed[0] + '살, ' : ''}${S.married.name}${josa(S.married.name, '과', '와')} 결혼했다.${S.kids ? ' 아이가 하나 태어났다.' : ''} 결혼식 날에도 손톱 밑을 오래 닦았다.`);
+  if (S.married) out.push(`${wed ? wed[0] + '살, ' : ''}${S.married.name}${josa(S.married.name, '과', '와')} 결혼했다.${S.kids ? ' 아이가 하나 태어났다.' : ''}${V.length ? ' 결혼식 날에도 손톱 밑을 오래 닦았다.' : ' 결혼식 날, 자기 손을 오래 내려다봤다. 이 손은 아무도 해치지 않을 거라고.'}`);
   if (S.nick) out.push(`신문은 이 사람을 「${S.nick}」이라고 불렀다. 이웃들은 그 기사를 읽고 이 사람에게 무섭다고 말했다.`);
   if (A.letter >= 2) out.push('신문사에 편지를 보냈다. 자기 문장이 1면에 실리는 걸 즐겼다.');
   if (A.scape) out.push(`${nj(A.scapeName, '이', '가')} 누명을 쓰고 끌려갈 때 아무 말도 하지 않았다.`);
   if (A.det === 'killed') out.push(`같은 날 태어난 친구 ${nj(d.name, '을', '를')} 술자리 끝에 죽였다.`);
   if (A.flee === 'new') out.push(`수배되자 얼굴을 바꾸고 ${S.name}이라는 새 이름으로 살았다.`);
+  if (!V.length) out.push(...hopeStory(S));
   if (V.length > 1) {
     const l = V[V.length - 1];
     out.push(`마지막은 ${ageOf(l.t)}살, ${l.name}(${l.age}).${V.length > 2 ? ` 그 사이에 ${V.length - 2}명이 더 있었다.` : ''}`);
@@ -70,7 +72,7 @@ function lifeStory(S) {
 const LEFT = [
   v => v.found ? '어머니는 그 뒤로 집 밖에 나오지 않았다.' : `어머니는 실종 전단을 ${8 + v.age % 20}년 동안 새로 붙였다.`,
   v => v.age < 35 ? '결혼을 두 달 앞두고 있었다. 청첩장은 이미 돌려진 뒤였다.' : '퇴근길이었다. 식탁에는 식은 저녁이 차려져 있었다.',
-  v => `${v.age % 2 ? '딸' : '아들'} 하나가 남았다. 그 아이는 커서 ${['형사', '기자', '법의학자'][v.age % 3]}가 됐다.`,
+  v => v.age >= 28 ? `${v.age % 2 ? '딸' : '아들'} 하나가 남았다. 그 아이는 커서 ${['형사', '기자', '법의학자'][v.age % 3]}가 됐다.` : '친구들은 그해 졸업 앨범에 빈자리를 하나 남겨 두었다.',
   v => v.found ? '장례식장에는 영정 사진만 있었다. 관은 끝내 열리지 않았다.' : '가족은 사망 신고를 하지 않았다. 서류상으로는 아직 살아 있다.',
   () => '직장 동료들은 그 책상을 일 년 동안 치우지 않았다.',
   () => '아버지는 그해 겨울 술을 끊었다가, 이듬해 봄에 다시 마셨다. 다시는 끊지 않았다.',
@@ -104,6 +106,7 @@ function victimsAfter(S) {
 // ------------------------------------------------------------------ what people said
 function quotes(S) {
   const kind = S.ending, caught = isCaught(kind), A = S.arc || {}, V = S.victims, out = [];
+  if (D.END[kind].happy) return happyQuotes(S, kind);
   const parent = S.sex === 'm' ? '아버지' : '어머니';
   out.push(S.susp < 45
     ? ['인사 잘하던 사람이었어요. 쓰레기도 꼬박꼬박 분리수거하고. 그런 사람인 줄 정말 몰랐어요.', '같은 골목 이웃']
@@ -125,6 +128,7 @@ function quotes(S) {
 
 function closingLine(S) {
   const n = S.victims.length;
+  if (!n && D.END[S.ending].happy) return happyClosing();
   if (!n) return '80억 명 중 한 사람이 조용히 살다 갔다. 아무도 다치지 않았다. 아무도 기억하지 않았다.';
   return `80억 명 중 한 사람이 사라졌다. 세상은 조금도 달라지지 않았다. 다만 ${n}명의 세상은 그날 끝났다.`;
 }

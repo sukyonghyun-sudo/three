@@ -490,7 +490,11 @@ const UI = {
       if (G.auto && o.time && Math.random() < .12) setTimeout(late, 30);
       else if (G.auto) setTimeout(() => {
         const ok = opts.map((o, i) => o.dis ? -1 : i).filter(i => i >= 0);
-        if (G.careful) {
+        if (G.calm) {
+          const sc = i => (opts[i].red ? 5 : 0) - (/그만둔다|돌아간다|보낸다|사과/.test(opts[i].t) ? 6 : 0) + Math.random();
+          ok.sort((a, b) => sc(a) - sc(b));
+          pick(ok[0]);
+        } else if (G.careful) {
           const sc = i => { const o = opts[i], r = o.risk || {}, n = r.note || ''; return (r.eye || 0) * 2 + (r.drop || 0) + (o.red ? 3 : 0) + (/곧|집을 뒤지면|금방|어렵다/.test(n) ? 3 : 0) - (/오래 묻힌다|확실|찾는 사람이 없다|누군지 모른다/.test(n) ? 2 : 0) + (/돌아간다|그만둔다/.test(o.t) ? 6 : 0) + Math.random() * .5; };
           ok.sort((a, b) => sc(a) - sc(b));
           pick(ok[0]);

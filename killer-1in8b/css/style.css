@@ -768,3 +768,7 @@ body:not(.m) #choices.idle .ch .sub{flex:1 1 auto;min-width:0;white-space:nowrap
 .m #fin-box.close p{font-size:31px}
 .m #fin-next{font-size:22px;bottom:110px}
 .m #fin-skip{right:16px;bottom:40px;font-size:24px}
+/* short phones: five choices must fit without scrolling */
+.m.short #play.ask #choices .ch{min-height:64px;padding-top:7px;padding-bottom:7px;margin-bottom:6px;font-size:30px}
+.m.short #play.ask #choices .ch .sub{font-size:21px;margin-top:0}
+.m.short #play.ask.tight #choices{max-height:calc(var(--H) - 560px)}

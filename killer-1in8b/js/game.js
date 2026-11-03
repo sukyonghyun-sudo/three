@@ -62,6 +62,7 @@ function addEv(k, text) {
   const S = G.S;
   if (S.evidence.some(e => e.k === k && e.text === text)) return;
   S.evidence.push({ k, text, t: S.t });
+  if (G.auto) cov('evd:' + k + (S.victims.length ? '' : '!nokill'));
   S.police = clamp(S.police + 6, 0, 100);
 }
 function strongEvidence() { return G.S.evidence.filter(e => !e.expired).length; }
@@ -113,7 +114,7 @@ async function run() {
     idleActions();
     await waitTick(AGE() < 17 ? 480 : 2200);
     if (S.over) break;
-    if (G.auto && AGE() >= 18 && S.t - S.lastHunt >= 3 && (G.careful ? S.urge > 85 : chance(.12))) G.request = 'hunt';
+    if (G.auto && !G.calm && AGE() >= 18 && S.t - S.lastHunt >= 3 && (G.careful ? S.urge > 85 : chance(.12))) G.request = 'hunt';
     if (G.auto && !G.request && G.lastIdle && chance(.14)) {
       const ok = G.lastIdle.filter(o => !o.dis && o.k !== 'hunt' && (o.k !== 'confess' || chance(.03)));
       if (ok.length) G.request = pick(ok).k;
@@ -250,7 +251,7 @@ async function season() {
   // hunger
   const trophyDamp = 1 - Math.min(.5, S.trophies * .18);
   const ageDamp = age >= 75 ? .2 : age >= 65 ? .45 : age >= 50 ? .75 : 1;
-  S.urge = clamp(S.urge + (1.0 + trait('imp') * .7 + trait('cru') * .4) * .85 * trophyDamp * ageDamp - (S.love ? .5 : 0) - (S.job === 'butcher' ? .3 : 0) + (S.life && S.life.void > 70 ? .5 : 0) - (S.arc && S.arc.heal >= 1 ? .2 * S.arc.heal : 0), 0, 100);
+  S.urge = clamp(S.urge + (1.0 + trait('imp') * .7 + trait('cru') * .4) * .85 * trophyDamp * ageDamp - (S.love ? .5 : 0) - (S.job === 'butcher' ? .3 : 0) + (S.life && S.life.void > 70 ? .5 : 0) - (S.arc && S.arc.heal >= 1 ? .2 * S.arc.heal : 0) - (S.arc && S.arc.cure > 0 ? .3 * S.arc.cure : 0), 0, 100);
   await madness();
 
   // suspicion decays
@@ -455,7 +456,11 @@ async function huntCore(forced) {
     return { t: H.t, d: H.d, risk: { eye: Math.min(3, Math.round(w * 7)), note: p > .7 ? '확실하다' : p > .5 ? '될 것 같다' : '어렵다' }, h, p, w };
   });
   const oi = await UI.choose([...opts, { t: '그만둔다', d: '아직은 아무도 모른다' }], { title: '어떻게' });
-  if (oi === opts.length) { UI.diary(`${T.name}. 놓아줬다. 오늘은.`); return; }
+  if (oi === opts.length) {
+    if (forced) { S.urge = clamp(S.urge - 25, 0, 100); S.flags.held = (S.flags.held || 0) + 1; UI.diary('손톱이 손바닥을 파고들었다. 참았다. 오늘도.', 'red'); }
+    else UI.diary(`${T.name}. 놓아줬다. 오늘은.`);
+    return;
+  }
   const O = opts[oi], H = D.HOW[O.h];
   const seen = (H.seen && chance(.55 + O.w * .4)) || !!T.seenBy;
 
@@ -1040,6 +1045,11 @@ async function confess() {
 
 async function arrest(atHome) {
   const S = G.S;
+  if (!S.victims.length && !G.withBags) {   // nothing to find on someone who never did it
+    S.police = 55; S.susp = clamp(S.susp - 10, 0, 100);
+    await UI.scene({ img: 'p_interrogation', vcap: '조사실', cap: '밤새 조사를 받았다. 아무것도 나오지 않았다. 아무것도 없었으니까.' });
+    UI.diary('풀려났다. 형사들이 서로 눈을 마주쳤다.'); await UI.next(2400); return;
+  }
   S.arc = S.arc || {};
   if (!atHome && await arcArrest()) return;
   SND.play('siren', 1);
@@ -1266,6 +1276,15 @@ function cov(k) {
 // ---- debug: freeze one hands-on moment mid-way for a screenshot (?shot=calm|hold|mash|hide|timed)
 async function shotTest(k) {
   if (k === 'title') { titleScreen(); document.title = 'SHOT ' + k; return; }
+  if (/^hap\d$/.test(k)) {
+    G.S = newLife(); G.S.t = 300; lifeInit(G.S); G.S.job = 'taxi'; G.S.married = { name: '한지수', sex: 'f' }; G.S.kids = 1; G.S.flags.held = 4;
+    G.S.arc = { det: 'friend', hero: 2, cure: 1, docName: '정신과 의사' }; G.S.myLife = [[31, '한지수와 결혼했다.']];
+    G.S.ending = 'hero'; G.S.deathAge = 75; G.S.deathYear = G.S.born.y + 75;
+    finale('hero');
+    for (let i = 0; i < +k[3]; i++) { await sleep(1000); if (G.finTap) G.finTap(); }
+    document.title = 'SHOT ' + k;
+    return;
+  }
   if (/^fin\d$/.test(k)) {
     G.S = newLife(); G.S.t = 284; lifeInit(G.S); G.S.job = 'butcher'; G.S.susp = 20; G.S.serial = true; G.S.nick = '흑천 저수지 토막살인';
     G.S.married = { name: '윤미경', sex: 'f' }; G.S.kids = 1; G.S.myLife = [[29, '윤미경과 결혼했다.']]; G.S.arc = { det: 'friend' };
@@ -1273,6 +1292,7 @@ async function shotTest(k) {
     G.S.ending = 'unsolved'; G.S.deathAge = 71; G.S.deathYear = 2034;
     finale('unsolved');
     for (let i = 0; i < +k[3]; i++) { await sleep(1000); if (G.finTap) G.finTap(); }
+    const pre = el('pre', '', JSON.stringify({ v: verdict(G.S), life: lifeStory(G.S), vic: victimsAfter(G.S), q: quotes(G.S), c: closingLine(G.S) })); pre.id = 'finlog'; pre.style.display = 'none'; document.body.appendChild(pre);
     document.title = 'SHOT ' + k;
     return;
   }
@@ -1405,8 +1425,10 @@ window.onerror = (m, src, l) => { document.title = 'ERR:' + m + ' @' + (src || '
 window.onunhandledrejection = e => { document.title = 'ERR:' + (e.reason && (e.reason.stack || e.reason.message) || e.reason); };
 function boot() {
   const q = new URLSearchParams(location.search);
+  if (q.has('seed')) { let sd = +q.get('seed') || 7; Math.random = () => ((sd = (sd * 16807) % 2147483647) / 2147483647); }   // debug: same life every run
   G.auto = q.has('auto');
   G.careful = q.get('auto') === 'careful';
+  G.calm = q.get('auto') === 'calm';   // debug: a player who never kills
   G.stopAt = +q.get('stop') || 0;
   if (G.auto) { G.skipType = true; G.speed = 4; SND.on = false; }
   try { if (localStorage.getItem('k8b_mute') === '1') { SND.on = false; $('#mute').classList.add('off'); } } catch (e) {}

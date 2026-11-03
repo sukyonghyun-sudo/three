@@ -186,6 +186,12 @@ async function loveSleep(again) {
   else if (i === 1) { await killPartner('k_home_' + L.sex); return; }
   else {
     await UI.scene({ img: PIMG('cry'), vcap: '', cap: `전부 말했다. ${L.name}${josa(L.name, '은', '는')} 울지도 소리 지르지도 않았다. 아주 오래 나를 봤다.` });
+    if (!S.victims.length) {   // nothing done yet: it is a confession of a fear, not of a crime
+      cov('arc:loveTold');
+      if (L.warmth >= 1 && chance(.6)) { L.stage = 2; L.warmth += 2; S.urge = clamp(S.urge - 20, 0, 100); S.arc = S.arc || {}; if (!S.arc.cure) S.arc.cure = 1; UI.diary(`${nj(L.name, '은', '는')} 내 손을 잡았다. “아직 아무도 안 다쳤잖아. 병원 같이 가.”`, 'love'); remember(`${nj(L.name, '은', '는')} 이 밤을 비밀로 지킨다`); }
+      else { UI.diary(`${nj(L.name, '은', '는')} 아침에 짐을 쌌다. 경찰서가 아니라 고향 가는 버스를 탔다.`, 'love'); endLove('left'); }
+      await UI.next(2400); return;
+    }
     if (roll(.18, 'cha', .08) && L.warmth >= 2) { L.accomplice = true; L.stage = 2; S.susp = clamp(S.susp - 20, 0, 100); UI.diary(`${L.name}${josa(L.name, '이', '가')} 말했다. "다음엔 나한테 먼저 말해." 공범이 생겼다.`, 'red'); }
     else {
       S.police = clamp(S.police + 45, 0, 100); S.montage = 1; addEv('증언', `${L.name}의 진술`);
