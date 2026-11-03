@@ -1222,6 +1222,7 @@ function boot() {
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   setTimeout(() => LOADER.start(), G.auto ? 99999999 : 600);
   if (q.has('hit')) { hitTest(); return; }
+  if (q.has('go')) { setTimeout(() => { SND.unlock(); newGame(); }, 300); return; }
   if (G.auto) { newGame(); return; }
   titleScreen();
 }
