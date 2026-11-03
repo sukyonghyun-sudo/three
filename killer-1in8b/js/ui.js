@@ -57,7 +57,7 @@ const LOADER = {
     const n = this.total ? Math.min(this.total, [...this.done].filter(k => ASSET_IMG.includes(k)).length) : 0;
     const p = this.total ? Math.round(n / this.total * 100) : 100;
     const e = document.getElementById('t-load');
-    if (e) { e.textContent = p >= 100 ? '' : `그림을 불러오는 중 · ${p}%`; e.style.setProperty('--p', p + '%'); e.classList.toggle('fin', p >= 100); }
+    if (e) { e.textContent = p >= 100 ? '그림을 모두 받았어요' : `그림을 받는 중 ${p}% · 다 받지 않아도 시작할 수 있어요`; e.style.setProperty('--p', p + '%'); e.classList.toggle('fin', p >= 100); }
   },
 };
 const preload = keys => LOADER.add(keys, true);
