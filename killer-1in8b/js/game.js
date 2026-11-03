@@ -98,7 +98,11 @@ async function run() {
     await waitTick(AGE() < 17 ? 480 : 2200);
     if (S.over) break;
     if (G.auto && AGE() >= 18 && S.t - S.lastHunt >= 3 && (G.careful ? S.urge > 85 : chance(.12))) G.request = 'hunt';
-    if (G.request) { const r = G.request; G.request = null; UI.clearIdle(); S.acted = S.acted || {}; S.acted[r] = S.t; await request(r); if (S.over) break; }
+    if (G.auto && !G.request && G.lastIdle && chance(.14)) {
+      const ok = G.lastIdle.filter(o => !o.dis && o.k !== 'hunt' && (o.k !== 'confess' || chance(.03)));
+      if (ok.length) G.request = pick(ok).k;
+    }
+    if (G.request) { const r = G.request; G.request = null; UI.clearIdle(); S.acted = S.acted || {}; S.acted[r] = S.t; cov('act:' + r); await request(r); if (S.over) break; }
     S.t++;
     S.hist = (S.hist || []).concat([[Math.round(S.urge), Math.round(S.police), Math.round(S.susp), 0]]).slice(-64);
     await season();
@@ -522,6 +526,7 @@ async function hunt(forced) {
 
 async function huntFail(T, O) {
   const S = G.S;
+  cov('huntFail');
   const roll = R();
   if (roll < .6) {
     await UI.scene({ img: T.sex === 'f' && !T.old ? 'k_field_f' : 'city_night', trans: 'flash', vcap: '', cap: `${T.name}${josa(T.name, '이', '가')} 비명을 지르며 달아났다. 하나둘 켜지는 창문을 셌다. 일곱 개.`, snd: T.sex === 'f' ? 'scream_f' : 'scream_m', ins: ['i_mouth'], shake: 2, sfx: '꺄악', sfxBig: 1 });
@@ -901,7 +906,7 @@ async function randomEvent() {
   const ok = EVENTS.filter(e => e.when(S) && (!e.cool || (S.flags['ev_' + e.k] == null || S.t - S.flags['ev_' + e.k] >= e.cool)));
   if (!ok.length) return;
   let tw = ok.reduce((a, e) => a + e.w, 0), r = R() * tw;
-  for (const e of ok) { r -= e.w; if (r <= 0) { S.flags['ev_' + e.k] = S.t; await e.run(S); return; } }
+  for (const e of ok) { r -= e.w; if (r <= 0) { S.flags['ev_' + e.k] = S.t; cov('ev:' + e.k); await e.run(S); return; } }
 }
 
 // ================================================================== actions
@@ -998,7 +1003,7 @@ async function dieOld() {
 // ================================================================== ending
 async function ending(kind, extra = {}) {
   const S = G.S;
-  S.over = true; S.ending = kind; S.deathAge = AGE(); S.deathYear = YEAR();
+  S.over = true; S.ending = kind; S.deathAge = AGE(); S.deathYear = YEAR(); cov('end:' + kind);
   clearSave();
   UI.clearIdle();
   SND.heart(0);
@@ -1129,6 +1134,15 @@ async function continueGame() {
   G.running = true;
   G.S = s;
   try { await run(); } finally { G.running = false; }
+}
+
+// ---- test coverage (auto runs write which events, actions and endings happened)
+function cov(k) {
+  if (!G.auto) return;
+  G.cov = G.cov || {}; G.cov[k] = (G.cov[k] || 0) + 1;
+  let pre = document.getElementById('covlog');
+  if (!pre) { pre = document.createElement('pre'); pre.id = 'covlog'; pre.style.display = 'none'; document.body.appendChild(pre); }
+  pre.textContent = Object.entries(G.cov).map(([a, b]) => a + '=' + b).join(' ');
 }
 
 // ---- debug: every button must be hit by a tap at its centre (?hit=1)

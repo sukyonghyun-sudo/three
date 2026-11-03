@@ -425,8 +425,10 @@ const UI = {
       box.dataset.sig = '';
       box.appendChild(el('div', 'ctitle', `<span class="go">▶</span> ${o.title || '고른다'}`));
       const rows = [];
+      let settled = false;
       const pick = i => {
-        if (opts[i].dis) return;
+        if (opts[i].dis || settled) return;
+        settled = true;
         SND.play('ui', .8); buzz();
         document.removeEventListener('keydown', key);
         rows.forEach((r, j) => r.classList.add(j === i ? 'picked' : 'gone'));
@@ -447,6 +449,10 @@ const UI = {
         if (n >= 1 && n <= opts.length) { e.preventDefault(); pick(n - 1); }
       };
       document.addEventListener('keydown', key);
+      const guard = setInterval(() => {
+        if (settled) { clearInterval(guard); return; }
+        if (!box.querySelector('.ch')) { box.classList.add('ask'); box.classList.remove('idle'); rows.forEach(r => box.appendChild(r)); }
+      }, 400);
       if (LAY.mode === 'm') { const b = $('#born'); if (b.offsetTop + b.offsetHeight > LAY.H - 8) play.classList.add('tight'); }
       if (G.auto) setTimeout(() => {
         const ok = opts.map((o, i) => o.dis ? -1 : i).filter(i => i >= 0);
@@ -461,6 +467,7 @@ const UI = {
 
   // idle actions shown while time flows (non-blocking)
   idle(opts) {
+    G.lastIdle = opts;
     const box = $('#choices');
     if (box.classList.contains('ask')) return;
     const sig = JSON.stringify(opts.map(o => [o.k, o.t, o.d, !!o.dis]));
@@ -473,7 +480,8 @@ const UI = {
       const r = el('div', 'ch' + (op.dis ? ' dis' : '') + (op.red ? ' red' : ''));
       r.innerHTML = `<span class="d">—</span><span class="t">${op.t}</span>${op.d ? `<span class="sub">${op.d}</span>` : ''}`;
       r.style.animationDelay = (i * .06) + 's';
-      r.onclick = () => { if (!op.dis) { SND.play('ui', .8); buzz(); r.classList.add('picked'); G.request = op.k; setTimeout(() => { box.innerHTML = ''; box.dataset.sig = ''; }, 180); } };
+      // only flag the request; the main loop clears the list itself (a delayed clear here could wipe the next question's buttons)
+      r.onclick = () => { if (!op.dis && !G.request) { SND.play('ui', .8); buzz(); r.classList.add('picked'); G.request = op.k; } };
       box.appendChild(r);
     });
   },
