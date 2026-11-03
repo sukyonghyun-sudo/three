@@ -383,6 +383,7 @@ html body .hud .morebtn{display:none} /* 「⋯」는 세로 휴대폰에서만 
 <!-- LEE 순찰: 석용현이 ⚙ 설정에서 켜면 모두의 화면에 같은 순간 (흑백 저승사자) -->
 <script src="lee.js"></script>
 <script src="mom.js"></script>
+<script src="radio.js"></script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
@@ -2760,10 +2761,11 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   const hit = personHit();
   if (hit) { const m = crew[hit.object.userData.pid]; select(m); if (!pipWin) window.__social?.openPerson(m.name); return; } // 사람을 누르면 그 사람 카드(방명록). 위젯 창에선 따라가기만
   if (!pipWin && TV?.hit(ray)) TV.open(); // 벽 TV 를 누르면 뉴스 목록
+  else if (!pipWin && RADIO?.hit(ray)) RADIO.open(); // 홍수연 책상 라디오
 });
 renderer.domElement.addEventListener("pointermove", (e) => {
   pointerRay(e);
-  if (!editing) { renderer.domElement.style.cursor = badgeHit() || CATS?.hit(ray) || TV?.hit(ray) ? "pointer" : ""; return; }
+  if (!editing) { renderer.domElement.style.cursor = badgeHit() || CATS?.hit(ray) || TV?.hit(ray) || RADIO?.hit(ray) ? "pointer" : ""; return; }
   const no = seatUnderRay();
   if (no !== hoverSeat) { hoverSeat = no; updateMarks(); }
 });
@@ -3025,6 +3027,7 @@ function step(dt) {
   CATS?.tick(dt);
   WX?.tick(dt);
   TV?.tick(dt);
+  RADIO?.tick(dt);
   LEE?.tick(dt);
   pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
   frustum.setFromProjectionMatrix(pm);
@@ -3100,6 +3103,9 @@ const TV = window.OfficeTV ? window.OfficeTV({ THREE, scene, camera, renderer, R
 // 아기 수첩: 홍수연(임산부) 화면에만 아기 얼굴 단추 — 말풍선으로 이번 주 정보·국가 지원 (mom.js, 예정일은 이 기기에만)
 const MOM = window.OfficeMom ? window.OfficeMom({ who: "홍수연", me: () => MY, test: !!window.__TEST, stage }) : null;
 window.__mom = MOM;
+// 책상 라디오: 홍수연 책상 위에만 — 누구든 누르면 그 사람 화면에서만 들린다 (radio.js)
+const RADIO = window.OfficeRadio ? window.OfficeRadio({ THREE, scene, renderer, box, cyl, DH, stage, seat: () => crew.find((m) => m.name === "홍수연")?.seat || null }) : null;
+window.__radio = RADIO;
 // 출입문 오른쪽 벽 액자: TV 와 유리벽 사이 가운데, 윗선은 문틀·TV 윗선과 같게 (그림 파일 frame_art.jpg 가 없으면 아무것도 안 걸린다)
 {
   const fw = 0.63, fh = 0.815, fd = 0.035, iw = 0.56, ih = 0.745, topY = DOOR.h + 0.07; // 그림 3:4
