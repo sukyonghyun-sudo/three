@@ -225,6 +225,7 @@ const UI = {
   show(id) {
     $$('.screen').forEach(s => s.classList.toggle('on', s.id === id));
     this.cur = id;
+    if (id !== 'play') { this.sid = (this.sid || 0) + 1; $('#cutins').innerHTML = ''; $('#nextcue').classList.remove('on'); }
   },
 
   // ---- scene picture with transitions
@@ -274,8 +275,10 @@ const UI = {
     if (o.mark) this.mark(o.mark);
     const jobs = [];
     if (o.vcap !== undefined) jobs.push(this.vcap(o.vcap));
-    if (o.sfx) setTimeout(() => this.sfx(o.sfx, o.sfxBig), 350);
-    if (o.ins) o.ins.forEach((k, i) => setTimeout(() => this.cutin(k, i, o.ins.length), 500 + i * 650));
+    const sid = this.sid = (this.sid || 0) + 1;
+    const live = () => this.sid === sid && this.cur === 'play';
+    if (o.sfx) setTimeout(() => live() && this.sfx(o.sfx, o.sfxBig), 350);
+    if (o.ins) o.ins.forEach((k, i) => setTimeout(() => live() && this.cutin(k, i, o.ins.length), 500 + i * 650));
     if (o.cap !== undefined) jobs.push(this.hcap(o.cap));
     await Promise.all(jobs);
   },

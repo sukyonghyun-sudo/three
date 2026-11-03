@@ -342,7 +342,7 @@ body.rot #rotate{display:flex}
 .m .x-list{font-size:22px;line-height:2.1}
 .m .x-sum{font-size:24px}
 .m .x-final{position:static;margin-top:26px;font-size:32px}
-.m .x-note{left:auto;right:56px;top:560px;font-size:52px}
+.m .x-note{position:relative;left:auto;right:auto;top:auto;display:block;margin:6px 56px 40px auto;width:max-content;font-size:52px}
 .m .x-stamp{left:auto;right:30px;top:110px;font-size:78px}
 .m #e-btns{right:40px;bottom:46px;gap:22px}
 .m #e-title{font-size:46px}
