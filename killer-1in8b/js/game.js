@@ -1113,17 +1113,22 @@ function showRecords() {
   UI.show('records');
 }
 
+// one life at a time: a double tap on the start button must not start two loops
 async function newGame() {
+  if (G.running) return;
+  G.running = true;
   clearSave();
   G.S = newLife();
   $('#decals').innerHTML = '';
-  await run();
+  try { await run(); } finally { G.running = false; }
 }
 async function continueGame() {
+  if (G.running) return;
   const s = loadSave();
   if (!s) return newGame();
+  G.running = true;
   G.S = s;
-  await run();
+  try { await run(); } finally { G.running = false; }
 }
 
 // ---- debug: every button must be hit by a tap at its centre (?hit=1)
