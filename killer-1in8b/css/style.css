@@ -621,15 +621,15 @@ body.m:not(.inplay) #sys{top:auto;right:auto;bottom:14px;left:14px;background:rg
 .mgcalm .hi{right:0;color:#c45a5a}
 .mgcalm em{position:absolute;right:0;top:-30px;font-style:normal;font-family:var(--mono);font-weight:700;font-size:22px;color:#e05a5a}
 .mgcalm em::after{content:" bpm";font-size:14px;color:#8a857b}
-.mgcalm+.mgbar{margin-top:26px}
+.mgcalm+.mgbar{margin-top:34px}
 .mghide{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;max-width:1150px}
 .mghide .hi{position:relative;background:#151211;border:2px solid #3a3430;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;overflow:hidden}
-.mghide .hi img{width:100%;height:72px;object-fit:cover;display:block;filter:grayscale(1) contrast(1.2);pointer-events:none}
-.mghide .hi span{display:block;font-size:19px;padding:4px 8px 6px;color:#e2ddd2;line-height:1.2;font-weight:700}
+.mghide .hi img{width:100%;height:58px;object-fit:cover;display:block;filter:grayscale(1) contrast(1.2);pointer-events:none}
+.mghide .hi span{display:block;font-size:17px;padding:3px 8px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e2ddd2;line-height:1.2;font-weight:700}
 .mghide .hi small{display:block;font-family:var(--mono);font-size:13px;color:#8a857b;font-weight:400}
 .mghide .hi i{position:absolute;left:0;bottom:0;height:7px;width:0;background:#d01818}
 .mghide .hi.doing{border-color:#d01818;box-shadow:0 0 18px rgba(200,0,0,.5)}
-.mghide .hi.done{opacity:.4}
+.mghide .hi.done img,.mghide .hi.done span{opacity:.28}
 .mghide .hi.done::after{content:"숨김";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--brush);font-size:46px;color:#e01818;transform:rotate(-12deg)}
 
 /* light sweeping over the picture / knocking */
@@ -656,6 +656,7 @@ body.m:not(.inplay) #sys{top:auto;right:auto;bottom:14px;left:14px;background:rg
 .m .mgbtn{height:150px;font-size:48px;margin:12px 0 0}
 .m .mgcalm{height:64px;margin:40px 4px 10px}
 .m .mgcalm span{font-size:18px;bottom:-28px}
+.m .mgcalm+.mgbar{margin-top:44px}
 .m .mgcalm em{font-size:28px;top:-38px}
 .m .mghide{grid-template-columns:repeat(3,1fr);gap:10px}
 .m .mghide .hi img{height:120px}

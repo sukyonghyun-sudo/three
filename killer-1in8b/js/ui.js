@@ -477,7 +477,7 @@ const UI = {
         const iv = setInterval(() => {
           const now = performance.now(), dt = Math.min(100, now - last); last = now;
           if (settled) { clearInterval(iv); box.classList.remove('hurry', 'timed'); return; }
-          if (G.speed === 0 || document.hidden) return;
+          if (G.speed === 0 || G.freeze || document.hidden) return;
           left -= dt;
           bar.firstChild.style.transform = `scaleX(${Math.max(0, left / total)})`;
           box.classList.toggle('hurry', left < 1200);

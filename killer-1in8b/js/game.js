@@ -1241,6 +1241,36 @@ function cov(k) {
   pre.textContent = Object.entries(G.cov).map(([a, b]) => a + '=' + b).join(' ');
 }
 
+// ---- debug: freeze one hands-on moment mid-way for a screenshot (?shot=calm|hold|mash|hide|timed)
+async function shotTest(k) {
+  G.S = newLife(); G.S.t = 100; G.S.urge = 64; G.S.police = 58; G.S.susp = 31; G.S.job = 'hospital';
+  lifeInit(G.S);
+  UI.show('play'); UI.status(); UI.born(); UI.renderDiary(); UI.speedUI();
+  G.skipType = true;
+  tense(k === 'hold' ? 2 : 3); NIGHT.start();
+  const SC = {
+    calm: ['h_check', '검문', '음주 단속. 경광봉이 창문을 두드린다. 트렁크에 봉투가 여섯 개.'],
+    hold: ['h_flash', '순찰', '골목 입구에 순찰차가 멈췄다. 손전등이 쓰레기봉투 더미를 훑는다.'],
+    mash: ['h_chase', '', '빠져나갔다. 달린다. 골목 끝에 불 켜진 큰길이 있다.'],
+    hide: ['h_peep', '압수수색', '문구멍 너머에 사람이 여럿. 흰 옷. “영장 있습니다. 문 여세요.”'],
+    timed: ['h_look_f', '', '오수진이 걸음을 멈췄다. 뒤를 돌아본다.'],
+  }[k];
+  await UI.scene({ img: SC[0], trans: 'cut', vcap: SC[1], cap: SC[2] });
+  if (k === 'calm') mgCalm({ title: '“한 번 불어 보세요.”', dur: 60 });
+  if (k === 'hold') mgHold({ title: '쓰레기 더미 뒤에서 숨을 참는다', dur: 60, n: 1 });
+  if (k === 'mash') mgMash({ title: '따라잡는다', need: 999, dur: 60 });
+  if (k === 'hide') mgHide([['saw', '톱', 'i_saw'], ['shoes', '젖은 신발', 'i_shoes'], ['list', '수첩', 'i_list'], ['gloves', '장갑', 'i_gloves'], ['tile', '욕실 줄눈 닦기', 'i_tilefinger'], ['freezer', '냉동고 위에 이불', 'x_freezer']].map(([kk, t, img], i) => ({ k: kk, t, img, cost: [700, 600, 500, 500, 1600, 3200][i] })), { dur: 60 });
+  if (k === 'timed') UI.choose([{ t: '휴대폰을 보는 척한다' }, { t: '가게 유리창 앞에 선다' }, { t: '그대로 앞질러 걷는다', d: '등을 보인다' }], { title: '지금', time: 60000 });
+  await sleep(900);
+  if (k === 'calm') { $('.mgcalm .needle').style.left = '74%'; $('.mgcalm em').textContent = '142'; }
+  if (k === 'hold') { $('#mgfx').className = 'on'; $('.mgbtn').classList.add('held'); $('.mgbtn').textContent = '숨을 참는 중'; $('.mgbar.breath i').style.width = '46%'; }
+  if (k === 'mash') { $('.mgbar.power i').style.width = '62%'; $('.mgbar.time i').style.width = '40%'; }
+  if (k === 'hide') { const h = $$('.mghide .hi'); h[1].classList.add('done'); h[3].classList.add('done'); h[0].classList.add('doing'); h[0].querySelector('i').style.width = '55%'; }
+  if (k === 'timed') { $('.ctime i').style.transform = 'scaleX(.3)'; }
+  G.freeze = true;
+  document.title = 'SHOT ' + k;
+}
+
 // ---- debug: every button must be hit by a tap at its centre (?hit=1)
 async function hitTest() {
   const out = [];
@@ -1362,6 +1392,7 @@ function boot() {
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
   setTimeout(() => LOADER.start(), G.auto ? 99999999 : 600);
   if (q.has('hit')) { hitTest(); return; }
+  if (q.has('shot')) { shotTest(q.get('shot')); return; }
   if (q.has('go')) { setTimeout(() => { SND.unlock(); newGame(); }, 300); return; }
   if (G.auto) { newGame(); return; }
   titleScreen();
