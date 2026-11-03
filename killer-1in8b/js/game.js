@@ -95,7 +95,7 @@ async function run() {
   preload(['child_mother', 'child_father', 'child_bird', 'child_class', 'city_night', 'home_banjiha']);
   while (!S.over) {
     idleActions();
-    await waitTick(AGE() < 17 ? 650 : 2200);
+    await waitTick(AGE() < 17 ? 480 : 2200);
     if (S.over) break;
     if (G.auto && AGE() >= 18 && S.t - S.lastHunt >= 3 && (G.careful ? S.urge > 85 : chance(.12))) G.request = 'hunt';
     if (G.request) { const r = G.request; G.request = null; UI.clearIdle(); await request(r); save(); continue; }
@@ -185,14 +185,17 @@ async function season() {
 
   // childhood / youth scripts
   if (birthday && age < 18) {
+    let ran = false;
     for (const ev of D.CHILD) {
       if (ev.age !== age) continue;
       const ctx = { family: S.family, flags: S.flags, R };
       if (ev.when && !ev.when(ctx)) continue;
       await childEvent(ev);
       if (ev.img === 'child_rabbit') S.flags.rabbit = 1;
+      ran = true;
       break;
     }
+    if (!ran && D.CHILD_QUIET[age]) UI.diary(D.CHILD_QUIET[age]);
     if (age === 17) await awaken();
     return;
   }

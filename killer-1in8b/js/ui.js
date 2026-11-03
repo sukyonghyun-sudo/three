@@ -577,6 +577,7 @@ const UI = {
   status() {
     const S = G.S;
     const parts = [`${D.CITY} ${S.district}`, `<b>${yearOf(S.t)}.${[3, 6, 9, 12][seasonOf(S.t)]}</b>`, `${ageOf(S.t)}세`];
+    if (ageOf(S.t) < 17 && !S.over) parts.push('<i class="flow">시간이 흐른다</i>');
     if (ageOf(S.t) >= 17) {
       parts.push(`피해자 <i>${S.victims.length}</i>`);
       parts.push(`굶주림 <b class="${S.urge > 75 ? 'hot' : ''}">${Math.round(S.urge)}</b>`);
@@ -585,6 +586,7 @@ const UI = {
     }
     $('#status').innerHTML = LAY.mode === 'm' ? `<span class="ln">${parts.slice(0, 3).join(' · ')}</span><span class="ln">${parts.slice(3).join(' · ')}</span>` : parts.join(' · ');
     this.graph();
+    const st = $('#status'); st.classList.remove('tick'); void st.offsetWidth; st.classList.add('tick');
     this.eyes(Math.min(10, Math.round(S.susp / 10)), S.police);
     SND.heart(S.urge > 70 ? (S.urge - 70) / 30 : 0);
     $('#play').classList.toggle('hunger', S.urge > 85);
