@@ -229,6 +229,7 @@ async function season() {
       break;
     }
     if (!ran && D.CHILD_QUIET[age]) UI.flow(D.CHILD_QUIET[age]);
+    if (age === 6) UI.diary('같은 날 같은 병원에서 태어난 아이들. 처음으로 얼굴과 이름을 알았다.', 'hear');
     if (age === 17) await awaken();
     return;
   }
@@ -1243,6 +1244,13 @@ function cov(k) {
 
 // ---- debug: freeze one hands-on moment mid-way for a screenshot (?shot=calm|hold|mash|hide|timed)
 async function shotTest(k) {
+  if (k === 'baby' || k === 'six') {
+    G.S = newLife(); G.S.t = k === 'baby' ? 9 : 24; lifeInit(G.S); G.skipType = true;
+    UI.show('play'); UI.status(); UI.born(); UI.renderDiary();
+    await UI.scene({ img: k === 'baby' ? 'nursery' : 'child_class', vcap: '', cap: k === 'baby' ? '두 살.' : '여섯 살.' });
+    document.title = 'SHOT ' + k;
+    return;
+  }
   G.S = newLife(); G.S.t = 100; G.S.urge = 64; G.S.police = 58; G.S.susp = 31; G.S.job = 'hospital';
   lifeInit(G.S);
   UI.show('play'); UI.status(); UI.born(); UI.renderDiary(); UI.speedUI();

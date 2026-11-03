@@ -668,16 +668,21 @@ const UI = {
     const S = G.S;
     const box = $('#bornrow');
     box.innerHTML = '';
+    // a baby doesn't know them yet: dark blurred shapes until six, then the faces come up once
+    const known = ageOf(S.t) >= 6;
+    const reveal = known && S.flags && !S.flags.facesShown;
     S.others.forEach((p, i) => {
-      const sn = el('div', 'snap');
+      const sn = el('div', 'snap' + (known ? '' : ' unk'));
       sn.style.setProperty('--r', [-3, 2.5, -1, 3.5][i] + 'deg');
       const dead = p.dead;
-      const known = ageOf(S.t) >= 6;
-      sn.innerHTML = `<span class="tape"></span><div class="ph" style="background-image:url(${IMG(p.face)})"></div>` +
+      const f = `background-image:url(${IMG(p.face)})`;
+      sn.innerHTML = `<span class="tape"></span>` +
+        (known ? `<div class="ph" style="${f}">${reveal ? `<i class="fade" style="${f};animation-delay:${.3 + i * .35}s"></i>` : ''}</div>` : `<div class="ph"><i style="${f}"></i></div><b class="q">?</b>`) +
         (dead ? scribble(i) : '') +
         `<div class="nm">${known ? p.name : '???'}<em>${known ? (p.status || '') : ''}</em></div>`;
       box.appendChild(sn);
     });
+    if (reveal) S.flags.facesShown = 1;
     $('#bornhd').innerHTML = `${String(S.born.y).slice(2)}.${S.born.m}.${S.born.d} — <b>같은 날 태어난 것들</b>`;
   },
   eyes(open, police) {

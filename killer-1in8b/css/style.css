@@ -166,6 +166,12 @@ svg.defs{position:absolute;width:0;height:0}
 #bornrow{display:flex;gap:18px;margin-top:10px}
 .snap{position:relative;width:128px;transform:rotate(var(--r))}
 .snap .ph{width:128px;height:128px;background:#000 center/cover;filter:grayscale(1) contrast(1.35) brightness(1.02);border:5px solid #d9d5cc}
+.snap .ph{position:relative;overflow:hidden}
+.snap .ph i{position:absolute;inset:0;background:#000 center/cover;filter:brightness(.25) blur(7px);transform:scale(1.15)}
+.snap .ph i.fade{animation:faceIn 2.6s ease-in both}
+@keyframes faceIn{to{opacity:0;filter:brightness(1) blur(0)}}
+.snap .q{position:absolute;left:0;top:0;width:128px;height:128px;display:flex;align-items:center;justify-content:center;font-family:var(--brush);font-weight:400;font-size:92px;line-height:1;color:#8a0f0f;text-shadow:0 0 12px #000;pointer-events:none;z-index:1}
+.snap.unk .nm{color:#7a746b}
 .snap .tape{position:absolute;left:38px;top:-12px;width:54px;height:20px;background:rgba(210,200,170,.55);transform:rotate(-4deg);z-index:2}
 .snap .nm{font-family:var(--hand);font-weight:700;font-size:25px;color:#d9d5cc;margin-top:3px;line-height:1;white-space:nowrap}
 .snap .nm em{font-style:normal;color:var(--blood2);font-size:20px;margin-left:4px}
@@ -351,6 +357,7 @@ body.m:not(.inplay) #sys{top:auto;right:auto;bottom:14px;left:14px;background:rg
 .m .snap{width:140px}
 .m .snap .ph{width:140px;height:140px;border-width:4px}
 .m .snap svg.scr{width:140px;height:140px}
+.m .snap .q{width:140px;height:140px;font-size:100px}
 .m .snap .tape{left:44px}
 .m .snap .nm{font-size:24px;margin-top:4px}
 .m .snap .nm em{font-size:19px}
