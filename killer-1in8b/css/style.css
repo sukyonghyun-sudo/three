@@ -186,7 +186,7 @@ svg.defs{position:absolute;width:0;height:0}
 #nextcue.on{opacity:1;animation:bob 1s infinite}
 @keyframes bob{50%{translate:0 6px}}
 
-#sys{position:absolute;right:28px;top:14px;z-index:99;font-size:13px;color:#4d4943;letter-spacing:.15em;display:flex;gap:18px}
+#sys{position:absolute;right:20px;top:10px;z-index:99;font-size:13px;color:#8a857b;letter-spacing:.15em;display:flex;gap:18px;background:rgba(0,0,0,.6);padding:6px 12px}
 #sys span{cursor:pointer}
 #sys span:hover{color:var(--paper)}
 #mute.off{text-decoration:line-through}

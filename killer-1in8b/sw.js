@@ -1,5 +1,5 @@
 // cache-first for pictures and sounds, network-first for code; bump VER when assets change
-const VER = 'k8b-1';
+const VER = 'k8b-2';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys().then(ks => Promise.all(ks.filter(k => k !== VER).map(k => caches.delete(k)))).then(() => self.clients.claim())
