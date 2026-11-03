@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=East+Sea+Dokdo&family=Gaegu:wght@700&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Myeongjo:wght@700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=15">
+<link rel="stylesheet" href="css/style.css?v=16">
 <script>window.onerror=(m,src,l)=>{document.title="ERR:"+m+" @"+(src||"").split("/").pop()+":"+l};window.onunhandledrejection=e=>{document.title="ERR:"+(e.reason&&(e.reason.stack||e.reason.message)||e.reason)};</script>
 </head>
 <body>
@@ -90,6 +90,7 @@
     <div id="watcher"></div>
     <div id="card"></div>
     <div id="nextcue">▼</div>
+    <div id="pausebar">❚❚ 일시정지 — 여기를 누르면 계속</div>
   </section>
 
   <!-- ═════════ END ═════════ -->
@@ -98,8 +99,8 @@
     <img class="spl" src="img/splat_b.webp" style="left:1380px;top:640px;width:700px;opacity:.6;transform:rotate(40deg)">
     <div id="e-btns">
       <div id="e-title"></div>
-      <span class="a" id="e-again">다시 태어난다<svg viewBox="0 0 260 26" preserveAspectRatio="none"><path d="M4 14 C 60 6, 140 22, 256 6"/></svg></span>
-      <span class="b" id="e-lives">같은 날 태어난 사람들의 일생</span>
+      <span class="a" id="e-lives">일생 돌아보기 ▶<svg viewBox="0 0 260 26" preserveAspectRatio="none"><path d="M4 14 C 60 6, 140 22, 256 6"/></svg></span>
+      <span class="b" id="e-again">다시 태어난다</span>
     </div>
   </section>
 
@@ -108,6 +109,12 @@
     <div id="lives-hd">같은 날, 같은 병원에서 태어난 다섯 사람</div>
     <div id="lives-row"></div>
     <span class="mono" id="lives-back">← 수사기록으로</span>
+  </section>
+
+  <!-- ═════════ REVIEW ═════════ -->
+  <section class="screen" id="review">
+    <div id="rv"></div>
+    <div id="rv-btns"><span class="mono" id="rv-back">← 수사기록</span><span id="rv-again">다시 태어난다</span></div>
   </section>
 
   <!-- ═════════ RECORDS ═════════ -->
@@ -126,10 +133,11 @@
 
 <div id="rotate"><div>휴대폰을<br>세로로 돌려 주세요</div><small>가로 화면에서는 멈춰 있습니다</small></div>
 
-<script src="js/assets.js?v=15"></script>
-<script src="js/data.js?v=15"></script>
-<script src="js/ui.js?v=15"></script>
-<script src="js/story.js?v=15"></script>
-<script src="js/game.js?v=15"></script>
+<script src="js/assets.js?v=16"></script>
+<script src="js/data.js?v=16"></script>
+<script src="js/ui.js?v=16"></script>
+<script src="js/story.js?v=16"></script>
+<script src="js/life.js?v=16"></script>
+<script src="js/game.js?v=16"></script>
 </body>
 </html>

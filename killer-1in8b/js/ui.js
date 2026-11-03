@@ -542,7 +542,8 @@ const UI = {
     // trim from the top until the entries fit (measure the entries, not scrollHeight: rotated lines overflow a few px)
     const fits = () => { const f = box.firstElementChild, l = box.lastElementChild; return !f || l.offsetTop + l.offsetHeight - f.offsetTop <= box.clientHeight; };
     if (box.clientHeight > 0) while (!fits() && box.children.length > 1) box.removeChild(box.firstChild);
-    $('#dyear').innerHTML = `${yearOf(S.t)}<small>${S.sex === 'm' ? '남' : '여'} · ${ageOf(S.t)}살</small>`;
+    const LF = S.life;
+    $('#dyear').innerHTML = `${yearOf(S.t)}<small>${S.sex === 'm' ? '남' : '여'} · ${ageOf(S.t)}살</small>` + (LF && ageOf(S.t) >= 12 ? `<span class="lst">돈 ${Math.round(LF.money)} · 건강 ${Math.round(LF.health)} · 사람 ${Math.round(LF.bond)} · 공허 ${Math.round(LF.void)}</span>` : '');
     const tl = $('#tally');
     const n = S.victims.length;
     let h = '';
@@ -626,6 +627,7 @@ const UI = {
   },
   speedUI() {
     $$('#speed span').forEach(s => s.classList.toggle('on', +s.dataset.s === G.speed));
+    $('#play').classList.toggle('paused', G.speed === 0);
   },
   born() {
     const S = G.S;

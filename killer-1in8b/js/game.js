@@ -86,12 +86,27 @@ async function waitTick(ms) {
 }
 
 // ================================================================== main loop
+// a bug inside one scene must not stop the whole life: log it, clean the screen, keep going
+async function safe(label, fn) {
+  try { await fn(); }
+  catch (e) {
+    console.error(label, e);
+    G.errors = (G.errors || []).concat([`${label}: ${e && e.message}`]).slice(-20);
+    try { localStorage.setItem('k8b_errors', JSON.stringify(G.errors)); } catch (_) {}
+    const box = $('#choices'); box.innerHTML = ''; box.className = ''; box.dataset.sig = '';
+    $('#play').classList.remove('ask', 'tight');
+    $('#nextcue').classList.remove('on');
+    if (G.auto) document.title = 'ERR:' + label + ':' + (e && e.message);
+  }
+}
+
 async function run() {
   const S = G.S;
+  lifeInit(S);
   UI.show('play');
   UI.status(); UI.born(); UI.renderDiary(); UI.speedUI();
   SND.amb(AGE() < 17 ? 'amb_drone' : 'amb_drone', .35);
-  if (S.t === 0) await birth();
+  if (S.t === 0) await safe('birth', birth);
   preload(['child_mother', 'child_father', 'child_bird', 'child_class', 'city_night', 'home_banjiha']);
   while (!S.over) {
     idleActions();
@@ -102,10 +117,10 @@ async function run() {
       const ok = G.lastIdle.filter(o => !o.dis && o.k !== 'hunt' && (o.k !== 'confess' || chance(.03)));
       if (ok.length) G.request = pick(ok).k;
     }
-    if (G.request) { const r = G.request; G.request = null; UI.clearIdle(); S.acted = S.acted || {}; S.acted[r] = S.t; cov('act:' + r); await request(r); if (S.over) break; }
+    if (G.request) { const r = G.request; G.request = null; UI.clearIdle(); S.acted = S.acted || {}; S.acted[r] = S.t; cov('act:' + r); await safe('act:' + r, () => request(r)); if (S.over) break; }
     S.t++;
     S.hist = (S.hist || []).concat([[Math.round(S.urge), Math.round(S.police), Math.round(S.susp), 0]]).slice(-64);
-    await season();
+    await safe('season', season);
     UI.status(); UI.born(); UI.renderDiary();
     save();
   }
@@ -121,12 +136,20 @@ function idleActions() {
   if (S.t - S.lastMove >= 16) a.push({ k: 'move', t: '이 동네를 떠난다', d: '의심은 사라진다. 돈과 시간이 든다' });
   if (S.trophies > 0) a.push({ k: 'empty', t: '냉동고를 비운다', d: `${S.trophies}구가 들어 있다` });
   if (S.police >= 70) a.push({ k: 'confess', t: '자수한다', d: '끝낼 수 있다', red: 1 });
+  lifeActions(a);
   storyActions(a);
   a.forEach(o => { if (o.k !== 'hunt' && used(o.k) && !o.dis) { o.dis = true; o.d = '얼마 전에 했다'; } });
-  UI.idle(a);
+  // at most six, in a fixed order; usable ones first when cutting
+  const ORDER = ['hunt', 'date', 'work', 'people', 'walk', 'rest', 'evidence', 'frame', 'move', 'empty', 'confess'];
+  const conf = a.find(o => o.k === 'confess');
+  const list = a.filter(o => o.k !== 'confess').sort((x, y) => (x.dis ? 1 : 0) - (y.dis ? 1 : 0) || ORDER.indexOf(x.k) - ORDER.indexOf(y.k)).slice(0, conf ? 5 : 6);
+  list.sort((x, y) => ORDER.indexOf(x.k) - ORDER.indexOf(y.k));
+  if (conf) list.push(conf);
+  UI.idle(list);
 }
 
 async function request(r) {
+  if (await lifeRequest(r)) return;
   if (await storyRequest(r)) return;
   if (r === 'hunt') await hunt(false);
   else if (r === 'move') await moveAway();
@@ -189,6 +212,9 @@ async function season() {
     if (p.role === 'det' && age === 27) p.status = '형사';
   }
 
+  lifeSeason(S);
+  if (birthday) { lifeYear(S); await milestone(age); }
+
   // childhood / youth scripts
   if (birthday && age < 18) {
     let ran = false;
@@ -212,7 +238,7 @@ async function season() {
   // hunger
   const trophyDamp = 1 - Math.min(.5, S.trophies * .18);
   const ageDamp = age >= 75 ? .2 : age >= 65 ? .45 : age >= 50 ? .75 : 1;
-  S.urge = clamp(S.urge + (1.0 + trait('imp') * .7 + trait('cru') * .4) * trophyDamp * ageDamp - (S.love ? .5 : 0), 0, 100);
+  S.urge = clamp(S.urge + (1.0 + trait('imp') * .7 + trait('cru') * .4) * .85 * trophyDamp * ageDamp - (S.love ? .5 : 0) - (S.job === 'butcher' ? .3 : 0) + (S.life && S.life.void > 70 ? .5 : 0), 0, 100);
   await madness();
 
   // suspicion decays
@@ -239,7 +265,7 @@ async function season() {
 
   // death of old age
   if (age >= 61) {
-    const p = Math.min(.5, (age - 60) * .0042 + (age >= 88 ? .15 : 0));
+    const p = Math.min(.5, (age - 60) * .0042 + (age >= 88 ? .15 : 0) + Math.max(0, 55 - (S.life ? S.life.health : 60)) * .0008);
     if (chance(p) || age >= 95) { await dieOld(); return; }
   }
 
@@ -1186,8 +1212,9 @@ async function hitTest() {
   buildEnd('unsolved', {}, '흑천의 그림자'); UI.show('end');
   await sleep(2200);
   check('#e-btns .a, #e-btns .b', 'endbtn');
-  buildLives(); UI.show('lives'); await sleep(100);
-  check('#lives-back', 'livesback');
+  G.S.life = { money: 40, health: 60, bond: 30, void: 50 }; G.S.yhist = [[1, 0, 0, 20, 90, 25, 20, 0], [30, 60, 40, 50, 70, 40, 40, 1], [74, 20, 30, 40, 30, 30, 60, 0]]; G.S.myLife = [[20, '시험 줄.']];
+  UI.show('review'); buildReview(); await sleep(100);
+  check('#rv-back, #rv-again', 'review');
   showRecords(); await sleep(100); check('#rec-back', 'recback');
   const bad = out.filter(l => l.startsWith('BAD'));
   document.title = `HIT ${LAY.mode} ${innerWidth}x${innerHeight} bad=${bad.length}`;
@@ -1244,11 +1271,14 @@ function boot() {
   $('#t-rec').onclick = () => showRecords();
   $('#rec-back').onclick = () => titleScreen();
   $('#e-again').onclick = () => { titleScreen(); };
-  $('#e-lives').onclick = () => { buildLives(); UI.show('lives'); };
+  $('#e-lives').onclick = () => { UI.show('review'); buildReview(); $('#rv').scrollTop = 0; };
+  $('#rv-back').onclick = () => UI.show('end');
+  $('#rv-again').onclick = () => titleScreen();
   $('#lives-back').onclick = () => UI.show('end');
   $('#mute').onclick = () => SND.toggle();
   $('#home').onclick = () => { if (G.S && !G.S.over) save(); location.href = location.pathname; };
   $$('#speed span[data-s]').forEach(s => s.onclick = () => { G.speed = +s.dataset.s; UI.speedUI(); });
+  $('#pausebar').onclick = e => { e.stopPropagation(); G.speed = 1; UI.speedUI(); };
   document.addEventListener('keydown', e => {
     if (UI.cur !== 'play') return;
     if (e.key === 'p' || e.key === 'P') { G.speed = G.speed ? 0 : 1; UI.speedUI(); }

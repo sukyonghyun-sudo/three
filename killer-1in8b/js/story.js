@@ -373,6 +373,7 @@ async function storyRequest(r) {
   if (r === 'frame') { await frameSomeone(); return true; }
   if (r === 'date') {
     const L = S.love;
+    if (!L) return true;
     await UI.scene({ img: PIMG(pick(['meet', 'walk'])), vcap: '', cap: pick([`${L.name}${josa(L.name, '과', '와')} 저녁을 먹었다. 평범한 사람의 저녁.`, `${L.name}${josa(L.name, '이', '가')} 내 손금을 봤다. "오래 살겠네." 웃었다.`, `강변. ${L.name}${josa(L.name, '은', '는')} 말이 많고 나는 듣는다. 그게 좋다.`]) });
     S.urge = clamp(S.urge - 6, 0, 100); S.susp = clamp(S.susp - 4, 0, 100); L.warmth += .5;
     UI.diary(`${L.name}${josa(L.name, '을', '를')} 만났다.`, 'love');
