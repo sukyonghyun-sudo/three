@@ -54,6 +54,7 @@ function mgShell(kind, title, hint) {
   return box;
 }
 function mgDone() {
+  G.lockUntil = performance.now() + 800;
   const box = $('#choices');
   box.innerHTML = ''; box.className = '';
   $('#play').classList.remove('ask', 'mgon', 'mg-dark');

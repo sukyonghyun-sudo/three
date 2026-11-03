@@ -6,6 +6,8 @@ const $$ = s => [...document.querySelectorAll(s)];
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const IMG = k => `img/${LAY.mode === 'm' ? 'm/' : ''}${k}.webp`;
+// taps still landing from a mashing / holding moment must not pick the next thing on screen
+const inputLocked = () => performance.now() < (G.lockUntil || 0);
 
 // ------------------------------------------------------------------ background loader
 // Everything is fetched in story order, 3 at a time, after the title is up.
@@ -443,7 +445,7 @@ const UI = {
         r.innerHTML = `<span class="d">${i + 1}</span><span class="t">${op.t}<svg class="ul" viewBox="0 0 420 22" preserveAspectRatio="none"><path d="M2 12 C 80 4, 160 18, 250 9 S 380 14, 418 6"/><path class="u2" d="M30 18 C 120 12, 220 20, 330 14"/></svg></span>` +
           (op.d ? `<span class="sub">${op.d}</span>` : '') + (op.risk ? riskHTML(op.risk) : '');
         r.style.animationDelay = (i * .07) + 's';
-        r.onclick = () => pick(i);
+        r.onclick = () => { if (!inputLocked()) pick(i); };
         r.onmouseenter = () => { if (!op.dis) SND.play('ui', .25); };
         box.appendChild(r);
         rows.push(r);
@@ -477,7 +479,7 @@ const UI = {
         const iv = setInterval(() => {
           const now = performance.now(), dt = Math.min(100, now - last); last = now;
           if (settled) { clearInterval(iv); box.classList.remove('hurry', 'timed'); return; }
-          if (G.speed === 0 || G.freeze || document.hidden) return;
+          if (G.speed === 0 || G.freeze || document.hidden || inputLocked()) return;
           left -= dt;
           bar.firstChild.style.transform = `scaleX(${Math.max(0, left / total)})`;
           box.classList.toggle('hurry', left < 1200);
@@ -513,7 +515,7 @@ const UI = {
       r.innerHTML = `<span class="d">—</span><span class="t">${op.t}</span>${op.d ? `<span class="sub">${op.d}</span>` : ''}`;
       r.style.animationDelay = (i * .06) + 's';
       // only flag the request; the main loop clears the list itself (a delayed clear here could wipe the next question's buttons)
-      r.onclick = () => { if (!op.dis && !G.request) { SND.play('ui', .8); buzz(); r.classList.add('picked'); G.request = op.k; } };
+      r.onclick = () => { if (!op.dis && !G.request && !inputLocked()) { SND.play('ui', .8); buzz(); r.classList.add('picked'); G.request = op.k; } };
       box.appendChild(r);
     });
   },
@@ -530,13 +532,14 @@ const UI = {
       const fin = () => {
         if (done) return; done = true;
         box.classList.remove('on'); cap.classList.remove('wait');
-        $('#stage').removeEventListener('click', fin);
+        $('#stage').removeEventListener('click', tap);
         document.removeEventListener('keydown', kd);
         res();
       };
-      const kd = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); fin(); } };
+      const tap = () => { if (!inputLocked()) fin(); };
+      const kd = e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!inputLocked()) fin(); } };
       setTimeout(() => {
-        $('#stage').addEventListener('click', fin);
+        $('#stage').addEventListener('click', tap);
         document.addEventListener('keydown', kd);
       }, 250);
       if (ms) setTimeout(fin, ms / Math.max(1, G.speed));
