@@ -94,7 +94,8 @@ async function safe(label, fn) {
     G.errors = (G.errors || []).concat([`${label}: ${e && e.message}`]).slice(-20);
     try { localStorage.setItem('k8b_errors', JSON.stringify(G.errors)); } catch (_) {}
     const box = $('#choices'); box.innerHTML = ''; box.className = ''; box.dataset.sig = '';
-    $('#play').classList.remove('ask', 'tight');
+    $('#play').classList.remove('ask', 'tight', 'mgon', 'mg-dark');
+    $('#mgfx').className = ''; $('#mgfx').innerHTML = '';
     $('#nextcue').classList.remove('on');
     if (G.auto) document.title = 'ERR:' + label + ':' + (e && e.message);
   }
@@ -397,6 +398,13 @@ function mkTarget(sex, age, name, person, old = false) {
 }
 
 async function hunt(forced) {
+  G.huntTrace = 1; G.leak = false; G.pending = null;
+  tense(1); NIGHT.start();
+  try { await huntCore(forced); }
+  finally { NIGHT.end(); tense(0); G.pending = null; $('#play').classList.remove('mg-dark'); }
+}
+
+async function huntCore(forced) {
   const S = G.S;
   S.lastHunt = S.t;
   UI.clearIdle();
@@ -425,8 +433,10 @@ async function hunt(forced) {
   const lines = [T.name, `${T.age} · ${T.job}`, T.liv];
   if (T.sameDay) lines.push('나랑 같은 날 태어났다');
   await UI.scene({ img: sp.img, vcap: sp.cap, cap: forced ? '참을 수 없다. 아무나.' : `${T.name}. ${sp.t}.`, mark: { img: sp.img, lines }, sfx: sp.sfx, snd: 'step2', ins: ['i_gloves'] });
+  const tw = await stalkTwist(T);
+  if (tw === 'abort' || S.over) return;
   const hows = sp.how.filter(h => !D.HOW[h].car || S.car || T.spot === 'car' || T.spot === 'taxi');
-  const pmod = (S.urge > 90 || forced ? -.12 : 0) + (AGE() >= 60 ? -.15 : 0) + (S.flags.watch && S.police >= 80 ? -.08 : 0);
+  const pmod = (S.urge > 90 || forced ? -.12 : 0) + (AGE() >= 60 ? -.15 : 0) + (S.flags.watch && S.police >= 80 ? -.08 : 0) - (T.alert ? .2 : 0);
   const opts = hows.map(h => {
     const H = D.HOW[h];
     let p = clamp(H.p(S.tr) + pmod - (T.strong && H.phys ? .08 : 0), .05, .95);
@@ -436,7 +446,7 @@ async function hunt(forced) {
   const oi = await UI.choose([...opts, { t: '그만둔다', d: '아직은 아무도 모른다' }], { title: '어떻게' });
   if (oi === opts.length) { UI.diary(`${T.name}. 놓아줬다. 오늘은.`); return; }
   const O = opts[oi], H = D.HOW[O.h];
-  const seen = H.seen && chance(.55 + O.w * .4);
+  const seen = (H.seen && chance(.55 + O.w * .4)) || !!T.seenBy;
 
   if (!chance(O.p)) { await huntFail(T, O); return; }
 
@@ -468,6 +478,9 @@ async function hunt(forced) {
   const kimgs = D.KILL_IMG[siteK] || D.KILL_IMG.here;
   const kimg = pick(T.old ? (kimgs['old' + T.sex] || kimgs[T.sex]) : kimgs[T.sex]);
   await UI.scene({ img: kimg, trans: 'cut', vcap: '', cap: `${T.name}${josa(T.name, '이', '가')} 돌아봤다.`, snd: T.sex === 'f' ? 'scream_f' : 'scream_m', vol: .6, ins: ['i_eye'], shake: 1 });
+  const kt = await killTwist(T);
+  if (kt === 'lost' || S.over) return;
+  if (kt === 'witness') witness = true;
   const ki = await UI.choose([
     { t: '단숨에 끝낸다', d: '소리 없이. 빨리.', risk: { drop: 1 } },
     { t: '천천히', d: '하나도 놓치고 싶지 않다', risk: { drop: 2, note: '굶주림이 오래 잠잠해진다' }, red: 1 },
@@ -487,11 +500,19 @@ async function hunt(forced) {
   const cimg = siteK === 'bath' ? pick(['d_tub', 'd_tub', 'd_sink']) : siteK === 'theirs' ? 'd_sink' : siteK === 'car' ? 'd_bags' : 'd_table';
   await UI.scene({ img: cimg, vcap: '토막', cap: '이제부터가 진짜 일이다.', snd: 'drip', ins: ['i_saw'] });
   const ck = ['big', 'small', 'whole'];
-  const cut = ck[await UI.choose(ck.map(k => ({ t: D.CUT[k].t, d: D.CUT[k].d, risk: { drop: k === 'small' ? 2 : 1, note: k === 'small' ? '발견돼도 누군지 모른다' : k === 'whole' ? '버릴 곳이 줄어든다' : '' } })), { title: '어떻게 나눌까' })];
+  const cut = ck[await UI.choose(ck.map(k => ({ t: D.CUT[k].t, d: D.CUT[k].d + ` · ${{ big: '한 시간 반', small: '두 시간 반', whole: '삼십 분' }[k]}`, risk: { drop: k === 'small' ? 2 : 1, note: k === 'small' ? '발견돼도 누군지 모른다' : k === 'whole' ? '버릴 곳이 줄어든다' : '' } })), { title: '어떻게 나눌까' })];
   await UI.scene({ img: cimg, keepIns: true, vcap: '', cap: pick(D.CUT_TXT[cut]), snd: cut === 'whole' ? 'bag' : 'saw', sfx: cut === 'small' ? '쓱싹 쓱싹' : cut === 'big' ? '콰직' : '질질', shake: cut === 'whole' ? 0 : 1, ins: cut === 'whole' ? ['i_bagtie'] : ['i_bagtie', 'i_tilefinger'] });
   if (cut !== 'whole') setTimeout(() => SND.play(pick(['chop1', 'chop2', 'chop3']), .9), 1200);
   if (cut === 'small' && chance(.15 + (siteK === 'bath' ? .1 : 0))) { S.susp = clamp(S.susp + 10, 0, 100); UI.diary('새벽에 옆집에서 벽을 두드렸다. 톱질 소리.', 'red'); }
   await UI.next(3800);
+  await workTwist(siteK, cut);
+  if (S.over) return;
+
+  // on the way (if they stop you now, they find it on you)
+  G.pending = () => S.victims.push({ name: T.name, sex: T.sex, age: T.age, old: T.old, job: T.job, t: S.t, year: YEAR(), site: siteK, how: O.h, cut, dump: 'caught',
+    reported: true, reportIn: 0, social: T.social, found: true, identified: true, trace: 1, seen: true, sameDay: T.sameDay, parts: 1, partsFound: 1 });
+  if (await moveTwist(cut) === 'over' || S.over) return;
+  G.pending = null;
 
   // dispose
   const yr = YEAR();
@@ -516,21 +537,31 @@ async function hunt(forced) {
   await UI.scene({ img: DD.img, vcap: '', cap: pick(D.DUMP_TXT[dk]), snd: DD.snd, sfx: DD.sfx, ins: dk === 'reservoir' || dk === 'river' ? ['i_drip'] : dk === 'mountain' ? ['i_foot'] : dk === 'keep' ? ['i_bagtie'] : null });
   if (dk === 'burn' && chance(DD.witness)) { S.susp = clamp(S.susp + 12, 0, 100); UI.diary('동료가 소각로 냄새 이야기를 했다. 돼지라고 했다.', 'red'); }
   await UI.next(3800);
+  const dtw = await dumpTwist(dk);
+  if (dtw === 'seen') witness = true;
+  if (S.over) return;
+  const dawn = NIGHT.late();
+  if (dawn) { cov('tw:dawn'); slam('해가 떴다'); UI.diary('해가 떴다. 출근하는 사람들 사이로 젖은 신발을 신고 걸었다.', 'red'); if (chance(.35)) witness = true; }
 
   // after
   const ak = Object.keys(D.AFTER);
-  await UI.scene({ img: 'home_banjiha', vcap: '새벽', cap: '집에 돌아왔다. 아직 할 일이 남았다.', snd: 'drip' });
-  const ai = await UI.choose(ak.map(k => ({ t: D.AFTER[k].t, d: D.AFTER[k].d })), { title: '해가 뜨기 전에' });
-  const A = ak[ai];
-  await UI.scene({ img: D.AFTER[A].img, vcap: '', cap: D.AFTER[A].d, ins: [D.AFTER[A].ins], snd: A === 'burn' ? 'fire' : A === 'scrub' ? 'drip' : null });
+  await UI.scene({ img: 'home_banjiha', vcap: '새벽', cap: dawn ? '집에 돌아왔다. 벌써 출근 시간이다. 할 일이 남았다.' : '집에 돌아왔다. 아직 할 일이 남았다.', snd: 'drip' });
+  const ai = await UI.choose(ak.map(k => ({ t: D.AFTER[k].t, d: D.AFTER[k].d })), { title: dawn ? '출근 전에, 하나만' : '해가 뜨기 전에', time: dawn ? 4000 : 0 });
+  const A = ai >= 0 ? ak[ai] : null;
+  if (A) {
+    await UI.scene({ img: D.AFTER[A].img, vcap: '', cap: D.AFTER[A].d, ins: [D.AFTER[A].ins], snd: A === 'burn' ? 'fire' : A === 'scrub' ? 'drip' : null });
+  } else {
+    G.huntTrace *= 1.25;
+    await UI.scene({ img: 'home_banjiha', vcap: '', cap: '출근 시간이 됐다. 아무것도 치우지 못한 채 문을 잠갔다.' });
+  }
   await UI.next(2600);
 
   // record
   const v = {
     name: T.name, sex: T.sex, age: T.age, old: T.old, job: T.job, t: S.t, year: YEAR(), site: siteK, how: O.h, cut, dump: dk,
     reported: false, reportIn: T.delay, social: T.social, found: false, identified: false,
-    trace: (slow ? 1.4 : 1) * (A === 'scrub' ? .5 : 1) * (hasJob('clean') ? .7 : 1) * (S.flags.sloppy != null && S.t - S.flags.sloppy < 4 ? 1.5 : 1),
-    burned: A === 'burn', seen: witness, car: !!H.car, sameDay: T.sameDay, parts: dk === 'scatter' ? 3 : 1, partsFound: 0,
+    trace: (slow ? 1.4 : 1) * (A === 'scrub' ? .5 : 1) * (hasJob('clean') ? .7 : 1) * (S.flags.sloppy != null && S.t - S.flags.sloppy < 4 ? 1.5 : 1) * (G.huntTrace || 1),
+    burned: A === 'burn', seen: witness, car: !!H.car, sameDay: T.sameDay, parts: dk === 'scatter' ? 3 : 1, partsFound: 0, leak: !!G.leak,
   };
   S.victims.push(v);
   if (S.love) S.love.hunts++;
@@ -599,6 +630,7 @@ function discoveryP(v) {
   const d = D.DUMP[v.dump];
   if (!d || d.keep || v.dump === 'burn') return 0;
   const since = S.t - v.t;
+  if (v.leak && since < 6) return .45;   // a bag left under a streetlight
   const sea = seasonOf(S.t);
   let p = d.p;
   if (d.early) p = since <= d.early ? p : p * .15;
@@ -698,8 +730,9 @@ async function door() {
     { t: '태연하게 대답한다', d: '모른다. 본 적 없다.' },
     { t: '문을 열지 않는다', d: '체인을 건 채로' },
     { t: '먼저 묻는다', d: '“무슨 일인데요?”' },
-  ]);
-  if (i === 0) { if (chance(.45 + trait('cal') * .09)) { S.police -= 6; UI.diary('형사가 고개를 끄덕이고 돌아갔다.'); } else { S.police += 8; UI.diary('대답이 너무 빨랐다. 형사가 수첩에 뭔가를 적었다.', 'red'); } }
+  ], { title: '대답한다', time: 4500 });
+  if (i < 0) { S.police += 7; UI.diary('문 앞에서 굳어 버렸다. 형사가 한참 나를 봤다.', 'red'); }
+  else if (i === 0) { if (chance(.45 + trait('cal') * .09)) { S.police -= 6; UI.diary('형사가 고개를 끄덕이고 돌아갔다.'); } else { S.police += 8; UI.diary('대답이 너무 빨랐다. 형사가 수첩에 뭔가를 적었다.', 'red'); } }
   else if (i === 1) { S.police += 5; S.susp += 5; UI.diary('문을 열지 않았다. 발소리가 오래 문 앞에 있었다.', 'red'); }
   else { if (chance(.4 + trait('cha') * .09)) { S.police -= 4; UI.diary('웃으며 커피를 권했다. 형사는 사양했다.'); } else { S.police += 6; UI.diary('목소리가 떨렸다.', 'red'); } }
   S.police = clamp(S.police, 0, 100); S.susp = clamp(S.susp, 0, 100);
@@ -718,19 +751,32 @@ async function interrogation() {
     { t: '집에서 잤다', d: '혼자. 증명할 사람은 없다' },
     { t: '알리바이를 댄다', d: alibi ? '해장국집 주인이 기억할 것이다' : '만들어 둔 게 없다', dis: !alibi },
     { t: '변호사를 부른다', d: '아무 말도 하지 않는다' },
-  ]);
+  ], { title: '대답한다', time: 5500 });
+  if (a < 0) { S.police += 6; UI.diary('대답이 바로 나오지 않았다. 형사가 펜을 내려놓았다.', 'red'); }
   if (a === 2) { S.police += 4; UI.diary('변호사를 불렀다. 그 형사는 웃었다.'); await UI.next(2000); return; }
   if (a === 1) { S.police -= 12; UI.diary('해장국집 주인이 나를 기억했다. 고마운 사람이다.'); }
+  else if (a < 0) {}
   else if (chance(.4 + trait('cal') * .08)) S.police -= 3; else { S.police += 7; UI.diary('같은 질문을 열한 번 받았다. 마지막엔 대답이 달라졌다.', 'red'); }
   await UI.scene({ img: 'p_interrogation', keepIns: false, vcap: '', cap: '형사가 사진을 한 장씩 밀었다. 손가락으로. 천천히.', ins: ['i_board', 'i_foot'] });
   const b = await UI.choose([
     { t: '사진을 똑바로 본다', d: '눈을 깜박이지 않는다' },
     { t: '고개를 돌린다', d: '“이런 거 못 봐요.”' },
     { t: '웃는다', d: '참을 수가 없다', red: 1 },
-  ]);
-  if (b === 0) { if (chance(.38 + trait('cal') * .1)) { S.police -= 6; UI.diary('사진 속 얼굴들을 끝까지 봤다. 아무것도 느껴지지 않았다. 그게 통했다.'); } else { S.police += 9; UI.diary('사진 한 장에서 눈이 멈췄다. 형사가 그걸 봤다.', 'red'); } }
+  ], { title: '', time: 4500 });
+  if (b < 0) { S.police += 5; UI.diary('사진 앞에서 아무 표정도 짓지 못했다.', 'red'); }
+  else if (b === 0) { if (await mgCalm({ title: '사진을 똑바로 본다', dur: 6, rise: 22 + Math.max(0, 3 - trait('cal')) * 2 })) { S.police -= 6; UI.diary('사진 속 얼굴들을 끝까지 봤다. 아무것도 느껴지지 않았다. 그게 통했다.'); } else { S.police += 9; UI.diary('사진 한 장에서 눈이 멈췄다. 형사가 그걸 봤다.', 'red'); } }
   else if (b === 1) { S.police += 3; }
   else { S.police += 12; S.urge = clamp(S.urge - 10, 0, 100); UI.diary(`웃었다. ${dn}${josa(dn, '이', '가')} 처음으로 눈을 피했다.`, 'red'); }
+  if (a >= 0) {
+    await UI.scene({ img: 'p_interrogation', keepIns: true, vcap: '', cap: `${dn}${josa(dn, '이', '가')} 담배를 껐다. “다시 묻겠습니다. 그날 밤, 어디 계셨죠?”`, snd: 'buzz' });
+    const ANS = ['집에서 잤다', alibi ? '해장국집에 있었다' : '친구를 만났다', '기억나지 않는다'];
+    const ord = [0, 1, 2].sort(() => R() - .5);
+    const c = await UI.choose(ord.map(k => ({ t: ANS[k] })), { title: '아까 뭐라고 했더라', time: 4000 });
+    const same = c >= 0 && ord[c] === (a === 2 ? 2 : a);
+    cov('tw:repeat' + (same ? '+' : '-'));
+    if (same) { S.police -= 3; UI.diary('같은 대답을 했다. 형사가 고개를 끄덕였다.'); }
+    else { S.police += 12; slam('대답이 바뀌었다'); UI.diary('대답이 바뀌었다. 형사가 처음으로 웃었다.', 'red'); }
+  }
   S.police = clamp(S.police, 0, 100);
   await UI.scene({ img: 'city_night', vcap: '', cap: '풀려났다. 증거가 없다고 했다. 아직은.' });
   await UI.next(2600);
@@ -751,9 +797,14 @@ async function homeSearch() {
   const S = G.S;
   S.flags.searched = 1;
   SND.play('knock', 1);
+  const hid = await searchHide();
   await UI.scene({ img: 'p_forensic', trans: 'cut', vcap: '압수수색', cap: '영장을 들고 왔다. 흰 옷 입은 사람들이 욕실 배수구를 뜯었다.', ins: ['i_drain', 'i_tilefinger'], snd: 'buzz' });
   await UI.next(3200);
-  if (S.trophies > 0) {
+  if (S.trophies > 0 && hid.has('freezer') && chance(.7)) {
+    cov('tw:freezerHidden');
+    await UI.scene({ img: 'x_freezer', keepIns: true, vcap: '', cap: '냉동고는 이불 더미 밑에 있었다. 한 사람이 그 위에 걸터앉아 담배를 피웠다. 아무도 들추지 않았다.', snd: 'freezer', vol: .6 });
+    await UI.next(3200);
+  } else if (S.trophies > 0) {
     SND.play('freezer', 1);
     await UI.scene({ img: 'x_freezer', trans: 'flash', vcap: '', cap: '누군가 냉동고 뚜껑을 열었다. 아무도 소리를 내지 않았다. 아주 오랫동안.', snd: 'sting', shake: 2 });
     await UI.next(3800);
@@ -762,7 +813,9 @@ async function homeSearch() {
     await arrest(true);
     return;
   }
-  if (chance(Math.min(.85, S.homeTraces * .32))) {
+  const NAMES = { saw: '톱날 사이의 살점', shoes: '신발 밑창의 흙', list: '수첩에 적힌 이름들', gloves: '장갑 안쪽의 피부 조직' };
+  for (const k of Object.keys(NAMES)) if (!hid.has(k) && chance(.3)) { addEv('물증', NAMES[k]); S.police = clamp(S.police + 6, 0, 100); UI.diary(`${NAMES[k]}. 그들이 봉투에 담아 갔다.`, 'red'); }
+  if (chance(Math.min(.85, S.homeTraces * .32 * (hid.has('tile') ? .45 : 1)))) {
     addEv('혈흔', '욕실 타일 줄눈의 혈흔');
     S.police = clamp(S.police + 15, 0, 100);
     await UI.scene({ img: 'p_forensic', keepIns: true, vcap: '', cap: '줄눈 사이에서 빛이 올라왔다. 형사가 나를 돌아봤다.' });
@@ -979,7 +1032,19 @@ async function arrest(atHome) {
   SND.play('siren', 1);
   await UI.scene({ img: 'e_arrest', trans: 'flash', vcap: '검거', cap: atHome ? '수갑 소리가 냉동고 모터 소리를 덮었다.' : `손전등이 한꺼번에 켜졌다. “${S.name}! 손 들어!”`, shake: 2, ins: ['i_eye'] });
   if (atHome) { await UI.next(3200); await courtAndCell(); return; }
-  const i = await UI.choose([{ t: '손을 든다' }, { t: '칼을 꺼낸다', red: 1 }, { t: '옥상으로 달린다' }]);
+  const i = await UI.choose([{ t: '손을 든다' }, { t: '칼을 꺼낸다', red: 1 }, { t: '옥상으로 달린다' }, ...(G.withBags ? [] : [{ t: '골목으로 뛴다', d: (S.flags.escapes || 0) ? '또 도망칠 수 있을까' : '어둠 속으로' }])], { title: '', time: 5000 });
+  if (i === 3) {
+    const r = await policeChase({});
+    if (r === 'escaped') {
+      S.police = 82; S.susp = clamp(S.susp + 15, 0, 100); S.montage = 1;
+      await UI.scene({ img: 'm_newspaper', trans: 'ink', vcap: '수배', cap: `다음 날 아침 신문. 「${S.nick || '토막살인'} 용의자 도주」. 내 이름이 처음으로 활자가 됐다.`, snd: 'typewriter' });
+      UI.diary('수배됐다. 이제 모두가 나를 찾는다.', 'red');
+      await UI.next(3200);
+      return;
+    }
+    await UI.scene({ img: 'e_arrest', trans: 'flash', vcap: '', cap: '등 뒤에서 무릎이 꺾였다. 아스팔트가 얼굴에 닿았다.', shake: 2 });
+    await UI.next(2400); await courtAndCell(); return;
+  }
   if (i === 1) {
     SND.play('gunshot', 1);
     await UI.scene({ img: 'e_shot', trans: 'red', vcap: '', cap: '탕. 아스팔트가 뺨에 닿았다. 빗물이 눈으로 떨어졌다. 따뜻한 게 나를 둘러쌌다. 내가 수없이 봤던 것.', shake: 2, splat: 2 });
@@ -1069,7 +1134,7 @@ function buildEnd(kind, extra, title) {
   const nf = S.victims.filter(v => v.found).length;
   const list = S.victims.slice(0, 7).map((v, i) => {
     const nm = v.found && v.identified ? v.name : (kind === 'unsolved' || kind === 'nocase') ? v.name[0] + '<s>○○</s>' : v.name;
-    const st = v.found ? (v.identified ? { reservoir: '저수지', river: '강 하류', mountain: '야산', sewer: '하수처리장', trash: '매립장', concrete: '공사장', scatter: '여러 곳', burn: '-', keep: '냉동고' }[v.dump] + ' · 발견' : '신원 미상으로 발견') : (kind === 'unsolved' || kind === 'nocase' ? '실종 · 시신 미발견' : '자백으로 확인 · 미발견');
+    const st = v.found ? (v.identified ? { reservoir: '저수지', river: '강 하류', mountain: '야산', sewer: '하수처리장', trash: '매립장', concrete: '공사장', scatter: '여러 곳', burn: '-', keep: '냉동고', caught: '운반 중', extra: '-' }[v.dump] + ' · 발견' : '신원 미상으로 발견') : (kind === 'unsolved' || kind === 'nocase' ? '실종 · 시신 미발견' : '자백으로 확인 · 미발견');
     return `<div><span>${i + 1}</span><span>${nm}</span><span>${v.age}</span><span>${v.year}</span><span class="${v.found ? '' : 'nf'}">${st}</span></div>`;
   }).join('') + (S.victims.length > 7 ? `<div><span>…</span><span></span><span></span><span></span><span>외 ${S.victims.length - 7}명</span></div>` : '');
   const caught = !['unsolved', 'nocase', 'fight', 'none'].includes(kind);
@@ -1208,6 +1273,11 @@ async function hitTest() {
   UI.idle([{ k: 'a', t: '사냥하러 나간다', d: '굶주림 80' }, { k: 'b', t: '이 동네를 떠난다', d: '의심은 사라진다' }, { k: 'c', t: '냉동고를 비운다' }, { k: 'd', t: '자수한다', red: 1 }]);
   await sleep(100);
   check('#choices .ch', 'idle');
+  UI.clearIdle();
+  const mp = mgMash({ need: 999, dur: .8 }); await sleep(150); check('.mgbtn', 'mash'); await mp;
+  const cp = mgCalm({ dur: .8 }); await sleep(150); check('.mgbtn', 'calm'); await cp;
+  const hp = mgHide([['saw', 'i_saw'], ['shoes', 'i_shoes'], ['list', 'i_list'], ['gloves', 'i_gloves'], ['tile', 'i_tilefinger'], ['freezer', 'x_freezer']].map(([k, img]) => ({ k, t: '시험 물건', img, cost: 600 })), { dur: .8 });
+  await sleep(150); check('.mghide .hi', 'hide'); await hp;
   G.S.ending = 'unsolved'; G.S.deathAge = 74; G.S.deathYear = 2040; G.S.nick = '오동구 저수지 토막살인';
   buildEnd('unsolved', {}, '흑천의 그림자'); UI.show('end');
   await sleep(2200);

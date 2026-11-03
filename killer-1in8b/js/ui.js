@@ -226,7 +226,11 @@ const UI = {
     $$('.screen').forEach(s => s.classList.toggle('on', s.id === id));
     this.cur = id;
     document.body.classList.toggle('inplay', id === 'play');
-    if (id !== 'play') { this.sid = (this.sid || 0) + 1; $('#cutins').innerHTML = ''; $('#nextcue').classList.remove('on'); }
+    if (id !== 'play') {
+      this.sid = (this.sid || 0) + 1; $('#cutins').innerHTML = ''; $('#nextcue').classList.remove('on');
+      G.tense = 0; G.night = null; $('#play').classList.remove('t1', 't2', 't3', 'mgon', 'mg-dark');
+      const c = $('#clock'); if (c) c.classList.remove('on', 'late');
+    }
   },
 
   // ---- scene picture with transitions
@@ -454,7 +458,35 @@ const UI = {
         if (!box.querySelector('.ch')) { box.classList.add('ask'); box.classList.remove('idle'); rows.forEach(r => box.appendChild(r)); }
       }, 400);
       if (LAY.mode === 'm') { const b = $('#born'); if (b.offsetTop + b.offsetHeight > LAY.H - 8) play.classList.add('tight'); }
-      if (G.auto) setTimeout(() => {
+      // timed: a draining bar; when it runs out you froze (resolves -1). Pausing stops the clock.
+      const late = () => {
+        if (settled) return;
+        settled = true;
+        document.removeEventListener('keydown', key);
+        rows.forEach(r => r.classList.add('gone'));
+        box.classList.remove('hurry');
+        if (typeof slam === 'function') slam('늦었다');
+        setTimeout(() => { box.innerHTML = ''; box.classList.remove('ask', 'timed'); $('#play').classList.remove('ask', 'tight'); res(-1); }, 520);
+      };
+      if (o.time) {
+        const total = o.time * (G.S && G.S.urge >= 90 ? .8 : 1);
+        let left = total, last = performance.now(), beat = 0;
+        box.classList.add('timed');
+        const bar = el('div', 'ctime', '<i></i>');
+        box.insertBefore(bar, box.children[1]);
+        const iv = setInterval(() => {
+          const now = performance.now(), dt = Math.min(100, now - last); last = now;
+          if (settled) { clearInterval(iv); box.classList.remove('hurry', 'timed'); return; }
+          if (G.speed === 0 || document.hidden) return;
+          left -= dt;
+          bar.firstChild.style.transform = `scaleX(${Math.max(0, left / total)})`;
+          box.classList.toggle('hurry', left < 1200);
+          if ((beat -= dt) <= 0) { beat = left < 1200 ? 250 : 500; SND.play('ui', left < 1200 ? .5 : .25); }
+          if (left <= 0) { clearInterval(iv); late(); }
+        }, 30);
+      }
+      if (G.auto && o.time && Math.random() < .12) setTimeout(late, 30);
+      else if (G.auto) setTimeout(() => {
         const ok = opts.map((o, i) => o.dis ? -1 : i).filter(i => i >= 0);
         if (G.careful) {
           const sc = i => { const o = opts[i], r = o.risk || {}, n = r.note || ''; return (r.eye || 0) * 2 + (r.drop || 0) + (o.red ? 3 : 0) + (/곧|집을 뒤지면|금방|어렵다/.test(n) ? 3 : 0) - (/오래 묻힌다|확실|찾는 사람이 없다|누군지 모른다/.test(n) ? 2 : 0) + (/돌아간다|그만둔다/.test(o.t) ? 6 : 0) + Math.random() * .5; };
@@ -622,7 +654,7 @@ const UI = {
     this.graph();
     const st = $('#status'); st.classList.remove('tick'); void st.offsetWidth; st.classList.add('tick');
     this.eyes(Math.min(10, Math.round(S.susp / 10)), S.police);
-    SND.heart(S.urge > 70 ? (S.urge - 70) / 30 : 0);
+    SND.heart(Math.max(G.tense ? [0, .3, .65, 1][G.tense] : 0, S.urge > 70 ? (S.urge - 70) / 30 : 0));
     $('#play').classList.toggle('hunger', S.urge > 85);
   },
   speedUI() {
