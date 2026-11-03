@@ -161,6 +161,8 @@ async function request(r) {
 // ================================================================== birth
 async function birth() {
   const S = G.S;
+  S.arc = S.arc || {};
+  await chapter('태어나다', `${S.born.y}년, ${D.CITY}. 같은 시각 같은 병원에서 다섯이 태어났다.`);
   const fam = D.FAMILIES.find(f => f.k === S.family);
   await UI.scene({ img: 'nursery', trans: 'cut', vcap: `새벽 ${S.born.h}시 ${S.born.mi}분`, cap: `${S.born.y}년 ${S.born.m}월 ${S.born.d}일. ${D.CITY} ${S.district}.`, snd: 'baby', amb: 'amb_drone' });
   await UI.next(3200);
@@ -215,6 +217,9 @@ async function season() {
 
   lifeSeason(S);
   if (birthday) { lifeYear(S); await milestone(age); }
+  await chapterCheck(birthday);
+  await arcTick(birthday);
+  if (S.over) return;
 
   // childhood / youth scripts
   if (birthday && age < 18) {
@@ -240,7 +245,7 @@ async function season() {
   // hunger
   const trophyDamp = 1 - Math.min(.5, S.trophies * .18);
   const ageDamp = age >= 75 ? .2 : age >= 65 ? .45 : age >= 50 ? .75 : 1;
-  S.urge = clamp(S.urge + (1.0 + trait('imp') * .7 + trait('cru') * .4) * .85 * trophyDamp * ageDamp - (S.love ? .5 : 0) - (S.job === 'butcher' ? .3 : 0) + (S.life && S.life.void > 70 ? .5 : 0), 0, 100);
+  S.urge = clamp(S.urge + (1.0 + trait('imp') * .7 + trait('cru') * .4) * .85 * trophyDamp * ageDamp - (S.love ? .5 : 0) - (S.job === 'butcher' ? .3 : 0) + (S.life && S.life.void > 70 ? .5 : 0) - (S.arc && S.arc.heal >= 1 ? .2 * S.arc.heal : 0), 0, 100);
   await madness();
 
   // suspicion decays
@@ -874,7 +879,7 @@ const EVENTS = [
     await UI.next(2400);
   } },
   { k: 'baby', w: 2, when: S => S.married && !S.kids && AGE() < 46, run: async S => {
-    S.kids = 1;
+    S.kids = 1; S.kidT = S.t;
     await UI.scene({ img: 'life_baby', vcap: '아이', cap: '아이가 내 엄지를 쥐었다. 손톱 밑에 검붉은 선이 아직 남아 있었다.', snd: 'baby', vol: .5 });
     UI.diary('아이가 태어났다. 손가락이 작다. 아주 작다.'); await UI.next(2800);
   } },
@@ -1030,6 +1035,8 @@ async function confess() {
 
 async function arrest(atHome) {
   const S = G.S;
+  S.arc = S.arc || {};
+  if (!atHome && await arcArrest()) return;
   SND.play('siren', 1);
   await UI.scene({ img: 'e_arrest', trans: 'flash', vcap: '검거', cap: atHome ? '수갑 소리가 냉동고 모터 소리를 덮었다.' : `손전등이 한꺼번에 켜졌다. “${S.name}! 손 들어!”`, shake: 2, ins: ['i_eye'] });
   if (atHome) { await UI.next(3200); await courtAndCell(); return; }
@@ -1037,7 +1044,7 @@ async function arrest(atHome) {
   if (i === 3) {
     const r = await policeChase({});
     if (r === 'escaped') {
-      S.police = 82; S.susp = clamp(S.susp + 15, 0, 100); S.montage = 1;
+      S.police = 82; S.susp = clamp(S.susp + 15, 0, 100); S.montage = 1; if (!S.arc.flee) S.arc.flee = 1;
       await UI.scene({ img: 'm_newspaper', trans: 'ink', vcap: '수배', cap: `다음 날 아침 신문. 「${S.nick || '토막살인'} 용의자 도주」. 내 이름이 처음으로 활자가 됐다.`, snd: 'typewriter' });
       UI.diary('수배됐다. 이제 모두가 나를 찾는다.', 'red');
       await UI.next(3200);
@@ -1080,7 +1087,7 @@ async function courtAndCell(kind) {
   }[S.prison];
   await UI.scene({ img: PR[0], trans: 'ink', vcap: '', cap: PR[1], ins: [PR[2]], snd: S.prison === 'shower' ? 'stab1' : 'drip', shake: S.prison === 'shower' ? 2 : 0, splat: S.prison === 'shower' ? 2 : 0 });
   await UI.next(5200);
-  await ending(kind || (death ? 'death' : 'life'));
+  await ending(kind || arcCourtKind() || (death ? 'death' : 'life'));
 }
 
 async function dieOld() {
@@ -1091,7 +1098,7 @@ async function dieOld() {
   const det = others('det');
   await UI.scene({ img: 'e_funeral', trans: 'ink', vcap: '빈소', cap: det && !det.dead && S.police >= 30 ? `조문객은 한 사람뿐이었다. 은퇴한 형사 ${det.name}.` : '조문객은 없었다.', snd: 'whisper', vol: .3 });
   await UI.next(4200);
-  await ending(!S.victims.length ? 'none' : S.police >= 70 ? 'nocase' : 'unsolved');
+  await oldEnding();
 }
 
 // ================================================================== ending
@@ -1106,6 +1113,8 @@ async function ending(kind, extra = {}) {
   if (det && !det.dead) {
     det.fate = { unsolved: '은퇴할 때까지 그 사건 하나를 쫓았다. 끝내 잡지 못했다.', nocase: '용의자의 장례식에 갔다. 혼자서.', death: '수갑을 직접 채웠다.', life: '수갑을 직접 채웠다.', shot: '방아쇠를 당긴 건 그였다.', roof: '옥상 난간에서 한 발 늦었다.', confess: '자수 소식을 듣고 한참 웃었다. 울었는지도 모른다.', fight: '사건 기록 맨 끝에 「종결」이라고 적었다.' }[kind];
   }
+  if (det && !det.dead && D.END[kind].det) det.fate = D.END[kind].det;
+  G.newEnding = markEnding(kind);
   const nf = S.victims.filter(v => v.found).length;
   const title = titleOf(S);
   addRecord({ ending: kind, n: S.victims.length, unf: S.victims.length - nf, age: S.deathAge, y: S.deathYear, nick: S.nick, title, name: S.name, born: S.born.y, at: Date.now() });
@@ -1134,12 +1143,13 @@ function buildEnd(kind, extra, title) {
   const det = others('det');
   const nf = S.victims.filter(v => v.found).length;
   const list = S.victims.slice(0, 7).map((v, i) => {
-    const nm = v.found && v.identified ? v.name : (kind === 'unsolved' || kind === 'nocase') ? v.name[0] + '<s>○○</s>' : v.name;
-    const st = v.found ? (v.identified ? { reservoir: '저수지', river: '강 하류', mountain: '야산', sewer: '하수처리장', trash: '매립장', concrete: '공사장', scatter: '여러 곳', burn: '-', keep: '냉동고', caught: '운반 중', extra: '-' }[v.dump] + ' · 발견' : '신원 미상으로 발견') : (kind === 'unsolved' || kind === 'nocase' ? '실종 · 시신 미발견' : '자백으로 확인 · 미발견');
+    const masked = kind === 'unsolved' || kind === 'nocase' || (E.caught === false && !E.named);
+    const nm = v.found && v.identified ? v.name : masked ? v.name[0] + '<s>○○</s>' : v.name;
+    const st = v.found ? (v.identified ? { reservoir: '저수지', river: '강 하류', mountain: '야산', sewer: '하수처리장', trash: '매립장', concrete: '공사장', scatter: '여러 곳', burn: '-', keep: '냉동고', caught: '운반 중', extra: '-' }[v.dump] + ' · 발견' : '신원 미상으로 발견') : (masked ? '실종 · 시신 미발견' : E.named ? '기록으로 확인 · 미발견' : '자백으로 확인 · 미발견');
     return `<div><span>${i + 1}</span><span>${nm}</span><span>${v.age}</span><span>${v.year}</span><span class="${v.found ? '' : 'nf'}">${st}</span></div>`;
   }).join('') + (S.victims.length > 7 ? `<div><span>…</span><span></span><span></span><span></span><span>외 ${S.victims.length - 7}명</span></div>` : '');
-  const caught = !['unsolved', 'nocase', 'fight', 'none'].includes(kind);
-  const suspect = caught ? `피의자 ${S.name} (${S.sex === 'm' ? '남' : '여'}, ${S.deathAge}세)` : kind === 'fight' ? `범인 ${S.name} — 사망` : '피의자 미상';
+  const caught = E.caught != null ? E.caught : !['unsolved', 'nocase', 'fight', 'none'].includes(kind);
+  const suspect = E.suspect ? E.suspect(S) : E.named ? `피의자 ${S.name} (사망)` : caught ? `피의자 ${S.name} (${S.sex === 'm' ? '남' : '여'}, ${S.deathAge}세)` : kind === 'fight' ? `범인 ${S.name} — 사망` : '피의자 미상';
   const caseName = !S.victims.length ? '해당 사건 없음' : S.nick ? `「${S.nick}」 사건` : `${S.district} 연쇄 실종 사건`;
   const photo = pick(S.victims.filter(v => v.found).map(v => D.DUMP[v.dump] && D.DUMP[v.dump].img).filter(Boolean)) || E.ph;
   const lastLine = {
@@ -1152,7 +1162,7 @@ function buildEnd(kind, extra, title) {
     roof: `${S.name}. ${S.deathYear}년, 옥상에서 떨어졌다. 떨어지는 3초 동안 ${S.victims.length}개의 얼굴이 지나갔다. 마지막 비명은 자기 것이었다.`,
     confess: `${S.name}. 왜 자수했냐는 질문에 대답하지 않았다.`,
     fight: `${S.name}. ${extra.survivor || '마지막 대상'}${josa(extra.survivor || '대상', '은', '는')} 살아남았다. 내 배를 가른 깨진 병은 증거물 봉투에 담겼다.`,
-  }[kind];
+  }[kind] || (E.last ? E.last(S, extra) : '');
   const acc = (S.love && S.love.accomplice && S.love.name) || (S.married && S.married.accomplice && S.married.name);
   const note = det && !det.dead && !['fight'].includes(kind)
     ? { unsolved: `이 새끼는 아직<br>이 동네에 산다 — ${det.name[0]}`, nocase: `늦었다 — ${det.name[0]}`, death: '끝. — ' + det.name[0], life: '끝. — ' + det.name[0], shot: '내가 쐈다 — ' + det.name[0], roof: '한 발 늦었다 — ' + det.name[0], confess: '왜 이제야 — ' + det.name[0] }[kind]
@@ -1173,6 +1183,8 @@ function buildEnd(kind, extra, title) {
     ${note ? `<div class="x-note">${note}</div>` : ''}
     <div class="x-stamp">${E.stamp}<small>${E.sub}</small></div>`;
   $('#e-title').textContent = `「${title}」`;
+  const seen = endingsSeen().length, all = Object.keys(D.END).length;
+  $('#e-col').innerHTML = `모은 결말 <b>${G.auto ? '-' : seen}</b> / ${all}${G.newEnding ? ' · <em>새 결말</em>' : ''}`;
 }
 
 function buildLives() {
@@ -1211,6 +1223,7 @@ function titleScreen() {
 
 function showRecords() {
   const a = records();
+  $('#rec-hd').innerHTML = `지난 사건 기록 <small>모은 결말 ${endingsSeen().length} / ${Object.keys(D.END).length}</small>`;
   $('#rec-list').innerHTML = a.map(r => `<div class="rc"><span class="st">${D.END[r.ending].stamp}</span><span class="nm">${r.name} · ${r.born}–${r.y}</span><span>${r.nick ? '「' + r.nick + '」' : ''}</span><span>피해자 ${r.n} · 못 찾음 ${r.unf}</span><span class="tt">${r.title}</span></div>`).join('') || '<div class="rc">기록 없음</div>';
   UI.show('records');
 }
@@ -1244,6 +1257,23 @@ function cov(k) {
 
 // ---- debug: freeze one hands-on moment mid-way for a screenshot (?shot=calm|hold|mash|hide|timed)
 async function shotTest(k) {
+  if (k === 'chap' || k === 'review') {
+    G.S = newLife(); G.S.t = 140; lifeInit(G.S); G.skipType = true; G.S.arc = { scapeName: '박상철', det: 'friend' };
+    G.S.victims = [1, 2, 3, 4].map(i => ({ name: rname('f'), age: 20 + i, year: 1990 + i, dump: 'reservoir', found: i % 2, identified: 1, t: 80 + i * 6 }));
+    G.S.marks = [[9, `${G.S.others[0].name}은(는) 이 일을 평생 기억한다`], [23, '흑천일보 사회부가 이 편지를 액자에 넣었다'], [31, '박상철의 어머니가 이 침묵을 기억한다']];
+    G.S.chapters = [[0, '태어나다'], [17, '눈뜨다'], [21, '첫 번째'], [26, '이름이 생기다'], [33, '좁혀 오는 손'], [60, '늙은 짐승']];
+    if (k === 'chap') {
+      UI.show('play'); UI.status(); UI.born(); UI.renderDiary();
+      await UI.scene({ img: 'm_newspaper', vcap: '검거', cap: '「흑천 저수지 토막살인」 사건 용의자로 박상철(41, 고물상)이 체포됐다.' });
+      remember('박상철의 어머니가 이 침묵을 기억한다');
+      $('#chap').innerHTML = '<small>제사장</small><b>이름이 생기다</b><span>신문이 나를 「흑천 저수지 토막살인」이라고 불렀다.</span>'; $('#chap').classList.add('on');
+    } else {
+      G.S.ending = 'scapegoat'; G.S.deathAge = 72; G.S.deathYear = 2030; G.S.yhist = [[1, 0, 0, 20, 90, 25, 20, 0], [30, 60, 40, 50, 70, 40, 40, 1], [72, 20, 30, 40, 30, 30, 60, 0]];
+      UI.show('review'); buildReview(); await sleep(200); $('#rv').scrollTop = $('.rv-marks').offsetTop - 120;
+    }
+    document.title = 'SHOT ' + k;
+    return;
+  }
   if (k === 'baby' || k === 'six') {
     G.S = newLife(); G.S.t = k === 'baby' ? 9 : 24; lifeInit(G.S); G.skipType = true;
     UI.show('play'); UI.status(); UI.born(); UI.renderDiary();

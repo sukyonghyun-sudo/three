@@ -495,7 +495,7 @@ async function moveTwist(cut) {
   await UI.hcap('“거기 뭐요?” 경비원이 다가온다.');
   const i = await UI.choose([{ t: '수레를 끌고 걸어간다', d: '“고물이요.”' }, { t: '수레를 두고 뛴다', red: 1 }], { title: '', time: 2600 });
   if (i === 0) { addEv('목격', `${YEAR()}년 공사장 경비원의 기억`); S.police = clamp(S.police + 3, 0, 100); return 'go'; }
-  if (await mgMash({ title: '달린다', need: 16, dur: 4 })) { G.leak = true; slam('따돌렸다'); UI.diary('수레를 두고 왔다. 경찰이 수레를 열 것이다.', 'red'); S.police = clamp(S.police + 8, 0, 100); return 'go'; }
+  if (S.victims.length < 2 || await mgMash({ title: '달린다', need: 16, dur: 4 })) { G.leak = true; slam('따돌렸다'); UI.diary('수레를 두고 왔다. 경찰이 수레를 열 것이다.', 'red'); S.police = clamp(S.police + 8, 0, 100); return 'go'; }
   await arrestWithBags();
   return 'over';
 }

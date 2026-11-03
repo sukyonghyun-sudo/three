@@ -168,6 +168,8 @@ function buildReview() {
   $('#rv').innerHTML = `
     <div class="rv-hd"><div class="rv-k">80억분의 1 · 일생 돌아보기</div><div class="rv-n">${S.name}</div><div class="rv-d">${born} – ${S.deathYear} · ${S.deathAge}세 · ${S.sex === 'm' ? '남' : '여'} · ${D.END[S.ending].stamp}</div></div>
     <div class="rv-sum">${sum.map(x => `<p>${x}</p>`).join('')}</div>
+    ${(S.marks || []).length ? `<div class="rv-sec">이 결말에 이른 갈림길</div><div class="rv-marks">${S.marks.map(m => `<div><i>${m[0]}세</i>◆ ${m[1]}</div>`).join('')}<div class="end"><i>${S.deathAge}세</i>${D.END[S.ending].stamp}</div></div>` : ''}
+    ${(S.chapters || []).length ? `<div class="rv-chs">${S.chapters.map((c, i) => `<span><small>${i + 1}장 · ${c[0]}세</small>${c[1]}</span>`).join('')}</div>` : ''}
     <div class="rv-sec">일생의 곡선</div>
     <div class="rv-leg"><span class="u">굶주림</span><span class="p">수사망</span><span class="m">돈</span><span class="h">건강</span><span class="b">사람</span></div>
     <canvas id="rvgraph" width="1100" height="380"></canvas>
@@ -180,7 +182,9 @@ function buildReview() {
         <div class="rv-bar"><i style="width:${Math.min(100, p.span)}%"></i><span>${p.span}세${p === longest ? ' · 가장 오래' : ''}</span></div>
         <div class="rv-pf">${p.fate}</div></div></div>`).join('')}</div>
     <div class="rv-sec">연표</div>
-    <div class="rv-tl">${tl.map(t => `<div class="${t[2] || ''}"><i>${t[0]}세</i>${t[1]}</div>`).join('')}</div>`;
+    <div class="rv-tl">${tl.map(t => `<div class="${t[2] || ''}"><i>${t[0]}세</i>${t[1]}</div>`).join('')}</div>
+    <div class="rv-sec">결말 수집 ${endingsSeen().length} / ${Object.keys(D.END).length}</div>
+    <div class="rv-ends">${Object.entries(D.END).map(([k, e]) => endingsSeen().includes(k) || k === S.ending ? `<span class="${k === S.ending ? 'now' : ''}">${e.stamp}</span>` : '<span class="no">？？？</span>').join('')}</div>`;
   drawReviewGraph();
 }
 
