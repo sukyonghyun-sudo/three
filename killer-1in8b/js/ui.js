@@ -665,7 +665,12 @@ const UI = {
   },
 };
 
-function buzz() { try { navigator.vibrate && navigator.vibrate(12); } catch (e) {} }
+function buzz() {
+  // only right after a real tap (the browser blocks and logs it otherwise)
+  const ua = navigator.userActivation;
+  if (!navigator.vibrate || (ua && !ua.isActive)) return;
+  try { navigator.vibrate(12); } catch (e) {}
+}
 
 function riskHTML(r) {
   let h = '<span class="r">';
