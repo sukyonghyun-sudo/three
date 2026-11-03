@@ -288,7 +288,7 @@ const UI = {
     const sid = this.sid = (this.sid || 0) + 1;
     const live = () => this.sid === sid && this.cur === 'play';
     if (o.sfx) setTimeout(() => live() && this.sfx(o.sfx, o.sfxBig), 350);
-    if (o.ins) o.ins.forEach((k, i) => setTimeout(() => live() && this.cutin(k, i, o.ins.length), 500 + i * 650));
+    if (o.ins && !o.mark) o.ins.forEach((k, i) => setTimeout(() => live() && this.cutin(k, i, o.ins.length), 500 + i * 650));
     if (o.cap !== undefined) jobs.push(this.hcap(o.cap));
     await Promise.all(jobs);
   },
@@ -321,14 +321,15 @@ const UI = {
     setTimeout(() => s.remove(), 3400);
   },
 
-  // close-up insert panels slammed over the stage
+  // close-up insert panels: corners only (the middle of the picture is where the subject is),
+  // and they leave on their own so the picture is never covered for long
   cutin(key, i = 0, n = 1) {
     const st = $('#scene').offsetTop;
     const SLOTS = LAY.mode === 'm'
-      ? [[14, st + 190, 215, 215, -4], [522, st + 14, 212, 212, 3.5], [268, st + 200, 200, 200, -2.5], [520, st + 210, 200, 200, 2]]
-      : [[150, 70, 320, 320, -4], [930, 50, 320, 320, 3.5], [560, 140, 290, 290, -2.5], [1010, 330, 250, 330, 2], [420, 360, 260, 260, -5]];
-    if (LAY.mode === 'm' && i >= 2) return;
-    const pick = n === 1 ? [SLOTS[0], SLOTS[1], SLOTS[2]][Math.floor(Math.random() * 3)] : SLOTS[i % SLOTS.length];
+      ? [[566, st + 10, 172, 172, 3.5], [12, st + 240, 172, 172, -4], [566, st + 240, 172, 172, 2.5]]
+      : [[1000, 40, 260, 260, 3.5], [44, 420, 240, 240, -4], [1010, 360, 240, 240, 2]];
+    if (i >= (LAY.mode === 'm' ? 2 : 3)) return;
+    const pick = n === 1 ? SLOTS[Math.floor(Math.random() * SLOTS.length)] : SLOTS[i % SLOTS.length];
     const [x, y, w, h, r] = pick;
     const c = el('div', 'cutin');
     c.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;--r:${r}deg`;
@@ -341,6 +342,7 @@ const UI = {
     $('#cutins').appendChild(c);
     SND.play('ui', .5);
     this.shake(1);
+    setTimeout(() => { c.classList.add('out'); setTimeout(() => c.remove(), 400); }, LAY.mode === 'm' ? 2200 : 3200);
   },
   clearCutins() {
     $$('#cutins .cutin').forEach(c => { c.classList.add('out'); setTimeout(() => c.remove(), 400); });
