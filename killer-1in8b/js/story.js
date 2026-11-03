@@ -13,11 +13,13 @@ function startLove() {
   const sp = S.others.find(o => o.role === 'spouse' && !o.dead && !o.met);
   const name = sp ? sp.name : rname(sex);
   if (sp) { sp.met = true; sp.face = sex === 'f' ? 'face_gf' : 'face_bf'; sp.status = '연인'; }
+  (S.myLife = S.myLife || []).push([AGE(), `${name}${josa(name, '을', '를')} 만났다.`]);
   S.love = { name, sex, face: sex === 'f' ? 'face_gf' : 'face_bf', stage: 0, warmth: 1, met: S.t, hunts: 0, knows: 0, accomplice: false, sameDay: !!sp, job: pick(D.VJOB[sex]) };
   UI.born();
 }
 function endLove(why) {
   const S = G.S;
+  if (S.love) (S.myLife = S.myLife || []).push([AGE(), why === 'dead' ? `${S.love.name}${josa(S.love.name, '이', '가')} 사라졌다.` : `${S.love.name}${josa(S.love.name, '이', '가')} 떠났다.`]);
   const p = S.others.find(o => o.name === S.love.name);
   if (p) { p.status = why === 'dead' ? '실종' : ''; }
   S.love = null;
@@ -121,6 +123,7 @@ const LOVE_EVENTS = [
       const p = S.others.find(o => o.name === L.name); if (p) { p.status = '배우자'; p.life.push([AGE(), '결혼했다.']); }
       await UI.scene({ img: 'life_wedding', vcap: '결혼', cap: '사진사가 웃으라고 했다. 사진에서 내 얼굴은 나중에 오려 냈다.', snd: 'typewriter' });
       UI.diary(`${L.name}${josa(L.name, '과', '와')} 결혼했다.`, 'love');
+      (S.myLife = S.myLife || []).push([AGE(), `${L.name}${josa(L.name, '과', '와')} 결혼했다.`]);
       S.susp = clamp(S.susp - 15, 0, 100); S.love.stage = 3;
     } else if (i === 1) { L.warmth -= 1; UI.diary('아직은, 이라고 했다. 아직은.', 'love'); }
     else { UI.diary(`${L.name}${josa(L.name, '을', '를')} 보냈다. 살려 두고 싶은 사람은 처음이었다.`, 'love'); endLove('left'); }
@@ -259,7 +262,7 @@ const LIFE_EVENTS = [
     if (i === 0) { S.flags.cctvAware = 1; UI.diary('카메라 없는 길. 뒷산 쪽으로 20분.'); } else UI.diary('카메라는 얼굴을 못 본다. 모자를 샀다.');
     await UI.next(1800);
   } },
-  { k: 'quietLove', w: 4, when: S => S.love && S.love.stage >= 1, run: async S => {
+  { k: 'quietLove', w: 2, when: S => S.love && S.love.stage >= 1, run: async S => {
     const L = S.love;
     UI.diary(pick([`${L.name}${josa(L.name, '과', '와')} 시장에 갔다. 생선 가게 앞에서 오래 서 있었다.`, `${L.name}${josa(L.name, '이', '가')} 내 방 커튼을 바꿨다. 빛이 들어온다. 싫지 않았다.`, `${L.name}${josa(L.name, '이', '가')} 잠꼬대로 내 이름을 불렀다.`, `영화를 봤다. ${L.name}${josa(L.name, '은', '는')} 울었고 나는 화면 속 칼을 봤다.`, `${L.name}${josa(L.name, '이', '가')} 끓인 찌개. 피 냄새가 안 나는 저녁.`]), 'love');
     if (chance(.5)) await UI.scene({ img: PIMG(pick(['meet', 'walk'])), vcap: '', cap: '' });

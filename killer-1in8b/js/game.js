@@ -903,7 +903,7 @@ const EVENTS = [
 async function randomEvent() {
   const S = G.S;
   if (!EVENTS.storyAdded) { EVENTS.push(...STORY_EVENTS); EVENTS.storyAdded = 1; }
-  const COOL = { quietLove: 4, loveWalk: 2, loveStay: 2, loveStrain: 6, tail: 6, coworker: 14, bus: 14, nightmare: 12, tv: 10, neighbor: 10, paranoia: 12, smell: 10 };
+  const COOL = { quietLove: 6, loveWalk: 2, loveStay: 2, loveStrain: 6, tail: 6, coworker: 14, bus: 14, nightmare: 12, tv: 10, neighbor: 10, paranoia: 12, smell: 10 };
   const ok = EVENTS.filter(e => { const cd = e.cool != null ? e.cool : COOL[e.k] != null ? COOL[e.k] : 10, last = S.flags['ev_' + e.k]; return e.when(S) && (last == null || S.t - last >= cd); });
   if (!ok.length) return;
   let tw = ok.reduce((a, e) => a + e.w, 0), r = R() * tw;
@@ -1095,7 +1095,9 @@ function buildLives() {
   myLines.push([0, '태어났다.']);
   if (S.job) myLines.push([18, D.JOBS[S.job].t + '.']);
   if (firstKill) myLines.push([ageOf(firstKill.t), `${firstKill.name}. 처음.`]);
+  (S.myLife || []).forEach(l => myLines.push(l));
   if (S.nick) myLines.push(['', `「${S.nick}」라고 불렸다.`]);
+  myLines.sort((a, b) => (a[0] === '' ? 999 : a[0]) - (b[0] === '' ? 999 : b[0]));
   myLines.push([S.deathAge, D.END[S.ending].stamp + '.']);
   let h = col(null, S.name, `${S.born.y}.${S.born.m}.${S.born.d} · 나`, myLines, `피해자 ${S.victims.length}명.`, true);
   for (const p of S.others) {

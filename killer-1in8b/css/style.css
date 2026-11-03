@@ -486,3 +486,12 @@ body.m:not(.inplay) #sys{top:auto;right:auto;bottom:14px;left:14px;background:rg
 .m .ch:active:not(.dis)::after{color:#ff5a5a}
 .m .ch.picked{background:#4a0d0d !important;border-color:#e02020 !important}
 .m #choices .ctitle{font-size:27px;color:#e6e1d6}
+/* phone: blood decals stay behind the panels */
+.m #decals{z-index:0}
+.m #status,.m #gwrap,.m #choices{position:relative;z-index:4}
+.m #gwrap{background:#0e0c0b}
+
+/* phone: stamp sits on the photo, not on the case title; back buttons on a solid bar */
+.m .x-stamp{top:200px;right:40px}
+.m #lives-back,.m #rec-back{left:0;right:0;bottom:56px;padding:16px 28px;background:#070606;border-top:1px solid #2a2622;z-index:5}
+.m #lives-row,.m #rec-list{bottom:140px}
