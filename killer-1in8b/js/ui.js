@@ -11,7 +11,7 @@ const IMG = k => `img/${LAY.mode === 'm' ? 'm/' : ''}${k}.webp`;
 // Everything is fetched in story order, 3 at a time, after the title is up.
 // Pictures the current scene needs jump the queue. Only the browser cache keeps them (no decoded copies in memory).
 const LOADER = {
-  q: [], done: new Set(), busy: new Set(), max: 3, started: false, total: 0,
+  q: [], done: new Set(), busy: new Set(), max: /^https?:/.test(location.protocol) ? 4 : 3, started: false, total: 0,
   order() {
     const first = ['title', 'nursery', 'birth', 'i_eye', 'child_mother', 'child_father', 'child_bird', 'child_class', 'child_rabbit', 'child_fire', 'teen_roof', 'teen_knife', 'i_clock',
       'city_night', 'city_day', 'home_banjiha', 'job_butcher', 'job_taxi', 'job_hospital', 'face_det'];
@@ -225,6 +225,7 @@ const UI = {
   show(id) {
     $$('.screen').forEach(s => s.classList.toggle('on', s.id === id));
     this.cur = id;
+    document.body.classList.toggle('inplay', id === 'play');
     if (id !== 'play') { this.sid = (this.sid || 0) + 1; $('#cutins').innerHTML = ''; $('#nextcue').classList.remove('on'); }
   },
 
@@ -241,7 +242,15 @@ const UI = {
     const dx = (Math.random() - .5) * 3, dy = (Math.random() - .5) * 2;
     im.style.cssText = `--s0:${s0};--s1:${s1};--x0:${-dx}%;--y0:${-dy}%;--x1:${dx}%;--y1:${dy}%`;
     L.appendChild(im);
-    await new Promise(r => { if (im.complete) r(); else { im.onload = r; im.onerror = r; setTimeout(r, 2500); } });
+    if (G.auto) G.log = (G.log || []).concat([`${Math.round(performance.now())} pic ${key} start`]).slice(-60);
+    LOADER.add([key], true);
+    const t0 = performance.now();
+    const mark = setTimeout(() => box.classList.add('loading'), 250);
+    await new Promise(r => { if (im.complete && im.naturalWidth) r(); else { im.onload = r; im.onerror = r; setTimeout(r, G.auto ? 50 : 8000); } });
+    clearTimeout(mark); box.classList.remove('loading');
+    if (G.auto) G.log = (G.log || []).concat([`${Math.round(performance.now())} pic ${key} loaded`]).slice(-60);
+    if (im.decode && !G.auto) { try { await Promise.race([im.decode(), sleep(400)]); } catch (e) {} }
+    G.waited = (G.waited || 0) + (performance.now() - t0);
     const fx = 20 + Math.random() * 60, fy = 20 + Math.random() * 60;
     if (mode === 'ink') {
       L.style.clipPath = `circle(0% at ${fx}% ${fy}%)`;
@@ -264,6 +273,7 @@ const UI = {
   // full beat: picture + captions + effects. resolves when text is out.
   async scene(o) {
     G.beats = (G.beats || 0) + 1;
+    if (G.auto) G.log = (G.log || []).concat([`${Math.round(performance.now())} scene ${o.img}`]).slice(-60);
     if (G.stopAt && G.beats > G.stopAt) { const d = $('#dlines'); document.body.dataset.dbg = [d.clientHeight, d.scrollHeight, $('#diary .txt').clientHeight, $('#dyear').offsetHeight, UI.cur, $('#play').className, G.S.diary.length].join('|'); await new Promise(() => {}); }
     if (o.amb !== undefined) SND.amb(o.amb);
     this.clearMarks();
@@ -290,7 +300,8 @@ const UI = {
     await typeInto(v, t, 34);
   },
   async hcap(t) {
-    const h = $('#hcap');
+    const h = LAY.mode === 'm' ? $('#hcapbox') : $('#hcap');
+    (LAY.mode === 'm' ? $('#hcap') : $('#hcapbox')).textContent = '';
     if (!t) { h.classList.remove('on'); h.textContent = ''; return; }
     h.classList.add('on');
     G.est = (G.est || 0) + t.length * 25;
@@ -312,9 +323,11 @@ const UI = {
 
   // close-up insert panels slammed over the stage
   cutin(key, i = 0, n = 1) {
+    const st = $('#scene').offsetTop;
     const SLOTS = LAY.mode === 'm'
-      ? [[40, 740, 330, 330, -4], [720, 150, 330, 330, 3.5], [390, 780, 300, 300, -2.5], [770, 740, 270, 370, 2], [110, 150, 280, 280, 5]]
+      ? [[14, st + 190, 215, 215, -4], [522, st + 14, 212, 212, 3.5], [268, st + 200, 200, 200, -2.5], [520, st + 210, 200, 200, 2]]
       : [[150, 70, 320, 320, -4], [930, 50, 320, 320, 3.5], [560, 140, 290, 290, -2.5], [1010, 330, 250, 330, 2], [420, 360, 260, 260, -5]];
+    if (LAY.mode === 'm' && i >= 2) return;
     const pick = n === 1 ? [SLOTS[0], SLOTS[1], SLOTS[2]][Math.floor(Math.random() * 3)] : SLOTS[i % SLOTS.length];
     const [x, y, w, h, r] = pick;
     const c = el('div', 'cutin');
@@ -390,7 +403,7 @@ const UI = {
       d.style.cssText = `width:${w}px;left:${Math.random() * (LAY.W - 220) - 100}px;top:${Math.random() * (LAY.H - 180) - 80}px;transform:rotate(${Math.random() * 360}deg)`;
       $('#decals').appendChild(d);
       const all = $$('#decals .decal');
-      if (all.length > 14) all[0].remove();
+      while (all.length > (LAY.mode === 'm' ? 5 : 14)) all.shift().remove();
     }
   },
 
@@ -403,6 +416,7 @@ const UI = {
       box.classList.remove('idle');
       box.classList.add('ask');
       box.classList.toggle('many', opts.length + (o.title ? 1 : 0) > 4);
+      const play = $('#play'); play.classList.add('ask'); play.classList.remove('tight');
       if (o.title) box.appendChild(el('div', 'ctitle', o.title));
       const rows = [];
       const pick = i => {
@@ -410,7 +424,7 @@ const UI = {
         SND.play('ui', .8);
         document.removeEventListener('keydown', key);
         rows.forEach((r, j) => r.classList.add(j === i ? 'picked' : 'gone'));
-        setTimeout(() => { box.innerHTML = ''; box.classList.remove('ask'); res(i); }, 420);
+        setTimeout(() => { box.innerHTML = ''; box.classList.remove('ask'); $('#play').classList.remove('ask', 'tight'); res(i); }, 420);
       };
       opts.forEach((op, i) => {
         const r = el('div', 'ch' + (op.dis ? ' dis' : '') + (op.red ? ' red' : ''));
@@ -426,6 +440,7 @@ const UI = {
         if (n >= 1 && n <= opts.length) { e.preventDefault(); pick(n - 1); }
       };
       document.addEventListener('keydown', key);
+      if (LAY.mode === 'm') { const b = $('#born'); if (b.offsetTop + b.offsetHeight > LAY.H - 8) play.classList.add('tight'); }
       if (G.auto) setTimeout(() => {
         const ok = opts.map((o, i) => o.dis ? -1 : i).filter(i => i >= 0);
         if (G.careful) {
@@ -514,6 +529,50 @@ const UI = {
     $('#diary').classList.toggle('shaky', S.urge > 75);
   },
 
+  // ---- hunger vs police graph, drawn like a pen chart in the diary
+  graph() {
+    const S = G.S, c = $('#graph');
+    if (!c || !S) return;
+    const m = LAY.mode === 'm';
+    const W = c.width, H = c.height, ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+    const hist = (S.hist || []).slice(-40);
+    const pad = { l: 8, r: m ? 112 : 84, t: 14, b: 14 };
+    const x0 = pad.l, x1 = W - pad.r, y0 = pad.t, y1 = H - pad.b;
+    const X = i => x0 + (x1 - x0) * (hist.length <= 1 ? 1 : i / (hist.length - 1));
+    const Y = v => y1 - (y1 - y0) * v / 100;
+    const inkc = m ? 'rgba(236,233,228,.5)' : 'rgba(27,29,46,.45)';
+    // frame + 100 line
+    ctx.lineWidth = 1; ctx.strokeStyle = inkc; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(x0, Y(100)); ctx.lineTo(x1, Y(100)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
+    const line = (idx, color, w, jit) => {
+      if (hist.length < 2) return;
+      ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.beginPath();
+      hist.forEach((h, i) => { const y = Y(h[idx]) + ((i * 7 + idx * 3) % 3 - 1) * jit; i ? ctx.lineTo(X(i), y) : ctx.moveTo(X(i), y); });
+      ctx.stroke();
+    };
+    line(2, m ? 'rgba(236,233,228,.35)' : 'rgba(27,29,46,.35)', 1.5, .6);   // 의심
+    line(1, m ? '#cfcac0' : '#1b1d2e', 2.2, .7);                               // 수사망
+    line(0, '#b01010', 2.6, .9);                                               // 굶주림
+    // kills
+    ctx.fillStyle = '#b01010';
+    hist.forEach((h, i) => { if (h[3]) { ctx.beginPath(); ctx.moveTo(X(i) - 4, y1 + 2); ctx.lineTo(X(i) + 4, y1 + 10); ctx.moveTo(X(i) + 4, y1 + 2); ctx.lineTo(X(i) - 4, y1 + 10); ctx.strokeStyle = '#b01010'; ctx.lineWidth = 2; ctx.stroke(); } });
+    // labels at the right end
+    ctx.font = `700 ${m ? 20 : 17}px Gaegu, sans-serif`;
+    ctx.textBaseline = 'middle';
+    const last = hist[hist.length - 1] || [S.urge, S.police, S.susp, 0];
+    const lab = (txt, v, color, dy) => { ctx.fillStyle = color; ctx.fillText(txt, x1 + 6, clamp(Y(v) + dy, y0 + 6, y1 - 6)); };
+    const uY = Y(last[0]), pY = Y(last[1]);
+    const near = Math.abs(uY - pY) < 16;
+    lab('굶주림 ' + Math.round(last[0]), last[0], '#b01010', near && uY <= pY ? -8 : 0);
+    lab('수사망 ' + Math.round(last[1]), last[1], m ? '#cfcac0' : '#1b1d2e', near && pY < uY ? -8 : near ? 8 : 0);
+    ctx.fillStyle = m ? 'rgba(236,233,228,.7)' : 'rgba(27,29,46,.6)';
+    ctx.font = `700 ${m ? 17 : 13}px Gaegu, sans-serif`;
+    ctx.fillText('100 = 미친다 / 잡힌다', x0 + 4, y0 - 2);
+  },
+
   // ---- side panels
   status() {
     const S = G.S;
@@ -524,7 +583,8 @@ const UI = {
       parts.push(`의심 <b>${Math.round(S.susp)}</b>`);
       parts.push(`수사망 <b class="${S.police > 70 ? 'hot' : ''}">${Math.round(S.police)}</b>`);
     }
-    $('#status').innerHTML = parts.join(' · ');
+    $('#status').innerHTML = LAY.mode === 'm' ? `<span class="ln">${parts.slice(0, 3).join(' · ')}</span><span class="ln">${parts.slice(3).join(' · ')}</span>` : parts.join(' · ');
+    this.graph();
     this.eyes(Math.min(10, Math.round(S.susp / 10)), S.police);
     SND.heart(S.urge > 70 ? (S.urge - 70) / 30 : 0);
     $('#play').classList.toggle('hunger', S.urge > 85);
@@ -554,7 +614,7 @@ const UI = {
     if (svg.dataset.built !== key) {
       const H = LAY.H;
       const spots = LAY.mode === 'm'
-        ? [[22, 790, 40, 80], [1058, 860, 36, -84], [20, 980, 30, 92], [1060, 1060, 44, -78], [24, H - 700, 38, 84], [1056, H - 560, 34, -88], [22, H - 380, 42, 76], [1058, 300, 30, -90], [20, 420, 32, 88], [1060, H - 240, 36, -82]]
+        ? [[14, 560, 30, 80], [736, 600, 28, -84], [12, 700, 24, 92], [738, 760, 32, -78], [14, H - 520, 28, 84], [736, H - 440, 26, -88], [12, H - 330, 30, 76], [738, 240, 24, -90], [12, 300, 26, 88], [736, H - 190, 28, -82]]
         : [[1120, 858, 60, -6], [1232, 914, 44, 8], [1146, 990, 66, -3], [1250, 1046, 38, 10], [1060, 1052, 40, 4], [20, 520, 34, 80], [14, 300, 28, 92], [1286, 610, 30, -70], [1290, 420, 24, -84], [1206, 800, 30, 0]];
       svg.setAttribute('viewBox', `0 0 ${LAY.W} ${LAY.H}`);
       svg.innerHTML = spots.map(([x, y, s, r], i) =>

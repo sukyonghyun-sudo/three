@@ -70,7 +70,13 @@ function who(v) { return v.old ? (v.sex === 'f' ? '노파' : '노인') : (v.sex 
 
 async function waitTick(ms) {
   G.est = (G.est || 0) + ms;
-  if (G.auto) return sleep(1);
+  if (G.auto) {
+    document.title = `T:${G.S.t}:b${G.beats || 0}:age${AGE()}:u${Math.round(G.S.urge)}:p${Math.round(G.S.police)}`;
+    G.log = (G.log || []).concat([`${Math.round(performance.now())} tick t=${G.S.t}`]).slice(-60);
+    let pre = document.getElementById('dbglog'); if (!pre) { pre = document.createElement('pre'); pre.id = 'dbglog'; pre.style.display = 'none'; document.body.appendChild(pre); }
+    pre.textContent = G.log.join(String.fromCharCode(10));
+    return sleep(1);
+  }
   let left = ms;
   while (left > 0) {
     await sleep(50);
@@ -94,6 +100,7 @@ async function run() {
     if (G.auto && AGE() >= 18 && S.t - S.lastHunt >= 3 && (G.careful ? S.urge > 85 : chance(.12))) G.request = 'hunt';
     if (G.request) { const r = G.request; G.request = null; UI.clearIdle(); await request(r); save(); continue; }
     S.t++;
+    S.hist = (S.hist || []).concat([[Math.round(S.urge), Math.round(S.police), Math.round(S.susp), 0]]).slice(-64);
     await season();
     UI.status(); UI.born(); UI.renderDiary();
     save();
@@ -104,15 +111,17 @@ function idleActions() {
   const S = G.S;
   if (AGE() < 18 || S.over) { UI.clearIdle(); return; }
   const a = [];
-  const cool = S.t - S.lastHunt < 2;
+  const cool = S.t - S.lastHunt < 4;
   a.push({ k: 'hunt', t: '사냥하러 나간다', d: cool ? '아직 손에 냄새가 남았다' : `굶주림 ${Math.round(S.urge)}`, dis: cool, red: S.urge > 75 });
   if (S.t - S.lastMove >= 16) a.push({ k: 'move', t: '이 동네를 떠난다', d: '의심은 사라진다. 돈과 시간이 든다' });
   if (S.trophies > 0) a.push({ k: 'empty', t: '냉동고를 비운다', d: `${S.trophies}구가 들어 있다` });
   if (S.police >= 70) a.push({ k: 'confess', t: '자수한다', d: '끝낼 수 있다', red: 1 });
+  storyActions(a);
   UI.idle(a);
 }
 
 async function request(r) {
+  if (await storyRequest(r)) return;
   if (r === 'hunt') await hunt(false);
   else if (r === 'move') await moveAway();
   else if (r === 'empty') await emptyFreezer();
@@ -194,7 +203,8 @@ async function season() {
   // hunger
   const trophyDamp = 1 - Math.min(.5, S.trophies * .18);
   const ageDamp = age >= 75 ? .2 : age >= 65 ? .45 : age >= 50 ? .75 : 1;
-  S.urge = clamp(S.urge + (1.6 + trait('imp') * 1.0 + trait('cru') * .5) * trophyDamp * ageDamp, 0, 100);
+  S.urge = clamp(S.urge + (1.0 + trait('imp') * .7 + trait('cru') * .4) * trophyDamp * ageDamp - (S.love ? .5 : 0), 0, 100);
+  await madness();
 
   // suspicion decays
   S.susp = clamp(S.susp - (S.married ? 1.8 : 1.2), 0, 100);
@@ -228,7 +238,7 @@ async function season() {
   if (S.urge >= 100) { await frenzy(); return; }
 
   // random life events
-  if (chance(.2)) await randomEvent();
+  if (chance(.34)) await randomEvent();
   if (S.over) return;
 
 
@@ -238,6 +248,30 @@ async function season() {
     UI.diary(pick(pool), S.urge > 75 ? 'shake' : '');
   }
   if (chance(.28)) await idlePicture();
+}
+
+// not killing has a price: the hands shake, people notice, the walls start talking
+async function madness() {
+  const S = G.S, u = S.urge;
+  if (u < 70 || AGE() < 18) return;
+  if (u >= 70 && chance(.3)) { S.susp = clamp(S.susp + 2, 0, 100); }
+  if (u >= 85 && chance(.35)) {
+    const i = Math.floor(R() * 4);
+    if (i === 0) { S.susp = clamp(S.susp + 5, 0, 100); UI.diary('손이 떨려 커피를 쏟았다. 사람들이 봤다.', 'shake'); }
+    else if (i === 1) { S.susp = clamp(S.susp + 4, 0, 100); UI.diary('새벽에 벽을 쳤다. 아랫집이 올라왔다.', 'shake'); }
+    else if (i === 2) {
+      await UI.scene({ img: 'life_coworker', vcap: '', cap: '동료가 어깨를 쳤다. 그 손목을 꺾을 뻔했다. 모두가 조용해졌다.', snd: 'sting', vol: .4 });
+      const j = await UI.choose([{ t: '사과한다', d: '' }, { t: '그 손목을 끝까지 꺾는다', d: '', red: 1 }]);
+      if (j === 1) { S.susp = clamp(S.susp + 14, 0, 100); S.police = clamp(S.police + 4, 0, 100); S.urge = clamp(S.urge - 10, 0, 100); UI.diary('동료 손목을 부러뜨렸다. 반장이 경찰을 부를 뻔했다.', 'red'); }
+      else { S.susp = clamp(S.susp + 6, 0, 100); UI.diary('사과했다. 아무도 내 눈을 보지 않았다.', 'shake'); }
+      await UI.next(1800);
+    } else {
+      await UI.scene({ img: 'nightmare', trans: 'red', vcap: '', cap: '사흘째 못 잤다. 벽지 무늬가 얼굴이 됐다. 그 얼굴들이 숫자를 센다.', snd: 'whisper', vol: .6, ins: ['i_wallfaces'] });
+      UI.diary('잠을 못 잔다. 벽이 숫자를 센다.', 'shake');
+      await UI.next(2000);
+    }
+  }
+  if (u >= 95 && chance(.5)) { bump({ cal: -1 }); S.flags.sloppy = S.t; UI.diary('손이 말을 안 듣는다. 다음엔 실수할 것이다.', 'red shake'); }
 }
 
 async function idlePicture() {
@@ -350,7 +384,7 @@ async function hunt(forced) {
   const opts = hows.map(h => {
     const H = D.HOW[h];
     let p = clamp(H.p(S.tr) + pmod - (T.strong && H.phys ? .08 : 0), .05, .95);
-    const w = clamp(H.w + eraWitness() + (S.police >= 80 ? .2 : 0), 0, .9);
+    const w = clamp(H.w + eraWitness() * (S.flags.cctvAware ? .5 : 1) + (S.police >= 80 ? .2 : 0) - (S.flags.photoUse ? .06 : 0) + (S.urge >= 90 ? .12 : 0), 0, .9);
     return { t: H.t, d: H.d, risk: { eye: Math.min(3, Math.round(w * 7)), note: p > .7 ? '확실하다' : p > .5 ? '될 것 같다' : '어렵다' }, h, p, w };
   });
   const oi = await UI.choose([...opts, { t: '그만둔다', d: '아직은 아무도 모른다' }], { title: '어떻게' });
@@ -449,17 +483,20 @@ async function hunt(forced) {
   const v = {
     name: T.name, sex: T.sex, age: T.age, old: T.old, job: T.job, t: S.t, year: YEAR(), site: siteK, how: O.h, cut, dump: dk,
     reported: false, reportIn: T.delay, social: T.social, found: false, identified: false,
-    trace: (slow ? 1.4 : 1) * (A === 'scrub' ? .5 : 1) * (hasJob('clean') ? .7 : 1),
+    trace: (slow ? 1.4 : 1) * (A === 'scrub' ? .5 : 1) * (hasJob('clean') ? .7 : 1) * (S.flags.sloppy != null && S.t - S.flags.sloppy < 4 ? 1.5 : 1),
     burned: A === 'burn', seen: witness, car: !!H.car, sameDay: T.sameDay, parts: dk === 'scatter' ? 3 : 1, partsFound: 0,
   };
   S.victims.push(v);
+  if (S.love) S.love.hunts++;
   if (dk === 'keep') S.trophies++;
   if (siteK === 'bath') S.homeTraces += A === 'scrub' ? .4 : 1;
   if (A === 'alibi') S.alibiT = S.t;
   S.urge = clamp(S.urge - (slow ? 92 : 62) - (cut === 'small' ? 10 : 0), 0, 100);
   S.susp = clamp(S.susp + 4 + (witness ? 6 : 0), 0, 100);
+  S.police = clamp(S.police + 2 + (witness ? 4 : 0), 0, 100);
   if (T.person) { T.person.dead = true; T.person.killedByMe = true; T.person.status = '실종'; T.person.life.push([AGE(), '실종됐다. 마지막으로 본 사람은 없다.']); }
   bump(slow && chance(.5) ? { cru: 1 } : {});
+  if (S.hist && S.hist.length) S.hist[S.hist.length - 1][3] = 1;
   UI.diary(`${T.name}. ${T.age}. ${DD.s}.`, 'red kill');
   if (T.sameDay) UI.diary(`같은 날 태어난 사람이 하나 줄었다.`, 'red');
   UI.status(); UI.born(); UI.renderDiary();
@@ -570,7 +607,7 @@ async function found(v) {
   if (!v.burned && chance(.22)) addEv('섬유', `${v.name} 시신에서 나온 옷 섬유`);
   if (v.seen && v.identified && chance(.55)) addEv('목격', `${v.name}${josa(v.name, '과', '와')} 함께 있던 사람을 봤다는 증언`);
   if (v.car && chance(.3)) addEv('차량', `${v.name} 사건과 같은 차종`);
-  if (y >= 2004 && v.site === 'here' && chance(.35)) addEv('CCTV', `${v.name} 실종 당일 골목 CCTV`);
+  if (y >= 2004 && v.site === 'here' && chance(S.flags.cctvAware ? .15 : .35)) addEv('CCTV', `${v.name} 실종 당일 골목 CCTV`);
   await UI.next(3800);
   // serial?
   const nFound = S.victims.filter(x => x.found).length;
@@ -629,7 +666,7 @@ async function interrogation() {
   const dn = det && !det.dead ? det.name : '형사';
   const v = pick(S.victims.filter(x => x.found)) || pick(S.victims);
   await UI.scene({ img: 'p_interrogation', trans: 'cut', vcap: '조사실', cap: `${dn}${josa(dn, '이', '가')} 물었다. “${v ? v.year + '년' : '그해'} ${v && v.dump === 'reservoir' ? '저수지 근처에서' : '그날 밤'}, 어디 계셨습니까.”`, snd: 'buzz', ins: ['i_cig'] });
-  const alibi = S.t - S.alibiT < 8;
+  const alibi = S.t - S.alibiT < 8 || (S.love && S.love.accomplice) || (S.married && S.married.accomplice);
   const a = await UI.choose([
     { t: '집에서 잤다', d: '혼자. 증명할 사람은 없다' },
     { t: '알리바이를 댄다', d: alibi ? '해장국집 주인이 기억할 것이다' : '만들어 둔 게 없다', dis: !alibi },
@@ -719,7 +756,7 @@ const EVENTS = [
     else UI.diary('눈을 감았다. 얼굴들은 아침까지 기다려 주었다.');
     await UI.next(1800);
   } },
-  { k: 'marry', w: 3, when: S => !S.married && !S.flags.marry && AGE() >= 24 && AGE() <= 42, run: async S => {
+  { k: 'marry', w: 1, when: S => !S.married && !S.love && !S.flags.marry && AGE() >= 30 && AGE() <= 42 && S.flags.loveCool != null, run: async S => {
     S.flags.marry = 1;
     const sp = S.others.find(o => o.role === 'spouse' && !o.dead);
     const sex = S.sex === 'm' ? 'f' : 'm';
@@ -844,10 +881,11 @@ const EVENTS = [
 
 async function randomEvent() {
   const S = G.S;
-  const ok = EVENTS.filter(e => e.when(S));
+  if (!EVENTS.storyAdded) { EVENTS.push(...STORY_EVENTS); EVENTS.storyAdded = 1; }
+  const ok = EVENTS.filter(e => e.when(S) && (!e.cool || (S.flags['ev_' + e.k] == null || S.t - S.flags['ev_' + e.k] >= e.cool)));
   if (!ok.length) return;
   let tw = ok.reduce((a, e) => a + e.w, 0), r = R() * tw;
-  for (const e of ok) { r -= e.w; if (r <= 0) { await e.run(S); return; } }
+  for (const e of ok) { r -= e.w; if (r <= 0) { S.flags['ev_' + e.k] = S.t; await e.run(S); return; } }
 }
 
 // ================================================================== actions
@@ -999,6 +1037,7 @@ function buildEnd(kind, extra, title) {
     confess: `${S.name}. 왜 자수했냐는 질문에 대답하지 않았다.`,
     fight: `${S.name}. ${extra.survivor || '마지막 대상'}${josa(extra.survivor || '대상', '은', '는')} 살아남았다. 내 배를 가른 깨진 병은 증거물 봉투에 담겼다.`,
   }[kind];
+  const acc = (S.love && S.love.accomplice && S.love.name) || (S.married && S.married.accomplice && S.married.name);
   const note = det && !det.dead && !['fight'].includes(kind)
     ? { unsolved: `이 새끼는 아직<br>이 동네에 산다 — ${det.name[0]}`, nocase: `늦었다 — ${det.name[0]}`, death: '끝. — ' + det.name[0], life: '끝. — ' + det.name[0], shot: '내가 쐈다 — ' + det.name[0], roof: '한 발 늦었다 — ' + det.name[0], confess: '왜 이제야 — ' + det.name[0] }[kind]
     : '';
@@ -1013,7 +1052,7 @@ function buildEnd(kind, extra, title) {
           <div class="x-sum">피해자 <b>${S.victims.length}</b> · 발견 <b>${nf}</b> · 끝내 못 찾음 <b>${S.victims.length - nf}</b> · 증거 <b>${S.evidence.length}</b></div>
         </div>
       </div>
-      <div class="x-final">${E.head}<br><span>${lastLine}</span></div>
+      <div class="x-final">${E.head}<br><span>${lastLine}</span>${acc && caught ? `<br><span>${acc}${josa(acc, '은', '는')} 범인은닉 및 사체유기 방조로 함께 기소됐다.</span>` : ''}</div>
     </div>
     ${note ? `<div class="x-note">${note}</div>` : ''}
     <div class="x-stamp">${E.stamp}<small>${E.sub}</small></div>`;
@@ -1132,9 +1171,15 @@ function boot() {
     G.rotBlock = !portrait && touch && h < 560;
     document.body.classList.toggle('rot', G.rotBlock);
     const was = LAY.mode + LAY.H;
-    if (portrait) { LAY.mode = 'm'; LAY.W = 1080; LAY.H = Math.round(clamp(1080 * h / w, 1850, 2400)); }
+    if (portrait) { LAY.mode = 'm'; LAY.W = 750; LAY.H = Math.round(clamp(750 * h / w, 1180, 1700)); }
     else { LAY.mode = 'pc'; LAY.W = 1920; LAY.H = 1080; }
     document.body.classList.toggle('m', LAY.mode === 'm');
+    // the graph lives in the diary on PC and in its own strip on phones
+    const gc = $('#graph'), gw = $('#gwrap'), dy = $('#dyear');
+    if (gc && gw && dy) {
+      if (LAY.mode === 'm') { if (gc.parentNode !== gw) gw.appendChild(gc); gc.width = 718; gc.height = 110; }
+      else { if (gc.parentNode === gw) dy.after(gc); gc.width = 480; gc.height = 96; }
+    }
     const st = $('#stage');
     st.style.width = LAY.W + 'px'; st.style.height = LAY.H + 'px';
     st.style.setProperty('--H', LAY.H + 'px');
