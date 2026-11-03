@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>80억분의 1 : 토막살인마</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=East+Sea+Dokdo&family=Nanum+Gothic+Coding:wght@400;700&family=Nanum+Pen+Script&family=Song+Myung&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<svg class="defs" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency=".05 .4" numOctaves="3" seed="9" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 1.7" result="gm"/>
+      <feComposite in="d" in2="gm" operator="in"/>
+    </filter>
+    <filter id="wob"><feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter>
+    <symbol id="eyeO" viewBox="0 0 100 50">
+      <path d="M3 26 C 30 -4, 70 -4, 97 24 C 70 54, 30 54, 3 26 Z" fill="#e8e4da"/>
+      <path d="M10 27 C 18 24, 24 27, 31 24 M90 24 C 80 28, 76 25, 69 28 M14 33 C 22 31, 27 35, 33 32" stroke="#8a0a0a" stroke-width="1.6" fill="none"/>
+      <circle cx="50" cy="25" r="4.5" fill="#050505"/>
+      <path d="M3 26 C 30 -4, 70 -4, 97 24 C 70 54, 30 54, 3 26 Z" fill="none" stroke="#000" stroke-width="3"/>
+    </symbol>
+    <symbol id="eyeC" viewBox="0 0 100 50">
+      <path d="M4 22 C 30 40, 70 40, 96 22" stroke="#3a3632" stroke-width="3" fill="none"/>
+      <path d="M22 33 L18 41 M40 37 L39 46 M60 37 L61 46 M78 33 L82 41" stroke="#3a3632" stroke-width="2.4"/>
+    </symbol>
+    <symbol id="dropF" viewBox="0 0 10 14"><path d="M5 0 C 7 5, 10 8, 10 10 A5 4.5 0 0 1 0 10 C0 8, 3 5, 5 0Z" fill="#a30b0b"/></symbol>
+    <symbol id="dropE" viewBox="0 0 10 14"><path d="M5 1 C 7 5, 9.3 8, 9.3 10 A4.3 3.8 0 0 1 .7 10 C.7 8, 3 5, 5 1Z" fill="none" stroke="#5a5650" stroke-width="1.2"/></symbol>
+  </defs>
+</svg>
+
+<div id="stage">
+
+  <!-- ═════════ TITLE ═════════ -->
+  <section class="screen" id="title">
+    <div class="cut" id="t-img"><img alt="" fetchpriority="high"></div>
+    <img class="spl" src="img/splat_a.webp" style="left:380px;top:420px;width:900px;opacity:.75;transform:rotate(-24deg)">
+    <div class="t-v" id="t-kill">토막살인마</div>
+    <div class="t-v" id="t-8b"><span class="tcu">80</span>억분의 <b>1</b></div>
+    <div class="t-v" id="t-line">80억 명 중 한 사람으로 태어난다<br>그중 <em>사람을 토막 내는</em> 단 한 명으로</div>
+    <div class="btn-main" id="t-start">태어난다
+      <svg viewBox="0 0 290 36" preserveAspectRatio="none"><path d="M4 20 C 70 10, 150 28, 286 8"/></svg></div>
+    <div class="mono" id="t-sub"><span id="t-cont">이어서</span><span id="t-rec">지난 사건 기록</span></div>
+    <div class="mono" id="t-pop">지금 지구에 <b id="t-popn">8,142,371,906</b>명 · 그중 1</div>
+    <div class="mono" id="t-load"></div>
+    <div class="mono" id="t-age">잔혹한 살해 · 시신 훼손 묘사 · 청소년 이용불가 · 한 판 10~30분 · 자동 저장</div>
+  </section>
+
+  <!-- ═════════ PLAY ═════════ -->
+  <section class="screen" id="play">
+    <div id="decals"></div>
+    <div class="cut" id="scene">
+      <div class="over">
+        <svg id="mark" viewBox="0 0 1240 740"></svg>
+        <div id="scrawl"></div>
+        <div id="vcap"></div>
+        <div id="hcap"></div>
+        <div id="sfxbox"></div>
+      </div>
+    </div>
+    <div class="mono" id="status"></div>
+    <div class="mono" id="speed"><span data-s="0">❚❚</span><span data-s="1">1</span><span data-s="2">2</span><span data-s="4">4</span></div>
+    <div id="choices"></div>
+    <div id="diary">
+      <img src="img/page.webp" alt="">
+      <svg id="tally" viewBox="0 0 160 70"></svg>
+      <div class="txt">
+        <div id="dyear"></div>
+        <div id="dlines"></div>
+      </div>
+    </div>
+    <div id="born">
+      <div id="bornhd"></div>
+      <div id="bornrow"></div>
+    </div>
+    <svg id="eyes" viewBox="0 0 1920 1080"></svg>
+    <div id="watcher"></div>
+    <div id="card"></div>
+    <div id="nextcue">▼</div>
+  </section>
+
+  <!-- ═════════ END ═════════ -->
+  <section class="screen" id="end">
+    <div id="x-sheet"></div>
+    <img class="spl" src="img/splat_b.webp" style="left:1380px;top:640px;width:700px;opacity:.6;transform:rotate(40deg)">
+    <div id="e-btns">
+      <div id="e-title"></div>
+      <span class="a" id="e-again">다시 태어난다<svg viewBox="0 0 260 26" preserveAspectRatio="none"><path d="M4 14 C 60 6, 140 22, 256 6"/></svg></span>
+      <span class="b" id="e-lives">같은 날 태어난 사람들의 일생</span>
+    </div>
+  </section>
+
+  <!-- ═════════ LIVES ═════════ -->
+  <section class="screen" id="lives">
+    <div id="lives-hd">같은 날, 같은 병원에서 태어난 다섯 사람</div>
+    <div id="lives-row"></div>
+    <span class="mono" id="lives-back">← 수사기록으로</span>
+  </section>
+
+  <!-- ═════════ RECORDS ═════════ -->
+  <section class="screen" id="records">
+    <div id="rec-hd">지난 사건 기록</div>
+    <div id="rec-list"></div>
+    <span class="mono" id="rec-back">← 돌아간다</span>
+  </section>
+
+  <div id="cutins"></div>
+  <div id="flash"></div>
+  <div class="vig"></div>
+  <div class="grain"></div>
+  <div class="mono" id="sys"><span id="fs">전체화면</span><span id="mute">소리</span><span id="home">처음으로</span></div>
+</div>
+
+<div id="rotate"><div>휴대폰을<br>세로로 돌려 주세요</div><small>가로 화면에서는 멈춰 있습니다</small></div>
+
+<script src="js/assets.js"></script>
+<script src="js/data.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
