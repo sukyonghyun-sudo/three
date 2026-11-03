@@ -56,6 +56,8 @@ function addRecord(r) { if (G.auto) return; const a = records(); a.unshift(r); t
 
 // ================================================================== helpers
 const trait = k => G.S.tr[k];
+// the room with the knife on the table only once there is a reason for it
+const homePic = () => G.S && G.S.victims.length ? 'home_banjiha' : 'c_jachi';
 function bump(mod) { Object.entries(mod).forEach(([k, v]) => G.S.tr[k] = clamp(G.S.tr[k] + v, 0, 5)); }
 function hasJob(f) { const j = G.S.job && D.JOBS[G.S.job]; return !!(j && j[f]); }
 function addEv(k, text) {
@@ -109,7 +111,7 @@ async function run() {
   UI.status(); UI.born(); UI.renderDiary(); UI.speedUI();
   SND.amb(AGE() < 17 ? 'amb_drone' : 'amb_drone', .35);
   if (S.t === 0) await safe('birth', birth);
-  preload(['child_mother', 'child_father', 'child_bird', 'child_class', 'city_night', 'home_banjiha']);
+  preload(['child_mother', 'child_father', 'child_bird', 'child_class', 'c_room', 'c_alley']);
   while (!S.over) {
     idleActions();
     await waitTick(AGE() < 17 ? 480 : 2200);
@@ -236,8 +238,8 @@ async function season() {
     }
     if (!ran && D.CHILD_QUIET[age]) {
       // a quiet year still moves the picture on (the birth picture must not linger into childhood)
-      const QUIET_IMG = { 1: 'nursery', 2: 'nursery', 3: 'home_banjiha', 4: 'home_banjiha', 6: 'child_class', 8: 'child_class', 10: 'city_night', 12: 'city_day', 13: 'home_banjiha', 15: 'child_class' };
-      await UI.scene({ img: QUIET_IMG[age] || 'home_banjiha', vcap: `${age}살`, cap: '' });
+      const QUIET_IMG = { 1: 'nursery', 2: 'nursery', 3: 'c_room', 4: 'c_alley', 6: 'child_class', 8: 'c_alley', 10: 'c_night', 12: 'child_class', 13: 'c_mirror', 15: 'child_class' };
+      if (S.flags.msAge !== age) await UI.scene({ img: QUIET_IMG[age] || 'c_room', vcap: `${age}살`, cap: '' });
       UI.flow(D.CHILD_QUIET[age]);
     }
     if (age === 6) UI.diary('같은 날 같은 병원에서 태어난 아이들. 처음으로 얼굴과 이름을 알았다.', 'hear');
@@ -335,7 +337,7 @@ function digest() {
 
 async function idlePicture() {
   const S = G.S;
-  const pool = ['home_banjiha', 'city_night'];
+  const pool = [homePic(), 'city_night'];
   if (S.job) pool.push(D.JOBS[S.job].img);
   if (S.married) pool.push('home_dinner', 'life_wedding');
   if (S.heat > 20) pool.push('m_tv', 'm_newspaper');
@@ -352,6 +354,7 @@ async function childEvent(ev) {
   const i = await UI.choose(ev.ch.map(c => ({ t: c[0] })));
   const c = ev.ch[i];
   bump(c[2]);
+  kidChoice(ev, i);
   UI.diary(c[1]);
   await UI.hcap(c[1]);
   await UI.next(2400);
@@ -378,7 +381,7 @@ async function chooseJob() {
   await UI.scene({ img: j.img, vcap: j.t, cap: j.d });
   UI.diary(`${j.t}에 들어갔다. ${j.d}`);
   await UI.next(3000);
-  await UI.scene({ img: 'home_banjiha', vcap: '반지하', cap: '창문 높이로 사람들의 발목이 지나간다. 이 방이 마음에 들었다.' });
+  await UI.scene({ img: 'c_jachi', vcap: '반지하', cap: '창문 높이로 사람들의 발목이 지나간다. 이 방이 마음에 들었다.' });
   UI.diary('반지하 방을 얻었다. 창밖으로 발목들이 지나간다.');
   await UI.next(2800);
 }
@@ -930,7 +933,7 @@ const EVENTS = [
   { k: 'parent', w: 1, when: S => AGE() >= 34 && AGE() <= 55 && !S.flags.parent && S.family !== 'orphan', run: async S => {
     S.flags.parent = 1;
     SND.play('phone', .9);
-    await UI.scene({ img: 'home_banjiha', vcap: '전화', cap: S.family === 'abuse' ? '아버지가 죽었다. 술 때문이었다. 혁대는 관에 넣지 않았다.' : '어머니가 죽었다. 마지막에 내 이름을 불렀다고 한다.', ins: ['i_phone'] });
+    await UI.scene({ img: homePic(), vcap: '전화', cap: S.family === 'abuse' ? '아버지가 죽었다. 술 때문이었다. 혁대는 관에 넣지 않았다.' : '어머니가 죽었다. 마지막에 내 이름을 불렀다고 한다.', ins: ['i_phone'] });
     const i = await UI.choose([{ t: '장례식에 간다' }, { t: '가지 않는다' }]);
     UI.diary(i === 0 ? '장례식에서 울지 않았다. 울어야 하는 줄 알았는데.' : '가지 않았다. 그날 밤 아주 잘 잤다.'); await UI.next(1800);
   } },

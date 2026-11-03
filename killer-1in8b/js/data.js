@@ -158,7 +158,7 @@ D.JOBS = {
   butcher:  { t: '도축장 야간조', img: 'job_butcher', d: '돼지는 비명을 지르지 않는다. 사람만 지른다.', freezer: 1, burner: 1, mod: { str: 1 } },
   taxi:     { t: '택시 기사', img: 'job_taxi', d: '밤마다 낯선 사람이 내 등 뒤에 앉는다.', car: 1, taxi: 1, mod: { cha: 1 } },
   hospital: { t: '병원 야간 청소부', img: 'job_hospital', d: '피 묻은 바닥을 닦는 게 일이다. 아무도 이상하게 보지 않는다.', burner: 1, clean: 1, mod: { cal: 1 } },
-  factory:  { t: '냉동식품 공장', img: 'home_banjiha', d: '컨베이어 벨트 앞에서 여덟 시간. 냉동창고 열쇠가 있다.', freezer: 1, mod: { int: 1 } },
+  factory:  { t: '냉동식품 공장', img: 'life_coworker', d: '컨베이어 벨트 앞에서 여덟 시간. 냉동창고 열쇠가 있다.', freezer: 1, mod: { int: 1 } },
 };
 
 // ---------------------------------------------------------------- same-day people

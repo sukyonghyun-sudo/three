@@ -16,7 +16,7 @@ const LOADER = {
   q: [], done: new Set(), busy: new Set(), max: /^https?:/.test(location.protocol) ? 4 : 3, started: false, total: 0,
   order() {
     const first = ['title', 'nursery', 'birth', 'i_eye', 'child_mother', 'child_father', 'child_bird', 'child_class', 'child_rabbit', 'child_fire', 'teen_roof', 'teen_knife', 'i_clock',
-      'city_night', 'city_day', 'home_banjiha', 'job_butcher', 'job_taxi', 'job_hospital', 'face_det'];
+      'c_room', 'c_alley', 'c_night', 'c_mirror', 'c_jachi', 'city_night', 'city_day', 'home_banjiha', 'job_butcher', 'job_taxi', 'job_hospital', 'face_det'];
     const rank = k => k.startsWith('face_') ? 1 : k.startsWith('t_') ? 2 : k.startsWith('i_') ? 3 : k.startsWith('k_') ? 4 : k.startsWith('d_') ? 5 : k.startsWith('x_') ? 6 : k.startsWith('p_') || k.startsWith('m_') ? 7 : k.startsWith('e_') ? 9 : 8;
     const rest = ASSET_IMG.filter(k => !first.includes(k)).sort((a, b) => rank(a) - rank(b));
     return [...first, ...rest];

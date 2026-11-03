@@ -80,7 +80,7 @@ const LOVE_EVENTS = [
   } },
   { k: 'loveStay', w: 6, when: S => S.love && S.love.stage === 1 && S.t - S.love.met >= 2, run: async S => {
     const L = S.love;
-    await UI.scene({ img: 'home_banjiha', vcap: '밤', cap: `"오늘 네 집에서 자도 돼?" ${L.name}${josa(L.name, '이', '가')} 물었다. 욕실 타일이 생각났다. 냉동고 소리가 생각났다.` });
+    await UI.scene({ img: homePic(), vcap: '밤', cap: `"오늘 네 집에서 자도 돼?" ${L.name}${josa(L.name, '이', '가')} 물었다. 욕실 타일이 생각났다. 냉동고 소리가 생각났다.` });
     const risky = S.trophies > 0 || S.homeTraces > .4;
     const i = await UI.choose([
       { t: '들인다', d: risky ? '집에 보여서는 안 될 것이 있다' : '보여서 안 될 것은 아직 없다', risk: risky ? { eye: 3, note: '위험하다' } : null },

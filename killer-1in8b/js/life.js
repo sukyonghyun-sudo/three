@@ -62,7 +62,7 @@ const MILESTONES = [
     ch: [['사격장에서 만점을 받는다', '조교가 칭찬했다. 손이 떨리지 않았다.', () => { bump({ cal: 1 }); lifeLine(20, '군대. 사격 만점.'); }],
          ['조용히 2년을 버틴다', '아무 일도 없었다. 그게 제일 어려웠다.', () => { addLife('bond', 6); lifeLine(20, '군대. 아무 일도 없었다.'); }]],
     after: S => { S.urge = clamp(S.urge - 10, 0, 100); } },
-  { age: 20, when: S => S.sex === 'f', img: 'home_banjiha', tag: '자취', cap: '처음으로 혼자 사는 방. 문을 잠그는 소리가 좋았다.',
+  { age: 20, when: S => S.sex === 'f', img: 'c_jachi', tag: '자취', cap: '처음으로 혼자 사는 방. 문을 잠그는 소리가 좋았다.',
     ch: [['창문에 신문지를 바른다', '밖에서 안이 보이지 않게.', () => { addLife('void', 5); lifeLine(20, '첫 자취. 창에 신문지를 발랐다.'); }],
          ['화분을 하나 산다', '물을 줄 게 생겼다.', () => { addLife('bond', 5); lifeLine(20, '첫 자취. 화분 하나.'); }]] },
   { age: 31, img: 'city_day', tag: '집', cap: '은행 창구 직원이 대출 서류를 밀었다. 지하가 아닌 집.',
@@ -85,6 +85,7 @@ async function milestone(age) {
   for (const m of MILESTONES) {
     if (m.age !== age || (m.when && !m.when(S))) continue;
     cov('ms:' + m.tag);
+    S.flags.msAge = age;
     await UI.scene({ img: m.img, vcap: m.tag, cap: m.cap });
     const i = await UI.choose(m.ch.map(c => ({ t: c[0] })));
     const c = m.ch[i];

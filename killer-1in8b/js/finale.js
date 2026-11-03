@@ -45,8 +45,11 @@ function lifeStory(S) {
   const fam = D.FAMILIES.find(f => f.k === S.family), V = S.victims, A = S.arc || {}, d = others('det');
   const out = [];
   out.push(`${S.born.y}년 ${D.CITY} ${S.district}, ${fam ? fam.t : '평범한 집'}에서 ${S.sex === 'm' ? '남자' : '여자'} 아이가 태어났다. 이름은 ${S.name}.`);
+  const kids = kidStory(S);
+  out.push(...kids.filter(k => k[0] < 9).map(k => k[1]));
   if (A.det === 'friend' || A.det === 'killed') out.push(`아홉 살, 괴롭힘당하던 같은 반 아이 대신 코피를 흘렸다. 그 아이 ${nj(d.name, '은', '는')} 커서 형사가 됐다.`);
   else if (A.det === 'rival') out.push(`아홉 살, 같은 반 아이를 웃음거리로 만들었다. 그 아이 ${nj(d.name, '은', '는')} 커서 형사가 됐다.`);
+  out.push(...kids.filter(k => k[0] >= 9).map(k => k[1]));
   out.push(S.job ? `열여덟에 ${D.JOBS[S.job] ? D.JOBS[S.job].t : '공장'} 일을 시작했다. 일은 성실했다.` : '열여덟에 집을 나왔다.');
   if (V.length) {
     const f = V[0];
