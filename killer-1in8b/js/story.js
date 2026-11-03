@@ -344,11 +344,11 @@ async function frameSomeone() {
   await UI.scene({ img: 'p_plant', trans: 'cut', vcap: '누명', cap: `옆 동 고물상 ${n}. 혼자 살고 전과가 있다. 그 집 창고 페인트 통 뒤에 칼을 두고 왔다.`, snd: 'step1', ins: ['i_blade'] });
   await UI.next(2400);
   if (roll(.25, 'int', .12)) {
-    S.police = clamp(S.police - 40, 0, 100); S.heat += 20; S.flags.frameVictim = n;
+    S.police = clamp(S.police - 25, 0, 100); S.heat += 20; S.flags.frameVictim = n;
     await UI.scene({ img: 'm_newspaper', vcap: '검거', cap: `「${S.nick || '연쇄 살인'}」 용의자 검거. ${n}(${rint(35, 55)}). 창고에서 흉기 발견.`, snd: 'typewriter' });
     UI.diary(`${n}${josa(n, '이', '가')} 잡혀갔다. 텔레비전에서 그가 울었다.`, 'red');
   } else {
-    S.police = clamp(S.police + 15, 0, 100); addEv('물증', '고물상 창고의 칼에서 나온 제3자 흔적');
+    S.police = clamp(S.police + 18, 0, 100); addEv('물증', '고물상 창고의 칼에서 나온 제3자 흔적');
     await UI.scene({ img: 'p_interrogation', vcap: '', cap: `칼은 ${n}의 것이 아니었다. 그건 금방 밝혀졌다. 그럼 누가 놓았나. 형사가 나를 봤다.`, snd: 'buzz' });
     UI.diary('누명이 안 먹혔다. 칼이 나를 가리킨다.', 'red');
   }

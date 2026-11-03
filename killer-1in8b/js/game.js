@@ -903,7 +903,8 @@ const EVENTS = [
 async function randomEvent() {
   const S = G.S;
   if (!EVENTS.storyAdded) { EVENTS.push(...STORY_EVENTS); EVENTS.storyAdded = 1; }
-  const ok = EVENTS.filter(e => e.when(S) && (!e.cool || (S.flags['ev_' + e.k] == null || S.t - S.flags['ev_' + e.k] >= e.cool)));
+  const COOL = { quietLove: 4, loveWalk: 2, loveStay: 2, loveStrain: 6, tail: 6, coworker: 14, bus: 14, nightmare: 12, tv: 10, neighbor: 10, paranoia: 12, smell: 10 };
+  const ok = EVENTS.filter(e => { const cd = e.cool != null ? e.cool : COOL[e.k] != null ? COOL[e.k] : 10, last = S.flags['ev_' + e.k]; return e.when(S) && (last == null || S.t - last >= cd); });
   if (!ok.length) return;
   let tw = ok.reduce((a, e) => a + e.w, 0), r = R() * tw;
   for (const e of ok) { r -= e.w; if (r <= 0) { S.flags['ev_' + e.k] = S.t; cov('ev:' + e.k); await e.run(S); return; } }
@@ -916,8 +917,9 @@ async function moveAway() {
   const old = S.district;
   S.district = pick(D.DISTRICTS.filter(d => d !== old));
   await UI.scene({ img: 'city_day', vcap: '이사', cap: `${old}를 떠나 ${S.district}로 왔다. 아무도 나를 모른다.`, snd: 'bag' });
-  S.susp = Math.min(S.susp, 8);
-  if (!S.serial) S.police = clamp(S.police - 12, 0, 100); else S.police = clamp(S.police - 5, 0, 100);
+  if (S.serial && S.police >= 50) { S.susp = Math.min(S.susp, 25); UI.diary('이삿짐을 풀기도 전에 그 형사가 골목 끝에 서 있었다. 새 주소를 벌써 알고 있었다.', 'red'); }
+  else S.susp = Math.min(S.susp, 10);
+  if (!S.serial) S.police = clamp(S.police - 8, 0, 100);
   S.homeTraces = S.homeTraces * .3;
   S.flags.door = 0; S.flags.searched = 0;
   UI.diary(`${S.district}로 이사했다.`);
@@ -997,7 +999,7 @@ async function dieOld() {
   const det = others('det');
   await UI.scene({ img: 'e_funeral', trans: 'ink', vcap: '빈소', cap: det && !det.dead && S.police >= 30 ? `조문객은 한 사람뿐이었다. 은퇴한 형사 ${det.name}.` : '조문객은 없었다.', snd: 'whisper', vol: .3 });
   await UI.next(4200);
-  await ending(S.police >= 70 ? 'nocase' : 'unsolved');
+  await ending(!S.victims.length ? 'none' : S.police >= 70 ? 'nocase' : 'unsolved');
 }
 
 // ================================================================== ending
@@ -1044,11 +1046,12 @@ function buildEnd(kind, extra, title) {
     const st = v.found ? (v.identified ? { reservoir: '저수지', river: '강 하류', mountain: '야산', sewer: '하수처리장', trash: '매립장', concrete: '공사장', scatter: '여러 곳', burn: '-', keep: '냉동고' }[v.dump] + ' · 발견' : '신원 미상으로 발견') : (kind === 'unsolved' || kind === 'nocase' ? '실종 · 시신 미발견' : '자백으로 확인 · 미발견');
     return `<div><span>${i + 1}</span><span>${nm}</span><span>${v.age}</span><span>${v.year}</span><span class="${v.found ? '' : 'nf'}">${st}</span></div>`;
   }).join('') + (S.victims.length > 7 ? `<div><span>…</span><span></span><span></span><span></span><span>외 ${S.victims.length - 7}명</span></div>` : '');
-  const caught = !['unsolved', 'nocase', 'fight'].includes(kind);
+  const caught = !['unsolved', 'nocase', 'fight', 'none'].includes(kind);
   const suspect = caught ? `피의자 ${S.name} (${S.sex === 'm' ? '남' : '여'}, ${S.deathAge}세)` : kind === 'fight' ? `범인 ${S.name} — 사망` : '피의자 미상';
-  const caseName = S.nick ? `「${S.nick}」 사건` : `${S.district} 연쇄 실종 사건`;
+  const caseName = !S.victims.length ? '해당 사건 없음' : S.nick ? `「${S.nick}」 사건` : `${S.district} 연쇄 실종 사건`;
   const photo = pick(S.victims.filter(v => v.found).map(v => D.DUMP[v.dump] && D.DUMP[v.dump].img).filter(Boolean)) || E.ph;
   const lastLine = {
+    none: `${S.name}. ${S.deathYear}년, ${S.deathAge}세. 손은 평생 근질거렸지만 끝내 아무도 죽이지 않았다. 그게 이긴 건지 진 건지는 모르겠다.`,
     unsolved: `당신의 이름은 ${S.name}였다. ${S.deathYear}년, ${S.deathAge}세에 요양병원 침대에서 숨을 거뒀다. 아무도 몰랐다.`,
     nocase: `${S.name}. ${S.deathYear}년 ${S.deathAge}세 사망. 「유력 용의자」라는 말만 남았다.`,
     death: S.prison === 'shower' ? `${S.name}. 수감 3년째 샤워실에서 살해됐다. 범인은 끝내 밝혀지지 않았다.` : `${S.name}. 독방 벽의 줄은 ${rint(4000, 9000)}개에서 멈췄다.`,

@@ -276,5 +276,6 @@ D.END = {
   shot:     { stamp: '피의자 사살', sub: 'SHOT DEAD', img: 'e_shot', ph: 'e_arrest', head: '검거 과정에서 피의자가 사살됐다.' },
   roof:     { stamp: '피의자 투신', sub: 'SUICIDE', img: 'e_roof', ph: 'e_roof', head: '포위망이 좁혀지자 피의자는 옥상에서 몸을 던졌다.' },
   confess:  { stamp: '자수', sub: 'SURRENDER', img: 'e_confess', ph: 'e_cell', head: '피의자가 흉기를 들고 직접 파출소를 찾아왔다.' },
+  none:     { stamp: '사건 없음', sub: 'NO RECORD', img: 'e_oldbed', ph: 'e_oldbed', head: '흑천경찰서에는 이 이름으로 된 사건 기록이 없다.' },
   fight:    { stamp: '정당방위', sub: 'SELF-DEFENSE', img: 'e_fightback', ph: 'e_fightback', head: '범인은 마지막 피해자가 될 뻔한 사람의 손에 숨졌다.' },
 };
