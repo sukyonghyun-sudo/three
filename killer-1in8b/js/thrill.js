@@ -68,7 +68,7 @@ function mgLoop(step) {
     const iv = setInterval(() => {
       const now = performance.now(), dt = Math.min(.1, (now - last) / 1000);
       last = now;
-      if (G.speed === 0 || G.freeze || document.hidden || UI.cur !== 'play') return;
+      if (G.speed === 0 || G.freeze || G.rotBlock || document.hidden || UI.cur !== 'play') return;
       const r = step(dt);
       if (r !== undefined) { clearInterval(iv); res(r); }
     }, 30);

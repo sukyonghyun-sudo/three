@@ -233,7 +233,12 @@ async function season() {
       ran = true;
       break;
     }
-    if (!ran && D.CHILD_QUIET[age]) UI.flow(D.CHILD_QUIET[age]);
+    if (!ran && D.CHILD_QUIET[age]) {
+      // a quiet year still moves the picture on (the birth picture must not linger into childhood)
+      const QUIET_IMG = { 1: 'nursery', 2: 'nursery', 3: 'home_banjiha', 4: 'home_banjiha', 6: 'child_class', 8: 'child_class', 10: 'city_night', 12: 'city_day', 13: 'home_banjiha', 15: 'child_class' };
+      await UI.scene({ img: QUIET_IMG[age] || 'home_banjiha', vcap: `${age}살`, cap: '' });
+      UI.flow(D.CHILD_QUIET[age]);
+    }
     if (age === 6) UI.diary('같은 날 같은 병원에서 태어난 아이들. 처음으로 얼굴과 이름을 알았다.', 'hear');
     if (age === 17) await awaken();
     return;
@@ -1115,18 +1120,21 @@ async function ending(kind, extra = {}) {
   }
   if (det && !det.dead && D.END[kind].det) det.fate = D.END[kind].det;
   G.newEnding = markEnding(kind);
+  S.epithet = verdict(S).t;
   const nf = S.victims.filter(v => v.found).length;
   const title = titleOf(S);
   addRecord({ ending: kind, n: S.victims.length, unf: S.victims.length - nf, age: S.deathAge, y: S.deathYear, nick: S.nick, title, name: S.name, born: S.born.y, at: Date.now() });
   buildEnd(kind, extra, title);
   if (G.auto) document.title = `END:${kind}:v${S.victims.length}:found${S.victims.filter(v => v.found).length}:age${S.deathAge}:ev${S.evidence.length}:pol${Math.round(S.police)}:serial${S.serial ? 1 : 0}:beats${G.beats || 0}:min${Math.round((G.est || 0) / 60000)}`;
   SND.amb('amb_drone', .3);
+  await finale(kind);
   UI.show('end');
   setTimeout(() => SND.play('typewriter', .7), 400);
   setTimeout(() => SND.play('stamp', 1), 1700);
 }
 
 function titleOf(S) {
+  if (S.epithet) return S.epithet;
   const n = S.victims.length, unf = S.victims.filter(v => !v.found).length;
   if (S.ending === 'unsolved' && n >= 8) return '흑천의 그림자';
   if (S.ending === 'unsolved' && n >= 4) return '아무도 모르는 이웃';
@@ -1257,6 +1265,38 @@ function cov(k) {
 
 // ---- debug: freeze one hands-on moment mid-way for a screenshot (?shot=calm|hold|mash|hide|timed)
 async function shotTest(k) {
+  if (k === 'title') { titleScreen(); document.title = 'SHOT ' + k; return; }
+  if (/^fin\d$/.test(k)) {
+    G.S = newLife(); G.S.t = 284; lifeInit(G.S); G.S.job = 'butcher'; G.S.susp = 20; G.S.serial = true; G.S.nick = '흑천 저수지 토막살인';
+    G.S.married = { name: '윤미경', sex: 'f' }; G.S.kids = 1; G.S.myLife = [[29, '윤미경과 결혼했다.']]; G.S.arc = { det: 'friend' };
+    G.S.victims = [[19, '편의점 알바', 0], [24, '보험 설계사', 1], [31, '간호사', 0], [27, '대학원생', 1], [45, '택시 기사', 0]].map(([age, job, found], i) => ({ name: rname(i % 2 ? 'm' : 'f'), sex: 'f', age, job, year: 1985 + i * 4, dump: pick(['reservoir', 'mountain']), found, identified: found, t: 96 + i * 16, sameDay: i === 2 }));
+    G.S.ending = 'unsolved'; G.S.deathAge = 71; G.S.deathYear = 2034;
+    finale('unsolved');
+    for (let i = 0; i < +k[3]; i++) { await sleep(1000); if (G.finTap) G.finTap(); }
+    document.title = 'SHOT ' + k;
+    return;
+  }
+  if (k === 'many' || k === 'idle' || k === 'end' || k === 'records') {
+    G.S = newLife(); G.S.t = 150; lifeInit(G.S); G.skipType = true; G.S.urge = 82; G.S.police = 74; G.S.susp = 40; G.S.job = 'taxi'; G.S.flags.facesShown = 1;
+    G.S.victims = [1, 2, 3, 4, 5, 6, 7, 8].map(i => ({ name: rname(i % 2 ? 'f' : 'm'), sex: 'f', age: 20 + i * 3, year: 1990 + i * 2, dump: pick(['reservoir', 'mountain', 'river']), found: i % 2, identified: i % 3, t: 80 + i * 6 }));
+    for (let i = 0; i < 14; i++) G.S.diary.push({ t: 130 + i, text: '시험 문장입니다. 손이 근질거린다. 버스에서 앞사람의 목덜미를 오래 봤다.', cls: i % 3 ? '' : 'red' });
+    G.S.hist = Array.from({ length: 40 }, (_, i) => [40 + i, 30 + i, 20, i % 9 ? 0 : 1]);
+    if (k === 'many') {
+      UI.show('play'); UI.status(); UI.born(); UI.renderDiary(); tense(1); NIGHT.start();
+      await UI.scene({ img: 'e_arrest', vcap: '검거', cap: `손전등이 한꺼번에 켜졌다. “${G.S.name}! 손 들어!” 골목 양쪽이 막혔다. 빗물이 눈으로 들어간다.` });
+      UI.choose([{ t: '손을 든다' }, { t: '칼을 꺼낸다', red: 1 }, { t: '옥상으로 달린다' }, { t: '골목으로 뛴다', d: '또 도망칠 수 있을까' }, { t: '형사의 이름을 부른다', d: '같은 날 태어난 사람' }], { title: '', time: 60000 });
+      await sleep(600); G.freeze = true;
+    } else if (k === 'idle') {
+      UI.show('play'); UI.status(); UI.born(); UI.renderDiary();
+      await UI.scene({ img: 'city_night', vcap: '가을', cap: '택시 뒷좌석에 손님이 잠들었다. 깨우지 않고 한참 돌았다.' });
+      idleActions();
+    } else if (k === 'end') {
+      G.S.ending = 'scapegoat'; G.S.arc = { scapeName: '박상철' }; G.S.deathAge = 72; G.S.deathYear = 2031; G.S.nick = '흑천 저수지 토막살인';
+      G.newEnding = true; buildEnd('scapegoat', {}, '흑천의 그림자'); UI.show('end');
+    } else { showRecords(); }
+    document.title = 'SHOT ' + k;
+    return;
+  }
   if (k === 'chap' || k === 'review') {
     G.S = newLife(); G.S.t = 140; lifeInit(G.S); G.skipType = true; G.S.arc = { scapeName: '박상철', det: 'friend' };
     G.S.victims = [1, 2, 3, 4].map(i => ({ name: rname('f'), age: 20 + i, year: 1990 + i, dump: 'reservoir', found: i % 2, identified: 1, t: 80 + i * 6 }));
@@ -1338,7 +1378,7 @@ async function hitTest() {
   const cb = $('#choices').getBoundingClientRect();
   out.push(`choicesBox bottom=${Math.round(cb.bottom)} vh=${innerHeight} scroll=${$('#choices').scrollHeight}/${$('#choices').clientHeight}`);
   $('#choices').innerHTML = ''; $('#choices').classList.remove('ask');
-  UI.idle([{ k: 'a', t: '사냥하러 나간다', d: '굶주림 80' }, { k: 'b', t: '이 동네를 떠난다', d: '의심은 사라진다' }, { k: 'c', t: '냉동고를 비운다' }, { k: 'd', t: '자수한다', red: 1 }]);
+  UI.idle([{ k: 'a', t: '사냥하러 나간다', d: '굶주림 80' }, { k: 'w', t: '일에 매달린다', d: '돈이 모인다. 손이 바쁘면 덜 배고프다' }, { k: 'p', t: '사람들과 어울린다', d: '의심이 줄고 덜 공허하다' }, { k: 'n', t: '밤거리를 걷는다', d: '보기만 한다. 굶주림이 조금 잦아든다' }, { k: 'b', t: '이 동네를 떠난다', d: '의심은 사라지고, 돈과 시간이 든다' }, { k: 'd', t: '자수한다', d: '끝낼 수 있다', red: 1 }]);
   await sleep(100);
   check('#choices .ch', 'idle');
   UI.clearIdle();
@@ -1354,6 +1394,8 @@ async function hitTest() {
   UI.show('review'); buildReview(); await sleep(100);
   check('#rv-back, #rv-again', 'review');
   showRecords(); await sleep(100); check('#rec-back', 'recback');
+  G.S.ending = 'unsolved'; UI.show('fin'); $('#fin-box').className = 'verdict in'; $('#fin-box').innerHTML = '<small>시험</small><b>「시험」</b><ul><li>한 줄</li></ul>'; await sleep(100);
+  check('#fin-skip', 'finskip');
   const bad = out.filter(l => l.startsWith('BAD'));
   document.title = `HIT ${LAY.mode} ${innerWidth}x${innerHeight} bad=${bad.length}`;
   const pre = el('pre', '', out.join('\n')); pre.id = 'hitlog'; pre.style.display = 'none'; document.body.appendChild(pre);
@@ -1379,6 +1421,7 @@ function boot() {
     if (portrait) { LAY.mode = 'm'; LAY.W = 750; LAY.H = Math.round(clamp(750 * h / w, 1180, 1700)); }
     else { LAY.mode = 'pc'; LAY.W = 1920; LAY.H = 1080; }
     document.body.classList.toggle('m', LAY.mode === 'm');
+    document.body.classList.toggle('short', LAY.mode === 'm' && LAY.H < 1450);
     // the graph lives in the diary on PC and in its own strip on phones
     const gc = $('#graph'), gw = $('#gwrap'), dy = $('#dyear');
     if (gc && gw && dy) {

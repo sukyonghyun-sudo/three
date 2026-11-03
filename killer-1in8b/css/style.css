@@ -706,3 +706,65 @@ body.m:not(.inplay) #sys{top:auto;right:auto;bottom:14px;left:14px;background:rg
 .m .rv-marks{font-size:24px}
 .m .rv-ends{grid-template-columns:repeat(3,1fr)}
 .m .rv-ends span{font-size:21px}
+
+/* phone: the idle list as a two-column grid so six things to do always fit; short phones (16:9) get a tighter case file */
+.m #choices.idle{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.m #choices.idle .ctitle{grid-column:1/-1;margin-bottom:0}
+.m #choices.idle .ch{margin:0;min-height:92px;font-size:28px;padding:10px 30px 10px 0;align-content:center}
+.m #choices.idle .ch .d{width:30px;padding-left:8px;font-size:20px}
+.m #choices.idle .ch .t{flex:0 0 calc(100% - 30px)}
+.m #choices.idle .ch .sub{margin:3px 0 0 30px;font-size:19px;line-height:1.25}
+.m #choices.idle .ch::after{right:8px;font-size:38px}
+.m #x-sheet{height:calc(var(--H) - 350px);-webkit-mask-image:linear-gradient(#000 calc(100% - 46px),transparent);mask-image:linear-gradient(#000 calc(100% - 46px),transparent)}
+.m.short .x-photo{height:170px}
+.m.short .x-h{font-size:34px}
+.m.short .x-list{line-height:1.8}
+.m.short .x-final{font-size:25px;margin-top:14px}
+.m.short .x-pad{padding:30px 30px 50px}
+/* PC: six things to do in two columns, so the list never runs off the bottom */
+body:not(.m) #choices.idle{display:grid;grid-template-columns:1fr 1fr;column-gap:28px}
+body:not(.m) #choices.idle .ctitle{grid-column:1/-1}
+body:not(.m) #choices.idle .ch{min-height:44px;min-width:0}
+body:not(.m) #choices.idle .ch .sub{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:17px}
+
+/* ═══ finale: verdict, life story, those left behind, what people said ═══ */
+#fin{background:#050404;cursor:pointer;overflow:hidden}
+#fin-bg{position:absolute;inset:-20px;background:#000 center/cover;filter:grayscale(1) brightness(.3) contrast(1.25) blur(2px);transition:background-image .8s}
+#fin-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,.2) 25%,rgba(0,0,0,.9) 100%)}
+#fin-box{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:1240px;max-height:880px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;color:#efe9dc;z-index:1}
+#fin-box small{display:block;font-family:var(--mono);font-size:20px;letter-spacing:.3em;color:#c01818;margin-bottom:18px}
+#fin-box.verdict b{display:block;font-family:var(--brush);font-weight:400;font-size:112px;line-height:1.12;color:#e01818;text-shadow:3px 0 0 #2a0000;animation:chapIn .6s cubic-bezier(.2,1.4,.4,1) both}
+#fin-box.verdict ul{list-style:none;margin-top:26px}
+#fin-box.verdict li{font-size:30px;line-height:1.6;margin:10px 0;padding-left:30px;position:relative;opacity:0;animation:finIn .55s both}
+#fin-box.verdict li::before{content:"—";position:absolute;left:0;color:#a30b0b}
+#fin-box.verdict li:nth-child(1){animation-delay:.7s}
+#fin-box.verdict li:nth-child(2){animation-delay:1.1s}
+#fin-box.verdict li:nth-child(3){animation-delay:1.5s}
+#fin-box.verdict li:nth-child(4){animation-delay:1.9s}
+#fin-box .lines p{font-size:30px;line-height:1.7;margin:8px 0;opacity:0;animation:finIn .6s both}
+#fin-box .vl>div{margin:18px 0;opacity:0;animation:finIn .6s both;border-left:5px solid #7d0000;padding-left:20px}
+#fin-box .vl b{font-size:38px;font-weight:800}
+#fin-box .vl em{font-style:normal;font-family:var(--mono);font-size:17px;color:#8a857b;margin-left:12px}
+#fin-box .vl span{display:block;font-size:27px;color:#d6cfc3;margin-top:6px;line-height:1.5}
+#fin-box .ql>div{margin:22px 0;opacity:0;animation:finIn .6s both}
+#fin-box .ql q{display:block;font-size:31px;line-height:1.55;quotes:"“" "”"}
+#fin-box .ql i{display:block;font-style:normal;font-family:var(--mono);font-size:17px;color:#c01818;margin-top:8px}
+#fin-box.close{text-align:center}
+#fin-box.close b{display:block;font-size:92px;font-weight:800;letter-spacing:.06em}
+#fin-box.close em{display:block;font-style:normal;font-family:var(--mono);font-size:24px;color:#8a857b;margin:8px 0 36px}
+#fin-box.close p{font-size:36px;line-height:1.7;color:#e2ddd2;max-width:1000px;margin:0 auto;opacity:0;animation:finIn 1.4s .7s both}
+@keyframes finIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#fin-next{position:absolute;left:50%;bottom:36px;transform:translateX(-50%);font-size:18px;color:#c01818;letter-spacing:.2em;pointer-events:none;animation:blink 1.6s infinite}
+#fin-skip{position:absolute;right:40px;bottom:26px;font-size:18px;color:#8a857b;padding:12px 16px;cursor:pointer;z-index:2}
+.m #fin-box{width:690px;max-height:calc(var(--H) - 230px);top:46%}
+.m #fin-box.verdict b{font-size:78px}
+.m #fin-box.verdict li{font-size:28px}
+.m #fin-box .lines p{font-size:29px}
+.m #fin-box .vl b{font-size:34px}
+.m #fin-box .vl em{display:block;margin:4px 0 0}
+.m #fin-box .vl span{font-size:26px}
+.m #fin-box .ql q{font-size:29px}
+.m #fin-box.close b{font-size:70px}
+.m #fin-box.close p{font-size:31px}
+.m #fin-next{font-size:22px;bottom:110px}
+.m #fin-skip{right:16px;bottom:40px;font-size:24px}

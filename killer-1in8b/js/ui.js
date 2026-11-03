@@ -408,7 +408,7 @@ const UI = {
     for (let i = 0; i < n; i++) {
       const d = el('img', 'decal');
       const onPage = Math.random() < .35;
-      d.src = (onPage ? 'img/decal_' : 'img/splat_') + (Math.random() < .5 ? 'a' : 'b') + '.webp';
+      d.src = IMG((onPage ? 'decal_' : 'splat_') + (Math.random() < .5 ? 'a' : 'b'));
       d.className = 'decal ' + (onPage ? 'mult' : 'scr');
       const w = 380 + Math.random() * 520;
       d.style.cssText = `width:${w}px;left:${Math.random() * (LAY.W - 220) - 100}px;top:${Math.random() * (LAY.H - 180) - 80}px;transform:rotate(${Math.random() * 360}deg)`;
@@ -479,7 +479,7 @@ const UI = {
         const iv = setInterval(() => {
           const now = performance.now(), dt = Math.min(100, now - last); last = now;
           if (settled) { clearInterval(iv); box.classList.remove('hurry', 'timed'); return; }
-          if (G.speed === 0 || G.freeze || document.hidden || inputLocked()) return;
+          if (G.speed === 0 || G.freeze || G.rotBlock || document.hidden || inputLocked()) return;
           left -= dt;
           bar.firstChild.style.transform = `scaleX(${Math.max(0, left / total)})`;
           box.classList.toggle('hurry', left < 1200);

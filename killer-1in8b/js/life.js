@@ -165,6 +165,7 @@ function buildReview() {
     S.victims.length ? `그 사이 ${S.victims.length}명이 사라졌고, ${S.victims.length - nf}명은 끝내 돌아오지 않았다.` : '끝내 아무도 죽이지 않았다.',
     `80억 명 중 한 사람. 그리고 그중 단 한 명.`,
   ];
+  if (S.epithet) sum.splice(3, 0, `세상은 이 사람을 「${S.epithet}」${josa(S.epithet, '이라고', '라고')} 불렀다.`);
   $('#rv').innerHTML = `
     <div class="rv-hd"><div class="rv-k">80억분의 1 · 일생 돌아보기</div><div class="rv-n">${S.name}</div><div class="rv-d">${born} – ${S.deathYear} · ${S.deathAge}세 · ${S.sex === 'm' ? '남' : '여'} · ${D.END[S.ending].stamp}</div></div>
     <div class="rv-sum">${sum.map(x => `<p>${x}</p>`).join('')}</div>
