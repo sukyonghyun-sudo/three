@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>EXTREME OCEAN SURVIVAL</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; overscroll-behavior: none; touch-action: none; -webkit-user-select: none; user-select: none; }
+  body { font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif; color: #dfe6ea; }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  #ui { position: fixed; inset: 0; pointer-events: none; user-select: none; }
+  #fatal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 40px; font-size: 15px; line-height: 1.7; color: #c9d2d8; background: #05080b; }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="ui"></div>
+<div id="fatal"></div>
+<script src="dist/game.js"></script>
+</body>
+</html>
