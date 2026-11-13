@@ -9,6 +9,9 @@
 <link rel="icon" href="data:,">
 <style>
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; overscroll-behavior: none; touch-action: none; -webkit-user-select: none; user-select: none; }
+  /* a game, not a document: no text on it can be selected, copied or dragged, and a long press brings up no menu */
+  *, *::before, *::after { -webkit-user-select: none !important; -moz-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; -webkit-tap-highlight-color: transparent; -webkit-user-drag: none; }
+  ::selection { background: transparent; color: inherit; }
   body { font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif; color: #dfe6ea; }
   #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
   #ui { position: fixed; inset: 0; pointer-events: none; user-select: none; }
@@ -26,6 +29,19 @@
 <div id="fatal"></div>
 <div id="load"><div class="lt">EXTREME<br>OCEAN SURVIVAL</div><div class="lb"><i id="loadbar"></i></div><div class="lp" id="loadpct">0%</div></div>
 <script>window.__load=function(p){var l=document.getElementById("load");if(!l)return;p=Math.max(0,Math.min(1,p));document.getElementById("loadbar").style.width=(p*100)+"%";document.getElementById("loadpct").textContent=Math.round(p*100)+"%";if(p>=1){setTimeout(function(){l.style.opacity="0";setTimeout(function(){l.style.display="none"},800)},350)}};window.__load(0.06);</script>
+<script>
+// Long presses and double taps on a phone must never select or copy the game's labels, or open the browser's menu.
+(function () {
+  var stop = function (e) { e.preventDefault(); };
+  ['selectstart', 'dragstart', 'copy', 'cut', 'gesturestart', 'gesturechange'].forEach(function (t) { document.addEventListener(t, stop, { capture: true, passive: false }); });
+  document.addEventListener('contextmenu', function (e) { if (!(e.target && e.target.closest && e.target.closest('a[href]'))) e.preventDefault(); }, { capture: true });
+  document.addEventListener('selectionchange', function () { var s = window.getSelection && window.getSelection(); if (s && !s.isCollapsed) s.removeAllRanges(); });
+  // a second tap landing on the same spot must not zoom the page or pick a word
+  var last = 0;
+  // (not on the menu's own rows: tapping those quickly is how a setting is stepped through)
+  document.addEventListener('touchend', function (e) { var now = Date.now(), menu = e.target && e.target.closest && e.target.closest('.act'); if (!menu && now - last < 350 && e.cancelable) e.preventDefault(); last = now; }, { capture: true, passive: false });
+})();
+</script>
 <script src="dist/game.js"></script>
 </body>
 </html>
