@@ -12,6 +12,11 @@
   body { font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif; color: #dfe6ea; }
   #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
   #ui { position: fixed; inset: 0; pointer-events: none; user-select: none; }
+  #load { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #04070a; transition: opacity .7s ease; pointer-events: none; }
+  #load .lt { font-weight: 200; letter-spacing: .34em; font-size: clamp(15px, 2vw, 24px); color: #e9eef1; margin-bottom: 30px; text-align: center; line-height: 1.6; }
+  #load .lb { width: min(320px, 62vw); height: 2px; background: rgba(255,255,255,.14); }
+  #load .lb i { display: block; height: 100%; width: 0; background: #e9eef1; transition: width .45s ease; }
+  #load .lp { margin-top: 14px; font-size: 11px; letter-spacing: .3em; color: rgba(225,233,238,.5); }
   #fatal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 40px; font-size: 15px; line-height: 1.7; color: #c9d2d8; background: #05080b; }
 </style>
 </head>
@@ -19,6 +24,8 @@
 <canvas id="view"></canvas>
 <div id="ui"></div>
 <div id="fatal"></div>
+<div id="load"><div class="lt">EXTREME<br>OCEAN SURVIVAL</div><div class="lb"><i id="loadbar"></i></div><div class="lp" id="loadpct">0%</div></div>
+<script>window.__load=function(p){var l=document.getElementById("load");if(!l)return;p=Math.max(0,Math.min(1,p));document.getElementById("loadbar").style.width=(p*100)+"%";document.getElementById("loadpct").textContent=Math.round(p*100)+"%";if(p>=1){setTimeout(function(){l.style.opacity="0";setTimeout(function(){l.style.display="none"},800)},350)}};window.__load(0.06);</script>
 <script src="dist/game.js"></script>
 </body>
 </html>
