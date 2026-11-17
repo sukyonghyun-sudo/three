@@ -18,7 +18,7 @@
   #load { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #04070a; transition: opacity .7s ease; pointer-events: none; }
   #load .lt { font-weight: 200; letter-spacing: .34em; font-size: clamp(15px, 2vw, 24px); color: #e9eef1; margin-bottom: 30px; text-align: center; line-height: 1.6; }
   #load .lb { width: min(320px, 62vw); height: 2px; background: rgba(255,255,255,.14); }
-  #load .lb i { display: block; height: 100%; width: 0; background: #e9eef1; transition: width .45s ease; }
+  #load .lb i { display: block; height: 100%; width: 0; background: #e9eef1; }
   #load .lp { margin-top: 14px; font-size: 11px; letter-spacing: .3em; color: rgba(225,233,238,.5); }
   #fatal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 40px; font-size: 15px; line-height: 1.7; color: #c9d2d8; background: #05080b; }
 </style>
@@ -28,7 +28,43 @@
 <div id="ui"></div>
 <div id="fatal"></div>
 <div id="load"><div class="lt">EXTREME<br>OCEAN SURVIVAL</div><div class="lb"><i id="loadbar"></i></div><div class="lp" id="loadpct">0%</div></div>
-<script>window.__load=function(p){var l=document.getElementById("load");if(!l)return;p=Math.max(0,Math.min(1,p));document.getElementById("loadbar").style.width=(p*100)+"%";document.getElementById("loadpct").textContent=Math.round(p*100)+"%";if(p>=1){setTimeout(function(){l.style.opacity="0";setTimeout(function(){l.style.display="none"},800)},350)}};window.__load(0.06);</script>
+<script>
+// The loading bar. The game says how far it has really got (window.__load(0..1): the bytes of each model as they come
+// in, then unpacking them); the bar eases toward that and never jumps, and the number counts up with it. Until the
+// game itself has arrived (it cannot report its own coming) the bar creeps over the first few per cent.
+(function () {
+  var l = document.getElementById("load"), bar = document.getElementById("loadbar"), pct = document.getElementById("loadpct");
+  var target = 0, shown = 0, heard = false, end = false, fading = false, t0 = performance.now(), last = t0;
+  function frame(now) {
+    // (a frame after the page has stood still - the graphics card readying shaders - counts as one frame, not the time
+    // stood still: the bar carries on from where it was instead of leaping)
+    var dt = Math.min(1 / 30, Math.max(0, (now - last) / 1000)); last = now;
+    if (!heard) target = Math.max(target, 0.05 * (1 - Math.exp(-(now - t0) / 1200)));
+    var gap = target - shown;
+    // (eased, and never faster than 60 % of the bar a second - 2 % a frame - or 100 % once everything is in, so nobody
+    // waits on it; more than half the loading is the page standing still, and slower than this the bar fell so far
+    // behind that it kept everyone waiting a second and a half after the game was ready)
+    if (gap > 0) shown += Math.min(gap, Math.max(gap * (1 - Math.exp(-dt * 5)), 0.03 * dt), (end ? 1.0 : 0.6) * dt);
+    if (end && shown > 0.9999) shown = 1;
+    bar.style.width = (shown * 100).toFixed(2) + "%";
+    pct.textContent = Math.floor(shown * 100 + 1e-6) + "%";
+    if (end && shown >= 1) {
+      if (!fading) { fading = true; setTimeout(function () { l.style.opacity = "0"; setTimeout(function () { l.style.display = "none"; }, 800); }, 250); }
+      return;
+    }
+    requestAnimationFrame(frame);
+  }
+  // how far the bar is behind what the game has done (the game lets it catch up before the page stands still again)
+  window.__loadLag = function () { return end ? 0 : Math.max(0, target - shown); };
+  window.__load = function (p) {
+    if (!l || end) return;
+    heard = true; p = Math.max(0, Math.min(1, p));
+    if (p > target) target = p;
+    if (p >= 1) end = true;
+  };
+  if (l) requestAnimationFrame(frame);
+})();
+</script>
 <script>
 // Long presses and double taps on a phone must never select or copy the game's labels, or open the browser's menu.
 (function () {
