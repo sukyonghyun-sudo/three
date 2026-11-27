@@ -16,6 +16,15 @@ const canvas = $('#view'), video = $('#vid'), viewer = $('#viewer');
 const PHONE = matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches;
 if (PHONE) document.body.classList.add('phone');
 canvas.addEventListener('contextmenu', ev => ev.preventDefault());     // 꾹 누를 때 메뉴가 뜨지 않게
+// 휴대폰 가로: 필름 띠를 오른쪽 조절 칸 맨 위로 (세로·PC 에선 제자리)
+const LAND = matchMedia('(orientation: landscape) and (max-height: 500px) and (max-width: 1100px)');
+function placeStrip() {
+  const strip = $('#strip'), aside = $('aside'), stage = $('#stage');
+  if (LAND.matches) { if (strip.parentNode !== aside) aside.insertBefore(strip, aside.firstChild); }
+  else if (strip.parentNode !== stage) stage.appendChild(strip);
+}
+placeStrip();
+LAND.addEventListener('change', () => { placeStrip(); setTimeout(layout, 50); });
 let renderer;
 try { renderer = new FilmRenderer(canvas); }
 catch (e) { $('#fatal').textContent = e.message; $('#fatal').hidden = false; return; }

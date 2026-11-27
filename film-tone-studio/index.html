@@ -257,22 +257,58 @@ body:not(.has-src) #transport { display: none; }
   .field select, .field input { width: 100%; min-width: 0; }
   .actions { flex-wrap: wrap; }
 }
-@media (max-width: 860px) and (orientation: landscape) and (max-height: 500px) {
-  #viewer { position: relative; height: 74vh; }
+/* ── 휴대폰 가로: 왼쪽 화면 · 오른쪽 조절 (조절하면서 화면을 계속 본다) ──
+   필름 띠는 app.js 가 오른쪽으로 옮긴다. 재생 위치는 구간 막대를 눌러·끌어 옮긴다. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1100px) {
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; overflow: hidden; height: 100dvh; }
+  header { min-height: 0; padding: 3px 8px; }
+  body.has-src header h1 { display: none; }
+  main { display: flex; flex: 1; min-height: 0; }
+  #stage { display: flex; flex-direction: column; width: 56%; min-width: 0; }
+  #viewer, body:not(.has-src) #viewer { position: relative; flex: 1; height: auto; min-height: 0; box-shadow: none; }
+  #holdHint { display: none; }
+  #transport { flex-wrap: nowrap; padding: 2px 6px; gap: 2px; overflow-x: auto; scrollbar-width: none; min-height: 0; }
+  #transport::-webkit-scrollbar { display: none; }
+  #seek { display: none; }
+  #time { margin-right: auto; padding-left: 4px; font-size: 11px; white-space: nowrap; flex: none; }
+  #segRow { padding: 3px 6px 4px; }
+  #segTools { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-top: 3px; }
+  #segTools::-webkit-scrollbar { display: none; }
+  #segTools > * { flex: none; }
+  #segInfo { flex-basis: auto; margin-left: 6px; white-space: nowrap; }
+  aside { width: 44%; display: flex; flex-direction: column; min-height: 0; border-left: 1px solid var(--line); }
+  aside #strip { flex: none; border-top: none; border-bottom: 1px solid var(--line); }
+  #panel { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+  .fr { width: 118px; padding: 14px 4px 12px; }
+  .fr .pic, .fr canvas { width: 110px; height: 62px; }
+  #toast { bottom: 12px; }
 }
-/* 손가락: 누르는 곳을 크게 */
+/* 손가락: 누르는 곳을 크게 (가로·세로 모두 높이 40px 이상), 두 번 누름 확대·지연 없애기 */
 @media (pointer: coarse) {
-  .tbtn { padding: 8px 11px; min-width: 40px; }
-  .seg button { padding: 8px 12px; font-size: 13px; }
-  input[type=range] { height: 30px; }
-  input[type=range]::-webkit-slider-thumb { width: 22px; height: 22px; margin-top: -9px; }
-  #segBar { height: 38px; }
-  #segBar .sgh { width: 30px; margin-left: -15px; }
-  #segBar .sgh::after { left: 14px; }
-  #segTools .tbtn { padding: 7px 10px; }
-  select.mini { padding: 6px 6px; font-size: 13px; }
-  .fr .x { display: flex; }
-  .mod-r { padding: 4px 10px; }
+  button, select, input, label, .fr, .tab, .mod-t { touch-action: manipulation; -webkit-tap-highlight-color: rgba(232,165,58,.25); }
+  header .btn { min-height: 40px; }
+  .tbtn { padding: 8px 11px; min-width: 44px; min-height: 40px; }
+  .tab { min-height: 40px; padding: 8px 11px; }
+  #stripTabs { height: auto; }
+  .seg button { padding: 8px 12px; font-size: 13px; min-height: 40px; min-width: 44px; }
+  input[type=range] { height: 34px; }
+  input[type=range]::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -10px; }
+  #segBar { height: 40px; }
+  #segBar .sgh { width: 32px; margin-left: -16px; }
+  #segBar .sgh::after { left: 15px; }
+  #segTools .tbtn { padding: 8px 10px; }
+  select.mini, select.plain, .row .sel, .field select { min-height: 40px; font-size: 14px; }
+  .fr .x { display: flex; width: 30px; height: 30px; }
+  .mod-h { min-height: 46px; }
+  .mod-t { min-height: 40px; }
+  .mod-r { padding: 10px 12px; }
+  .sw input { inset: -12px -8px; }          /* 작은 켜기·끄기 스위치도 손가락 크기로 눌리게 */
+  .num { min-height: 34px; font-size: 14px; }
+  .chk input { width: 22px; height: 22px; }
+  .chk { min-height: 40px; }
+  .actions .btn, dialog .btn { min-height: 44px; padding: 10px 18px; }
+  .btn.small { min-height: 40px; }
 }
 </style>
 </head>
