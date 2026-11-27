@@ -264,7 +264,11 @@ function stateFor(pr, prev) {
   return st;
 }
 function applyPreset(pr) {
-  app.state = stateFor(pr, app.state);
+  const prev = app.state;
+  app.state = stateFor(pr, prev);
+  if (prev && app.segs && app.segs.length > 1) {   // 구간이 여럿이면 영상 전체 설정은 그대로
+    for (const id of GLOBAL_MODS) { app.state.on[id] = prev.on[id]; for (const d of MOD_OF(id).params) app.state.p[d.k] = clone(prev.p[d.k]); }
+  }
   app.base = clone(app.state);
   app.presetName = pr.name; app.modified = false;
   syncUI(); foldByState(); presetLabel(); app.dirty = true; saveSoon();
@@ -273,7 +277,7 @@ function presetLabel() {
   const pr = PRESETS.find(p => p.name === app.presetName) || userPresets().find(p => p.name === app.presetName) || (app.presetName === ORIGINAL.name ? ORIGINAL : null);
   const [main, sub] = pr ? splitName(pr.name) : ['직접 조정', ''];
   const nn = $('#nowName'); nn.textContent = main;
-  if (app.modified) nn.append(el('span', 'mod', '· 조절함'));
+  if (app.modified) nn.append(el('span', 'modf', '· 조절함'));
   $('#nowNote').textContent = pr && pr !== ORIGINAL ? (pr.note || sub || '') : pr === ORIGINAL ? '효과 없이 원본 그대로예요. 아래 필름 띠에서 골라 보세요.' : '';
   for (const b of document.querySelectorAll('.fr[data-name]')) b.classList.toggle('on', b.dataset.name === app.presetName);
   if (app.segs) segBar();
@@ -325,7 +329,8 @@ function buildFrames() {
   thumbsSoon(0);
 }
 function stepPreset(dir) {
-  const g = GROUPS.find(g => g.id === app.tab) || GROUPS[0];
+  let g = GROUPS.find(g => g.id === app.tab) || GROUPS[0];
+  if (!groupItems(g).length) g = GROUPS.find(x => x.id === groupOf(app.presetName)) || GROUPS[0];   // 연 탭이 비었으면 지금 필름의 탭에서
   const items = groupItems(g); if (!items.length) return;
   let i = items.findIndex(p => p.name === app.presetName);
   i = i < 0 ? 0 : (i + dir + items.length) % items.length;
@@ -559,7 +564,9 @@ async function loadFile(file) {
   const isImg = file.type.startsWith('image/') || IMG_EXT.includes(ext);
   const isVid = file.type.startsWith('video/') || VID_EXT.includes(ext);
   if (!isImg && !isVid) { toast('영상(mp4·mov·webm)이나 그림(png·jpg) 파일을 넣어 주세요.'); return; }
-  if (app.src && app.src.url) { video.pause(); URL.revokeObjectURL(app.src.url); }
+  // 보던 영상은 새 파일이 제대로 열린 뒤에 놓는다 (열기에 실패하면 그대로 돌아간다)
+  const prev = app.src, prevTime = prev && prev.kind === 'video' ? video.currentTime : 0;
+  if (prev && prev.kind === 'video') { video.pause(); saveSegs(); }
   const url = URL.createObjectURL(file);
   try {
     if (isImg) {
@@ -580,6 +587,10 @@ async function loadFile(file) {
     }
   } catch (e) {
     URL.revokeObjectURL(url);
+    if (prev && prev.kind === 'video') {          // 보던 영상으로 되돌린다
+      video.onloadeddata = () => { video.onloadeddata = null; video.currentTime = prevTime; app.needUpload = true; };
+      video.src = prev.url; video.load();
+    } else if (isVid) { video.removeAttribute('src'); video.load(); }
     let msg = e.message || String(e);
     if (isVid) try {   // 어떤 코덱이라 안 열리는지 알려 준다 (ProRes·DNxHD MOV 등은 브라우저가 못 푼다)
       const MB = window.Mediabunny, input = new MB.Input({ formats: MB.ALL_FORMATS, source: new MB.BlobSource(file) });
@@ -588,6 +599,7 @@ async function loadFile(file) {
     } catch (e2) {}
     toast(msg); return;
   }
+  if (prev && prev.url && prev.url !== url) URL.revokeObjectURL(prev.url);
   document.body.classList.add('has-src');
   document.body.classList.toggle('is-video', app.src.kind === 'video');
   // 미리보기 크기 상한 (휴대폰은 GPU 가 약해 1280) — 저장할 땐 원본 크기로 따로 그린다
@@ -648,7 +660,6 @@ function loop() {
       const i = segOf(curTime(), app.segs);
       if (i !== app.segIdx) selectSeg(i, true);
       segHead();
-      if (app.segs.length > 1 && liveSpec(curTime()).blend) app.dirty = true;
     }
   }
   if (app.dirty) { app.dirty = false; draw(); }
@@ -729,7 +740,9 @@ function outSize(w, h, mode) {
   if (Math.abs(Math.max(w, h) / Math.min(w, h) / (16 / 9) - 1) < 0.01) { if (w >= h) W = S * 16 / 9; else H = S * 16 / 9; }
   return [even(W), even(H)];
 }
-let conv = null;
+let conv = null, exportAbort = false;
+function stopIfAborted() { if (exportAbort) { const e = new Error('canceled'); e.name = 'ConversionCanceledError'; throw e; } }
+function cancelExport() { exportAbort = true; if (conv) conv.cancel(); }
 /* 소리: AAC·MP3 는 그대로 복사, 그 밖(Opus·PCM 등)은 어느 플레이어에서나 나오게 AAC 로 바꾼다 */
 async function audioPlan(MB, at, want) {
   if (!at || !want) return { opts: { discard: true }, note: '' };
@@ -750,6 +763,7 @@ async function exportVideo(opt) {
   if (!vt) throw new Error('영상 트랙이 없어요.');
   if (!(await vt.canDecode())) throw new Error('이 영상의 코덱(' + ((await vt.getCodec()) || '알 수 없음') + ')은 브라우저가 풀 수 없어요. H.264 · HEVC · VP9 · AV1 영상으로 바꿔서 넣어 주세요.');
   const hdr = await vt.hasHighDynamicRange().catch(() => false);
+  stopIfAborted();
   const [W, H] = outSize(await vt.getDisplayWidth(), await vt.getDisplayHeight(), opt.size);
   let fps = 30;
   try { const st = await vt.computePacketStats(120); if (st.averagePacketRate > 1) fps = st.averagePacketRate; } catch (e) {}
@@ -758,14 +772,18 @@ async function exportVideo(opt) {
   let codec = null;
   for (const c of ['avc', 'hevc', 'vp9', 'av1']) if (await MB.canEncodeVideo(c, { width: W, height: H, quality })) { codec = c; break; }
   if (!codec) throw new Error(W + '×' + H + ' 크기로 영상을 인코딩할 수 없어요. 더 작은 크기로 해 보세요.');
+  stopIfAborted();
   // 구간마다의 톤을 이 순간 값으로 굳힌다 (내보내는 동안 고쳐도 영향 없게)
   flushSeg();
   const g = clone(app.state);
   const segs = app.segs ? app.segs.map(s => ({ start: s.start, fade: s.fade, st: clone(withGlobals(s.state, g)) })) : [{ start: 0, fade: 0, st: g }];
   const ex = exportRenderer(W, H), stOf = i => segs[i].st;
+  const vFirst = await vt.getFirstTimestamp().catch(() => 0);
+  let shift = null;
   const at = await input.getPrimaryAudioTrack(), ap = await audioPlan(MB, at, opt.audio);
   // 저장할 곳을 골랐으면 파일에 바로 써서 몇 분짜리 4K 도 메모리에 쌓이지 않게, 아니면 메모리에 모아 다운로드
-  const writable = opt.handle ? await opt.handle.createWritable() : null;
+  stopIfAborted();
+  const writable = opt.handle ? (opt.writable = await opt.handle.createWritable()) : null;
   const target = writable ? new MB.StreamTarget(writable, { chunked: true, chunkSize: 8 * 1048576 }) : new MB.BufferTarget();
   const output = new MB.Output({ format: new MB.Mp4OutputFormat(), target });
   conv = await MB.Conversion.init({
@@ -773,20 +791,23 @@ async function exportVideo(opt) {
     video: {
       codec, quality, forceTranscode: true, allowTransformationMetadata: false, processedWidth: W, processedHeight: H,
       process: sample => {
+        // 저장 라이브러리는 시간을 맨 앞(가장 이른 트랙) 기준으로 당겨서 넘긴다 → 원본 시간(미리보기·구간과 같은 시간축)으로 되돌린다
+        if (shift === null) shift = vFirst - sample.timestamp;
+        const t = sample.timestamp + shift;
         const vf = sample.toVideoFrame();
         try { ex.r.upload(vf, vf.displayWidth, vf.displayHeight); } finally { vf.close(); }
-        const sp = specAt(sample.timestamp, segs, stOf);
-        ex.r.render(sp.state, { time: sample.timestamp, blend: sp.blend });
+        const sp = specAt(t, segs, stOf);
+        ex.r.render(sp.state, { time: t, blend: sp.blend });
         return ex.c;
       },
     },
     audio: ap.opts,
   });
   if (!conv.isValid) throw new Error('이 파일은 내보낼 수 없어요. (' + conv.discardedTracks.map(d => d.reason).join(', ') + ')');
+  stopIfAborted();
   conv.onProgress = p => opt.onProgress && opt.onProgress(p);
   const t0 = performance.now(), c = conv;
   try { await c.execute(); }
-  catch (e) { if (opt.handle && opt.handle.remove) opt.handle.remove().catch(() => {}); throw e; }
   finally { conv = null; }
   const hasAudio = c.utilizedTracks.some(t => t.type === 'audio');
   const res = { W, H, fps, bitrate, codec, hdr, audioIn: !!at, hasAudio, audioNote: ap.note, secs: (performance.now() - t0) / 1000 };
@@ -837,7 +858,7 @@ async function startExport() {
       opt.handle = null;
     }
   }
-  $('#exStart').disabled = true; $('#exCancel').hidden = false; app.exporting = true;
+  $('#exStart').disabled = true; $('#exCancel').hidden = false; app.exporting = true; exportAbort = false;
   const t0 = performance.now();
   opt.onProgress = p => {
     $('#exBar').style.width = (p * 100).toFixed(1) + '%';
@@ -858,6 +879,10 @@ async function startExport() {
     v.src = URL.createObjectURL(data); v.hidden = false;
     $('#exSave').hidden = !r.blob; $('#exStart').hidden = true;
   } catch (e) {
+    // 반쯤 쓴 파일은 지운다 (저장 위치를 고른 경우)
+    conv = null;
+    if (opt.writable) { try { await opt.writable.abort(); } catch (e2) {} }
+    if (opt.handle && opt.handle.remove) opt.handle.remove().catch(() => {});
     const canceled = e && e.name === 'ConversionCanceledError' || /cancel/i.test(String(e && e.message));
     $('#exStatus').textContent = canceled ? '취소했어요.' : '내보내기 실패: ' + (e && e.message || e);
     $('#exStart').disabled = false;
@@ -918,7 +943,7 @@ function selectSeg(i, fromPlayhead) {
     app.state = clone(withGlobals(s.state, g));
     app.presetName = s.presetName; app.modified = !!s.modified;
     app.base = s.base ? clone(withGlobals(s.base, g)) : baseFor(s.presetName, app.state);
-    syncUI(); foldByState(); presetLabel(); thumbsSoon(); app.dirty = true;
+    syncUI(); presetLabel(); thumbsSoon(); app.dirty = true;
   }
   if (!fromPlayhead) { const t = curTime(); if (t < app.segs[i].start - 1e-4 || t >= segEnd(app.segs, i) - 1e-4) { video.pause(); seekTo(app.segs[i].start); } }
   segBar();
@@ -957,8 +982,27 @@ const segKey = () => (app.src && app.src.kind === 'video' ? 'fts.v2.segs:' + app
 function saveSegs() {
   if (!app.segs || !segKey()) return;
   flushSeg();
-  LS.set(segKey(), { dur: video.duration, idx: app.segIdx,
+  const glob = { on: {}, p: {} };
+  for (const id of GLOBAL_MODS) { glob.on[id] = app.state.on[id]; for (const d of MOD_OF(id).params) glob.p[d.k] = app.state.p[d.k]; }
+  const ok = LS.set(segKey(), { at: Date.now(), dur: video.duration, idx: app.segIdx, glob,
     segs: app.segs.map(s => ({ start: s.start, fade: s.fade, state: s.state, presetName: s.presetName, modified: s.modified })) });
+  pruneSegs(ok);
+}
+/* 구간 기록은 최근 영상 30개만 남긴다. 저장 공간이 꽉 차면 오래된 것부터 지우고 다시, 그래도 안 되면 한 번 알린다 */
+let segFullWarned = false;
+function pruneSegs(ok) {
+  let keys = [];
+  try { keys = Object.keys(localStorage).filter(k => k.startsWith('fts.v2.segs:')); } catch (e) { return; }
+  const at = k => { const v = LS.get(k, null); return v && v.at || 0; };
+  keys.sort((a, b) => at(b) - at(a));
+  const drop = keys.slice(ok ? 30 : Math.max(1, Math.floor(keys.length / 2)));
+  for (const k of drop) if (k !== segKey()) { try { localStorage.removeItem(k); } catch (e) {} }
+  if (!ok) {
+    flushSeg();
+    const again = LS.set(segKey(), { at: Date.now(), dur: video.duration, idx: app.segIdx,
+      segs: app.segs.map(s => ({ start: s.start, fade: s.fade, state: s.state, presetName: s.presetName, modified: s.modified })) });
+    if (!again && !segFullWarned) { segFullWarned = true; toast('브라우저 저장 공간이 꽉 차서 나눈 구간을 기억하지 못해요. 이번 작업은 그대로 저장할 수 있어요.'); }
+  }
 }
 function initSegs() {
   app.segs = null; app.segIdx = 0;
@@ -967,6 +1011,11 @@ function initSegs() {
   if (sv && Array.isArray(sv.segs) && sv.segs.length && Math.abs((sv.dur || 0) - (video.duration || 0)) < 0.05) {
     app.segs = sv.segs.map(s => ({ start: +s.start || 0, fade: +s.fade || 0, state: normalize(s.state), presetName: s.presetName || '', modified: !!s.modified, base: null }));
     app.segs[0].start = 0; app.segIdx = -1;
+    if (sv.glob && sv.glob.on) for (const id of GLOBAL_MODS) {
+      if (!(id in sv.glob.on)) continue;
+      app.state.on[id] = !!sv.glob.on[id];
+      for (const d of MOD_OF(id).params) if (sv.glob.p && d.k in sv.glob.p) app.state.p[d.k] = clone(sv.glob.p[d.k]);
+    }
     selectSeg(Math.min(Math.max(0, sv.idx | 0), app.segs.length - 1), true);
     if (app.segs.length > 1) toast('이 영상에 나눠 둔 구간 ' + app.segs.length + '개를 불러왔어요.');
   } else {
@@ -1040,6 +1089,7 @@ async function findCuts() {
   finding = true; btn.disabled = true; video.pause();
   try {
     const input = new MB.Input({ formats: MB.ALL_FORMATS, source: new MB.BlobSource(app.src.file) });
+    const src0 = app.src;
     const vt = await input.getPrimaryVideoTrack();
     if (!vt || !(await vt.canDecode())) throw new Error('이 영상은 장면을 찾을 수 없어요.');
     const W = 64, H = 36, sink = new MB.CanvasSink(vt, { width: W, height: H, fit: 'fill', poolSize: 2 });
@@ -1047,6 +1097,7 @@ async function findCuts() {
     const dur = video.duration || 1, ts = [], sc = [];
     let prev = null, prevH = null, last = 0;
     for await (const wc of sink.canvases()) {
+      if (app.src !== src0) break;
       g.drawImage(wc.canvas, 0, 0, W, H);
       const px = g.getImageData(0, 0, W, H).data, hist = new Float32Array(48);
       for (let i = 0; i < px.length; i += 4) { hist[px[i] >> 4]++; hist[16 + (px[i + 1] >> 4)]++; hist[32 + (px[i + 2] >> 4)]++; }
@@ -1059,6 +1110,7 @@ async function findCuts() {
       ts.push(wc.timestamp); sc.push(s); prev = px; prevH = hist;
       if (performance.now() - last > 120) { last = performance.now(); btn.textContent = '찾는 중 ' + Math.min(99, Math.round(wc.timestamp / dur * 100)) + '%'; await new Promise(r => setTimeout(r)); }
     }
+    if (app.src !== src0 || !app.segs) return;          // 도중에 다른 파일을 열었다
     const S = SENS[$('#cutSens').value] || SENS.mid, cuts = [];
     for (let k = 1; k < sc.length; k++) {
       const win = []; for (let j = Math.max(1, k - 12); j <= Math.min(sc.length - 1, k + 12); j++) if (Math.abs(j - k) > 1) win.push(sc[j]);
@@ -1148,9 +1200,9 @@ $('#segFade').onchange = () => { const s = app.segs && app.segs[app.segIdx]; if 
 $('#exStart').onclick = startExport;
 $('#exSize').onchange = exportInfo;
 $('#exQual').onchange = exportInfo;
-$('#exCancel').onclick = () => { if (conv) conv.cancel(); };
+$('#exCancel').onclick = cancelExport;
 $('#exSave').onclick = () => { if (lastExport) download(lastExport.blob, lastExport.name); };
-$('#exClose').onclick = () => { if (conv) conv.cancel(); const v = $('#exResult'); v.pause(); dlg.close(); };
+$('#exClose').onclick = () => { if (app.exporting) cancelExport(); const v = $('#exResult'); v.pause(); dlg.close(); };   // 닫으면 만들던 것도 멈춘다
 dlg.addEventListener('cancel', ev => { if (app.exporting) ev.preventDefault(); });
 
 /* ───────── 시작 ───────── */
