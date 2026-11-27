@@ -71,7 +71,8 @@ function stickyChanged() { app.dirty = true; saveSoon(); syncSimple(); thumbsSoo
 function setParam(k, v) {
   app.state.p[k] = v;
   const mid = PMOD[k];
-  if (mid === 'damage' && app.state.p.marks === 'off') { app.state.p.marks = 'on'; syncUI(); }   // 직접 먼지를 올리면 스위치도 켠다
+  if (mid === 'damage' && app.state.p.marks === 'off') { app.state.p.marks = 'on'; syncUI(); }
+  if (mid === 'weave' && app.state.p.shake === 'off') { app.state.p.shake = 'on'; syncUI(); }   // 직접 먼지를 올리면 스위치도 켠다
   if (!app.state.on[mid]) { app.state.on[mid] = true; syncUI(); }
   if (MOD_OF(mid).sticky) stickyChanged(); else changed();
 }
@@ -193,6 +194,7 @@ function buildPanel() {
     const rst = el('button', 'mod-r', '↺'); rst.title = '이 효과만 처음 값으로';
     head.append(sw, title, rst);
     const body = el('div', 'mod-b');
+    if (m.desc) body.append(el('div', 'mod-d', m.desc));
     if (m.id === 'lut') body.append(lutRow());
     const wheels = m.params.filter(d => d.type === 'wheel');
     if (wheels.length) { const wr = el('div', 'wheels'); for (const d of wheels) wr.append(wheelCtl(d)); body.append(wr); }
@@ -200,6 +202,7 @@ function buildPanel() {
     cb.addEventListener('change', () => {
       app.state.on[m.id] = cb.checked; sec.classList.toggle('off', !cb.checked);
       if (m.id === 'damage' && cb.checked) app.state.p.marks = 'on';
+      if (m.id === 'weave' && cb.checked) app.state.p.shake = 'on';
       syncUI(); (m.sticky ? stickyChanged : changed)();
     });
     title.addEventListener('click', () => sec.classList.toggle('fold'));
@@ -260,7 +263,8 @@ function stateFor(pr, prev) {
     st.on[m.id] = prev.on[m.id];
     for (const d of m.params) st.p[d.k] = clone(prev.p[d.k]);
   }
-  if (prev && prev.p.marks) st.p.marks = prev.p.marks;            // 먼지·스크래치 스위치는 무엇을 골라도 그대로
+  if (prev && prev.p.marks) st.p.marks = prev.p.marks;
+  if (prev && prev.p.shake) st.p.shake = prev.p.shake;            // 먼지·스크래치 스위치는 무엇을 골라도 그대로
   return st;
 }
 function applyPreset(pr) {
@@ -446,15 +450,16 @@ function gaugeSeg() {
   $('#gaugeNote').textContent = GAUGE_NOTE[cur] || '';
 }
 /* 먼지·스크래치 전체 스위치 (필름 크기·필름 종류가 넣는 먼지·스크래치·깜빡임) */
-function marksSeg() {
-  const host = $('#marksSeg'); host.textContent = '';
-  const cur = app.state.p.marks === 'off' ? 'off' : 'on';
+function onOffSeg(sel, key) {
+  const host = $(sel); host.textContent = '';
+  const cur = app.state.p[key] === 'off' ? 'off' : 'on';
   for (const [v, t] of [['on', '켜기'], ['off', '끄기']]) {
     const b = el('button', v === cur ? 'on' : '', t);
-    b.onclick = () => { app.state.p.marks = v; syncUI(); stickyChanged(); };
+    b.onclick = () => { app.state.p[key] = v; syncUI(); stickyChanged(); };
     host.append(b);
   }
 }
+const marksSeg = () => onOffSeg('#marksSeg', 'marks'), shakeSeg = () => onOffSeg('#shakeSeg', 'shake');
 const LB_CHIPS = [[0, '원본'], [1.85, '1.85'], [2.0, '2 : 1'], [2.39, '2.39 시네마스코프']];
 function lbSeg() {
   const host = $('#lbSeg'); host.textContent = '';
@@ -1207,7 +1212,7 @@ dlg.addEventListener('cancel', ev => { if (app.exporting) ev.preventDefault(); }
 
 /* ───────── 시작 ───────── */
 buildPanel(); buildSimple();
-controls.push({ sync: gaugeSeg }, { sync: marksSeg }, { sync: lbSeg }, { sync: srcLogSel });
+controls.push({ sync: gaugeSeg }, { sync: marksSeg }, { sync: shakeSeg }, { sync: lbSeg }, { sync: srcLogSel });
 const saved = LS.get(KEY.state, null);
 const firstPreset = PRESETS.find(p => p.name === 'Kodak Vision3 250D · 데이터 → 2383 프린트' && hasLut(p)) || PRESETS.find(p => p.name === 'Kodak Vision3 250D · 2383 (실측 프린트)' && hasLut(p)) || PRESETS[0];
 if (saved && saved.on && saved.p) {

@@ -147,6 +147,7 @@ input[type=range]:hover::-webkit-slider-thumb { background: var(--acc); }
 .seg button { background: var(--panel2); border: 1px solid var(--line2); border-radius: 4px; padding: 4px 9px; font-size: 12px; color: var(--dim); }
 .seg button:hover { color: var(--text); border-color: #55555b; }
 .seg button.on { color: #1a1306; background: var(--acc); border-color: var(--acc); font-weight: 600; }
+.hint { color: var(--faint); font-weight: 400; margin-left: 8px; font-size: 11px; }
 .subnote { font-size: 11px; color: var(--faint); margin-top: 7px; line-height: 1.45; }
 select.plain { width: 100%; background: #111; border: 1px solid var(--line2); border-radius: 5px; padding: 5px 8px; }
 #advHead { width: 100%; display: flex; align-items: center; gap: 8px; padding: 13px 18px; background: none; border: none; border-bottom: 1px solid var(--line); color: var(--dim); font-weight: 600; font-size: 12px; text-align: left; }
@@ -161,6 +162,7 @@ body:not(.adv) #modules { display: none; }
 .mod { border-bottom: 1px solid var(--line); }
 .mod-h { display: flex; align-items: center; gap: 9px; padding: 8px 12px 8px 18px; }
 .mod-t { flex: 1; text-align: left; background: none; border: none; padding: 2px 0; font-weight: 600; }
+.mod-d { font-size: 11px; color: var(--faint); line-height: 1.45; margin: 0 0 6px; }
 .mod-t::after { content: '▾'; float: right; color: var(--faint); font-weight: 400; }
 .mod.fold .mod-t::after { content: '▸'; }
 .mod-r { background: none; border: none; color: var(--faint); padding: 0 4px; font-size: 14px; }
@@ -389,25 +391,30 @@ body:not(.has-src) #transport { display: none; }
         <div class="subnote">막대를 두 번 누르면 그 필름의 원래 값으로 돌아가요.</div>
       </div>
       <div class="sec">
-        <h2>필름 크기</h2>
+        <h2>필름 크기 <small class="hint">입자·흔들림이 달라져요</small></h2>
         <div class="seg" id="gaugeSeg"></div>
         <div class="subnote" id="gaugeNote"></div>
       </div>
       <div class="sec">
-        <h2>먼지·스크래치</h2>
+        <h2>먼지·긁힘 <small class="hint">낡은 필름 느낌</small></h2>
         <div class="seg" id="marksSeg"></div>
-        <div class="subnote">끄면 필름 크기·필름 종류가 넣는 먼지·스크래치·깜빡임이 모두 빠져요. 필름을 바꿔도 그대로 유지돼요.</div>
+        <div class="subnote">필름에 앉은 먼지 점, 세로 긁힘 줄, 밝기가 깜빡이는 것. 끄면 모두 빠져요. 필름을 바꿔도 그대로예요.</div>
       </div>
       <div class="sec">
-        <h2>화면비</h2>
+        <h2>화면 떨림 <small class="hint">부들부들 흔들림</small></h2>
+        <div class="seg" id="shakeSeg"></div>
+        <div class="subnote">필름이 영사기를 지날 때 화면이 미세하게 부들부들 떠는 효과(게이트 위브). 끄면 화면이 가만히 있어요. 필름을 바꿔도 그대로예요.</div>
+      </div>
+      <div class="sec">
+        <h2>화면 비율 <small class="hint">위아래 검은 띠</small></h2>
         <div class="seg" id="lbSeg"></div>
       </div>
       <div class="sec">
-        <h2>원본 영상</h2>
+        <h2>원본이 회색빛이면 <small class="hint">카메라 로그</small></h2>
         <select class="plain" id="srcLog"></select>
         <div class="subnote">카메라 로그(S-Log3 같은 회색 영상)로 찍었으면 맞는 걸 고르세요.</div>
       </div>
-      <button id="advHead">세부 조절 <small>— 효과 하나하나</small></button>
+      <button id="advHead">세부 조절 <small>— 효과를 하나씩 켜고 끄고 조절해요</small></button>
       <div id="modules"></div>
     </div>
   </aside>

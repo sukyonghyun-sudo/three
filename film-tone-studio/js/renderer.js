@@ -363,12 +363,13 @@ const FILE_LUT_IN = { display: [0, IDENT3], cineon: [1, IDENT3], logc3: [2, inv3
 function applyGauge(e, st) {
   const G = FTS.GAUGES[e.gauge];
   if (st && st.p && st.p.marks === 'off') e.dust = e.scratch = e.flicker = 0;
+  if (st && st.p && st.p.shake === 'off') e.weaveAmt = 0;           // 화면 떨림 끄기: 필름이 넣은 것도 직접 올린 것도 모두
   if (!G || !(e.gaugeAmt > 0)) return { soft: 0 };
   const k = e.gaugeAmt, lerp = m => 1 + (m - 1) * k;
   // 그레인을 따로 켜 두지 않았으면 규격의 기본 입자를 깐다 (직접 0 으로 내린 건 존중)
   if (!(st && st.on && st.on.grain) && !(e.grainAmt > 0)) { e.grainAmt = 0.012; e.grainSize = 0.9; }
   e.grainAmt *= lerp(G.grainAmt); e.grainSize *= lerp(G.grainSize);
-  e.weaveAmt = Math.max(e.weaveAmt, G.weave * k);
+  if (!(st && st.p && st.p.shake === 'off')) e.weaveAmt = Math.max(e.weaveAmt, G.weave * k);
   if (!(st && st.p && st.p.marks === 'off')) {
     e.flicker = Math.max(e.flicker, G.flicker * k);
     e.dust = Math.max(e.dust, G.dust * k);
