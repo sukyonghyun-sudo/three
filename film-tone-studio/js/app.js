@@ -773,7 +773,7 @@ async function exportVideo(opt) {
   let fps = 30;
   try { const st = await vt.computePacketStats(120); if (st.averagePacketRate > 1) fps = st.averagePacketRate; } catch (e) {}
   const bitrate = Math.round(Math.min(1.2e8, Math.max(2e6, W * H * fps * opt.bpp)));
-  const quality = new MB.Quality({ bitrate });
+  const quality = new MB.Quality({ bitrate, quantizer: window.__q !== undefined ? window.__q : opt.q });   // 화질 기준(작을수록 고화질)으로 직접 지정 — 데이터양만 정하면 인코더가 덜 써서 화질이 떨어졌다   // 정해 둔 데이터양을 다 쓰게 (가변이면 인코더가 덜 써서 화질이 줄어든다)
   let codec = null;
   for (const c of ['avc', 'hevc', 'vp9', 'av1']) if (await MB.canEncodeVideo(c, { width: W, height: H, quality })) { codec = c; break; }
   if (!codec) throw new Error(W + '×' + H + ' 크기로 영상을 인코딩할 수 없어요. 더 작은 크기로 해 보세요.');
@@ -843,15 +843,15 @@ const fmtLen = t => { t = Math.round(t || 0); const h = Math.floor(t / 3600), m 
 function exportInfo() {
   if (!app.src || app.src.kind !== 'video') return;
   const [W, H] = outSize(app.src.w, app.src.h, $('#exSize').value);
-  const bitrate = Math.min(1.2e8, Math.max(2e6, W * H * app.fps * +$('#exQual').value));
+  const bitrate = Math.min(1.2e8, Math.max(2e6, W * H * app.fps * +$('#exQual').selectedOptions[0].dataset.bpp));
   const mb = bitrate * (video.duration || 0) / 8 / 1048576;
-  $('#exInfo').textContent = '길이 ' + fmtLen(video.duration) + ' · 예상 크기 약 ' + (mb > 1024 ? (mb / 1024).toFixed(1) + 'GB' : Math.max(1, Math.round(mb)) + 'MB')
+  $('#exInfo').textContent = '길이 ' + fmtLen(video.duration) + ' · 크기는 영상 내용에 따라 달라요 (대략 ' + (mb > 1024 ? (mb / 1024).toFixed(1) + 'GB' : Math.max(1, Math.round(mb)) + 'MB') + ')'
     + (typeof window.showSaveFilePicker === 'function' ? ''
       : PHONE ? ' · 휴대폰은 다 만든 뒤 한 번에 저장해요' + (mb > 400 ? ' — 이 크기는 메모리가 모자랄 수 있어요. 크기를 줄이거나 PC에서 해 주세요' : '')
       : ' · 이 브라우저는 다운로드 폴더로 저장해요 (아주 긴 영상은 크롬·엣지 권장)');
 }
 async function startExport() {
-  const opt = { size: $('#exSize').value, bpp: +$('#exQual').value, audio: $('#exAudio').checked, handle: null };
+  const opt = { size: $('#exSize').value, bpp: +$('#exQual').selectedOptions[0].dataset.bpp, q: +$('#exQual').value, audio: $('#exAudio').checked, handle: null };
   const name = baseName() + '_필름톤.mp4';
   // 저장할 곳을 먼저 고른다 (크롬·엣지). 고르는 창을 닫으면 시작하지 않는다.
   if (typeof window.showSaveFilePicker === 'function') {

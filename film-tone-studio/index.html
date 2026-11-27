@@ -424,9 +424,9 @@ body:not(.has-src) #transport { display: none; }
   <h3>영상 저장 (MP4)</h3>
   <div class="field"><span>크기</span><select id="exSize"></select></div>
   <div class="field"><span>화질</span><select id="exQual">
-    <option value="0.12">보통 — 파일 작게</option>
-    <option value="0.22" selected>높음</option>
-    <option value="0.4">아주 높음 — 입자가 많을 때</option>
+    <option value="26" data-bpp="0.12">보통 — 파일 작게</option>
+    <option value="21" data-bpp="0.22" selected>높음 (권장)</option>
+    <option value="17" data-bpp="0.4">최고 — 원본에 가장 가깝게 (파일 큼)</option>
   </select></div>
   <label class="chk"><input type="checkbox" id="exAudio" checked> 원본 소리 넣기</label>
   <div id="exInfo"></div>
